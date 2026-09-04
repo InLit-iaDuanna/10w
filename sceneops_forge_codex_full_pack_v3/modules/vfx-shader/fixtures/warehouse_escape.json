@@ -1,0 +1,55 @@
+{
+  "fixture_kind": "deterministic_mock",
+  "recipe_id": "vfxrec_warehouse_exit_highlight",
+  "version": "1.0.0",
+  "template_id": "subtle_interaction_highlight_v1",
+  "title_zh": "仓库出口柔和高亮",
+  "shader_family": "sceneops/subtle-outline-pulse",
+  "quality_tier": "low",
+  "parameter_specs": [
+    {"key": "color", "kind": "color", "label_zh": "高亮颜色", "default": "#58C8C5"},
+    {"key": "intensity", "kind": "float", "label_zh": "强度", "default": 0.28, "minimum": 0.0, "maximum": 1.0, "step": 0.01},
+    {"key": "pulse_hz", "kind": "float", "label_zh": "呼吸频率", "default": 0.4, "minimum": 0.1, "maximum": 2.0, "step": 0.05},
+    {"key": "edge_width_px", "kind": "float", "label_zh": "边缘宽度", "default": 1.0, "minimum": 0.5, "maximum": 4.0, "step": 0.25},
+    {"key": "soft_particles", "kind": "boolean", "label_zh": "柔和粒子", "default": true}
+  ],
+  "parameters": {
+    "color": "#58C8C5",
+    "intensity": 0.28,
+    "pulse_hz": 0.4,
+    "edge_width_px": 1.0,
+    "soft_particles": true
+  },
+  "particle_count": 20,
+  "estimated_overdraw_layers": 1.1,
+  "estimated_screen_coverage_percent": 4.0,
+  "bindings": [
+    {"binding_id": "vfxbind_warehouse_switch_activated", "event_name": "gameplay.switch.activated", "target_sceneops_id": "so_switch_warehouse_01", "action": "pulse", "enabled": false},
+    {"binding_id": "vfxbind_warehouse_exit_unlocked", "event_name": "gameplay.exit.unlocked", "target_sceneops_id": "so_exit_warehouse_01", "action": "enable", "enabled": false}
+  ],
+  "provenance": {
+    "artifact_id": "artifact_mock_vfx_warehouse_exit_v1",
+    "artifact_type": "vfx_shader_recipe",
+    "source_project_id": "prj_warehouse_escape",
+    "source_version": "fixture-1",
+    "source_commit": null,
+    "related_sceneops_ids": ["so_switch_warehouse_01", "so_exit_warehouse_01"],
+    "producing_module": "vfx-shader",
+    "tool": "deterministic-fixture",
+    "adapter_version": "fixture-v1",
+    "recipe_version": "1.0.0",
+    "creator": "sceneops-fixture-author",
+    "execution_mode": "mock",
+    "timestamp": "2026-09-04T00:00:00Z",
+    "checksum_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "approval_state": "approved",
+    "ai_provider": null,
+    "ai_model": null,
+    "workflow_hash": null,
+    "prompt": null,
+    "negative_prompt": null,
+    "seed": null,
+    "ai_parameters": {}
+  },
+  "optional": true
+}

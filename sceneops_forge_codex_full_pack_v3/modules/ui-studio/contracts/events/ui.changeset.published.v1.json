@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/ui-studio/events/ui.changeset.published.v1.json",
+  "type": "object", "additionalProperties": false,
+  "properties": {
+    "event_id": {"type": "string"}, "event_type": {"const": "ui.changeset.published"}, "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"}, "project_id": {"type": "string"}, "correlation_id": {"type": "string"}, "causation_id": {"type": "string"},
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]}, "actor": {"type": "object", "additionalProperties": false, "properties": {"type": {"type": "string"}, "id": {"type": "string"}}, "required": ["type", "id"]},
+    "payload": {"type": "object", "additionalProperties": false, "properties": {"changeset_id": {"type": "string"}, "mapping_id": {"type": "string"}, "state": {"const": "published"}, "adapter_version": {"type": "string"}}, "required": ["changeset_id", "mapping_id", "state", "adapter_version"]}
+  },
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"]
+}

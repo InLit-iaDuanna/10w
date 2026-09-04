@@ -1,0 +1,11 @@
+{
+  "fixture_kind": "deterministic_mock",
+  "preview_id": "preview_vfxrec_home_doorway_highlight_1.0.0_medium",
+  "recipe_id": "vfxrec_home_doorway_highlight",
+  "quality_tier": "medium",
+  "passes": ["base-color", "highlight-mask", "overdraw-estimate", "composite"],
+  "seed": 1701,
+  "frame_count": 24,
+  "execution_mode": "mock",
+  "warnings": []
+}

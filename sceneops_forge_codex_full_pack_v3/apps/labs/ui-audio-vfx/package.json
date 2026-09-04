@@ -1,0 +1,22 @@
+{
+  "name": "@sceneops/lab-ui-audio-vfx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev": "node dev.mjs", "generate:api": "node generate-api.mjs"},
+  "dependencies": {
+    "@sceneops/ui-studio": "file:../../../modules/ui-studio/frontend",
+    "@sceneops/audio-studio-frontend": "file:../../../modules/audio-studio/frontend",
+    "@sceneops/vfx-shader-frontend": "file:../../../modules/vfx-shader/frontend",
+    "@tanstack/react-query": "5.80.7",
+    "openapi-fetch": "0.14.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18", "@types/react-dom": "19.2.7",
+    "typescript": "6.0.3", "vite": "8.0.0", "openapi-typescript": "7.6.1"
+  },
+  "engines": {"node": ">=22.18.0"},
+  "packageManager": "pnpm@11.13.0"
+}

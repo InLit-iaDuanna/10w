@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://vfx-shader/events/vfx.preview.planned@1",
+  "title": "VFX preview planned event intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^evt_"},
+    "event_type": {"const": "vfx.preview.planned"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "pattern": "^prj_"},
+    "correlation_id": {"type": "string", "pattern": "^corr_"},
+    "causation_id": {"type": "string", "pattern": "^cmd_"},
+    "actor": {"type": "object", "additionalProperties": false, "required": ["type", "id"], "properties": {"type": {"enum": ["user", "agent", "system"]}, "id": {"type": "string", "minLength": 1}}},
+    "mode": {"enum": ["mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preview_id", "recipe_id", "quality_tier", "seed"],
+      "properties": {
+        "preview_id": {"type": "string", "pattern": "^preview_"},
+        "recipe_id": {"type": "string", "pattern": "^vfxrec_"},
+        "quality_tier": {"enum": ["low", "medium", "high"]},
+        "seed": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
