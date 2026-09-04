@@ -15,3 +15,5 @@ export const moduleContribution: ModuleContribution = {
 export { audioCommands } from './commands';
 export { audioCommandSchemas } from './commands';
 export type { AudioCommand, AudioEditorState, ExecutionMode, ModuleContribution } from './types';
+export { AudioLabPanel } from './editors/AudioLabPanel';
+export type { paths as AudioLabPaths, components as AudioLabComponents } from './lab-api';

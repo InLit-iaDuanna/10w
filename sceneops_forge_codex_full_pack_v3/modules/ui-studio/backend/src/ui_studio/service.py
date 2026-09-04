@@ -10,6 +10,11 @@ class UiStudioService:
     def validate_flow(self, flow: UiFlow, profile: ResolutionProfile,
                       character_limit: int, provenance: Provenance) -> ValidationReport:
         provenance.validate()
+        return ValidationReport(flow.id, self.check_flow(flow, profile, character_limit), ExecutionMode.MOCK, provenance)
+
+    def check_flow(self, flow: UiFlow, profile: ResolutionProfile,
+                   character_limit: int) -> tuple:
+        """Check an unpublished draft without asserting artifact provenance."""
         issues: list[ValidationIssue] = []
         screen_ids = {screen.id for screen in flow.screens}
         if not flow.screens or flow.entry_screen_id not in screen_ids:
@@ -33,7 +38,7 @@ class UiStudioService:
                 for element in screen.elements:
                     if not self._inside_safe_area(element, profile):
                         issues.append(ValidationIssue("SAFE_AREA_ELEMENT_OUT_OF_BOUNDS", "界面元素超出安全区域。", screen.id))
-        return ValidationReport(flow.id, tuple(issues), ExecutionMode.MOCK, provenance)
+        return tuple(issues)
 
     @staticmethod
     def _inside_safe_area(element, profile: ResolutionProfile) -> bool:

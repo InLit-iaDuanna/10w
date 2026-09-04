@@ -35,3 +35,5 @@ export const moduleContribution = {
 
 export { commands, manifest };
 export type * from './types';
+export { VfxLabPanel } from './editors/VfxLabPanel';
+export type { paths as VfxLabPaths, components as VfxLabComponents } from './lab-api';

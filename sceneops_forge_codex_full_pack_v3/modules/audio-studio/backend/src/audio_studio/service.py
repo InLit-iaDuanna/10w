@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import math
+import io
 import re
 import struct
+import wave
 from dataclasses import dataclass, replace
 
 from .models import (AssetStatus, AudioAnalysis, AudioAsset, AudioMapping, AudioMetadata, AudioSpec,
@@ -42,16 +44,18 @@ class AudioStudioService:
             raise AudioValidationError("AUDIO_FORMAT_UNSUPPORTED: 当前纵切只支持 WAV。")
         if len(data) < 44 or data[:4] != b"RIFF" or data[8:12] != b"WAVE":
             raise AudioValidationError("AUDIO_WAV_INVALID: WAV 文件头无效。")
-        fmt_at = data.find(b"fmt ")
-        data_at = data.find(b"data")
-        if fmt_at < 0 or data_at < 0:
-            raise AudioValidationError("AUDIO_WAV_INVALID: 缺少 fmt 或 data 块。")
-        audio_format, channels, sample_rate, _, _, bit_depth = struct.unpack_from("<HHIIHH", data, fmt_at + 8)
-        data_size = struct.unpack_from("<I", data, data_at + 4)[0]
-        samples = data[data_at + 8:data_at + 8 + data_size]
-        if audio_format != 1 or bit_depth != 16 or channels not in (1, 2) or sample_rate <= 0:
+        try:
+            with wave.open(io.BytesIO(data), "rb") as source:
+                channels, sample_rate = source.getnchannels(), source.getframerate()
+                bit_depth = source.getsampwidth() * 8
+                frames = source.getnframes()
+                samples = source.readframes(frames)
+        except (wave.Error, EOFError, struct.error) as error:
+            raise AudioValidationError("AUDIO_WAV_INVALID: 无法读取 PCM WAV 数据块。") from error
+        if bit_depth != 16 or channels not in (1, 2) or sample_rate <= 0:
             raise AudioValidationError("AUDIO_FORMAT_UNSUPPORTED: 需要 16-bit PCM 单声道或立体声 WAV。")
-        if len(samples) != data_size or data_size == 0 or data_size % 2:
+        data_size = frames * channels * 2
+        if len(samples) != data_size or data_size == 0:
             raise AudioValidationError("AUDIO_WAV_INVALID: PCM 数据不完整。")
         values = struct.unpack("<" + "h" * (data_size // 2), samples)
         peak = max(abs(value) for value in values) / 32768

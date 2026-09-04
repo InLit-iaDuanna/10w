@@ -1,4 +1,8 @@
 """Public backend entrypoint for the UI Studio module."""
+def create_lab_router():
+    from .lab_api import create_lab_router as factory
+    return factory()
+
 from .contracts import (ChangeSet, ChangeSetState, ExecutionMode, Provenance,
                         ResolutionProfile, SafeArea, UiFlow, UiMappingRequest,
                         UiElement, UiScreen, UnityUiAdapter, UnityUiMappingResult)

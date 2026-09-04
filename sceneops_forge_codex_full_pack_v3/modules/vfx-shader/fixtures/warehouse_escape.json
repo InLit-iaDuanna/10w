@@ -24,8 +24,8 @@
   "estimated_overdraw_layers": 1.1,
   "estimated_screen_coverage_percent": 4.0,
   "bindings": [
-    {"binding_id": "vfxbind_warehouse_switch_activated", "event_name": "warehouse.switch.activated", "target_sceneops_id": "so_switch_warehouse_01", "action": "pulse", "enabled": false},
-    {"binding_id": "vfxbind_warehouse_exit_unlocked", "event_name": "warehouse.exit.unlocked", "target_sceneops_id": "so_exit_warehouse_01", "action": "enable", "enabled": false}
+    {"binding_id": "vfxbind_warehouse_switch_activated", "event_name": "gameplay.switch.activated", "target_sceneops_id": "so_switch_warehouse_01", "action": "pulse", "enabled": false},
+    {"binding_id": "vfxbind_warehouse_exit_unlocked", "event_name": "gameplay.exit.unlocked", "target_sceneops_id": "so_exit_warehouse_01", "action": "enable", "enabled": false}
   ],
   "provenance": {
     "artifact_id": "artifact_mock_vfx_warehouse_exit_v1",

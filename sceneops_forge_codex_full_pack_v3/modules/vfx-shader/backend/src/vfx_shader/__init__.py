@@ -1,4 +1,7 @@
 """Public backend API for the SceneOps VFX/Shader module."""
+def create_lab_router():
+    from .lab_api import create_lab_router as factory
+    return factory()
 
 from .adapters import (
     AdapterCapabilities,
