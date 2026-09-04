@@ -2,6 +2,14 @@
 
 更新时间：2026-09-05（Asia/Shanghai 工作会话；合同时间戳仍使用 UTC）。
 
+## 独立工作台新增交付
+
+`apps/labs/character-animation` 已增加独立 Web/API 启动；公开前端 `CharacterAnimationWorkbench` 复用六个编辑器和既有命令，后端直接注册原 contribution。页面支持动画元数据草稿、检查、版本比较、重定向配置、状态关系和待审批映射提案；外部适配器维持 offline。
+
+本轮启动及 HTTP 源码入口检查成功；唯一主路径为通过 Web 代理检查原始角色（15 checks、passed、mock），再生成映射（planned、waiting_approval、dry_run=true）。完整测试、类型检查、构建、浏览器交互验证和所有外部执行均 not run / pending approval。最后表单禁用样式调整未重复烟测。详细命令和人工操作见 [`lab README`](../../../apps/labs/character-animation/README.md)。
+
+以下表格和历史测试记录属于原模块实现，不表示本次 UI 组合已通过完整回归。当前工作树只引入共享启动骨架，未引入 Shell UI/core 实现。
+
 | 范围 | 状态 | 证据 |
 |---|---|---|
 | Pydantic/OpenAPI/JSON Schema | `mock` 可验证 | 后端合同测试与生成脚本 |

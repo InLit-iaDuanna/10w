@@ -1,0 +1,2 @@
+-e ../../../modules/character-animation/backend
+uvicorn==0.39.0
