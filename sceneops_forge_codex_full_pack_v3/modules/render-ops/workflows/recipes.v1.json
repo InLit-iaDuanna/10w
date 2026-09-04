@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "recipes": [
+    {
+      "recipe_id": "render.asset-turntable",
+      "version": "1.0.0",
+      "kind": "asset_turntable",
+      "required_passes": ["beauty", "depth", "normal", "albedo", "object_id"],
+      "optional_passes": ["material_id"],
+      "portable_parameters": ["asset_id", "camera_orbit", "frame_count", "resolution"],
+      "execution_requirement": "live_or_cached_real"
+    },
+    {
+      "recipe_id": "render.material-variant",
+      "version": "1.0.0",
+      "kind": "material_variant",
+      "required_passes": ["beauty", "depth", "normal", "albedo", "object_id", "material_id"],
+      "optional_passes": [],
+      "portable_parameters": ["target_object_ids", "material_slots", "resolution"],
+      "execution_requirement": "live_or_cached_real"
+    },
+    {
+      "recipe_id": "render.lighting-visibility",
+      "version": "1.0.0",
+      "kind": "lighting_visibility",
+      "required_passes": ["beauty", "depth", "normal", "albedo", "object_id"],
+      "optional_passes": ["material_id"],
+      "portable_parameters": ["target_object_ids", "protected_object_ids", "resolution"],
+      "execution_requirement": "live_or_cached_real"
+    },
+    {
+      "recipe_id": "render.fixed-camera-regression",
+      "version": "1.0.0",
+      "kind": "fixed_camera_regression",
+      "required_passes": ["beauty", "depth", "normal", "albedo", "object_id"],
+      "optional_passes": ["material_id"],
+      "portable_parameters": ["baseline_artifact_id", "difference_threshold", "resolution"],
+      "execution_requirement": "live_or_cached_real"
+    },
+    {
+      "recipe_id": "render.marketing-still",
+      "version": "1.0.0",
+      "kind": "marketing_still",
+      "required_passes": ["beauty", "depth", "normal", "albedo", "object_id"],
+      "optional_passes": ["material_id"],
+      "portable_parameters": ["target_object_ids", "aspect_ratio", "resolution"],
+      "execution_requirement": "live_or_cached_real"
+    }
+  ]
+}

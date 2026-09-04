@@ -1,0 +1,599 @@
+{
+  "aovs": [
+    {
+      "artifact": {
+        "approval_state": "not_required",
+        "artifact_id": "aov_beauty",
+        "artifact_type": "render.aov.beauty",
+        "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "created_at": "2026-09-04T01:02:03Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "producing_module": "render-ops",
+        "related_sceneops_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "source_commit": "commit-fixture-not-live",
+        "source_project_id": "prj_remember_home",
+        "source_version": "scene-v17",
+        "tool_name": "deterministic-fixture-renderer",
+        "tool_version": "1.0.0",
+        "uri": "fixture://render-ops/aov_beauty"
+      },
+      "height": 4,
+      "pass_type": "beauty",
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "width": 4
+    },
+    {
+      "artifact": {
+        "approval_state": "not_required",
+        "artifact_id": "aov_depth",
+        "artifact_type": "render.aov.depth",
+        "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "created_at": "2026-09-04T01:02:03Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "producing_module": "render-ops",
+        "related_sceneops_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "source_commit": "commit-fixture-not-live",
+        "source_project_id": "prj_remember_home",
+        "source_version": "scene-v17",
+        "tool_name": "deterministic-fixture-renderer",
+        "tool_version": "1.0.0",
+        "uri": "fixture://render-ops/aov_depth"
+      },
+      "height": 4,
+      "pass_type": "depth",
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "width": 4
+    },
+    {
+      "artifact": {
+        "approval_state": "not_required",
+        "artifact_id": "aov_normal",
+        "artifact_type": "render.aov.normal",
+        "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "created_at": "2026-09-04T01:02:03Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "producing_module": "render-ops",
+        "related_sceneops_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "source_commit": "commit-fixture-not-live",
+        "source_project_id": "prj_remember_home",
+        "source_version": "scene-v17",
+        "tool_name": "deterministic-fixture-renderer",
+        "tool_version": "1.0.0",
+        "uri": "fixture://render-ops/aov_normal"
+      },
+      "height": 4,
+      "pass_type": "normal",
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "width": 4
+    },
+    {
+      "artifact": {
+        "approval_state": "not_required",
+        "artifact_id": "aov_albedo",
+        "artifact_type": "render.aov.albedo",
+        "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "created_at": "2026-09-04T01:02:03Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "producing_module": "render-ops",
+        "related_sceneops_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "source_commit": "commit-fixture-not-live",
+        "source_project_id": "prj_remember_home",
+        "source_version": "scene-v17",
+        "tool_name": "deterministic-fixture-renderer",
+        "tool_version": "1.0.0",
+        "uri": "fixture://render-ops/aov_albedo"
+      },
+      "height": 4,
+      "pass_type": "albedo",
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "width": 4
+    },
+    {
+      "artifact": {
+        "approval_state": "not_required",
+        "artifact_id": "aov_object_id",
+        "artifact_type": "render.aov.object_id",
+        "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "created_at": "2026-09-04T01:02:03Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "producing_module": "render-ops",
+        "related_sceneops_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "source_commit": "commit-fixture-not-live",
+        "source_project_id": "prj_remember_home",
+        "source_version": "scene-v17",
+        "tool_name": "deterministic-fixture-renderer",
+        "tool_version": "1.0.0",
+        "uri": "fixture://render-ops/aov_object_id"
+      },
+      "height": 4,
+      "pass_type": "object_id",
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "width": 4
+    }
+  ],
+  "brief": {
+    "brief_id": "rbrief_porch_visibility",
+    "created_at": "2026-09-04T01:02:03Z",
+    "intent": "\u8ba9\u95e8\u5eca\u94a5\u5319\u533a\u57df\u66f4\u6e05\u6670\uff0c\u540c\u65f6\u4fdd\u62a4\u95e8\u4f53\u8f6e\u5ed3\u3002",
+    "protected_regions": [
+      {
+        "mask_artifact_id": "aov_object_id",
+        "max_changed_ratio": 0.0,
+        "object_ids": [
+          "sceneops_door_home"
+        ],
+        "region_id": "region_home_door"
+      }
+    ],
+    "requested_by": "usr_fixture_reviewer",
+    "scene": {
+      "axis_convention": "right-handed, Y-up, -Z-forward",
+      "camera_id": "cam_front_door",
+      "camera_version": "camera-v4",
+      "coordinate_space": "world",
+      "distance_unit": "meter",
+      "project_id": "prj_remember_home",
+      "scene_id": "scn_home_hall",
+      "scene_object_ids": [
+        "sceneops_light_porch",
+        "sceneops_door_home"
+      ],
+      "scene_version": "scene-v17"
+    },
+    "target_object_ids": [
+      "sceneops_light_porch"
+    ]
+  },
+  "comparisons": [
+    {
+      "after_artifact_id": "validation_beauty_fixture_001",
+      "before_artifact_id": "aov_beauty",
+      "changed_object_ids": [
+        "sceneops_light_porch"
+      ],
+      "comparison_id": "rcompare_fixture_001",
+      "execution_mode": "mock",
+      "metrics": {
+        "artistic_quality_measured": false,
+        "changed_pixel_ratio": 0.25,
+        "maximum_channel_difference": 0.12,
+        "mean_absolute_difference": 0.02
+      },
+      "protected_regions": [
+        {
+          "changed_pixel_ratio": 0.0,
+          "passed": true,
+          "region_id": "region_home_door",
+          "threshold": 0.0
+        }
+      ],
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      }
+    }
+  ],
+  "created_at": "2026-09-04T01:02:03Z",
+  "job": {
+    "attempt": 1,
+    "brief_id": "rbrief_porch_visibility",
+    "cache_plan": {
+      "capture_passes": [
+        "beauty",
+        "depth",
+        "normal",
+        "albedo",
+        "object_id"
+      ],
+      "reasons": {
+        "albedo": "deterministic fixture capture",
+        "beauty": "deterministic fixture capture",
+        "depth": "deterministic fixture capture",
+        "normal": "deterministic fixture capture",
+        "object_id": "deterministic fixture capture"
+      },
+      "reused_passes": []
+    },
+    "created_at": "2026-09-04T01:02:03Z",
+    "dependency_snapshot": {
+      "camera_version": "camera-v4",
+      "geometry_version": "geometry-v8",
+      "height": 4,
+      "lighting_version": "lighting-v5",
+      "material_version": "material-v3",
+      "recipe_id": "render.lighting-visibility",
+      "recipe_version": "1.0.0",
+      "renderer_version": "fixture-renderer-1.0.0",
+      "samples": 64,
+      "visibility_version": "visibility-v2",
+      "width": 4
+    },
+    "execution_mode": "mock",
+    "failure": null,
+    "job_id": "rjob_fixture_001",
+    "progress": 1.0,
+    "recipe_id": "render.lighting-visibility",
+    "recipe_version": "1.0.0",
+    "scene": {
+      "axis_convention": "right-handed, Y-up, -Z-forward",
+      "camera_id": "cam_front_door",
+      "camera_version": "camera-v4",
+      "coordinate_space": "world",
+      "distance_unit": "meter",
+      "project_id": "prj_remember_home",
+      "scene_id": "scn_home_hall",
+      "scene_object_ids": [
+        "sceneops_light_porch",
+        "sceneops_door_home"
+      ],
+      "scene_version": "scene-v17"
+    },
+    "state": "succeeded",
+    "updated_at": "2026-09-04T01:02:03Z"
+  },
+  "manifest_id": "rmanifest_fixture_001",
+  "recipe": {
+    "kind": "lighting_visibility",
+    "optional_passes": [
+      "material_id"
+    ],
+    "parameters": {
+      "resolution": [
+        4,
+        4
+      ],
+      "target_visibility": "clear"
+    },
+    "recipe_id": "render.lighting-visibility",
+    "required_passes": [
+      "beauty",
+      "depth",
+      "normal",
+      "albedo",
+      "object_id"
+    ],
+    "version": "1.0.0",
+    "workflow_checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "workflow_reference": "lookdev.lighting-visibility.v1"
+  },
+  "schema_version": 1,
+  "validations": [
+    {
+      "allowed_object_ids": [
+        "sceneops_light_porch"
+      ],
+      "camera_unchanged": true,
+      "changed_object_ids": [
+        "sceneops_light_porch"
+      ],
+      "comparison_id": "rcompare_fixture_001",
+      "completed_at": "2026-09-04T01:02:03Z",
+      "deterministic_recipe_id": "render.fixed-camera-regression",
+      "execution_mode": "mock",
+      "failures": [],
+      "geometry_unchanged": true,
+      "passed": true,
+      "proposal_id": "rwriteback_fixture_001",
+      "protected_regions_passed": true,
+      "scope_passed": true,
+      "validation_id": "rvalidation_fixture_001"
+    }
+  ],
+  "variants": [
+    {
+      "approval_snapshot": {
+        "approved_at": "2026-09-04T01:02:03Z",
+        "approved_by": "usr_fixture_reviewer",
+        "constraint_passes": [
+          "depth",
+          "normal",
+          "object_id"
+        ],
+        "job_id": "rjob_fixture_001",
+        "output": {
+          "approval_state": "approved",
+          "artifact_id": "render_variant_fixture_001",
+          "artifact_type": "render.variant",
+          "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "created_at": "2026-09-04T01:02:03Z",
+          "creator": "fixture_worker",
+          "execution_mode": "mock",
+          "producing_module": "render-ops",
+          "related_sceneops_ids": [
+            "sceneops_light_porch",
+            "sceneops_door_home"
+          ],
+          "source_commit": "commit-fixture-not-live",
+          "source_project_id": "prj_remember_home",
+          "source_version": "scene-v17",
+          "tool_name": "deterministic-fixture-renderer",
+          "tool_version": "1.0.0",
+          "uri": "fixture://render-ops/render_variant_fixture_001"
+        },
+        "provenance": {
+          "adapter_version": "0.1.0",
+          "model_checksum_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "model_reference": "fixture/lookdev-model-v1",
+          "negative_prompt": "geometry change, camera move, door silhouette change",
+          "parameters": {
+            "guidance": 1.0,
+            "steps": 1
+          },
+          "prompt": "warm porch light revealing the target, preserve door silhouette",
+          "provider": "deterministic-fixture",
+          "seed": 74012,
+          "workflow_checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "workflow_reference": "lookdev.lighting-visibility.v1"
+        },
+        "scene": {
+          "axis_convention": "right-handed, Y-up, -Z-forward",
+          "camera_id": "cam_front_door",
+          "camera_version": "camera-v4",
+          "coordinate_space": "world",
+          "distance_unit": "meter",
+          "project_id": "prj_remember_home",
+          "scene_id": "scn_home_hall",
+          "scene_object_ids": [
+            "sceneops_light_porch",
+            "sceneops_door_home"
+          ],
+          "scene_version": "scene-v17"
+        },
+        "variant_id": "rvariant_fixture_001"
+      },
+      "approval_state": "approved",
+      "approved_at": "2026-09-04T01:02:03Z",
+      "approved_by": "usr_fixture_reviewer",
+      "constraint_passes": [
+        "depth",
+        "normal",
+        "object_id"
+      ],
+      "job_id": "rjob_fixture_001",
+      "output": {
+        "approval_state": "approved",
+        "artifact_id": "render_variant_fixture_001",
+        "artifact_type": "render.variant",
+        "checksum_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "created_at": "2026-09-04T01:02:03Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "producing_module": "render-ops",
+        "related_sceneops_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "source_commit": "commit-fixture-not-live",
+        "source_project_id": "prj_remember_home",
+        "source_version": "scene-v17",
+        "tool_name": "deterministic-fixture-renderer",
+        "tool_version": "1.0.0",
+        "uri": "fixture://render-ops/render_variant_fixture_001"
+      },
+      "provenance": {
+        "adapter_version": "0.1.0",
+        "model_checksum_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "model_reference": "fixture/lookdev-model-v1",
+        "negative_prompt": "geometry change, camera move, door silhouette change",
+        "parameters": {
+          "guidance": 1.0,
+          "steps": 1
+        },
+        "prompt": "warm porch light revealing the target, preserve door silhouette",
+        "provider": "deterministic-fixture",
+        "seed": 74012,
+        "workflow_checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "workflow_reference": "lookdev.lighting-visibility.v1"
+      },
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "variant_id": "rvariant_fixture_001"
+    }
+  ],
+  "writeback_proposals": [
+    {
+      "allowed_object_ids": [
+        "sceneops_light_porch"
+      ],
+      "approval_requirements": [
+        "render:approve",
+        "render:writeback"
+      ],
+      "approval_snapshot": {
+        "allowed_object_ids": [
+          "sceneops_light_porch"
+        ],
+        "approval_requirements": [
+          "render:approve",
+          "render:writeback"
+        ],
+        "approved_at": "2026-09-04T01:02:03Z",
+        "approved_by": "usr_fixture_reviewer",
+        "base_scene_version": "scene-v17",
+        "brief_id": "rbrief_porch_visibility",
+        "changeset_id": "changeset_fixture_001",
+        "expected_result": "The key target is more visible from the fixed camera.",
+        "impact_scope": [
+          "sceneops_light_porch"
+        ],
+        "operations": [
+          {
+            "parameter_name": null,
+            "previous_value": 600.0,
+            "property": "light.intensity",
+            "proposed_value": 850.0,
+            "target": "blender",
+            "target_object_id": "sceneops_light_porch"
+          }
+        ],
+        "proposal_id": "rwriteback_fixture_001",
+        "rationale": "Approved variant reveals the target with a bounded light edit.",
+        "risk": "low",
+        "rollback_plan": "Restore light intensity to 600.0.",
+        "scene": {
+          "axis_convention": "right-handed, Y-up, -Z-forward",
+          "camera_id": "cam_front_door",
+          "camera_version": "camera-v4",
+          "coordinate_space": "world",
+          "distance_unit": "meter",
+          "project_id": "prj_remember_home",
+          "scene_id": "scn_home_hall",
+          "scene_object_ids": [
+            "sceneops_light_porch",
+            "sceneops_door_home"
+          ],
+          "scene_version": "scene-v17"
+        },
+        "validation_plan": "Re-render the fixed camera and validate protected regions.",
+        "variant_id": "rvariant_fixture_001"
+      },
+      "approval_state": "approved",
+      "approved_at": "2026-09-04T01:02:03Z",
+      "approved_by": "usr_fixture_reviewer",
+      "base_scene_version": "scene-v17",
+      "brief_id": "rbrief_porch_visibility",
+      "changeset_id": "changeset_fixture_001",
+      "expected_result": "The key target is more visible from the fixed camera.",
+      "impact_scope": [
+        "sceneops_light_porch"
+      ],
+      "operations": [
+        {
+          "parameter_name": null,
+          "previous_value": 600.0,
+          "property": "light.intensity",
+          "proposed_value": 850.0,
+          "target": "blender",
+          "target_object_id": "sceneops_light_porch"
+        }
+      ],
+      "proposal_id": "rwriteback_fixture_001",
+      "rationale": "Approved variant reveals the target with a bounded light edit.",
+      "risk": "low",
+      "rollback_plan": "Restore light intensity to 600.0.",
+      "scene": {
+        "axis_convention": "right-handed, Y-up, -Z-forward",
+        "camera_id": "cam_front_door",
+        "camera_version": "camera-v4",
+        "coordinate_space": "world",
+        "distance_unit": "meter",
+        "project_id": "prj_remember_home",
+        "scene_id": "scn_home_hall",
+        "scene_object_ids": [
+          "sceneops_light_porch",
+          "sceneops_door_home"
+        ],
+        "scene_version": "scene-v17"
+      },
+      "validation_plan": "Re-render the fixed camera and validate protected regions.",
+      "variant_id": "rvariant_fixture_001"
+    }
+  ]
+}

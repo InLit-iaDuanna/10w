@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sceneops-render-ops"
+version = "0.1.0"
+description = "SceneOps Forge deterministic render review and writeback module"
+requires-python = ">=3.9"
+dependencies = ["fastapi==0.128.8", "pydantic==2.13.2"]
+
+[project.optional-dependencies]
+test = ["PyYAML==6.0.3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

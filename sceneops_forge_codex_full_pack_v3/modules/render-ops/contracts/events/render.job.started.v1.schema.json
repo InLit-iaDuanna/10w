@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://render-ops/events/render.job.started@1",
+  "title": "render.job.started@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_id", "scene_id", "scene_version", "camera_id", "camera_version"],
+  "properties": {
+    "job_id": {"type": "string", "minLength": 1},
+    "scene_id": {"type": "string", "minLength": 1},
+    "scene_version": {"type": "string", "minLength": 1},
+    "camera_id": {"type": "string", "minLength": 1},
+    "camera_version": {"type": "string", "minLength": 1}
+  }
+}

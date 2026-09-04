@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://render-ops/events/render.variant.created@1",
+  "title": "render.variant.created@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["variant_id", "job_id", "output_artifact_id", "workflow_reference", "workflow_checksum_sha256", "model_reference", "seed"],
+  "properties": {
+    "variant_id": {"type": "string", "minLength": 1},
+    "job_id": {"type": "string", "minLength": 1},
+    "output_artifact_id": {"type": "string", "minLength": 1},
+    "workflow_reference": {"type": "string", "minLength": 1},
+    "workflow_checksum_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "model_reference": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0}
+  }
+}
