@@ -1,0 +1,338 @@
+{
+  "$defs": {
+    "EventActor": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "user",
+            "agent",
+            "system"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "EventActor",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "MetricComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "metric_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Metric Id",
+          "type": "string"
+        },
+        "baseline": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Baseline"
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Candidate"
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Delta"
+        },
+        "direction": {
+          "$ref": "#/$defs/MetricDirection"
+        },
+        "tolerance": {
+          "title": "Tolerance",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/MetricOutcome"
+        }
+      },
+      "required": [
+        "metric_id",
+        "baseline",
+        "candidate",
+        "delta",
+        "direction",
+        "tolerance",
+        "unit",
+        "outcome"
+      ],
+      "title": "MetricComparison",
+      "type": "object"
+    },
+    "MetricDirection": {
+      "enum": [
+        "maximize",
+        "minimize"
+      ],
+      "title": "MetricDirection",
+      "type": "string"
+    },
+    "MetricOutcome": {
+      "enum": [
+        "improved",
+        "regressed",
+        "unchanged",
+        "missing"
+      ],
+      "title": "MetricOutcome",
+      "type": "string"
+    },
+    "RegressionComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Comparison Id",
+          "type": "string"
+        },
+        "test_case_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Test Case Id",
+          "type": "string"
+        },
+        "baseline_run_id": {
+          "maxLength": 96,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Baseline Run Id",
+          "type": "string"
+        },
+        "candidate_run_id": {
+          "maxLength": 96,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Candidate Run Id",
+          "type": "string"
+        },
+        "baseline_build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Baseline Build Id",
+          "type": "string"
+        },
+        "candidate_build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Candidate Build Id",
+          "type": "string"
+        },
+        "exact_configuration": {
+          "const": true,
+          "default": true,
+          "title": "Exact Configuration",
+          "type": "boolean"
+        },
+        "status": {
+          "$ref": "#/$defs/RegressionStatus"
+        },
+        "metrics": {
+          "items": {
+            "$ref": "#/$defs/MetricComparison"
+          },
+          "title": "Metrics",
+          "type": "array"
+        },
+        "new_issue_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "New Issue Ids",
+          "type": "array"
+        },
+        "resolved_issue_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Resolved Issue Ids",
+          "type": "array"
+        },
+        "persistent_issue_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Persistent Issue Ids",
+          "type": "array"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "compared_at": {
+          "format": "date-time",
+          "title": "Compared At",
+          "type": "string"
+        },
+        "limitation_labels": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Limitation Labels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "comparison_id",
+        "test_case_id",
+        "baseline_run_id",
+        "candidate_run_id",
+        "baseline_build_id",
+        "candidate_build_id",
+        "status",
+        "metrics",
+        "new_issue_ids",
+        "resolved_issue_ids",
+        "persistent_issue_ids",
+        "execution_mode",
+        "compared_at",
+        "limitation_labels"
+      ],
+      "title": "RegressionComparison",
+      "type": "object"
+    },
+    "RegressionStatus": {
+      "enum": [
+        "improved",
+        "regressed",
+        "unchanged",
+        "mixed",
+        "incomparable"
+      ],
+      "title": "RegressionStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Event Version",
+      "type": "integer"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "project_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "correlation_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "causation_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Causation Id",
+      "type": "string"
+    },
+    "actor": {
+      "$ref": "#/$defs/EventActor"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "event_type": {
+      "const": "playtest.regression.compared",
+      "default": "playtest.regression.compared",
+      "title": "Event Type",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/RegressionComparison"
+    }
+  },
+  "required": [
+    "event_id",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "title": "PlaytestRegressionComparedEvent",
+  "type": "object"
+}

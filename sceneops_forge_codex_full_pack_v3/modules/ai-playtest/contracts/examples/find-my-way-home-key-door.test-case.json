@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "test_case_id": "test.find-home.key-door",
+  "version": 1,
+  "project_id": "project.find-home",
+  "name": "找到钥匙并打开家门",
+  "objective": "找到走廊钥匙，拾取后前往家门并成功打开。",
+  "scene_id": "scene.home-hallway",
+  "agent_mode": "goal_driven",
+  "seed": 1501,
+  "goals": [
+    {
+      "goal_id": "goal.key-door",
+      "description": "持有钥匙并打开家门",
+      "acceptance_criterion_ids": ["acceptance.key-visible", "acceptance.door-opens"]
+    }
+  ],
+  "controls": {
+    "max_steps": 5,
+    "max_duration_ms": 30000,
+    "action_timeout_ms": 1500,
+    "allowed_action_kinds": ["move", "look", "interact", "use_item", "confirm", "cancel", "registered"],
+    "registered_action_ids": ["action.request-hint"],
+    "allow_destructive": false,
+    "stall_steps": 3,
+    "repeated_failure_threshold": 2,
+    "pose_epsilon_m": 0.05,
+    "max_frame_time_ms": 30,
+    "max_memory_mb": 512
+  },
+  "regression_metrics": [
+    {"metric_id": "goal_completion", "direction": "maximize", "tolerance": 0, "unit": "ratio"},
+    {"metric_id": "failed_interactions", "direction": "minimize", "tolerance": 0, "unit": "count"},
+    {"metric_id": "max_frame_time_ms", "direction": "minimize", "tolerance": 1, "unit": "ms"}
+  ],
+  "limitation_labels": [
+    "AI 只进行目标预筛与回归，不判断乐趣、无障碍或真人偏好。"
+  ]
+}

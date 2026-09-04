@@ -1,0 +1,785 @@
+{
+  "$defs": {
+    "ActionKind": {
+      "enum": [
+        "move",
+        "look",
+        "interact",
+        "use_item",
+        "confirm",
+        "cancel",
+        "registered"
+      ],
+      "title": "ActionKind",
+      "type": "string"
+    },
+    "ActionOutcome": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "timed_out",
+        "cancelled"
+      ],
+      "title": "ActionOutcome",
+      "type": "string"
+    },
+    "ActionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "$ref": "#/$defs/ActionOutcome"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "feedback": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Feedback",
+          "type": "array"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "outcome",
+        "duration_ms"
+      ],
+      "title": "ActionResult",
+      "type": "object"
+    },
+    "AvailableAction": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActionKind"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "target_sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Sceneops Id"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "advances_goal_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Advances Goal Ids",
+          "type": "array"
+        },
+        "goal_relevance": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Goal Relevance",
+          "type": "number"
+        },
+        "destructive": {
+          "default": false,
+          "title": "Destructive",
+          "type": "boolean"
+        },
+        "registered_action_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registered Action Id"
+        },
+        "feedback_expected": {
+          "default": false,
+          "title": "Feedback Expected",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "action_id",
+        "kind",
+        "label"
+      ],
+      "title": "AvailableAction",
+      "type": "object"
+    },
+    "BackpinTargetType": {
+      "enum": [
+        "scene_object",
+        "asset",
+        "component",
+        "script",
+        "feature",
+        "acceptance_criterion"
+      ],
+      "title": "BackpinTargetType",
+      "type": "string"
+    },
+    "BuildReference": {
+      "additionalProperties": false,
+      "properties": {
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "scene_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "telemetry_contract_version": {
+          "const": 1,
+          "title": "Telemetry Contract Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "build_id",
+        "project_id",
+        "version",
+        "scene_id",
+        "telemetry_contract_version"
+      ],
+      "title": "BuildReference",
+      "type": "object"
+    },
+    "FailureKind": {
+      "enum": [
+        "timeout",
+        "stall",
+        "soft_lock",
+        "unreachable_goal",
+        "repeated_failed_interaction",
+        "navigation_error",
+        "collider_error",
+        "missing_feedback",
+        "quest_state_mismatch",
+        "runtime_error",
+        "performance_regression",
+        "telemetry_loss"
+      ],
+      "title": "FailureKind",
+      "type": "string"
+    },
+    "FixtureAdapterMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Adapter Id",
+          "type": "string"
+        },
+        "adapter_version": {
+          "minLength": 1,
+          "title": "Adapter Version",
+          "type": "string"
+        },
+        "max_steps": {
+          "default": 200,
+          "minimum": 1,
+          "title": "Max Steps",
+          "type": "integer"
+        },
+        "supports_destructive_containment": {
+          "default": false,
+          "title": "Supports Destructive Containment",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "adapter_id",
+        "adapter_version"
+      ],
+      "title": "FixtureAdapterMetadata",
+      "type": "object"
+    },
+    "GoalProgress": {
+      "additionalProperties": false,
+      "properties": {
+        "goal_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Goal Id",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/GoalState"
+        },
+        "value": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "goal_id",
+        "state",
+        "value"
+      ],
+      "title": "GoalProgress",
+      "type": "object"
+    },
+    "GoalState": {
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "blocked"
+      ],
+      "title": "GoalState",
+      "type": "string"
+    },
+    "MetricRule": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "enum": [
+            "goal_value",
+            "action_count",
+            "failed_action_count",
+            "max_observation"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "goal_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Goal Id"
+        },
+        "action_kind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ActionKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "error_code_prefix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code Prefix"
+        },
+        "observation_field": {
+          "anyOf": [
+            {
+              "enum": [
+                "frame_time_ms",
+                "memory_mb"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observation Field"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "MetricRule",
+      "type": "object"
+    },
+    "RuntimeErrorRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "error_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Error Id",
+          "type": "string"
+        },
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "source_sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Sceneops Id"
+        }
+      },
+      "required": [
+        "error_id",
+        "code",
+        "message"
+      ],
+      "title": "RuntimeErrorRecord",
+      "type": "object"
+    },
+    "RuntimeFixtureFrame": {
+      "additionalProperties": false,
+      "properties": {
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "position_m": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position M",
+          "type": "array"
+        },
+        "rotation_euler_deg": {
+          "default": [
+            0,
+            0,
+            0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Rotation Euler Deg",
+          "type": "array"
+        },
+        "frame_time_ms": {
+          "minimum": 0,
+          "title": "Frame Time Ms",
+          "type": "number"
+        },
+        "memory_mb": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Memory Mb"
+        },
+        "game_state": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Game State",
+          "type": "object"
+        },
+        "goals": {
+          "items": {
+            "$ref": "#/$defs/GoalProgress"
+          },
+          "title": "Goals",
+          "type": "array"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/AvailableAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "results": {
+          "additionalProperties": {
+            "$ref": "#/$defs/ActionResult"
+          },
+          "title": "Results",
+          "type": "object"
+        },
+        "next_frame": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Next Frame",
+          "type": "object"
+        },
+        "runtime_errors": {
+          "items": {
+            "$ref": "#/$defs/RuntimeErrorRecord"
+          },
+          "title": "Runtime Errors",
+          "type": "array"
+        }
+      },
+      "required": [
+        "observed_at",
+        "position_m",
+        "frame_time_ms",
+        "goals",
+        "actions",
+        "results",
+        "next_frame"
+      ],
+      "title": "RuntimeFixtureFrame",
+      "type": "object"
+    },
+    "SourceCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "source_record_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Source Record Id",
+          "type": "string"
+        },
+        "source_record_uri": {
+          "minLength": 1,
+          "title": "Source Record Uri",
+          "type": "string"
+        },
+        "target_type": {
+          "$ref": "#/$defs/BackpinTargetType"
+        },
+        "target_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sceneops Id"
+        },
+        "locator": {
+          "minLength": 1,
+          "title": "Locator",
+          "type": "string"
+        },
+        "owning_module": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Owning Module",
+          "type": "string"
+        },
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "component_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Component Id"
+        },
+        "related_sceneops_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Related Sceneops Ids",
+          "type": "array"
+        },
+        "failure_kinds": {
+          "items": {
+            "$ref": "#/$defs/FailureKind"
+          },
+          "title": "Failure Kinds",
+          "type": "array"
+        },
+        "evidence_artifact_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Artifact Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_record_id",
+        "source_record_uri",
+        "target_type",
+        "target_id",
+        "locator",
+        "owning_module",
+        "build_id"
+      ],
+      "title": "SourceCandidate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "checked_at": {
+      "format": "date-time",
+      "title": "Checked At",
+      "type": "string"
+    },
+    "adapter": {
+      "$ref": "#/$defs/FixtureAdapterMetadata"
+    },
+    "build": {
+      "$ref": "#/$defs/BuildReference"
+    },
+    "actor_sceneops_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Actor Sceneops Id",
+      "type": "string"
+    },
+    "available": {
+      "default": true,
+      "title": "Available",
+      "type": "boolean"
+    },
+    "health_detail": {
+      "default": "deterministic fixture ready",
+      "title": "Health Detail",
+      "type": "string"
+    },
+    "telemetry_recoverable": {
+      "default": true,
+      "title": "Telemetry Recoverable",
+      "type": "boolean"
+    },
+    "telemetry_loss_on_reads": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Telemetry Loss On Reads",
+      "type": "array"
+    },
+    "frames": {
+      "items": {
+        "$ref": "#/$defs/RuntimeFixtureFrame"
+      },
+      "minItems": 1,
+      "title": "Frames",
+      "type": "array"
+    },
+    "source_candidates": {
+      "items": {
+        "$ref": "#/$defs/SourceCandidate"
+      },
+      "title": "Source Candidates",
+      "type": "array"
+    },
+    "metric_rules": {
+      "minProperties": 1,
+      "patternProperties": {
+        "^[A-Za-z0-9][A-Za-z0-9._:-]*$": {
+          "$ref": "#/$defs/MetricRule"
+        }
+      },
+      "propertyNames": {
+        "maxLength": 160,
+        "minLength": 3
+      },
+      "title": "Metric Rules",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "checked_at",
+    "adapter",
+    "build",
+    "actor_sceneops_id",
+    "frames",
+    "metric_rules"
+  ],
+  "title": "DeterministicRuntimeFixture",
+  "type": "object"
+}

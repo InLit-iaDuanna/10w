@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "catalog_id": "source-catalog.sceneops-fixtures",
+  "records": {
+    "source-record.home-door.before": {
+      "source_record_id": "source-record.home-door.before",
+      "project_id": "project.find-home",
+      "build_id": "build.hero.before",
+      "source_version": "0.8.0-before-door-fix",
+      "target_type": "component",
+      "target_id": "component.home-door-interaction",
+      "sceneops_id": "sceneops.home-door",
+      "locator": "Assets/Scripts/HomeDoorInteraction.cs#HomeDoorInteraction",
+      "owning_module": "logic-studio",
+      "component_id": "component.home-door-interaction",
+      "related_sceneops_ids": []
+    },
+    "source-record.home-door.after": {
+      "source_record_id": "source-record.home-door.after",
+      "project_id": "project.find-home",
+      "build_id": "build.hero.after",
+      "source_version": "0.8.1-after-door-fix",
+      "target_type": "component",
+      "target_id": "component.home-door-interaction",
+      "sceneops_id": "sceneops.home-door",
+      "locator": "Assets/Scripts/HomeDoorInteraction.cs#HomeDoorInteraction",
+      "owning_module": "logic-studio",
+      "component_id": "component.home-door-interaction",
+      "related_sceneops_ids": []
+    },
+    "source-record.warehouse-obstacle.fixture": {
+      "source_record_id": "source-record.warehouse-obstacle.fixture",
+      "project_id": "project.warehouse-escape",
+      "build_id": "build.warehouse.fixture",
+      "source_version": "0.1.0-fixture",
+      "target_type": "scene_object",
+      "target_id": "scene-object.warehouse-obstacle",
+      "sceneops_id": "sceneops.warehouse-obstacle",
+      "locator": "Warehouse_Main/Obstacles/PalletStack_03",
+      "owning_module": "world-composer",
+      "component_id": null,
+      "related_sceneops_ids": [
+        "sceneops.warehouse-exit"
+      ]
+    }
+  }
+}
