@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/contracts/conversation-home/assistant-action.schema.json",
+  "title": "SceneOps Assistant Action",
+  "oneOf": [
+    { "$ref": "#/$defs/openEditor" },
+    { "$ref": "#/$defs/createProject" },
+    { "$ref": "#/$defs/createFeature" },
+    { "$ref": "#/$defs/runWorkflow" },
+    { "$ref": "#/$defs/openArtifact" },
+    { "$ref": "#/$defs/openIssue" },
+    { "$ref": "#/$defs/requestApproval" }
+  ],
+  "$defs": {
+    "actionId": {
+      "type": "string",
+      "pattern": "^act_[A-Za-z0-9_-]+$"
+    },
+    "stableId": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectId": { "$ref": "#/$defs/stableId" },
+        "sceneId": { "$ref": "#/$defs/stableId" },
+        "sceneObjectIds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stableId" },
+          "uniqueItems": true
+        },
+        "featureId": { "$ref": "#/$defs/stableId" },
+        "buildId": { "$ref": "#/$defs/stableId" },
+        "issueId": { "$ref": "#/$defs/stableId" }
+      }
+    },
+    "placement": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "mode": { "enum": ["replace", "tab"] },
+            "relativeToInstanceId": { "$ref": "#/$defs/stableId" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "direction"],
+          "properties": {
+            "mode": { "const": "split" },
+            "direction": { "enum": ["left", "right", "above", "below"] },
+            "relativeToInstanceId": { "$ref": "#/$defs/stableId" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": {
+            "mode": { "enum": ["floating", "popout"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "edge"],
+          "properties": {
+            "mode": { "const": "drawer" },
+            "edge": { "enum": ["left", "right", "top", "bottom"] }
+          }
+        }
+      ]
+    },
+    "openEditor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "requiresConfirmation", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "workbench.open_editor" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "requiresConfirmation": { "const": true },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["editorId", "placement"],
+          "properties": {
+            "editorId": { "$ref": "#/$defs/stableId" },
+            "placement": { "$ref": "#/$defs/placement" },
+            "context": { "$ref": "#/$defs/context" }
+          }
+        }
+      }
+    },
+    "createProject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "project.create" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["changeSetId", "name"],
+          "properties": {
+            "changeSetId": { "$ref": "#/$defs/stableId" },
+            "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+            "brief": { "type": "string", "maxLength": 12000 },
+            "sourceAttachmentId": { "$ref": "#/$defs/stableId" }
+          }
+        }
+      }
+    },
+    "createFeature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "feature.create" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["changeSetId", "projectId", "title", "brief"],
+          "properties": {
+            "changeSetId": { "$ref": "#/$defs/stableId" },
+            "projectId": { "$ref": "#/$defs/stableId" },
+            "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+            "brief": { "type": "string", "minLength": 1, "maxLength": 12000 }
+          }
+        }
+      }
+    },
+    "runWorkflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "workflow.run" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["changeSetId", "projectId", "workflowId", "parameters"],
+          "properties": {
+            "changeSetId": { "$ref": "#/$defs/stableId" },
+            "projectId": { "$ref": "#/$defs/stableId" },
+            "workflowId": { "$ref": "#/$defs/stableId" },
+            "parameters": { "type": "object" }
+          }
+        }
+      }
+    },
+    "openArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "artifact.open" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["artifactId"],
+          "properties": {
+            "artifactId": { "$ref": "#/$defs/stableId" },
+            "preferredEditorId": { "$ref": "#/$defs/stableId" }
+          }
+        }
+      }
+    },
+    "openIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "issue.open_backpin" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["issueId"],
+          "properties": {
+            "issueId": { "$ref": "#/$defs/stableId" }
+          }
+        }
+      }
+    },
+    "requestApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionId", "type", "title", "input"],
+      "properties": {
+        "actionId": { "$ref": "#/$defs/actionId" },
+        "type": { "const": "changeset.approval.request" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["changeSetId"],
+          "properties": {
+            "changeSetId": { "$ref": "#/$defs/stableId" },
+            "reason": { "type": "string", "maxLength": 2000 }
+          }
+        }
+      }
+    }
+  }
+}

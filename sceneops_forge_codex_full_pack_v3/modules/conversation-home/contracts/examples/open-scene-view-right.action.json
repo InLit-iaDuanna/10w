@@ -1,0 +1,19 @@
+{
+  "actionId": "act_open_scene_right_001",
+  "type": "workbench.open_editor",
+  "title": "在右侧打开 3D 视图",
+  "requiresConfirmation": true,
+  "input": {
+    "editorId": "scene.viewport.3d",
+    "placement": {
+      "mode": "split",
+      "direction": "right",
+      "relativeToInstanceId": "editor_conversation_home"
+    },
+    "context": {
+      "projectId": "prj_remember_home",
+      "sceneId": "scn_home_hallway",
+      "sceneObjectIds": ["obj_door_01"]
+    }
+  }
+}

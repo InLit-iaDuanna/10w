@@ -1,0 +1,14 @@
+{
+  "name": "@sceneops/conversation-home",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "smoke": "node --no-warnings --experimental-strip-types src/tests/smoke.ts",
+    "test": "node --no-warnings --experimental-strip-types --test src/tests/*.test.ts"
+  },
+  "peerDependencies": {
+    "@sceneops/core-contracts": "workspace:*",
+    "react": ">=18 <20"
+  }
+}
