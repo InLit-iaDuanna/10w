@@ -1,0 +1,29 @@
+{
+  "title": "美术确认的钥匙正视图",
+  "view": "front",
+  "artifact_uri": "artifact://prj_remember_home/concepts/key-front-v1.png",
+  "source": {
+    "kind": "imported",
+    "source_uri": "project://references/key-front-v1.png",
+    "creator": "artist_lee",
+    "license_name": "Project-owned artwork",
+    "permission_status": "cleared",
+    "permission_notes": "Created for the Remember Home project."
+  },
+  "provenance": {
+    "artifact_id": "art_imported_key_front",
+    "artifact_type": "concept-image",
+    "source_project_id": "prj_remember_home",
+    "source_version": "git:references/key-front-v1",
+    "related_sceneops_ids": [],
+    "producing_module": "concept-lab",
+    "tool": "reference-import",
+    "adapter_version": "1.0.0",
+    "workflow_version": "reference-import@1",
+    "creator_or_agent": "artist_lee",
+    "execution_mode": "mock",
+    "created_at": "2026-09-04T00:00:00Z",
+    "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "approval_state": "unreviewed"
+  }
+}

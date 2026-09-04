@@ -1,0 +1,252 @@
+{
+  "$defs": {
+    "DimensionsMeters": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "exclusiveMinimum": 0,
+          "title": "Depth",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "unit": {
+          "const": "m",
+          "default": "m",
+          "title": "Unit",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "depth"
+      ],
+      "title": "DimensionsMeters",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "PlatformBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "max_material_slots": {
+          "exclusiveMinimum": 0,
+          "title": "Max Material Slots",
+          "type": "integer"
+        },
+        "max_texture_size_px": {
+          "exclusiveMinimum": 0,
+          "title": "Max Texture Size Px",
+          "type": "integer"
+        },
+        "max_triangles": {
+          "exclusiveMinimum": 0,
+          "title": "Max Triangles",
+          "type": "integer"
+        },
+        "target_platform": {
+          "minLength": 1,
+          "title": "Target Platform",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_platform",
+        "max_triangles",
+        "max_texture_size_px",
+        "max_material_slots"
+      ],
+      "title": "PlatformBudget",
+      "type": "object"
+    },
+    "RequiredView": {
+      "enum": [
+        "front",
+        "back",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "three_quarter",
+        "turnaround"
+      ],
+      "title": "RequiredView",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "approval_decision_id": {
+      "title": "Approval Decision Id",
+      "type": "string"
+    },
+    "approved_variant_id": {
+      "title": "Approved Variant Id",
+      "type": "string"
+    },
+    "asset_spec_draft_id": {
+      "title": "Asset Spec Draft Id",
+      "type": "string"
+    },
+    "concept_reference_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Concept Reference Ids",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "title": "Created By",
+      "type": "string"
+    },
+    "dimensions": {
+      "$ref": "#/$defs/DimensionsMeters"
+    },
+    "execution_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "feature_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Feature Id"
+    },
+    "forbidden_elements": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Forbidden Elements",
+      "type": "array"
+    },
+    "gameplay_function": {
+      "title": "Gameplay Function",
+      "type": "string"
+    },
+    "materials": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Materials",
+      "type": "array"
+    },
+    "platform_budget": {
+      "$ref": "#/$defs/PlatformBudget"
+    },
+    "producing_module": {
+      "const": "concept-lab",
+      "default": "concept-lab",
+      "title": "Producing Module",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "proportions": {
+      "title": "Proportions",
+      "type": "string"
+    },
+    "required_views": {
+      "items": {
+        "$ref": "#/$defs/RequiredView"
+      },
+      "title": "Required Views",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_concept_id": {
+      "title": "Source Concept Id",
+      "type": "string"
+    },
+    "source_concept_version": {
+      "title": "Source Concept Version",
+      "type": "integer"
+    },
+    "status": {
+      "const": "draft",
+      "default": "draft",
+      "title": "Status",
+      "type": "string"
+    },
+    "style_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Style Constraints",
+      "type": "array"
+    },
+    "subject": {
+      "title": "Subject",
+      "type": "string"
+    },
+    "task_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Task Id"
+    }
+  },
+  "required": [
+    "asset_spec_draft_id",
+    "source_concept_id",
+    "source_concept_version",
+    "approved_variant_id",
+    "approval_decision_id",
+    "project_id",
+    "subject",
+    "gameplay_function",
+    "proportions",
+    "dimensions",
+    "materials",
+    "required_views",
+    "platform_budget",
+    "style_constraints",
+    "forbidden_elements",
+    "concept_reference_ids",
+    "execution_mode",
+    "created_by",
+    "created_at"
+  ],
+  "title": "AssetSpecDraft",
+  "type": "object"
+}

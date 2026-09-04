@@ -1,0 +1,29 @@
+[
+  {
+    "criterion": "warm hand-forged brass",
+    "criterion_kind": "style_constraint",
+    "observed": "Warm brass hue and irregular forged edge are visible in the front reference.",
+    "verdict": "match",
+    "evidence_reference_id": "ref_imported_key_front",
+    "confidence": 0.91,
+    "rationale": "The evidence supports the declared finish; this remains a reviewer assessment."
+  },
+  {
+    "criterion": "readable silhouette at gameplay distance",
+    "criterion_kind": "style_constraint",
+    "observed": "Broad bow and exaggerated teeth remain distinct in the downscaled review image.",
+    "verdict": "match",
+    "evidence_reference_id": "ref_imported_key_front",
+    "confidence": 0.86,
+    "rationale": "Silhouette evidence is present, but final readability belongs to in-engine validation."
+  },
+  {
+    "criterion": "modern electronic key fob",
+    "criterion_kind": "forbidden_element",
+    "observed": "No electronic housing, button, or plastic fob is visible.",
+    "verdict": "match",
+    "evidence_reference_id": "ref_imported_key_front",
+    "confidence": 0.95,
+    "rationale": "The prohibited element is absent from the supplied view."
+  }
+]

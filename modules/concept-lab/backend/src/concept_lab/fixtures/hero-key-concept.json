@@ -1,0 +1,28 @@
+{
+  "project_id": "prj_remember_home",
+  "project_bible_version_id": "pbv_remember_home_003",
+  "feature_id": "fea_key_door_branch",
+  "task_id": "tsk_key_concept",
+  "subject": "旧宅正门黄铜钥匙",
+  "gameplay_function": "可拾取的任务物品，用于解锁回家路线的正门",
+  "proportions": "短柄、宽钥匙环、齿部轮廓夸张，第三人称镜头下易识别",
+  "dimensions": {
+    "width": 0.048,
+    "height": 0.012,
+    "depth": 0.132,
+    "unit": "m"
+  },
+  "materials": ["aged brass", "darkened steel inset"],
+  "required_views": ["front", "three_quarter"],
+  "platform_budget": {
+    "target_platform": "desktop-mid",
+    "max_triangles": 2500,
+    "max_texture_size_px": 1024,
+    "max_material_slots": 2
+  },
+  "style_constraints": [
+    "warm hand-forged brass",
+    "readable silhouette at gameplay distance"
+  ],
+  "forbidden_elements": ["modern electronic key fob"]
+}

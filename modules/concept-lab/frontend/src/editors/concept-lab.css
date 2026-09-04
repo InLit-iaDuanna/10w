@@ -1,0 +1,116 @@
+.concept-lab {
+  min-height: 100%;
+  padding: 16px;
+  color: var(--text-primary);
+  background: var(--surface-1);
+  font: 14px/1.5 Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+.concept-lab__header,
+.concept-lab__toolbar,
+.concept-lab__assessment {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 10px;
+}
+
+.concept-lab__header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.concept-lab__toolbar {
+  justify-content: flex-start;
+  margin: 12px 0;
+}
+
+.concept-lab button {
+  min-height: 28px;
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  padding: 4px 10px;
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+
+.concept-lab button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.concept-lab button:disabled {
+  color: var(--text-muted);
+}
+
+.concept-lab__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  list-style: none;
+  background: var(--border-subtle);
+}
+
+.concept-lab__item {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  background: var(--surface-2);
+}
+
+.concept-lab__preview {
+  display: grid;
+  min-height: 100px;
+  place-items: center;
+  color: var(--text-secondary);
+  background: var(--surface-3);
+  object-fit: contain;
+  width: 100%;
+}
+
+.concept-lab__item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.concept-lab__mode,
+.concept-lab__item span,
+.concept-lab__header span,
+.concept-lab__assessment span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.concept-lab__notice,
+.concept-lab__subjective {
+  border-left: 2px solid var(--warning);
+  padding-left: 10px;
+  color: var(--text-secondary);
+}
+
+.concept-lab__empty {
+  color: var(--text-muted);
+}
+
+.concept-lab--state {
+  display: grid;
+  place-content: center;
+  gap: 10px;
+}
+
+.state-failed,
+.state-offline {
+  color: var(--critical);
+}
+
+.mode-live { color: var(--success); }
+.mode-cached { color: var(--info); }
+.mode-mock { color: var(--ai-violet); }
+.mode-planned,
+.mode-blocked { color: var(--warning); }

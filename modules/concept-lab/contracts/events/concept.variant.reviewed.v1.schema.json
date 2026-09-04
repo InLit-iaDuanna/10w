@@ -1,0 +1,117 @@
+{
+  "$defs": {
+    "ConceptVariantReviewedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/ReviewAction"
+        },
+        "concept_id": {
+          "title": "Concept Id",
+          "type": "string"
+        },
+        "concept_version": {
+          "title": "Concept Version",
+          "type": "integer"
+        },
+        "decision_id": {
+          "title": "Decision Id",
+          "type": "string"
+        },
+        "variant_id": {
+          "title": "Variant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "concept_id",
+        "concept_version",
+        "variant_id",
+        "decision_id",
+        "action"
+      ],
+      "title": "ConceptVariantReviewedPayload",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "ReviewAction": {
+      "enum": [
+        "approve",
+        "reject"
+      ],
+      "title": "ReviewAction",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Actor",
+      "type": "object"
+    },
+    "causation_id": {
+      "title": "Causation Id",
+      "type": "string"
+    },
+    "correlation_id": {
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_type": {
+      "const": "concept.variant.reviewed",
+      "title": "Event Type",
+      "type": "string"
+    },
+    "event_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Event Version",
+      "type": "integer"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/ConceptVariantReviewedPayload"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "title": "ConceptVariantReviewedEvent",
+  "type": "object"
+}

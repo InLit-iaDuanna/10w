@@ -1,0 +1,103 @@
+{
+  "fixture_truth": "cached contract replay fixture; not evidence of a current live run",
+  "adapter_id": "concept-fixture-cached",
+  "capabilities": {
+    "adapter_id": "concept-fixture-cached",
+    "supported_views": ["front", "three_quarter", "turnaround"],
+    "supports_turnaround": true,
+    "models": ["recorded-concept-model-v2"],
+    "timeout_seconds": 1,
+    "retry_limit": 0,
+    "supports_cancellation": false
+  },
+  "outputs": {
+    "hero-key-cached-v1": {
+      "execution_mode": "cached",
+      "generation": {
+        "provider": "recorded-provider",
+        "model": "recorded-concept-model-v2",
+        "workflow_version": "concept-turnaround@2",
+        "prompt": "Aged brass home key with a warm handmade finish and clear gameplay silhouette",
+        "negative_prompt": "electronic key, modern plastic, watermark",
+        "seed": 9124,
+        "parameters": {"replay_fixture": true, "recording_id": "rec_concept_key_001"}
+      },
+      "artifacts": [
+        {
+          "view": "front",
+          "title": "钥匙正视图（Cached replay）",
+          "artifact_uri": "fixture://concept-lab/hero-key/cached/front.png",
+          "source": {
+            "kind": "generated",
+            "source_uri": "recording://rec_concept_key_001/front",
+            "creator": "recorded-provider",
+            "license_name": "Recorded provider output; verify project entitlement",
+            "permission_status": "warning",
+            "permission_notes": "Contract replay only; production entitlement is not established by this fixture."
+          },
+          "provenance": {
+            "artifact_id": "art_cached_key_front",
+            "source_project_id": "prj_remember_home",
+            "source_version": "recording-rec_concept_key_001",
+            "related_sceneops_ids": [],
+            "producing_module": "concept-lab",
+            "tool": "recorded-provider",
+            "adapter_version": "recording-v1",
+            "workflow_version": "concept-turnaround@2",
+            "creator_or_agent": "recorded-agent",
+            "execution_mode": "cached",
+            "created_at": "2026-08-30T08:30:00Z",
+            "checksum_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "approval_state": "unreviewed",
+            "ai": {
+              "provider": "recorded-provider",
+              "model": "recorded-concept-model-v2",
+              "workflow_version": "concept-turnaround@2",
+              "prompt": "Aged brass home key with a warm handmade finish and clear gameplay silhouette",
+              "negative_prompt": "electronic key, modern plastic, watermark",
+              "seed": 9124,
+              "parameters": {"replay_fixture": true, "recording_id": "rec_concept_key_001"}
+            }
+          }
+        },
+        {
+          "view": "three_quarter",
+          "title": "钥匙四分之三视图（Cached replay）",
+          "artifact_uri": "fixture://concept-lab/hero-key/cached/three-quarter.png",
+          "source": {
+            "kind": "generated",
+            "source_uri": "recording://rec_concept_key_001/three-quarter",
+            "creator": "recorded-provider",
+            "license_name": "Recorded provider output; verify project entitlement",
+            "permission_status": "warning",
+            "permission_notes": "Contract replay only; production entitlement is not established by this fixture."
+          },
+          "provenance": {
+            "artifact_id": "art_cached_key_three_quarter",
+            "source_project_id": "prj_remember_home",
+            "source_version": "recording-rec_concept_key_001",
+            "related_sceneops_ids": [],
+            "producing_module": "concept-lab",
+            "tool": "recorded-provider",
+            "adapter_version": "recording-v1",
+            "workflow_version": "concept-turnaround@2",
+            "creator_or_agent": "recorded-agent",
+            "execution_mode": "cached",
+            "created_at": "2026-08-30T08:30:00Z",
+            "checksum_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "approval_state": "unreviewed",
+            "ai": {
+              "provider": "recorded-provider",
+              "model": "recorded-concept-model-v2",
+              "workflow_version": "concept-turnaround@2",
+              "prompt": "Aged brass home key with a warm handmade finish and clear gameplay silhouette",
+              "negative_prompt": "electronic key, modern plastic, watermark",
+              "seed": 9124,
+              "parameters": {"replay_fixture": true, "recording_id": "rec_concept_key_001"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}
