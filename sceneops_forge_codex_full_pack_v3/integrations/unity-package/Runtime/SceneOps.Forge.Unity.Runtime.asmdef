@@ -1,0 +1,14 @@
+{
+  "name": "SceneOps.Forge.Unity.Runtime",
+  "rootNamespace": "SceneOps.Forge.Unity.Runtime",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

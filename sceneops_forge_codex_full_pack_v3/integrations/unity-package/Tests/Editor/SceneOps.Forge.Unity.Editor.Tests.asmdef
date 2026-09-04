@@ -1,0 +1,24 @@
+{
+  "name": "SceneOps.Forge.Unity.Editor.Tests",
+  "rootNamespace": "SceneOps.Forge.Unity.Editor.Tests",
+  "references": [
+    "SceneOps.Forge.Unity.Runtime",
+    "SceneOps.Forge.Unity.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

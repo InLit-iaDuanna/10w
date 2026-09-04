@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "unityVersion": "2022.3.62f3c1",
+  "commands": {
+    "unity.health": {
+      "status": "succeeded",
+      "data": {
+        "connected": true,
+        "editorVersion": "2022.3.62f3c1",
+        "packageVersion": "0.1.0",
+        "executionMode": "mock"
+      },
+      "logs": [{"level": "info", "code": "UNITY_MOCK_HEALTH", "message": "Deterministic Unity health fixture loaded.", "occurredAt": "2026-09-04T00:00:00Z", "details": {}}]
+    },
+    "unity.project.scan": {
+      "status": "succeeded",
+      "data": {"sceneCount": 2, "prefabCount": 3, "identityCount": 5, "missingMaterials": 0, "missingScripts": 0, "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.asset.import": {
+      "status": "succeeded",
+      "data": {"assetGuid": "11111111111111111111111111111111", "assetPath": "Assets/SceneOps/Imported/HomeKey.fbx", "sourceAssetId": "ast_home_key", "sourceAssetVersionId": "astv_home_key_001", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.identity.map": {
+      "status": "succeeded",
+      "data": {"sceneopsId": "sobj_home_key", "prefabId": "prefab_home_key", "sceneInstanceId": "sinst_home_key_a", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.prefab.upsert": {
+      "status": "succeeded",
+      "data": {"prefabPath": "Assets/SceneOps/Prefabs/HomeKey.prefab", "prefabId": "prefab_home_key", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.game_object.inspect": {
+      "status": "succeeded",
+      "data": {"sceneopsId": "sobj_home_key", "sceneInstanceId": "sinst_home_key_a", "unityGlobalObjectId": "GlobalObjectId_V1-2-fixture-1001-0", "componentTypes": ["Transform", "BoxCollider", "SceneOpsIdentity"], "missingReferences": [], "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.component_property.set": {
+      "status": "succeeded",
+      "data": {"componentType": "BoxCollider", "propertyPath": "m_IsTrigger", "previousValue": false, "proposedValue": true, "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.collider.upsert": {
+      "status": "succeeded",
+      "data": {"colliderType": "BoxCollider", "sceneopsId": "sobj_home_key", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.navmesh.run": {
+      "status": "succeeded",
+      "data": {"operation": "validate", "triangulationVertices": 24, "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.play.enter": {
+      "status": "succeeded",
+      "data": {"playState": "entered", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.play.exit": {
+      "status": "succeeded",
+      "data": {"playState": "exited", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.capture": {
+      "status": "succeeded",
+      "data": {"artifactPath": "Artifacts/Captures/home-key.png", "width": 1280, "height": 720, "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.console.read": {
+      "status": "succeeded",
+      "data": {"entries": [], "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.tests.run": {
+      "status": "succeeded",
+      "data": {"total": 8, "passed": 8, "failed": 0, "skipped": 0, "resultsPath": "Artifacts/TestResults.xml", "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.profiler.snapshot": {
+      "status": "succeeded",
+      "data": {"totalAllocatedBytes": 104857600, "monoUsedBytes": 25165824, "sampleFrames": 1, "executionMode": "mock"},
+      "logs": []
+    },
+    "unity.build.run": {
+      "status": "succeeded",
+      "data": {"buildId": "bld_remember_home_a", "profile": "Remember Home A", "outputPath": "Builds/RememberHomeA.app", "result": "Succeeded", "executionMode": "mock"},
+      "logs": [{"level": "info", "code": "UNITY_MOCK_BUILD", "message": "Deterministic build fixture loaded; no Unity process ran.", "occurredAt": "2026-09-04T00:00:00Z", "details": {}}]
+    }
+  }
+}

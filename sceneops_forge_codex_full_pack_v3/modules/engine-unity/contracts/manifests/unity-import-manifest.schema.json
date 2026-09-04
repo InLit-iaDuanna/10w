@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/schemas/unity-import-manifest-1.json",
+  "title": "SceneOps Unity Import Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "source_asset_id", "source_asset_version_id", "source_file", "objects"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "project_id": {"type": "string", "pattern": "^prj_"},
+    "source_asset_id": {"type": "string", "pattern": "^ast_"},
+    "source_asset_version_id": {"type": "string", "pattern": "^astv_"},
+    "source_file": {
+      "type": "string",
+      "pattern": "\\.(3ds|dae|dxf|fbx|obj)$"
+    },
+    "coordinate_space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["units", "handedness", "up_axis", "forward_axis"],
+      "properties": {
+        "units": {"const": "meters"},
+        "handedness": {"enum": ["left", "right"]},
+        "up_axis": {"enum": ["X", "Y", "Z"]},
+        "forward_axis": {"enum": ["+X", "-X", "+Y", "-Y", "+Z", "-Z"]}
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_object_id", "sceneops_id", "display_name"],
+        "properties": {
+          "source_object_id": {"type": "string", "minLength": 1},
+          "sceneops_id": {"type": "string", "pattern": "^sobj_"},
+          "display_name": {"type": "string"}
+        }
+      }
+    }
+  }
+}
