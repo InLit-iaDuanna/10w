@@ -44,3 +44,8 @@ __all__ = [
     "VersionBinding",
     "create_router",
 ]
+
+from .workbench_service import UnityBuildWorkbenchService
+from .workbench_router import create_workbench_router
+
+__all__ += ['UnityBuildWorkbenchService', 'create_workbench_router']

@@ -7,3 +7,5 @@ export const moduleContribution = {
   editors: editorDefinitions,
   commands: commandDefinitions,
 } as const;
+
+export { UnityBuildWorkbench } from './workbench/UnityBuildWorkbench';

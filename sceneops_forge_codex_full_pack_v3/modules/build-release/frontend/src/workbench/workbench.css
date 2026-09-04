@@ -1,0 +1,300 @@
+.ub {
+  font-family: Inter, "PingFang SC", system-ui, sans-serif;
+  color: #eee9df;
+  background: #0d1014;
+  color-scheme: dark;
+  font-synthesis: none;
+}
+.ub,
+.ub * {
+  box-sizing: border-box;
+}
+.ub {
+  max-width: 1440px;
+  margin: auto;
+  padding: 28px 38px;
+}
+.ub header,
+.ub .toolbar,
+.ub .section-title,
+.ub .facts {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.ub header {
+  margin-bottom: 26px;
+}
+.ub small {
+  color: #8e9aaa;
+  letter-spacing: 2px;
+  font-size: 11px;
+}
+.ub h1 {
+  font-size: 27px;
+  margin: 8px 0;
+}
+.ub h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.ub h3 {
+  font-size: 14px;
+}
+.ub p {
+  line-height: 1.65;
+  font-size: 14px;
+}
+.ub button,
+.ub input,
+.ub select,
+.ub textarea {
+  font: inherit;
+  border: 1px solid #35404a;
+  background: #1b222b;
+  color: #eee9df;
+  border-radius: 4px;
+  padding: 9px 12px;
+}
+.ub button {
+  cursor: pointer;
+}
+.ub button:hover {
+  background: #303b46;
+}
+.ub button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ub :focus-visible {
+  outline: 2px solid #76d9d6;
+  outline-offset: 3px;
+}
+.ub .primary:hover,
+.ub .primary {
+  background: #e6a35c;
+  color: #15191e;
+  border-color: #e6a35c;
+}
+.ub .notice {
+  padding: 12px 16px;
+  border: 1px solid #504335;
+  background: #25201b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.ub .badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid #665940;
+  color: #e2ba70;
+  border-radius: 3px;
+  font:
+    11px ui-monospace,
+    monospace;
+  vertical-align: middle;
+}
+.ub .blocked {
+  color: #ec9691;
+  border-color: #74423c;
+}
+.ub .planned {
+  color: #b69cea;
+  border-color: #594b70;
+}
+.ub .toolbar {
+  margin: 20px 0;
+  color: #a2adba;
+  font-size: 12px;
+}
+.ub .toolbar select {
+  margin-left: 12px;
+}
+.ub nav {
+  display: flex;
+  border-bottom: 1px solid #39434b;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+.ub nav button {
+  border: 0;
+  border-radius: 0;
+  padding: 13px 18px;
+  background: transparent;
+  color: #aab3bf;
+}
+.ub nav button[aria-current] {
+  color: #edaf65;
+  border-bottom: 2px solid #edaf65;
+}
+.ub section {
+  border: 1px solid #2a343f;
+  background: #141a21;
+  padding: 22px;
+  margin-bottom: 20px;
+  min-width: 0;
+}
+.ub table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ub td,
+.ub th {
+  text-align: left;
+  border-bottom: 1px solid #2a343f;
+  padding: 12px;
+}
+.ub th {
+  color: #929eac;
+  font-weight: 500;
+  font-size: 12px;
+}
+.ub .columns {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 20px;
+}
+.ub details {
+  border-top: 1px solid #29333e;
+  padding: 12px 0;
+  overflow: hidden;
+}
+.ub summary {
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.ub pre {
+  font:
+    12px/1.7 ui-monospace,
+    monospace;
+  overflow: auto;
+  max-height: 440px;
+  color: #b6c6d4;
+  background: #10151b;
+  padding: 14px;
+}
+.ub code {
+  font:
+    12px ui-monospace,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.ub .muted,
+.ub footer {
+  color: #94a0ae;
+  font-size: 12px;
+}
+.ub .run {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 12px;
+  margin: 10px 0;
+  text-align: left;
+}
+.ub .run.selected {
+  border-color: #d79b5c;
+  background: #28241f;
+}
+.ub .run strong {
+  font-size: 13px;
+}
+.ub .run span {
+  font-size: 12px;
+}
+.ub progress {
+  width: 100%;
+  height: 5px;
+  margin-top: 20px;
+  accent-color: #7f9a94;
+}
+.ub .steps {
+  font-size: 13px;
+  line-height: 2.4;
+  color: #b7c0cb;
+}
+.ub .gates {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 22px;
+}
+.ub .facts {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  color: #9ebcb9;
+  font-size: 13px;
+}
+.ub label {
+  display: block;
+  font-size: 13px;
+  color: #aab6c4;
+}
+.ub label input,
+.ub label textarea {
+  display: block;
+  width: 100%;
+  margin: 8px 0 16px;
+}
+.ub .form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+.ub .form-row select {
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+}
+.ub .code-editor {
+  font:
+    12px/1.65 ui-monospace,
+    monospace;
+  resize: vertical;
+}
+.ub .actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ub .error {
+  color: #fb9b8d;
+  background: #341e20;
+  padding: 12px;
+}
+.ub .success {
+  color: #91d7b5;
+}
+.ub footer {
+  padding: 12px 0 26px;
+  line-height: 1.7;
+}
+@media (max-width: 800px) {
+  .ub {
+    padding: 18px;
+  }
+  .ub header,
+  .ub .toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .ub .columns,
+  .ub .form-row,
+  .ub .gates {
+    grid-template-columns: 1fr;
+  }
+  .ub nav {
+    overflow: auto;
+  }
+  .ub nav button {
+    white-space: nowrap;
+  }
+  .ub th,
+  .ub td {
+    padding: 8px;
+  }
+}

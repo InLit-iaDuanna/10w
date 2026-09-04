@@ -121,3 +121,10 @@ Mock 构建清单位于 `contracts/examples/unity-build-manifest.mock.json`，�
 - 当前宿主 Unity 可执行文件存在，但无有效 Editor entitlement；真实 Edit Mode/Play Mode 测试和 playable build 为 blocked。
 - CLI batch transport 无法进入交互式 Play Mode 或完成屏幕捕获；Unity Package 内的固定处理器已实现，连接式 Editor transport 需后续集成中心提供。
 - 未运行的 Unity 测试或构建不会被标记为 live；C# reference-assembly 编译通过不等同于 Editor 测试通过。
+
+## 2026-09-05 独立 Web 组合更新
+
+`apps/labs/unity-build` 已提供中文 Unity 能力、连接阻塞原因、稳定对象 ID、静态命令记录与 ChangeSet 编辑/预览入口。
+公共后端新增 `UnityWorkbenchService`、`UnityWorkbenchSnapshot` 和 `UnityProposalPreview`，供 build-release 组合。
+此服务只配置 `unity_editor=None`，通过原 `UnityEngineService.preview` 做本地 dry-run 校验；不执行 fixture 命令，也不启动 Unity。
+完整启动、接口和验证范围见 [工作台说明](../../apps/labs/unity-build/README.md)。Unity Package 与旧安全策略保持原样；所有外部操作本轮 **not run / pending approval**。

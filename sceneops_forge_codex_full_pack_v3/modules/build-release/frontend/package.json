@@ -8,7 +8,9 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": "^19.2.8",
+    "@tanstack/react-query": "^5.90.21",
+    "openapi-fetch": "^0.17.0"
   },
   "devDependencies": {
     "@types/react": ">=18",

@@ -32,3 +32,7 @@ __all__ = [
     "create_router",
     "expected_change_targets",
 ]
+
+from .workbench import UnityWorkbenchService, UnityWorkbenchSnapshot, UnityProposalPreview
+
+__all__ += ['UnityWorkbenchService', 'UnityWorkbenchSnapshot', 'UnityProposalPreview']

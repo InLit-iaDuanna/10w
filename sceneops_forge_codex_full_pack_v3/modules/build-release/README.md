@@ -178,3 +178,12 @@ python3 modules/build-release/backend/scripts/export_contracts.py
 
 集成顺序见 [`docs/integration.md`](docs/integration.md)，操作语义见
 [`docs/release-operations.md`](docs/release-operations.md)。
+
+## 2026-09-05 独立 Web 组合更新
+
+已新增可运行入口 `apps/labs/unity-build`，React 19 / TanStack Query / 生成的 OpenAPI client 已接通。
+公开后端新增 `UnityBuildWorkbenchService`、`create_workbench_router`，公开前端新增 `UnityBuildWorkbench`。
+组合服务调用原 BuildReleaseService 进行 mock manifest 入库和候选分析，并通过 engine-unity 公共服务进行本地 ChangeSet 预览；本地草稿使用 SQLite revision 事务保存。
+原有发布/审批/来源安全规则不变；入口不注册执行/部署/审批路由。旧“编辑器无可运行环境”描述已由此入口取代；真实外部链路仍 blocked。
+启动、接口、mock 局限与本轮精确烟测见 [工作台说明](../../apps/labs/unity-build/README.md)。
+完整旧套件本轮 **not run / pending approval**。调用工作台后端时需同时将 `modules/engine-unity/backend/src` 加入 Python 路径（独立入口已负责）。
