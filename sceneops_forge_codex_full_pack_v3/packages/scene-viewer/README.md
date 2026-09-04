@@ -71,3 +71,11 @@ npm run typecheck --prefix packages/scene-viewer
 - 本包不解析 GLB 二进制；加载器应把 glTF node/extras 转换为 `SceneNodeDescriptor`。
 - 本包不持久化相机、选择或缓存；消费模块负责把可序列化快照写入其领域存储。
 - 资源释放器是同步接口，适合 WebGL/Three 常见的同步 `dispose()`；异步外部存储不属于该缓存。
+
+## 2026-09-05：公开 React 代理视图
+
+新增 `@sceneops/scene-viewer/react` 子入口，导出 `ScenePreview` / props 类型。它使用 Three 0.183.2、React 19.2.8（仅该入口需要的可选 peer），从原 `SceneObjectIndex` 与 `SceneTransformResolver` 取得稳定 ID 和完整层级变换，绘制 box proxies、路径及可点击标签。相机旋转、缩放、对象 picking、选择高亮和相机快照可实际操作。
+
+采用事件驱动按需绘制，无连续 animation loop；ResizeObserver 与 IntersectionObserver 响应可见性和尺寸，document hidden 不绘制。卸载释放 GPU geometry/material、controls、renderer 与 observer。
+
+这是可运行的代理渲染宿主，不是 GLB 解码或真实游戏画面。旧入口 `.` 与 fixtures 的无 React 导入行为保持不变。独立入口与仅一次主路径 smoke 见 [工作台说明](../../apps/labs/world-logic/README.md)；原包完整测试没有在本轮重跑。

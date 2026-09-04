@@ -95,3 +95,17 @@ npm test
 - 基线没有 Unity 工程或适配器，因此没有 live 编译、Edit Mode、Play Mode 或构建。
 - 当前服务为无持久化领域服务；ChangeSet 存储与并发版本检查应由控制平面接入。
 - 模型解释不在本模块验证路径中；未来可作为非权威说明层接入。
+
+## 2026-09-05：独立 Web 整合更新
+
+原 10 基线中的“没有真实 React 工作台”的限制现已解决：应用根运行 `pnpm --dir apps/labs/world-logic dev`，详见 [启动与本次验证](../../apps/labs/world-logic/README.md)。该入口使用公开 lazy loader 组合 UI；原 headless API 保留，实际 UI 使用它的 loading/ready/failed 状态模型。
+
+- `loadLogicWorkbench()`：状态图、节点与对象绑定、关系编辑、图 JSON、C# diff、原服务验证与本地状态预览。
+- `loadProposalReview()`：核心 ChangeSet / 原 CodeChangeSet 的审批要求、语义差异、前后值和导出。
+- `LogicWorkbenchApi`、`WorldLogicApiPaths`、`WorldLogicApiComponents`：注入接口及 Pydantic/OpenAPI 生成网络类型。
+- `logic_studio.workbench_router`：隔离样例、验证、预览、玩法图提案、代码提案；不会挂载旧 approve/apply 流程。
+- 新样例 `contracts/examples/world-workbench.binding.json` 对齐 `sobj_player_spawn`、`sobj_home_key`、`sobj_home_entrance`，原样例保留。
+
+玩法图请求始终校验固定场景对象目录，图草稿不可通过修改目录伪造对象；图提案以服务器内的原始图为 before，要求 version + 1。API 无生产写回端点。Python 服务依赖原公共 `sceneops-core-contracts`；独立启动器从同一源目录导入。
+
+本次仅 smoke 到拾取成功和待审批图提案；新增 `test_workbench.py` 的成功/失败回归及完整模块测试均未运行。没有执行 Unity 编译、Edit/Play Mode、构建或 AI playtest。若以后加入 AI，使用 codebuddycli 并提供前端模型选择，当前确定性路径无需 AI。

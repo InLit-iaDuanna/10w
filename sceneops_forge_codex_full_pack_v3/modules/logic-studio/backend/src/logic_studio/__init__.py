@@ -61,3 +61,6 @@ __all__ = [
     "serialize_gameplay_graph",
     "validate_gameplay_graph",
 ]
+
+from .workbench import workbench_router
+__all__.append("workbench_router")

@@ -31,3 +31,7 @@
 5. Implement artifact/Unity/Blender ports with allowlists, timeout, cancellation, retry, progress, logs, provenance and rollback.
 6. Run exact-scene live captures and store real provenance before introducing any cached fixture.
 7. Complete hero and Warehouse build/playtest E2E in their owning tasks.
+
+## 独立工作台更新（2026-09-05）
+
+上表是原 09 基线历史，不代表本次入口测试结果。`apps/labs/world-logic` 已提供 React/Three 按需代理视图、稳定选择、对象批注和核心 ChangeSet 转换；玩法模块已通过明确样例绑定接入。首次安装和本轮 smoke 以该 lab README 为准。正式 Shell registry、GLB loader、artifact 和外部 mutation 仍未接入。原“冻结核心合同”不作为本轮新增要求；复用 Git 中已有核心实现，不增加冻结或哈希门禁。

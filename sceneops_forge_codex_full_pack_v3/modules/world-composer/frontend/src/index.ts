@@ -93,3 +93,8 @@ export {
   type VoiceDraftOutcome,
   type VoiceTranscriptSource,
 } from './voice-draft.ts';
+
+export const loadWorldWorkbench = () => import('./web/WorldWorkbench.tsx');
+export type { WorldWorkbenchProps } from './web/WorldWorkbench.tsx';
+export const loadWorldSession = () => import('./web/world-session.ts');
+export type { WorldSession } from './web/world-session.ts';

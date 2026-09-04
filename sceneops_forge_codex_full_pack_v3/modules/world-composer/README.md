@@ -128,3 +128,13 @@ npm run typecheck --prefix modules/world-composer/frontend
 - Warehouse fixture 验证同一算法和合同；真实 Unity build 与 E2E 留给后续集成任务。
 
 精确集成缺口见 [integration-status.md](docs/integration-status.md)。
+
+## 2026-09-05：独立 Web 整合更新
+
+原 09 基线中“只有 headless / 无 React Host / 无 core ChangeSet”的限制现已在独立入口解决：从应用根执行 `pnpm --dir apps/labs/world-logic dev`。首次安装、手动动作、准确 smoke 记录见 [工作台 README](../../apps/labs/world-logic/README.md)。旧段落中的完整测试命令只供显式授权后使用，未在本轮执行。
+
+新增公开 `loadWorldWorkbench()`、`loadWorldSession()` 与相应 props/session 类型；既有 headless API 保留。React UI 使用原 `buildWorldEditorScreen`、批注验证、稳定选择和世界变更计划；`scene-viewer/react` 提供按需绘制的 Three 几何代理。
+
+新增公开 Python `world_composer.workbench_router`：`POST /api/world/proposals` 把原 `WorldMutationPlan` 映射至原样引入的核心 ChangeSet。场景 ID 与对象 ID 均进入 target；level-designer/project-owner 分别要求 scene:approve/project:approve。未知审批角色映射显式报错，不自动弱化审批要求。仅提案，不保存/审批/执行生产修改。
+
+界面已支持对象选择、对象批注与视角恢复、场景关系编辑和 ChangeSet 展示。GLB 解码、真实 DCC/Unity 写回、正式 Shell 注册、其他八类批注界面的完整交互仍不在本次入口范围；原算法继续保留。完整测试与新增后端回归均 `not run / pending approval`。

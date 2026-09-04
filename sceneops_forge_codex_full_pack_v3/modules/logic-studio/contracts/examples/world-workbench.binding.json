@@ -1,0 +1,17 @@
+{
+  "template_id": "inventory-token-opens-target",
+  "project_id": "prj_find_my_way_home",
+  "feature_spec_id": "feat_key_door_branch",
+  "mode": "mock",
+  "bindings": {
+    "graph_id": "graph_remember_home_key_door",
+    "scene_id": "scn_home_hall",
+    "player_sceneops_id": "sobj_player_spawn",
+    "player_display_name": "玩家起点",
+    "collectible_sceneops_id": "sobj_home_key",
+    "collectible_display_name": "黄铜钥匙",
+    "target_sceneops_id": "sobj_home_entrance",
+    "target_display_name": "家门",
+    "inventory_token": "asset_key_home_01"
+  }
+}

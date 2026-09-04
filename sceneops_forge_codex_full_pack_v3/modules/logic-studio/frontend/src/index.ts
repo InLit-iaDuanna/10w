@@ -35,3 +35,8 @@ export type {
   LogicEditorStatus,
   LogicEditorView,
 } from "./editors/editorTypes.ts";
+
+export const loadLogicWorkbench = () => import('./web/LogicWorkbench.tsx');
+export const loadProposalReview = () => import('./web/ProposalReview.tsx');
+export type { LogicWorkbenchApi, ChangeSet } from './web/api-types.ts';
+export type { paths as WorldLogicApiPaths, components as WorldLogicApiComponents } from './generated/workbench-api.ts';

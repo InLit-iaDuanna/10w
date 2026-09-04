@@ -34,3 +34,11 @@ Dockview、Unity SDK 或直接 `fetch`。
 的 correlation/causation ID 与 UTC 时间。工作流定义位于
 `workflows/logic-feature-to-validated-unity.yaml`，C# 分支包含显式人工暂停、
 dry-run、编译测试门和失败补偿。
+
+## 独立 Web 公开接入
+
+新增 `loadLogicWorkbench`、`loadProposalReview` 公共异步组件 loader；宿主传入生成合同的 `LogicWorkbenchApi`、共享对象选择回调与预览状态回调。图数据通过 TanStack Query 管理，编辑副本属于本地草稿，不修改服务器原始样例。
+
+`workbench_router` 路径（组合根加 `/api`）：GET `/logic/demo`；POST `/logic/validate`、`/logic/preview`、`/logic/proposals`、`/logic/code-proposals`。PreviewRequest 只包含图及最多 200 个 target/event 转移；原 GameplayGraphRuntime 从起点重放。异常产生 HTTP 422，在界面显示明确错误；初始 API 离线有重试入口，场景模块仍能打开。
+
+没有审批、执行、文件路径读取或外部工具执行路由。CodeChangeCoordinator 既有 C# 路径检查保留。网络类型由 lab `generate:api` 从 OpenAPI 生成，未手写网络合同。完整字段以生成文件和 `/openapi.json` 为准。

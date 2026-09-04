@@ -47,6 +47,7 @@
     "scene:validate"
   ],
   "entrypoints": {
-    "frontend": "./frontend/src/index.ts"
+    "frontend": "./frontend/src/index.ts",
+    "backend": "world_composer"
   }
 }

@@ -10,7 +10,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./fixtures": "./fixtures/index.ts"
+    "./fixtures": "./fixtures/index.ts",
+    "./react": "./src/react.tsx"
   },
   "scripts": {
     "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/*.test.ts",
@@ -18,5 +19,17 @@
   },
   "devDependencies": {
     "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "react": "^19.2.8",
+    "three": "^0.183.2"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "three": {
+      "optional": true
+    }
   }
 }
