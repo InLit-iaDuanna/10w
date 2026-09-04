@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "id": "project-intake",
+  "version": "0.1.0",
+  "title": "Project Intake",
+  "description": "Turns a new-project brief or an existing-project scan into confirmed production intent.",
+  "status": "active",
+  "feature_flag": "project_intake",
+  "requires": {
+    "modules": ["core-kernel", "module-runtime"],
+    "integrations": [],
+    "optional_integrations": ["unity", "blender"]
+  },
+  "contributes": {
+    "editors": ["project.intake"],
+    "commands": [
+      "project.intake.create_new_draft",
+      "project.intake.draft_from_conversation",
+      "project.intake.scan_existing",
+      "project.intake.confirm_field"
+    ],
+    "events": [
+      "project.intake.drafted@1",
+      "project.intake.field_confirmed@1"
+    ],
+    "jobs": [],
+    "workflows": [],
+    "policy_gates": []
+  },
+  "permissions": ["project:read", "project:write", "project:scan"],
+  "entrypoints": {
+    "frontend": "./frontend/src/index.ts"
+  }
+}

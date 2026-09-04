@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://design-room/events/design.decision.recorded/v1",
+  "title": "design.decision.recorded@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decisionId", "status", "acceptedAlternativeId"],
+  "properties": {
+    "decisionId": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["open", "decided"] },
+    "acceptedAlternativeId": { "type": ["string", "null"] }
+  }
+}

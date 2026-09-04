@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "intakeId": "intake_find_my_way_home",
+  "projectId": "prj_find_my_way_home",
+  "kind": "new-project",
+  "status": "ready",
+  "fields": {
+    "projectName": {
+      "value": "Find My Way Home",
+      "confidence": "confirmed",
+      "evidence": { "origin": "user", "reference": "usr_designer", "observedAt": "2026-09-04T01:00:00Z" }
+    },
+    "targetPlatforms": {
+      "value": ["Windows", "macOS"],
+      "confidence": "confirmed",
+      "evidence": { "origin": "user", "reference": "usr_designer", "observedAt": "2026-09-04T01:00:00Z" }
+    },
+    "engine": {
+      "value": { "toolId": "unity", "displayName": "Unity", "version": "6000.0.40f1" },
+      "confidence": "confirmed",
+      "evidence": { "origin": "user", "reference": "usr_designer", "observedAt": "2026-09-04T01:00:00Z" }
+    },
+    "dccs": {
+      "value": [{ "toolId": "blender", "displayName": "Blender", "version": "4.3.2" }],
+      "confidence": "confirmed",
+      "evidence": { "origin": "user", "reference": "usr_designer", "observedAt": "2026-09-04T01:00:00Z" }
+    },
+    "projectRoots": {
+      "value": [{ "rootId": "root_find_my_way_home", "kind": "engine-project", "absolutePath": "/fixtures/find-my-way-home", "displayName": "Find My Way Home" }],
+      "confidence": "confirmed",
+      "evidence": { "origin": "user", "reference": "usr_designer", "observedAt": "2026-09-04T01:00:00Z" }
+    },
+    "teamRoles": {
+      "value": null,
+      "confidence": "missing",
+      "evidence": null
+    },
+    "styleGoals": {
+      "value": null,
+      "confidence": "missing",
+      "evidence": null
+    },
+    "performanceBudgets": {
+      "value": null,
+      "confidence": "missing",
+      "evidence": null
+    },
+    "integrationRequirements": {
+      "value": null,
+      "confidence": "missing",
+      "evidence": null
+    }
+  },
+  "scanReference": null,
+  "mode": "mock",
+  "createdAt": "2026-09-04T01:00:00Z",
+  "updatedAt": "2026-09-04T01:00:00Z"
+}

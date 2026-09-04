@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://project-intake/manifests/project-scan-report/v1",
+  "title": "Normalized Project Scan Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adapterId", "adapterVersion", "scanId", "scannedAt", "mode", "detected", "warnings"],
+  "properties": {
+    "adapterId": { "type": "string", "minLength": 1 },
+    "adapterVersion": { "type": "string", "minLength": 1 },
+    "scanId": { "type": "string", "minLength": 1 },
+    "scannedAt": { "type": "string", "format": "date-time" },
+    "mode": { "enum": ["live", "cached", "mock"] },
+    "detected": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectName": { "type": "string" },
+        "targetPlatforms": { "type": "array", "items": { "type": "string" } },
+        "engine": { "type": "object" },
+        "dccs": { "type": "array", "items": { "type": "object" } },
+        "teamRoles": { "type": "array", "items": { "type": "object" } },
+        "styleGoals": { "type": "array", "items": { "type": "object" } },
+        "performanceBudgets": { "type": "array", "items": { "type": "object" } },
+        "integrationRequirements": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  }
+}

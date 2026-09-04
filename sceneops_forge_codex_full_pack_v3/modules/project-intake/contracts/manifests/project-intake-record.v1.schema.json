@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://project-intake/manifests/project-intake-record/v1",
+  "title": "Project Intake Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "intakeId",
+    "projectId",
+    "kind",
+    "status",
+    "fields",
+    "scanReference",
+    "mode",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "intakeId": { "type": "string", "minLength": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["new-project", "existing-project"] },
+    "status": { "enum": ["draft", "needs-confirmation", "ready"] },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projectName",
+        "targetPlatforms",
+        "engine",
+        "dccs",
+        "projectRoots",
+        "teamRoles",
+        "styleGoals",
+        "performanceBudgets",
+        "integrationRequirements"
+      ],
+      "properties": {
+        "projectName": { "$ref": "#/$defs/trackedField" },
+        "targetPlatforms": { "$ref": "#/$defs/trackedField" },
+        "engine": { "$ref": "#/$defs/trackedField" },
+        "dccs": { "$ref": "#/$defs/trackedField" },
+        "projectRoots": { "$ref": "#/$defs/trackedField" },
+        "teamRoles": { "$ref": "#/$defs/trackedField" },
+        "styleGoals": { "$ref": "#/$defs/trackedField" },
+        "performanceBudgets": { "$ref": "#/$defs/trackedField" },
+        "integrationRequirements": { "$ref": "#/$defs/trackedField" }
+      }
+    },
+    "scanReference": { "type": ["object", "null"] },
+    "mode": { "$ref": "#/$defs/mode" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "trackedField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "evidence"],
+      "properties": {
+        "value": {},
+        "confidence": { "enum": ["confirmed", "inferred", "missing"] },
+        "evidence": { "type": ["object", "null"] }
+      }
+    },
+    "mode": { "enum": ["live", "cached", "mock", "planned", "blocked"] }
+  }
+}

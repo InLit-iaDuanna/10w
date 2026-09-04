@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://design-room/manifests/feature-spec/v1",
+  "title": "Feature Spec v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "featureSpecId",
+    "projectId",
+    "gddId",
+    "title",
+    "status",
+    "goal",
+    "playerValue",
+    "inputs",
+    "outputs",
+    "dependencies",
+    "edgeCases",
+    "acceptanceCriteria",
+    "requiredDeliverables",
+    "requiredTests",
+    "assumptions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "documentType": { "const": "feature-spec" },
+    "featureSpecId": { "type": "string", "minLength": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "gddId": { "type": ["string", "null"] },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["draft", "in-review", "approved", "ready-for-planning"] },
+    "goal": { "type": "string", "minLength": 1 },
+    "playerValue": { "type": "string" },
+    "inputs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/input" } },
+    "outputs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/output" } },
+    "dependencies": { "type": "array", "items": { "$ref": "#/$defs/dependency" } },
+    "edgeCases": { "type": "array", "items": { "$ref": "#/$defs/edgeCase" } },
+    "acceptanceCriteria": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/criterion" } },
+    "requiredDeliverables": { "type": "array", "items": { "$ref": "#/$defs/deliverable" } },
+    "requiredTests": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/test" } },
+    "assumptions": { "type": "array", "items": { "$ref": "#/$defs/assumption" } }
+  },
+  "$defs": {
+    "statement": {
+      "type": "object",
+      "required": ["id", "statement"],
+      "properties": { "id": { "type": "string" }, "statement": { "type": "string" } }
+    },
+    "input": {
+      "allOf": [
+        { "$ref": "#/$defs/statement" },
+        { "type": "object", "required": ["source"], "properties": { "source": { "enum": ["player", "system", "content"] } } }
+      ]
+    },
+    "output": {
+      "allOf": [
+        { "$ref": "#/$defs/statement" },
+        { "type": "object", "required": ["consumer"], "properties": { "consumer": { "enum": ["player", "system", "telemetry"] } } }
+      ]
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dependencyId", "kind", "requiredState"],
+      "properties": {
+        "dependencyId": { "type": "string" },
+        "kind": { "enum": ["feature", "system", "integration", "decision"] },
+        "requiredState": { "type": "string" }
+      }
+    },
+    "edgeCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "expectedBehavior"],
+      "properties": {
+        "id": { "type": "string" },
+        "statement": { "type": "string" },
+        "expectedBehavior": { "type": "string" }
+      }
+    },
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criterionId", "title", "given", "when", "then", "priority"],
+      "properties": {
+        "criterionId": { "type": "string" },
+        "title": { "type": "string" },
+        "given": { "type": "string" },
+        "when": { "type": "string" },
+        "then": { "type": "string" },
+        "priority": { "enum": ["must", "should", "could"] }
+      }
+    },
+    "deliverable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirementId", "kind", "description", "existingArtifactId"],
+      "properties": {
+        "requirementId": { "type": "string" },
+        "kind": { "enum": ["asset", "scene", "script", "ui", "audio", "vfx"] },
+        "description": { "type": "string" },
+        "existingArtifactId": { "type": ["string", "null"] }
+      }
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["testId", "level", "description", "linkedCriterionIds"],
+      "properties": {
+        "testId": { "type": "string" },
+        "level": { "enum": ["unit", "integration", "playtest", "visual"] },
+        "description": { "type": "string" },
+        "linkedCriterionIds": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "sourceMessageId", "status"],
+      "properties": {
+        "id": { "type": "string" },
+        "statement": { "type": "string" },
+        "sourceMessageId": { "type": "string" },
+        "status": { "enum": ["unconfirmed", "confirmed", "rejected"] }
+      }
+    }
+  }
+}

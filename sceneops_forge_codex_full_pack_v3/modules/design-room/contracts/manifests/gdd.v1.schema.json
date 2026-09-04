@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://design-room/manifests/gdd/v1",
+  "title": "Structured GDD v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "gddId",
+    "projectId",
+    "title",
+    "status",
+    "executiveSummary",
+    "designPillars",
+    "playerExperienceGoals",
+    "gameplaySystems",
+    "progression",
+    "worldStructure",
+    "economyRules",
+    "failureRecovery",
+    "dependencyIds",
+    "assumptions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "documentType": { "const": "gdd" },
+    "gddId": { "type": "string", "minLength": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["draft", "in-review", "approved"] },
+    "executiveSummary": { "type": "string" },
+    "designPillars": { "type": "array", "items": { "type": "object" } },
+    "playerExperienceGoals": { "type": "array", "items": { "type": "object" } },
+    "gameplaySystems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["systemId", "name", "purpose", "inputs", "outputs", "dependencyIds", "edgeCases"],
+        "properties": {
+          "systemId": { "type": "string" },
+          "name": { "type": "string" },
+          "purpose": { "type": "string" },
+          "inputs": { "type": "array", "items": { "type": "object" } },
+          "outputs": { "type": "array", "items": { "type": "object" } },
+          "dependencyIds": { "type": "array", "items": { "type": "string" } },
+          "edgeCases": { "type": "array", "items": { "type": "object" } }
+        }
+      }
+    },
+    "progression": { "type": "array", "items": { "type": "object" } },
+    "worldStructure": { "type": "array", "items": { "type": "object" } },
+    "economyRules": { "type": "array", "items": { "type": "object" } },
+    "failureRecovery": { "type": "array", "items": { "type": "object" } },
+    "dependencyIds": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "object" } }
+  }
+}
