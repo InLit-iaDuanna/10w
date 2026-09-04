@@ -4,6 +4,11 @@ import { EvidenceViewport } from "./EvidenceViewport.tsx";
 import { ReviewPanel } from "./ReviewPanel.tsx";
 import "./workbench.css";
 
+// Model IDs advertised by the locally installed `codebuddy --help` on 2026-09-05.
+// This is a CLI capability snapshot, not a check of account access.
+const codebuddyModels = ["hy4-preview", "hy3", "hy3-x", "glm-5.3", "glm-5.3-flash", "glm-5.2", "glm-5.1", "glm-5v-turbo", "minimax-m3", "minimax-m2.7", "kimi-k3-1", "kimi-k2.7", "kimi-k2.6", "deepseek-v4-pro", "deepseek-v4-flash"];
+type ConfigurationDraft = { seed: number; maxSteps: number; objective: string; aiProvider: "codebuddy-cli"; aiModel: string };
+
 export function AIPlaytestWorkbench() {
   const [sampleId, setSampleId] = useState(evidenceSamples[0].id);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -14,12 +19,12 @@ export function AIPlaytestWorkbench() {
   const [notice, setNotice] = useState("");
   const [reviews, setReviews] = useState<Record<string, LocalReview>>({});
   const [proposals, setProposals] = useState<Record<string, ProposalDraft>>({});
-  const [drafts, setDrafts] = useState<Record<string, { seed: number; maxSteps: number; objective: string }>>({});
+  const [drafts, setDrafts] = useState<Record<string, ConfigurationDraft>>({});
   const sample = evidenceSamples.find(item => item.id === sampleId)!;
   const frame = sample.fixture.frames[frameIndex];
   const issues = reviewExamples.filter(item => item.sampleId === sampleId);
   const issue = issues.find(item => item.id === issueId);
-  const draft = drafts[sample.testCase.test_case_id] ?? { seed: sample.testCase.seed, maxSteps: sample.testCase.controls.max_steps, objective: sample.testCase.objective };
+  const draft: ConfigurationDraft = drafts[sample.testCase.test_case_id] ?? { seed: sample.testCase.seed, maxSteps: sample.testCase.controls.max_steps, objective: sample.testCase.objective, aiProvider: "codebuddy-cli", aiModel: "" };
   function selectSample(id: string) { setSampleId(id); setFrameIndex(0); setIssueId(null); setNotice(""); }
   function locateIssue(id: string) {
     const selected = issues.find(item => item.id === id)!;
@@ -49,6 +54,9 @@ export function AIPlaytestWorkbench() {
           <div className="ap-timeline">{sample.fixture.frames.map((item, index) => <button key={index} aria-pressed={index === frameIndex} onClick={() => setFrameIndex(index)}><span className="ap-step-number">{String(index + 1).padStart(2, "0")}</span><span><strong>{item.goals[0].detail}</strong><small>{item.observed_at.slice(11,19)} · {item.position_m.join(", ")} m</small></span><span>{Math.round(item.goals[0].value * 100)}%</span></button>)}</div>
           <details className="ap-raw"><summary>当前观察：可用动作、配置结果与游戏状态</summary><pre>{JSON.stringify({ game_state: frame.game_state, actions: frame.actions, configured_results: frame.results }, null, 2)}</pre></details></>}
         {tab === "configuration" && <section className="ap-config"><h3>测试配置草稿 <span className="ap-badge planned">PLANNED</span></h3><p>草稿仅保存在本页。修改不会改变原始证据或启动测试。</p><form onSubmit={event => { event.preventDefault(); setNotice("配置草稿已保存到当前页面；尚未提交测试。"); }}>
+          <label>AI 接入方式<input readOnly value="CodeBuddy CLI" /></label>
+          <label>AI 模型<select value={draft.aiModel} onChange={e => setDrafts({ ...drafts, [sample.testCase.test_case_id]: { ...draft, aiModel: e.target.value } })} aria-describedby="ap-model-help"><option value="">使用 CodeBuddy CLI 默认模型</option>{codebuddyModels.map(model => <option key={model} value={model}>{model}</option>)}</select></label>
+          <p id="ap-model-help">模型列表来自本机 CodeBuddy CLI 帮助（2026-09-05），账号可用性尚未验证。当前仅保存选择；CLI 执行尚未接通，不会发起 AI 调用。</p>
           <label>目标<textarea required value={draft.objective} onChange={e => setDrafts({ ...drafts, [sample.testCase.test_case_id]: { ...draft, objective: e.target.value } })}/></label>
           <label>随机种子<input type="number" step="1" required value={draft.seed} onChange={e => setDrafts({ ...drafts, [sample.testCase.test_case_id]: { ...draft, seed: e.target.valueAsNumber } })}/></label>
           <label>最大步数<input type="number" min="1" max="10000" step="1" required value={draft.maxSteps} onChange={e => setDrafts({ ...drafts, [sample.testCase.test_case_id]: { ...draft, maxSteps: e.target.valueAsNumber } })}/></label>

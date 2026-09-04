@@ -20,7 +20,7 @@ pnpm --dir apps/labs/ai-playtest dev
 
 1. 搜索并切换“家门修复前 / 修复后 / Warehouse Escape”样例。
 2. 点击问题卡，观察轨迹、观察编号、时间线和回钉详情联动。
-3. 在“场景配置”调整目标、种子、最大步数，保存当前页面草稿；原始快照保持不变。
+3. 在“场景配置”选择 CodeBuddy CLI 模型、调整目标、种子、最大步数，保存当前页面草稿；原始快照保持不变。
 4. 在问题详情填写意见，模拟确认或拒绝。未解析的回钉不允许确认；审阅不会覆盖已保存的决定。
 5. 模拟确认唯一回钉后，填写变更前值、建议值、理由、预期、验证/回滚计划，保存 PLANNED 提案草稿。
 6. 选择 Live/Cached 查看缺少连接或真实历史证据的说明，再返回 Mock。查看“来源与限制”和原始观察。
@@ -28,6 +28,8 @@ pnpm --dir apps/labs/ai-playtest dev
 页面草稿隔离于生产数据，刷新即清空；这是明示的模拟交互，不是对后端 Issue 的正式审核。提案未提交到 CommandRegistry 或 owning module。真实审核必须使用现有 `AIPlaytestService.review_backpin` 的认证上下文，正式提案必须使用 `propose_issue_change` 和 owning module 的 ChangeSet 审批。新入口没有 runner、Unity 或测试启动路径。
 
 ## 数据与真实性
+
+AI 接入约定：如需真实 AI，使用 CodeBuddy CLI。本机可执行命令为 `codebuddy`，不是 `codebuddycli`。场景配置固定 `aiProvider=codebuddy-cli`，按 TestCase 在页面内保存 `aiModel`；空值代表使用 CLI 默认模型。模型选项来自 2026-09-05 本机 `codebuddy --help` 的 `--model <model>` 列表，并非实时账号授权查询。未来服务端调用应将所选模型作为独立的 `--model` 参数（默认模型则省略），不能在浏览器执行命令或拼接 shell。此轮没有增加 CLI 调用端点、凭证、权限绕过或 AI 执行路径。
 
 - Mock：读取模块原有 `contracts/examples/*.runtime.json`、TestCase 与 source catalog。问题卡是明确标注的手工审阅样例，不是本次 detector 输出。
 - 轨迹：静态帧的坐标投影；物体图形为示意，没有真实截图。
@@ -41,7 +43,8 @@ pnpm --dir apps/labs/ai-playtest dev
 
 - 启动/导入：`pnpm --dir apps/labs/ai-playtest dev` 成功；Vite ready，监听 `127.0.0.1:4319`；React 懒加载界面可见。
 - 唯一最小展示/选择路径：打开首页 → 点击“钥匙在手，家门交互被碰撞体遮挡”。通过：观察 4 被选中；时间 `2026-09-04T01:00:04Z`；位置 `7.5,0,0 m`；时间线第 4 行选中；源目标 `component.home-door-interaction`、所属模块 `logic-studio` 可见。
-- 配置保存、模拟审阅/拒绝、提案表单等其余交互：本轮未自动执行，留给用户手动验证。
+- 初始入口交付时未执行配置保存、模拟审阅/拒绝、提案表单等其余交互。
+- CodeBuddy 模型选择补充验证：Vite 热更新后打开“场景配置” → 选择 `deepseek-v4-pro` → 保存本地配置草稿；下拉框显示所选模型，并出现“配置草稿已保存到当前页面；尚未提交测试。”。只执行这一条新增 UI 路径；未调用 AI，未查询账号模型权限。
 - 原 hero 测试未重跑。完整单元、集成、E2E、安全、性能、类型检查、生产构建、AI playtest、Unity：**not run / pending approval**。
 - 上轮 hero 的缺失 `UtcDatetime` 导入已修复并保留，但未将上轮结果当作本入口通过证据。
 
