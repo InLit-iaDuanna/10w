@@ -1,0 +1,61 @@
+schema_version: 1
+id: asset-to-engine-ready
+version: 1
+idempotency_scope: project_asset_source_version_recipe
+nodes:
+  - id: preflight
+    job: asset.preflight
+  - id: snapshot
+    job: asset.blender.process
+    operation: save_snapshot
+    requires_approval: true
+  - id: clean
+    job: asset.blender.process
+    operation: assign_stable_ids_and_normals
+    requires_approval: true
+  - id: uv_material_check
+    job: asset.validate
+  - id: lod
+    job: asset.blender.process
+    condition: asset_spec.requires_lods
+    requires_approval: true
+  - id: collider
+    job: asset.blender.process
+    condition: asset_spec.requires_collider
+    requires_approval: true
+  - id: turntable_aov
+    job: asset.blender.process
+    operation: render_aov
+    requires_approval: true
+  - id: validate
+    job: asset.validate
+  - id: export
+    job: asset.blender.process
+    operation: export_asset
+    requires_approval: true
+  - id: publish
+    job: asset.publish
+    requires_approval: true
+edges:
+  - [preflight, snapshot]
+  - [snapshot, clean]
+  - [clean, uv_material_check]
+  - [uv_material_check, lod]
+  - [lod, collider]
+  - [collider, turntable_aov]
+  - [turntable_aov, validate]
+  - [validate, export]
+  - [export, publish]
+blocking_gates:
+  - geometry
+  - uv_material
+  - identity
+retry_policy:
+  max_attempts: 3
+  retryable_error_codes:
+    - BLENDER_TIMEOUT
+    - BLENDER_HEALTH_FAILED
+    - BLENDER_NOT_FOUND
+rollback:
+  snapshot_before_node: clean
+  command: rollback_snapshot

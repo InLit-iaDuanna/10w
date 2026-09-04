@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "spec": {
+    "schema_version": 1,
+    "asset_spec_id": "aspec_hero_key",
+    "project_id": "prj_remember_home",
+    "asset_id": "ast_hero_key",
+    "display_name": "归家钥匙",
+    "category": "prop",
+    "description": "Deterministic public-contract fixture.",
+    "intended_use": "gameplay interaction",
+    "target_dimensions_m": {
+      "x": 0.04,
+      "y": 0.01,
+      "z": 0.1,
+      "coordinate_space": "asset_local",
+      "axis_convention": "right-handed_z-up",
+      "unit": "meter"
+    },
+    "triangle_budget": 1000,
+    "required_formats": ["glb", "fbx"],
+    "required_gate_ids": ["geometry", "uv_material", "identity"],
+    "requires_uv": true,
+    "requires_rig": false,
+    "requires_lods": false,
+    "requires_collider": true,
+    "created_at": "2026-09-05T00:00:00Z"
+  },
+  "source": {
+    "schema_version": 1,
+    "source_asset_id": "src_hero_key",
+    "asset_id": "ast_hero_key",
+    "project_id": "prj_remember_home",
+    "project_relative_path": "Assets/hero-key.blend",
+    "format": "blend",
+    "source_version": "1",
+    "source_commit": "commit_fixture",
+    "source_kind": "imported",
+    "license_name": "CC0-1.0",
+    "license_uri": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "origin_uri": "fixture://hero-key",
+    "imported_at": "2026-09-05T00:00:00Z"
+  },
+  "source_objects": [
+    {
+      "sceneops_id": "sop_hero_key_mesh",
+      "source_asset_id": "src_hero_key",
+      "display_name": "HeroKey",
+      "source_object_locator": "Collection/HeroKey",
+      "parent_sceneops_id": null
+    }
+  ],
+  "versions": [
+    {
+      "schema_version": 1,
+      "asset_version_id": "aver_hero_key_1",
+      "asset_id": "ast_hero_key",
+      "source_asset_id": "src_hero_key",
+      "version": 1,
+      "status": "published",
+      "execution_mode": "mock",
+      "metrics": {
+        "dimensions_m": {
+          "x": 0.04,
+          "y": 0.01,
+          "z": 0.1,
+          "coordinate_space": "asset_local",
+          "axis_convention": "right-handed_z-up",
+          "unit": "meter"
+        },
+        "triangle_count": 840,
+        "vertex_count": 460,
+        "material_count": 1,
+        "texture_count": 2,
+        "has_uv": true,
+        "is_rigged": false,
+        "animation_names": [],
+        "lod_count": 0,
+        "collider_kind": "convex_hull"
+      },
+      "object_identities": [
+        {
+          "sceneops_id": "sop_hero_key_mesh",
+          "source_asset_id": "src_hero_key",
+          "display_name": "HeroKey",
+          "source_object_locator": "Collection/HeroKey",
+          "parent_sceneops_id": null
+        }
+      ],
+      "outputs": [
+        {
+          "artifact_id": "art_aver_hero_key_1_glb",
+          "artifact_type": "engine_asset",
+          "format": "glb",
+          "project_relative_path": "Published/hero-key/v1/asset.glb",
+          "media_type": "model/gltf-binary",
+          "byte_size": 432,
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "artifact_id": "art_aver_hero_key_1_fbx",
+          "artifact_type": "engine_asset",
+          "format": "fbx",
+          "project_relative_path": "Published/hero-key/v1/asset.fbx",
+          "media_type": "application/octet-stream",
+          "byte_size": 55,
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ],
+      "quality_gates": [
+        {"gate_id": "geometry", "label": "Geometry", "status": "passed", "blocking": true, "message": "Within budget.", "measurements": {"triangle_count": 840}},
+        {"gate_id": "uv_material", "label": "UV and material", "status": "passed", "blocking": true, "message": "UV and materials verified.", "measurements": {"has_uv": true}},
+        {"gate_id": "identity", "label": "Stable identity", "status": "passed", "blocking": true, "message": "Identity verified.", "measurements": {"sceneops_ids": ["sop_hero_key_mesh"]}}
+      ],
+      "provenance": [
+        {
+          "artifact_id": "art_aver_hero_key_1_glb",
+          "source_project": "prj_remember_home",
+          "source_version": "1",
+          "source_commit": "commit_fixture",
+          "related_sceneops_ids": ["sop_hero_key_mesh"],
+          "producing_module": "asset-factory",
+          "tool_name": "Blender",
+          "tool_version": "mock-1",
+          "adapter_version": "0.1.0",
+          "recipe_version": "asset-to-engine-ready@1",
+          "creator": "fixture_worker",
+          "execution_mode": "mock",
+          "timestamp": "2026-09-05T00:00:00Z",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "approval_state": "approved",
+          "ai": null
+        },
+        {
+          "artifact_id": "art_aver_hero_key_1_fbx",
+          "source_project": "prj_remember_home",
+          "source_version": "1",
+          "source_commit": "commit_fixture",
+          "related_sceneops_ids": ["sop_hero_key_mesh"],
+          "producing_module": "asset-factory",
+          "tool_name": "Blender",
+          "tool_version": "mock-1",
+          "adapter_version": "0.1.0",
+          "recipe_version": "asset-to-engine-ready@1",
+          "creator": "fixture_worker",
+          "execution_mode": "mock",
+          "timestamp": "2026-09-05T00:00:00Z",
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "approval_state": "approved",
+          "ai": null
+        }
+      ],
+      "approval_id": "apr_hero_key",
+      "created_at": "2026-09-05T00:00:00Z",
+      "published_at": "2026-09-05T00:00:00Z"
+    }
+  ],
+  "usage_references": [
+    {
+      "usage_id": "use_hero_key_hallway",
+      "asset_version_id": "aver_hero_key_1",
+      "project_id": "prj_remember_home",
+      "scene_id": "scn_home_hallway",
+      "scene_instance_id": "sinst_hero_key_hallway",
+      "unity_prefab_id": "prefab_hero_key",
+      "unity_status": "imported",
+      "build_ids": ["bld_remember_home_7"],
+      "first_seen_at": "2026-09-05T00:00:00Z"
+    }
+  ]
+}

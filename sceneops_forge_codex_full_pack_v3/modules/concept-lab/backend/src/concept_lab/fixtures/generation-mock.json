@@ -1,0 +1,103 @@
+{
+  "fixture_truth": "deterministic mock; never display as live",
+  "adapter_id": "concept-fixture-mock",
+  "capabilities": {
+    "adapter_id": "concept-fixture-mock",
+    "supported_views": ["front", "back", "left", "right", "top", "bottom", "three_quarter"],
+    "supports_turnaround": false,
+    "models": ["fixture-key-v1"],
+    "timeout_seconds": 1,
+    "retry_limit": 0,
+    "supports_cancellation": false
+  },
+  "outputs": {
+    "hero-key-v1": {
+      "execution_mode": "mock",
+      "generation": {
+        "provider": "sceneops-fixture",
+        "model": "fixture-key-v1",
+        "workflow_version": "concept-multiview-fixture@1",
+        "prompt": "Aged hand-forged brass house key, broad bow, readable silhouette, orthographic reference",
+        "negative_prompt": "electronic fob, plastic, text, watermark",
+        "seed": 240906,
+        "parameters": {"fixture": true}
+      },
+      "artifacts": [
+        {
+          "view": "front",
+          "title": "钥匙正视图（Mock）",
+          "artifact_uri": "fixture://concept-lab/hero-key/mock/front.png",
+          "source": {
+            "kind": "generated",
+            "source_uri": "fixture://concept-lab/generation-mock/hero-key-v1",
+            "creator": "SceneOps deterministic fixture",
+            "license_name": "SceneOps test fixture",
+            "permission_status": "cleared",
+            "permission_notes": "Only for tests and Judge fixtures."
+          },
+          "provenance": {
+            "artifact_id": "art_mock_key_front",
+            "source_project_id": "prj_remember_home",
+            "source_version": "hero-key-fixture@1",
+            "related_sceneops_ids": [],
+            "producing_module": "concept-lab",
+            "tool": "sceneops-fixture",
+            "adapter_version": "1.0.0",
+            "workflow_version": "concept-multiview-fixture@1",
+            "creator_or_agent": "fixture-worker",
+            "execution_mode": "mock",
+            "created_at": "2026-09-04T00:00:00Z",
+            "checksum_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+            "approval_state": "unreviewed",
+            "ai": {
+              "provider": "sceneops-fixture",
+              "model": "fixture-key-v1",
+              "workflow_version": "concept-multiview-fixture@1",
+              "prompt": "Aged hand-forged brass house key, broad bow, readable silhouette, orthographic reference",
+              "negative_prompt": "electronic fob, plastic, text, watermark",
+              "seed": 240906,
+              "parameters": {"fixture": true}
+            }
+          }
+        },
+        {
+          "view": "three_quarter",
+          "title": "钥匙四分之三视图（Mock）",
+          "artifact_uri": "fixture://concept-lab/hero-key/mock/three-quarter.png",
+          "source": {
+            "kind": "generated",
+            "source_uri": "fixture://concept-lab/generation-mock/hero-key-v1",
+            "creator": "SceneOps deterministic fixture",
+            "license_name": "SceneOps test fixture",
+            "permission_status": "cleared",
+            "permission_notes": "Only for tests and Judge fixtures."
+          },
+          "provenance": {
+            "artifact_id": "art_mock_key_three_quarter",
+            "source_project_id": "prj_remember_home",
+            "source_version": "hero-key-fixture@1",
+            "related_sceneops_ids": [],
+            "producing_module": "concept-lab",
+            "tool": "sceneops-fixture",
+            "adapter_version": "1.0.0",
+            "workflow_version": "concept-multiview-fixture@1",
+            "creator_or_agent": "fixture-worker",
+            "execution_mode": "mock",
+            "created_at": "2026-09-04T00:00:00Z",
+            "checksum_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+            "approval_state": "unreviewed",
+            "ai": {
+              "provider": "sceneops-fixture",
+              "model": "fixture-key-v1",
+              "workflow_version": "concept-multiview-fixture@1",
+              "prompt": "Aged hand-forged brass house key, broad bow, readable silhouette, orthographic reference",
+              "negative_prompt": "electronic fob, plastic, text, watermark",
+              "seed": 240906,
+              "parameters": {"fixture": true}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

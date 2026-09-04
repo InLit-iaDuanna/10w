@@ -1,0 +1,16 @@
+{
+  "request_id": "req_fixture_scene_scan",
+  "operation": "scan_scene",
+  "mode": "mock",
+  "succeeded": true,
+  "data": {
+    "scene": "WarehouseFixture",
+    "objects": [
+      {"sceneops_id": "sop_warehouse_obstacle_mesh", "name": "CrateBarrier", "type": "MESH", "triangle_count": 2400, "has_uv": true}
+    ]
+  },
+  "logs": [],
+  "retryable": false,
+  "error_code": null,
+  "error_message": null
+}

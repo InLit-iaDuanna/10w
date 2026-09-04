@@ -1,0 +1,126 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "RequiredView": {
+      "enum": [
+        "front",
+        "back",
+        "left",
+        "right",
+        "top",
+        "bottom",
+        "three_quarter",
+        "turnaround"
+      ],
+      "title": "RequiredView",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "adapter_id": {
+      "minLength": 1,
+      "title": "Adapter Id",
+      "type": "string"
+    },
+    "concept_id": {
+      "title": "Concept Id",
+      "type": "string"
+    },
+    "concept_version": {
+      "minimum": 1,
+      "title": "Concept Version",
+      "type": "integer"
+    },
+    "execution_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "fixture_key": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fixture Key"
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model"
+    },
+    "negative_prompt": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Negative Prompt"
+    },
+    "prompt": {
+      "minLength": 1,
+      "title": "Prompt",
+      "type": "string"
+    },
+    "requested_views": {
+      "items": {
+        "$ref": "#/$defs/RequiredView"
+      },
+      "minItems": 1,
+      "title": "Requested Views",
+      "type": "array"
+    },
+    "seed": {
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "workflow_version": {
+      "minLength": 1,
+      "title": "Workflow Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "concept_id",
+    "concept_version",
+    "title",
+    "requested_views",
+    "prompt",
+    "seed",
+    "workflow_version",
+    "execution_mode",
+    "adapter_id"
+  ],
+  "title": "GenerationRequest",
+  "type": "object"
+}

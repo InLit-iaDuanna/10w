@@ -1,0 +1,3429 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Concept Assets Local Lab",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/workspace": {
+      "get": {
+        "summary": "Workspace",
+        "operationId": "workspace_api_workspace_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabSnapshot"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/actions": {
+      "post": {
+        "summary": "Action",
+        "operationId": "action_api_actions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabAction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/models": {
+      "get": {
+        "summary": "Models",
+        "operationId": "models_api_ai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvisorCatalog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/advice": {
+      "post": {
+        "summary": "Advice",
+        "operationId": "advice_api_ai_advice_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvisorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvisorResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIProvenance": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Model"
+          },
+          "workflow_hash": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Workflow Hash"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Parameters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "model",
+          "workflow_hash",
+          "prompt"
+        ],
+        "title": "AIProvenance"
+      },
+      "AdvisorCatalog": {
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/AdvisorModel"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models",
+          "message"
+        ],
+        "title": "AdvisorCatalog"
+      },
+      "AdvisorModel": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "codebuddy"
+            ],
+            "title": "Provider"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "planned",
+              "blocked"
+            ],
+            "title": "Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "mode"
+        ],
+        "title": "AdvisorModel"
+      },
+      "AdvisorRequest": {
+        "properties": {
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concept_id",
+          "model",
+          "question"
+        ],
+        "title": "AdvisorRequest"
+      },
+      "AdvisorResult": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "codebuddy"
+            ],
+            "title": "Provider"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "live",
+              "blocked"
+            ],
+            "title": "Mode"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "title": "Concept Version"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "provider",
+          "mode",
+          "concept_id",
+          "concept_version",
+          "question",
+          "text",
+          "created_at"
+        ],
+        "title": "AdvisorResult"
+      },
+      "AiGenerationMetadata": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Model"
+          },
+          "workflow_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Workflow Version"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Seed"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "model",
+          "workflow_version",
+          "prompt",
+          "seed"
+        ],
+        "title": "AiGenerationMetadata"
+      },
+      "ArtifactOutput": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Id"
+          },
+          "artifact_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Type"
+          },
+          "format": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Format"
+          },
+          "project_relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Relative Path"
+          },
+          "media_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Media Type"
+          },
+          "byte_size": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Byte Size"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "format",
+          "project_relative_path",
+          "media_type",
+          "byte_size",
+          "sha256"
+        ],
+        "title": "ArtifactOutput"
+      },
+      "AssetChangeSet": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "change_set_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Change Set Id"
+          },
+          "base_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Base Version"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "target_integration": {
+            "type": "string",
+            "const": "blender",
+            "title": "Target Integration",
+            "default": "blender"
+          },
+          "target_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10000,
+            "minItems": 1,
+            "title": "Target Object Ids"
+          },
+          "previous_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Previous Values"
+          },
+          "proposed_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Proposed Values"
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "expected_result": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Expected Result"
+          },
+          "impact_scope": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Impact Scope"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "validation_plan": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Validation Plan"
+          },
+          "rollback_plan": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Rollback Plan"
+          },
+          "approval_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Approval Requirements"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ChangeSetState",
+            "default": "proposed"
+          },
+          "approval_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Id"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change_set_id",
+          "base_version",
+          "project_id",
+          "target_object_ids",
+          "previous_values",
+          "proposed_values",
+          "rationale",
+          "expected_result",
+          "impact_scope",
+          "risk",
+          "validation_plan",
+          "rollback_plan",
+          "approval_requirements"
+        ],
+        "title": "AssetChangeSet"
+      },
+      "AssetObjectIdentity": {
+        "properties": {
+          "sceneops_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Sceneops Id"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Asset Id"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Display Name"
+          },
+          "source_object_locator": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Object Locator"
+          },
+          "parent_sceneops_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Sceneops Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sceneops_id",
+          "source_asset_id",
+          "display_name",
+          "source_object_locator"
+        ],
+        "title": "AssetObjectIdentity"
+      },
+      "AssetRecord": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "spec": {
+            "$ref": "#/components/schemas/AssetSpec"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceAsset"
+          },
+          "source_objects": {
+            "items": {
+              "$ref": "#/components/schemas/AssetObjectIdentity"
+            },
+            "type": "array",
+            "title": "Source Objects"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/AssetVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "usage_references": {
+            "items": {
+              "$ref": "#/components/schemas/UsageReference"
+            },
+            "type": "array",
+            "title": "Usage References"
+          }
+        },
+        "type": "object",
+        "required": [
+          "spec",
+          "source",
+          "source_objects"
+        ],
+        "title": "AssetRecord"
+      },
+      "AssetSpec": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "asset_spec_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Spec Id"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Id"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Display Name"
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Category"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "intended_use": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Intended Use"
+          },
+          "target_dimensions_m": {
+            "$ref": "#/components/schemas/Vector3Meters"
+          },
+          "triangle_budget": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Triangle Budget"
+          },
+          "required_formats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Formats"
+          },
+          "required_gate_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Gate Ids"
+          },
+          "requires_uv": {
+            "type": "boolean",
+            "title": "Requires Uv",
+            "default": true
+          },
+          "requires_rig": {
+            "type": "boolean",
+            "title": "Requires Rig",
+            "default": false
+          },
+          "requires_lods": {
+            "type": "boolean",
+            "title": "Requires Lods",
+            "default": false
+          },
+          "requires_collider": {
+            "type": "boolean",
+            "title": "Requires Collider",
+            "default": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_spec_id",
+          "project_id",
+          "asset_id",
+          "display_name",
+          "category",
+          "intended_use",
+          "target_dimensions_m",
+          "triangle_budget",
+          "created_at"
+        ],
+        "title": "AssetSpec"
+      },
+      "AssetSpecDraft": {
+        "properties": {
+          "asset_spec_draft_id": {
+            "type": "string",
+            "title": "Asset Spec Draft Id"
+          },
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "status": {
+            "type": "string",
+            "const": "draft",
+            "title": "Status",
+            "default": "draft"
+          },
+          "source_concept_id": {
+            "type": "string",
+            "title": "Source Concept Id"
+          },
+          "source_concept_version": {
+            "type": "integer",
+            "title": "Source Concept Version"
+          },
+          "approved_variant_id": {
+            "type": "string",
+            "title": "Approved Variant Id"
+          },
+          "approval_decision_id": {
+            "type": "string",
+            "title": "Approval Decision Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "feature_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "gameplay_function": {
+            "type": "string",
+            "title": "Gameplay Function"
+          },
+          "proportions": {
+            "type": "string",
+            "title": "Proportions"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/DimensionsMeters"
+          },
+          "materials": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Materials"
+          },
+          "required_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "type": "array",
+            "title": "Required Views"
+          },
+          "platform_budget": {
+            "$ref": "#/components/schemas/PlatformBudget"
+          },
+          "style_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Style Constraints"
+          },
+          "forbidden_elements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forbidden Elements"
+          },
+          "concept_reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Concept Reference Ids"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "producing_module": {
+            "type": "string",
+            "const": "concept-lab",
+            "title": "Producing Module",
+            "default": "concept-lab"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "asset_spec_draft_id",
+          "source_concept_id",
+          "source_concept_version",
+          "approved_variant_id",
+          "approval_decision_id",
+          "project_id",
+          "subject",
+          "gameplay_function",
+          "proportions",
+          "dimensions",
+          "materials",
+          "required_views",
+          "platform_budget",
+          "style_constraints",
+          "forbidden_elements",
+          "concept_reference_ids",
+          "execution_mode",
+          "created_by",
+          "created_at"
+        ],
+        "title": "AssetSpecDraft"
+      },
+      "AssetVersion": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "asset_version_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Version Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Id"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Asset Id"
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Version"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PublicationStatus"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/GeometryMetrics"
+          },
+          "object_identities": {
+            "items": {
+              "$ref": "#/components/schemas/AssetObjectIdentity"
+            },
+            "type": "array",
+            "title": "Object Identities"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/ArtifactOutput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Outputs"
+          },
+          "quality_gates": {
+            "items": {
+              "$ref": "#/components/schemas/QualityGate"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Quality Gates"
+          },
+          "provenance": {
+            "items": {
+              "$ref": "#/components/schemas/asset_library__schemas__ArtifactProvenance"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Provenance"
+          },
+          "approval_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_version_id",
+          "asset_id",
+          "source_asset_id",
+          "version",
+          "status",
+          "execution_mode",
+          "metrics",
+          "object_identities",
+          "outputs",
+          "quality_gates",
+          "provenance",
+          "created_at"
+        ],
+        "title": "AssetVersion"
+      },
+      "ChangeSetState": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "approved",
+          "rejected",
+          "executed",
+          "rolled_back"
+        ],
+        "title": "ChangeSetState"
+      },
+      "ChangeSetStatus": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "approved",
+          "applied",
+          "rejected"
+        ],
+        "title": "ChangeSetStatus"
+      },
+      "ConceptAssetHandoff": {
+        "properties": {
+          "draft": {
+            "$ref": "#/components/schemas/AssetSpecDraft"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/AssetSpec"
+          }
+        },
+        "type": "object",
+        "required": [
+          "draft",
+          "spec"
+        ],
+        "title": "ConceptAssetHandoff"
+      },
+      "ConceptChangeSet": {
+        "properties": {
+          "change_set_id": {
+            "type": "string",
+            "title": "Change Set Id"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "base_version": {
+            "type": "integer",
+            "title": "Base Version"
+          },
+          "target_integration": {
+            "type": "string",
+            "const": "concept-lab",
+            "title": "Target Integration",
+            "default": "concept-lab"
+          },
+          "target_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Target Object Ids"
+          },
+          "previous_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Previous Values"
+          },
+          "proposed_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Proposed Values"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "expected_result": {
+            "type": "string",
+            "title": "Expected Result"
+          },
+          "impact_scope": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Impact Scope"
+          },
+          "risk": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Risk"
+          },
+          "validation_plan": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Validation Plan"
+          },
+          "rollback_plan": {
+            "type": "string",
+            "title": "Rollback Plan"
+          },
+          "approval_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approval Requirements"
+          },
+          "proposed_by": {
+            "type": "string",
+            "title": "Proposed By"
+          },
+          "proposed_by_type": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent"
+            ],
+            "title": "Proposed By Type"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ChangeSetStatus"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "applied_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change_set_id",
+          "concept_id",
+          "base_version",
+          "target_object_ids",
+          "previous_values",
+          "proposed_values",
+          "rationale",
+          "expected_result",
+          "impact_scope",
+          "risk",
+          "validation_plan",
+          "rollback_plan",
+          "approval_requirements",
+          "proposed_by",
+          "proposed_by_type",
+          "status",
+          "created_at"
+        ],
+        "title": "ConceptChangeSet"
+      },
+      "ConceptDecision": {
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "title": "Decision Id"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "title": "Concept Version"
+          },
+          "variant_id": {
+            "type": "string",
+            "title": "Variant Id"
+          },
+          "action": {
+            "$ref": "#/components/schemas/ReviewAction"
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "reviewer_id": {
+            "type": "string",
+            "title": "Reviewer Id"
+          },
+          "acknowledged_license_warning": {
+            "type": "boolean",
+            "title": "Acknowledged License Warning",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision_id",
+          "concept_id",
+          "concept_version",
+          "variant_id",
+          "action",
+          "rationale",
+          "reviewer_id",
+          "created_at"
+        ],
+        "title": "ConceptDecision"
+      },
+      "ConceptReference": {
+        "properties": {
+          "reference_id": {
+            "type": "string",
+            "title": "Reference Id"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "title": "Concept Version"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "view": {
+            "$ref": "#/components/schemas/RequiredView"
+          },
+          "artifact_uri": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Uri"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReferenceSource"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/concept_lab__schemas__ArtifactProvenance"
+          },
+          "imported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Imported At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reference_id",
+          "concept_id",
+          "concept_version",
+          "title",
+          "view",
+          "artifact_uri",
+          "source",
+          "provenance",
+          "imported_at"
+        ],
+        "title": "ConceptReference"
+      },
+      "ConceptReviewWorkspace": {
+        "properties": {
+          "concept": {
+            "$ref": "#/components/schemas/ConceptSpec"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptReference"
+            },
+            "type": "array",
+            "title": "References"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptVariant"
+            },
+            "type": "array",
+            "title": "Variants"
+          },
+          "style_checks": {
+            "items": {
+              "$ref": "#/components/schemas/StyleCheck"
+            },
+            "type": "array",
+            "title": "Style Checks"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/VariantComment"
+            },
+            "type": "array",
+            "title": "Comments"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptDecision"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "change_sets": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptChangeSet"
+            },
+            "type": "array",
+            "title": "Change Sets"
+          },
+          "generation_runs": {
+            "items": {
+              "$ref": "#/components/schemas/GenerationRun"
+            },
+            "type": "array",
+            "title": "Generation Runs"
+          },
+          "asset_spec_drafts": {
+            "items": {
+              "$ref": "#/components/schemas/AssetSpecDraft"
+            },
+            "type": "array",
+            "title": "Asset Spec Drafts"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "concept",
+          "references",
+          "variants",
+          "style_checks",
+          "comments",
+          "decisions",
+          "change_sets",
+          "generation_runs",
+          "asset_spec_drafts"
+        ],
+        "title": "ConceptReviewWorkspace"
+      },
+      "ConceptSpec": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "project_bible_version_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Bible Version Id"
+          },
+          "feature_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Subject"
+          },
+          "gameplay_function": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Gameplay Function"
+          },
+          "proportions": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Proportions"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/DimensionsMeters"
+          },
+          "materials": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Materials"
+          },
+          "required_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Required Views"
+          },
+          "platform_budget": {
+            "$ref": "#/components/schemas/PlatformBudget"
+          },
+          "style_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Style Constraints"
+          },
+          "forbidden_elements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forbidden Elements"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConceptStatus",
+            "default": "draft"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reference Ids"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "authored_by": {
+            "type": "string",
+            "title": "Authored By"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "project_bible_version_id",
+          "subject",
+          "gameplay_function",
+          "proportions",
+          "dimensions",
+          "materials",
+          "required_views",
+          "platform_budget",
+          "style_constraints",
+          "concept_id",
+          "version",
+          "created_at",
+          "updated_at",
+          "authored_by"
+        ],
+        "title": "ConceptSpec"
+      },
+      "ConceptStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "in_review",
+          "approved",
+          "rejected"
+        ],
+        "title": "ConceptStatus"
+      },
+      "ConceptVariant": {
+        "properties": {
+          "variant_id": {
+            "type": "string",
+            "title": "Variant Id"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "title": "Concept Version"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Reference Ids"
+          },
+          "covered_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Covered Views"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VariantStatus",
+            "default": "proposed"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "generation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiGenerationMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "variant_id",
+          "concept_id",
+          "concept_version",
+          "title",
+          "reference_ids",
+          "covered_views",
+          "execution_mode",
+          "created_at"
+        ],
+        "title": "ConceptVariant"
+      },
+      "DimensionsMeters": {
+        "properties": {
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Width"
+          },
+          "height": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Height"
+          },
+          "depth": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Depth"
+          },
+          "unit": {
+            "type": "string",
+            "const": "m",
+            "title": "Unit",
+            "default": "m"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "width",
+          "height",
+          "depth"
+        ],
+        "title": "DimensionsMeters"
+      },
+      "ExecutionMode": {
+        "type": "string",
+        "enum": [
+          "live",
+          "cached",
+          "mock",
+          "planned",
+          "blocked"
+        ],
+        "title": "ExecutionMode"
+      },
+      "GateStatus": {
+        "type": "string",
+        "enum": [
+          "passed",
+          "failed",
+          "warning",
+          "not_run"
+        ],
+        "title": "GateStatus"
+      },
+      "GenerationRequest": {
+        "properties": {
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Concept Version"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "requested_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Requested Views"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Seed"
+          },
+          "workflow_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Workflow Version"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "adapter_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Adapter Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "fixture_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fixture Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "concept_id",
+          "concept_version",
+          "title",
+          "requested_views",
+          "prompt",
+          "seed",
+          "workflow_version",
+          "execution_mode",
+          "adapter_id"
+        ],
+        "title": "GenerationRequest"
+      },
+      "GenerationRun": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GenerationRequest"
+          },
+          "state": {
+            "$ref": "#/components/schemas/GenerationState"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "result_variant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Variant Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "request",
+          "state",
+          "execution_mode",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GenerationRun"
+      },
+      "GenerationState": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "failed",
+          "blocked",
+          "cancelled"
+        ],
+        "title": "GenerationState"
+      },
+      "GeometryMetrics": {
+        "properties": {
+          "dimensions_m": {
+            "$ref": "#/components/schemas/Vector3Meters"
+          },
+          "triangle_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Triangle Count"
+          },
+          "vertex_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vertex Count"
+          },
+          "material_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Material Count"
+          },
+          "texture_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Texture Count"
+          },
+          "has_uv": {
+            "type": "boolean",
+            "title": "Has Uv"
+          },
+          "is_rigged": {
+            "type": "boolean",
+            "title": "Is Rigged"
+          },
+          "animation_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Animation Names"
+          },
+          "lod_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Lod Count"
+          },
+          "collider_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collider Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dimensions_m",
+          "triangle_count",
+          "vertex_count",
+          "material_count",
+          "texture_count",
+          "has_uv",
+          "is_rigged",
+          "lod_count"
+        ],
+        "title": "GeometryMetrics"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LabAction": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "generate",
+              "evidence",
+              "comment",
+              "approve",
+              "reject",
+              "compile",
+              "preview",
+              "produce"
+            ],
+            "title": "Action"
+          },
+          "variant_id": {
+            "type": "string",
+            "title": "Variant Id",
+            "default": ""
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "LabAction"
+      },
+      "LabSnapshot": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "mock",
+            "title": "Mode",
+            "default": "mock"
+          },
+          "workspace": {
+            "$ref": "#/components/schemas/ConceptReviewWorkspace"
+          },
+          "handoff": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConceptAssetHandoff"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PipelineRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineRun"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetRecord"
+            },
+            "type": "array",
+            "title": "Assets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace",
+          "runs",
+          "assets"
+        ],
+        "title": "LabSnapshot"
+      },
+      "PermissionStatus": {
+        "type": "string",
+        "enum": [
+          "cleared",
+          "warning",
+          "blocked"
+        ],
+        "title": "PermissionStatus"
+      },
+      "PipelineRequest": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "pipeline_run_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Pipeline Run Id"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Idempotency Key"
+          },
+          "retry_of_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Of Run Id"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/AssetSpec"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceAsset"
+          },
+          "source_object_identities": {
+            "items": {
+              "$ref": "#/components/schemas/AssetObjectIdentity"
+            },
+            "type": "array",
+            "maxItems": 10000,
+            "minItems": 1,
+            "title": "Source Object Identities"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_.:-]+$",
+            "title": "Asset Version Id"
+          },
+          "asset_version_number": {
+            "type": "integer",
+            "maximum": 2000000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Asset Version Number"
+          },
+          "output_directory": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Output Directory"
+          },
+          "change_set": {
+            "$ref": "#/components/schemas/AssetChangeSet"
+          },
+          "requested_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          },
+          "timeout_seconds": {
+            "type": "number",
+            "maximum": 3600.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Timeout Seconds",
+            "default": 120
+          },
+          "retry_policy": {
+            "$ref": "#/components/schemas/RetryPolicy"
+          },
+          "creator": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Creator"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pipeline_run_id",
+          "idempotency_key",
+          "spec",
+          "source",
+          "source_object_identities",
+          "asset_version_id",
+          "asset_version_number",
+          "output_directory",
+          "change_set",
+          "requested_mode",
+          "creator"
+        ],
+        "title": "PipelineRequest"
+      },
+      "PipelineRun": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "pipeline_run_id": {
+            "type": "string",
+            "title": "Pipeline Run Id"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "title": "Idempotency Key"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "title": "Asset Version Id"
+          },
+          "requested_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PipelineState"
+          },
+          "change_set_id": {
+            "type": "string",
+            "title": "Change Set Id"
+          },
+          "creator": {
+            "type": "string",
+            "title": "Creator"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessingStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "quality_gates": {
+            "items": {
+              "$ref": "#/components/schemas/QualityGate"
+            },
+            "type": "array",
+            "title": "Quality Gates"
+          },
+          "candidate_version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published_version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rollback_snapshot_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rollback Snapshot Path"
+          },
+          "working_copy_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Working Copy Path"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "retry_of_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Of Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pipeline_run_id",
+          "idempotency_key",
+          "project_id",
+          "asset_id",
+          "asset_version_id",
+          "requested_mode",
+          "execution_mode",
+          "state",
+          "change_set_id",
+          "creator",
+          "steps",
+          "started_at"
+        ],
+        "title": "PipelineRun"
+      },
+      "PipelineState": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "planning",
+          "planned",
+          "waiting_approval",
+          "running",
+          "succeeded",
+          "failed",
+          "cancelled",
+          "timed_out",
+          "rolled_back",
+          "blocked"
+        ],
+        "title": "PipelineState"
+      },
+      "PlatformBudget": {
+        "properties": {
+          "target_platform": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Target Platform"
+          },
+          "max_triangles": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Triangles"
+          },
+          "max_texture_size_px": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Texture Size Px"
+          },
+          "max_material_slots": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Material Slots"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "target_platform",
+          "max_triangles",
+          "max_texture_size_px",
+          "max_material_slots"
+        ],
+        "title": "PlatformBudget"
+      },
+      "ProcessingLog": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "level": {
+            "type": "string",
+            "pattern": "^(debug|info|warning|error)$",
+            "title": "Level"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Attempt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "level",
+          "code",
+          "message",
+          "step_id",
+          "attempt"
+        ],
+        "title": "ProcessingLog"
+      },
+      "ProcessingStep": {
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ProcessingStepKind"
+          },
+          "state": {
+            "$ref": "#/components/schemas/StepState",
+            "default": "queued"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "progress": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Progress",
+            "default": 0
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Attempts",
+            "default": 0
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "logs": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessingLog"
+            },
+            "type": "array",
+            "title": "Logs"
+          },
+          "result": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result"
+          },
+          "skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Reason"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step_id",
+          "kind",
+          "execution_mode"
+        ],
+        "title": "ProcessingStep"
+      },
+      "ProcessingStepKind": {
+        "type": "string",
+        "enum": [
+          "preflight",
+          "snapshot",
+          "clean",
+          "uv_material_check",
+          "lod",
+          "collider",
+          "turntable_aov",
+          "validate",
+          "export",
+          "publish"
+        ],
+        "title": "ProcessingStepKind"
+      },
+      "PublicationStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "validation_failed",
+          "waiting_approval",
+          "approved",
+          "published",
+          "rolled_back"
+        ],
+        "title": "PublicationStatus"
+      },
+      "QualityGate": {
+        "properties": {
+          "gate_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Gate Id"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Label"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GateStatus"
+          },
+          "blocking": {
+            "type": "boolean",
+            "title": "Blocking"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "measurements": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Measurements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gate_id",
+          "label",
+          "status",
+          "blocking",
+          "message"
+        ],
+        "title": "QualityGate"
+      },
+      "ReferenceKind": {
+        "type": "string",
+        "enum": [
+          "imported",
+          "generated"
+        ],
+        "title": "ReferenceKind"
+      },
+      "ReferenceSource": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ReferenceKind"
+          },
+          "source_uri": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Uri"
+          },
+          "creator": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Creator"
+          },
+          "license_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "License Name"
+          },
+          "license_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Uri"
+          },
+          "permission_status": {
+            "$ref": "#/components/schemas/PermissionStatus"
+          },
+          "permission_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permission Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "source_uri",
+          "creator",
+          "license_name",
+          "permission_status"
+        ],
+        "title": "ReferenceSource"
+      },
+      "RequiredView": {
+        "type": "string",
+        "enum": [
+          "front",
+          "back",
+          "left",
+          "right",
+          "top",
+          "bottom",
+          "three_quarter",
+          "turnaround"
+        ],
+        "title": "RequiredView"
+      },
+      "RetryPolicy": {
+        "properties": {
+          "max_attempts": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Max Attempts",
+            "default": 3
+          },
+          "backoff_seconds": {
+            "type": "number",
+            "maximum": 30.0,
+            "minimum": 0.0,
+            "title": "Backoff Seconds",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "RetryPolicy"
+      },
+      "ReviewAction": {
+        "type": "string",
+        "enum": [
+          "approve",
+          "reject"
+        ],
+        "title": "ReviewAction"
+      },
+      "ReviewVerdict": {
+        "type": "string",
+        "enum": [
+          "match",
+          "mismatch",
+          "uncertain"
+        ],
+        "title": "ReviewVerdict"
+      },
+      "RiskLevel": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "RiskLevel"
+      },
+      "SourceAsset": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "source_asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Asset Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Id"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "project_relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Relative Path"
+          },
+          "format": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Format"
+          },
+          "source_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Version"
+          },
+          "source_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Commit"
+          },
+          "source_kind": {
+            "type": "string",
+            "pattern": "^(imported|generated|scanned)$",
+            "title": "Source Kind"
+          },
+          "license_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "License Name"
+          },
+          "license_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Uri"
+          },
+          "origin_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Uri"
+          },
+          "imported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Imported At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_asset_id",
+          "asset_id",
+          "project_id",
+          "project_relative_path",
+          "format",
+          "source_version",
+          "source_kind",
+          "license_name",
+          "imported_at"
+        ],
+        "title": "SourceAsset"
+      },
+      "StepState": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "planned",
+          "running",
+          "succeeded",
+          "failed",
+          "skipped",
+          "cancelled",
+          "timed_out",
+          "rolled_back"
+        ],
+        "title": "StepState"
+      },
+      "StyleAssessment": {
+        "type": "string",
+        "enum": [
+          "consistent",
+          "needs_review",
+          "inconsistent"
+        ],
+        "title": "StyleAssessment"
+      },
+      "StyleCheck": {
+        "properties": {
+          "style_check_id": {
+            "type": "string",
+            "title": "Style Check Id"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "title": "Concept Version"
+          },
+          "variant_id": {
+            "type": "string",
+            "title": "Variant Id"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/StyleEvidenceInput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Evidence"
+          },
+          "assessment": {
+            "$ref": "#/components/schemas/StyleAssessment"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "evidence_coverage": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Evidence Coverage"
+          },
+          "unevaluated_criteria": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unevaluated Criteria"
+          },
+          "method": {
+            "type": "string",
+            "const": "declared-evidence-review",
+            "title": "Method",
+            "default": "declared-evidence-review"
+          },
+          "is_subjective": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Subjective",
+            "default": true
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "style_check_id",
+          "concept_id",
+          "concept_version",
+          "variant_id",
+          "evidence",
+          "assessment",
+          "confidence",
+          "evidence_coverage",
+          "unevaluated_criteria",
+          "created_by",
+          "created_at"
+        ],
+        "title": "StyleCheck"
+      },
+      "StyleEvidenceInput": {
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Criterion"
+          },
+          "criterion_kind": {
+            "type": "string",
+            "enum": [
+              "style_constraint",
+              "forbidden_element"
+            ],
+            "title": "Criterion Kind"
+          },
+          "observed": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Observed"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/ReviewVerdict"
+          },
+          "evidence_reference_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Evidence Reference Id"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rationale"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion",
+          "criterion_kind",
+          "observed",
+          "verdict",
+          "evidence_reference_id",
+          "confidence",
+          "rationale"
+        ],
+        "title": "StyleEvidenceInput"
+      },
+      "UnityStatus": {
+        "type": "string",
+        "enum": [
+          "not_imported",
+          "pending",
+          "imported",
+          "failed",
+          "unavailable"
+        ],
+        "title": "UnityStatus"
+      },
+      "UsageReference": {
+        "properties": {
+          "usage_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Usage Id"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Version Id"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "scene_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Scene Id"
+          },
+          "scene_instance_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Scene Instance Id"
+          },
+          "unity_prefab_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unity Prefab Id"
+          },
+          "unity_status": {
+            "$ref": "#/components/schemas/UnityStatus"
+          },
+          "build_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Build Ids"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "usage_id",
+          "asset_version_id",
+          "project_id",
+          "scene_id",
+          "scene_instance_id",
+          "unity_status",
+          "first_seen_at"
+        ],
+        "title": "UsageReference"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VariantComment": {
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "title": "Comment Id"
+          },
+          "variant_id": {
+            "type": "string",
+            "title": "Variant Id"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Body"
+          },
+          "author_id": {
+            "type": "string",
+            "title": "Author Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "comment_id",
+          "variant_id",
+          "body",
+          "author_id",
+          "created_at"
+        ],
+        "title": "VariantComment"
+      },
+      "VariantStatus": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "approved",
+          "rejected"
+        ],
+        "title": "VariantStatus"
+      },
+      "Vector3Meters": {
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Y"
+          },
+          "z": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Z"
+          },
+          "coordinate_space": {
+            "type": "string",
+            "title": "Coordinate Space",
+            "default": "asset_local"
+          },
+          "axis_convention": {
+            "type": "string",
+            "title": "Axis Convention",
+            "default": "right-handed_z-up"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "default": "meter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "y",
+          "z"
+        ],
+        "title": "Vector3Meters"
+      },
+      "asset_library__schemas__ArtifactProvenance": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Id"
+          },
+          "source_project": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Project"
+          },
+          "source_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Version"
+          },
+          "source_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Commit"
+          },
+          "related_sceneops_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related Sceneops Ids"
+          },
+          "producing_module": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Producing Module"
+          },
+          "tool_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tool Name"
+          },
+          "tool_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Tool Version"
+          },
+          "adapter_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Adapter Version"
+          },
+          "recipe_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Recipe Version"
+          },
+          "creator": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Creator"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          },
+          "approval_state": {
+            "type": "string",
+            "pattern": "^(not_required|pending|approved|rejected)$",
+            "title": "Approval State"
+          },
+          "ai": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AIProvenance"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "source_project",
+          "source_version",
+          "producing_module",
+          "tool_name",
+          "tool_version",
+          "adapter_version",
+          "recipe_version",
+          "creator",
+          "execution_mode",
+          "timestamp",
+          "sha256",
+          "approval_state"
+        ],
+        "title": "ArtifactProvenance"
+      },
+      "concept_lab__schemas__ArtifactProvenance": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "artifact_type": {
+            "type": "string",
+            "const": "concept-image",
+            "title": "Artifact Type",
+            "default": "concept-image"
+          },
+          "source_project_id": {
+            "type": "string",
+            "title": "Source Project Id"
+          },
+          "source_version": {
+            "type": "string",
+            "title": "Source Version"
+          },
+          "related_sceneops_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related Sceneops Ids"
+          },
+          "producing_module": {
+            "type": "string",
+            "title": "Producing Module"
+          },
+          "tool": {
+            "type": "string",
+            "title": "Tool"
+          },
+          "adapter_version": {
+            "type": "string",
+            "title": "Adapter Version"
+          },
+          "workflow_version": {
+            "type": "string",
+            "title": "Workflow Version"
+          },
+          "creator_or_agent": {
+            "type": "string",
+            "title": "Creator Or Agent"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "checksum_sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$",
+            "title": "Checksum Sha256"
+          },
+          "approval_state": {
+            "type": "string",
+            "enum": [
+              "unreviewed",
+              "approved",
+              "rejected"
+            ],
+            "title": "Approval State",
+            "default": "unreviewed"
+          },
+          "ai": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiGenerationMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "source_project_id",
+          "source_version",
+          "producing_module",
+          "tool",
+          "adapter_version",
+          "workflow_version",
+          "creator_or_agent",
+          "execution_mode",
+          "created_at",
+          "checksum_sha256"
+        ],
+        "title": "ArtifactProvenance"
+      }
+    }
+  }
+}

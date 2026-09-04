@@ -1,0 +1,60 @@
+schema_version: 1
+id: concept-lab
+version: 0.1.0
+title: Concept Lab
+description: Produces and reviews traceable concepts and AssetSpec drafts.
+status: active
+feature_flag: concept_lab
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+    - design-room
+  integrations: []
+  optional_integrations:
+    - artifact-store
+    - image-generation
+    - codebuddy-cli
+
+contributes:
+  editors:
+    - concept.moodboard
+    - concept.style_bible
+  commands:
+    - concept.open
+    - concept.style_bible.open
+    - concept.create
+    - concept.change.propose
+    - concept.change.approve
+    - concept.change.apply
+    - concept.reference.import
+    - concept.variant.import
+    - concept.variant.generate
+    - concept.variant.compare
+    - concept.variant.comment
+    - concept.variant.review
+    - concept.style.check
+    - concept.asset_spec_draft.compile
+  events:
+    - concept.version.created@1
+    - concept.variant.recorded@1
+    - concept.variant.reviewed@1
+    - concept.asset_spec_draft.compiled@1
+  jobs:
+    - concept.variant.generate
+  workflows:
+    - concept-to-asset-spec-draft
+  policy_gates:
+    - concept.reference.permission
+    - concept.required_views
+
+permissions:
+  - concept:read
+  - concept:write
+  - concept:review
+  - asset-spec:draft
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: concept_lab

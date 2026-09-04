@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/events/asset.pipeline.event.v1.schema.json",
+  "title": "SceneOps asset pipeline event envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id", "event_type", "event_version", "occurred_at", "project_id",
+    "correlation_id", "causation_id", "actor", "mode", "payload"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "event_type": {
+      "enum": [
+        "asset.pipeline.started", "asset.pipeline.progressed",
+        "asset.pipeline.failed", "asset.pipeline.completed"
+      ]
+    },
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "minLength": 1},
+    "correlation_id": {"type": "string", "minLength": 1},
+    "causation_id": {"type": "string", "minLength": 1},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"enum": ["user", "agent", "system"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pipeline_run_id", "asset_id", "asset_version_id", "artifact_ids",
+        "state", "step_id", "step_state", "progress"
+      ],
+      "properties": {
+        "pipeline_run_id": {"type": "string", "minLength": 1},
+        "asset_id": {"type": "string", "minLength": 1},
+        "asset_version_id": {"type": "string", "minLength": 1},
+        "artifact_ids": {"type": "array", "items": {"type": "string"}},
+        "state": {"type": "string", "minLength": 1},
+        "step_id": {"type": ["string", "null"]},
+        "step_state": {"type": ["string", "null"]},
+        "progress": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

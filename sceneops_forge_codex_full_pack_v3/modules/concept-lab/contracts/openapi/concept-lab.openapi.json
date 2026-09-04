@@ -1,0 +1,3057 @@
+{
+  "components": {
+    "schemas": {
+      "AiGenerationMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "model": {
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "prompt": {
+            "minLength": 1,
+            "title": "Prompt",
+            "type": "string"
+          },
+          "provider": {
+            "minLength": 1,
+            "title": "Provider",
+            "type": "string"
+          },
+          "seed": {
+            "minimum": 0.0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "workflow_version": {
+            "minLength": 1,
+            "title": "Workflow Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "workflow_version",
+          "prompt",
+          "seed"
+        ],
+        "title": "AiGenerationMetadata",
+        "type": "object"
+      },
+      "ApplyChangeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/CommandContext"
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "title": "ApplyChangeRequest",
+        "type": "object"
+      },
+      "ApproveChangeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reviewer_id": {
+            "minLength": 1,
+            "title": "Reviewer Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reviewer_id"
+        ],
+        "title": "ApproveChangeRequest",
+        "type": "object"
+      },
+      "ArtifactProvenance": {
+        "additionalProperties": false,
+        "properties": {
+          "adapter_version": {
+            "title": "Adapter Version",
+            "type": "string"
+          },
+          "ai": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiGenerationMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approval_state": {
+            "default": "unreviewed",
+            "enum": [
+              "unreviewed",
+              "approved",
+              "rejected"
+            ],
+            "title": "Approval State",
+            "type": "string"
+          },
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_type": {
+            "const": "concept-image",
+            "default": "concept-image",
+            "title": "Artifact Type",
+            "type": "string"
+          },
+          "checksum_sha256": {
+            "pattern": "^[a-fA-F0-9]{64}$",
+            "title": "Checksum Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "creator_or_agent": {
+            "title": "Creator Or Agent",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "producing_module": {
+            "title": "Producing Module",
+            "type": "string"
+          },
+          "related_sceneops_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Related Sceneops Ids",
+            "type": "array"
+          },
+          "source_project_id": {
+            "title": "Source Project Id",
+            "type": "string"
+          },
+          "source_version": {
+            "title": "Source Version",
+            "type": "string"
+          },
+          "tool": {
+            "title": "Tool",
+            "type": "string"
+          },
+          "workflow_version": {
+            "title": "Workflow Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "source_project_id",
+          "source_version",
+          "producing_module",
+          "tool",
+          "adapter_version",
+          "workflow_version",
+          "creator_or_agent",
+          "execution_mode",
+          "created_at",
+          "checksum_sha256"
+        ],
+        "title": "ArtifactProvenance",
+        "type": "object"
+      },
+      "AssetSpecDraft": {
+        "additionalProperties": false,
+        "properties": {
+          "approval_decision_id": {
+            "title": "Approval Decision Id",
+            "type": "string"
+          },
+          "approved_variant_id": {
+            "title": "Approved Variant Id",
+            "type": "string"
+          },
+          "asset_spec_draft_id": {
+            "title": "Asset Spec Draft Id",
+            "type": "string"
+          },
+          "concept_reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Concept Reference Ids",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "title": "Created By",
+            "type": "string"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/DimensionsMeters"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "feature_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Id"
+          },
+          "forbidden_elements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Forbidden Elements",
+            "type": "array"
+          },
+          "gameplay_function": {
+            "title": "Gameplay Function",
+            "type": "string"
+          },
+          "materials": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Materials",
+            "type": "array"
+          },
+          "platform_budget": {
+            "$ref": "#/components/schemas/PlatformBudget"
+          },
+          "producing_module": {
+            "const": "concept-lab",
+            "default": "concept-lab",
+            "title": "Producing Module",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "proportions": {
+            "title": "Proportions",
+            "type": "string"
+          },
+          "required_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "title": "Required Views",
+            "type": "array"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "source_concept_id": {
+            "title": "Source Concept Id",
+            "type": "string"
+          },
+          "source_concept_version": {
+            "title": "Source Concept Version",
+            "type": "integer"
+          },
+          "status": {
+            "const": "draft",
+            "default": "draft",
+            "title": "Status",
+            "type": "string"
+          },
+          "style_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Style Constraints",
+            "type": "array"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "required": [
+          "asset_spec_draft_id",
+          "source_concept_id",
+          "source_concept_version",
+          "approved_variant_id",
+          "approval_decision_id",
+          "project_id",
+          "subject",
+          "gameplay_function",
+          "proportions",
+          "dimensions",
+          "materials",
+          "required_views",
+          "platform_budget",
+          "style_constraints",
+          "forbidden_elements",
+          "concept_reference_ids",
+          "execution_mode",
+          "created_by",
+          "created_at"
+        ],
+        "title": "AssetSpecDraft",
+        "type": "object"
+      },
+      "ChangeSetStatus": {
+        "enum": [
+          "proposed",
+          "approved",
+          "applied",
+          "rejected"
+        ],
+        "title": "ChangeSetStatus",
+        "type": "string"
+      },
+      "CommandContext": {
+        "additionalProperties": false,
+        "properties": {
+          "actor_id": {
+            "minLength": 1,
+            "title": "Actor Id",
+            "type": "string"
+          },
+          "causation_id": {
+            "minLength": 1,
+            "title": "Causation Id",
+            "type": "string"
+          },
+          "correlation_id": {
+            "minLength": 1,
+            "title": "Correlation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor_id",
+          "correlation_id",
+          "causation_id"
+        ],
+        "title": "CommandContext",
+        "type": "object"
+      },
+      "CommentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "author_id": {
+            "minLength": 1,
+            "title": "Author Id",
+            "type": "string"
+          },
+          "body": {
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body",
+          "author_id"
+        ],
+        "title": "CommentRequest",
+        "type": "object"
+      },
+      "CompareRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "variant_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "title": "Variant Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "concept_version",
+          "variant_ids"
+        ],
+        "title": "CompareRequest",
+        "type": "object"
+      },
+      "CompileAssetSpecRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/CommandContext"
+          },
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "variant_id": {
+            "minLength": 1,
+            "title": "Variant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "command",
+          "concept_version",
+          "variant_id"
+        ],
+        "title": "CompileAssetSpecRequest",
+        "type": "object"
+      },
+      "ConceptChangeSet": {
+        "additionalProperties": false,
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "approval_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Approval Requirements",
+            "type": "array"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          },
+          "base_version": {
+            "title": "Base Version",
+            "type": "integer"
+          },
+          "change_set_id": {
+            "title": "Change Set Id",
+            "type": "string"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expected_result": {
+            "title": "Expected Result",
+            "type": "string"
+          },
+          "impact_scope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Impact Scope",
+            "type": "array"
+          },
+          "previous_values": {
+            "additionalProperties": true,
+            "title": "Previous Values",
+            "type": "object"
+          },
+          "proposed_by": {
+            "title": "Proposed By",
+            "type": "string"
+          },
+          "proposed_by_type": {
+            "enum": [
+              "user",
+              "agent"
+            ],
+            "title": "Proposed By Type",
+            "type": "string"
+          },
+          "proposed_values": {
+            "additionalProperties": true,
+            "title": "Proposed Values",
+            "type": "object"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "risk": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Risk",
+            "type": "string"
+          },
+          "rollback_plan": {
+            "title": "Rollback Plan",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ChangeSetStatus"
+          },
+          "target_integration": {
+            "const": "concept-lab",
+            "default": "concept-lab",
+            "title": "Target Integration",
+            "type": "string"
+          },
+          "target_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Object Ids",
+            "type": "array"
+          },
+          "validation_plan": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Validation Plan",
+            "type": "array"
+          }
+        },
+        "required": [
+          "change_set_id",
+          "concept_id",
+          "base_version",
+          "target_object_ids",
+          "previous_values",
+          "proposed_values",
+          "rationale",
+          "expected_result",
+          "impact_scope",
+          "risk",
+          "validation_plan",
+          "rollback_plan",
+          "approval_requirements",
+          "proposed_by",
+          "proposed_by_type",
+          "status",
+          "created_at"
+        ],
+        "title": "ConceptChangeSet",
+        "type": "object"
+      },
+      "ConceptCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "dimensions": {
+            "$ref": "#/components/schemas/DimensionsMeters"
+          },
+          "feature_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Id"
+          },
+          "forbidden_elements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Forbidden Elements",
+            "type": "array"
+          },
+          "gameplay_function": {
+            "minLength": 1,
+            "title": "Gameplay Function",
+            "type": "string"
+          },
+          "materials": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Materials",
+            "type": "array"
+          },
+          "platform_budget": {
+            "$ref": "#/components/schemas/PlatformBudget"
+          },
+          "project_bible_version_id": {
+            "minLength": 1,
+            "title": "Project Bible Version Id",
+            "type": "string"
+          },
+          "project_id": {
+            "minLength": 1,
+            "title": "Project Id",
+            "type": "string"
+          },
+          "proportions": {
+            "minLength": 1,
+            "title": "Proportions",
+            "type": "string"
+          },
+          "required_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "minItems": 1,
+            "title": "Required Views",
+            "type": "array"
+          },
+          "style_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Style Constraints",
+            "type": "array"
+          },
+          "subject": {
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "required": [
+          "project_id",
+          "project_bible_version_id",
+          "subject",
+          "gameplay_function",
+          "proportions",
+          "dimensions",
+          "materials",
+          "required_views",
+          "platform_budget",
+          "style_constraints"
+        ],
+        "title": "ConceptCreateInput",
+        "type": "object"
+      },
+      "ConceptDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "acknowledged_license_warning": {
+            "default": false,
+            "title": "Acknowledged License Warning",
+            "type": "boolean"
+          },
+          "action": {
+            "$ref": "#/components/schemas/ReviewAction"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "concept_version": {
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "reviewer_id": {
+            "title": "Reviewer Id",
+            "type": "string"
+          },
+          "variant_id": {
+            "title": "Variant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision_id",
+          "concept_id",
+          "concept_version",
+          "variant_id",
+          "action",
+          "rationale",
+          "reviewer_id",
+          "created_at"
+        ],
+        "title": "ConceptDecision",
+        "type": "object"
+      },
+      "ConceptPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "dimensions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DimensionsMeters"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "forbidden_elements": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forbidden Elements"
+          },
+          "gameplay_function": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gameplay Function"
+          },
+          "materials": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Materials"
+          },
+          "platform_budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlatformBudget"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proportions": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proportions"
+          },
+          "required_views": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequiredView"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Views"
+          },
+          "style_constraints": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Constraints"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          }
+        },
+        "title": "ConceptPatch",
+        "type": "object"
+      },
+      "ConceptReference": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_uri": {
+            "minLength": 1,
+            "title": "Artifact Uri",
+            "type": "string"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "concept_version": {
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "imported_at": {
+            "format": "date-time",
+            "title": "Imported At",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ArtifactProvenance"
+          },
+          "reference_id": {
+            "title": "Reference Id",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReferenceSource"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "view": {
+            "$ref": "#/components/schemas/RequiredView"
+          }
+        },
+        "required": [
+          "reference_id",
+          "concept_id",
+          "concept_version",
+          "title",
+          "view",
+          "artifact_uri",
+          "source",
+          "provenance",
+          "imported_at"
+        ],
+        "title": "ConceptReference",
+        "type": "object"
+      },
+      "ConceptReviewWorkspace": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_spec_drafts": {
+            "items": {
+              "$ref": "#/components/schemas/AssetSpecDraft"
+            },
+            "title": "Asset Spec Drafts",
+            "type": "array"
+          },
+          "change_sets": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptChangeSet"
+            },
+            "title": "Change Sets",
+            "type": "array"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/VariantComment"
+            },
+            "title": "Comments",
+            "type": "array"
+          },
+          "concept": {
+            "$ref": "#/components/schemas/ConceptSpec"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptDecision"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "generation_runs": {
+            "items": {
+              "$ref": "#/components/schemas/GenerationRun"
+            },
+            "title": "Generation Runs",
+            "type": "array"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptReference"
+            },
+            "title": "References",
+            "type": "array"
+          },
+          "style_checks": {
+            "items": {
+              "$ref": "#/components/schemas/StyleCheck"
+            },
+            "title": "Style Checks",
+            "type": "array"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptVariant"
+            },
+            "title": "Variants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "concept",
+          "references",
+          "variants",
+          "style_checks",
+          "comments",
+          "decisions",
+          "change_sets",
+          "generation_runs",
+          "asset_spec_drafts"
+        ],
+        "title": "ConceptReviewWorkspace",
+        "type": "object"
+      },
+      "ConceptSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "authored_by": {
+            "title": "Authored By",
+            "type": "string"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/DimensionsMeters"
+          },
+          "feature_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Id"
+          },
+          "forbidden_elements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Forbidden Elements",
+            "type": "array"
+          },
+          "gameplay_function": {
+            "minLength": 1,
+            "title": "Gameplay Function",
+            "type": "string"
+          },
+          "materials": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Materials",
+            "type": "array"
+          },
+          "platform_budget": {
+            "$ref": "#/components/schemas/PlatformBudget"
+          },
+          "project_bible_version_id": {
+            "minLength": 1,
+            "title": "Project Bible Version Id",
+            "type": "string"
+          },
+          "project_id": {
+            "minLength": 1,
+            "title": "Project Id",
+            "type": "string"
+          },
+          "proportions": {
+            "minLength": 1,
+            "title": "Proportions",
+            "type": "string"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reference Ids",
+            "type": "array"
+          },
+          "required_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "minItems": 1,
+            "title": "Required Views",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConceptStatus",
+            "default": "draft"
+          },
+          "style_constraints": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Style Constraints",
+            "type": "array"
+          },
+          "subject": {
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "project_id",
+          "project_bible_version_id",
+          "subject",
+          "gameplay_function",
+          "proportions",
+          "dimensions",
+          "materials",
+          "required_views",
+          "platform_budget",
+          "style_constraints",
+          "concept_id",
+          "version",
+          "created_at",
+          "updated_at",
+          "authored_by"
+        ],
+        "title": "ConceptSpec",
+        "type": "object"
+      },
+      "ConceptStatus": {
+        "enum": [
+          "draft",
+          "in_review",
+          "approved",
+          "rejected"
+        ],
+        "title": "ConceptStatus",
+        "type": "string"
+      },
+      "ConceptVariant": {
+        "additionalProperties": false,
+        "properties": {
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "concept_version": {
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "covered_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "minItems": 1,
+            "title": "Covered Views",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "generation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AiGenerationMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Reference Ids",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VariantStatus",
+            "default": "proposed"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "variant_id": {
+            "title": "Variant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variant_id",
+          "concept_id",
+          "concept_version",
+          "title",
+          "reference_ids",
+          "covered_views",
+          "execution_mode",
+          "created_at"
+        ],
+        "title": "ConceptVariant",
+        "type": "object"
+      },
+      "CreateConceptRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/CommandContext"
+          },
+          "concept": {
+            "$ref": "#/components/schemas/ConceptCreateInput"
+          }
+        },
+        "required": [
+          "command",
+          "concept"
+        ],
+        "title": "CreateConceptRequest",
+        "type": "object"
+      },
+      "DimensionsMeters": {
+        "additionalProperties": false,
+        "properties": {
+          "depth": {
+            "exclusiveMinimum": 0.0,
+            "title": "Depth",
+            "type": "number"
+          },
+          "height": {
+            "exclusiveMinimum": 0.0,
+            "title": "Height",
+            "type": "number"
+          },
+          "unit": {
+            "const": "m",
+            "default": "m",
+            "title": "Unit",
+            "type": "string"
+          },
+          "width": {
+            "exclusiveMinimum": 0.0,
+            "title": "Width",
+            "type": "number"
+          }
+        },
+        "required": [
+          "width",
+          "height",
+          "depth"
+        ],
+        "title": "DimensionsMeters",
+        "type": "object"
+      },
+      "ExecutionMode": {
+        "enum": [
+          "live",
+          "cached",
+          "mock",
+          "planned",
+          "blocked"
+        ],
+        "title": "ExecutionMode",
+        "type": "string"
+      },
+      "GenerateVariantRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/CommandContext"
+          },
+          "generation": {
+            "$ref": "#/components/schemas/GenerationRequest"
+          }
+        },
+        "required": [
+          "command",
+          "generation"
+        ],
+        "title": "GenerateVariantRequest",
+        "type": "object"
+      },
+      "GenerationOutcome": {
+        "additionalProperties": false,
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/GenerationRun"
+          },
+          "variant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConceptVariant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "title": "GenerationOutcome",
+        "type": "object"
+      },
+      "GenerationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "adapter_id": {
+            "minLength": 1,
+            "title": "Adapter Id",
+            "type": "string"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "fixture_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fixture Key"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "prompt": {
+            "minLength": 1,
+            "title": "Prompt",
+            "type": "string"
+          },
+          "requested_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "minItems": 1,
+            "title": "Requested Views",
+            "type": "array"
+          },
+          "seed": {
+            "minimum": 0.0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "workflow_version": {
+            "minLength": 1,
+            "title": "Workflow Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "concept_id",
+          "concept_version",
+          "title",
+          "requested_views",
+          "prompt",
+          "seed",
+          "workflow_version",
+          "execution_mode",
+          "adapter_id"
+        ],
+        "title": "GenerationRequest",
+        "type": "object"
+      },
+      "GenerationRun": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GenerationRequest"
+          },
+          "result_variant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Variant Id"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/GenerationState"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "request",
+          "state",
+          "execution_mode",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GenerationRun",
+        "type": "object"
+      },
+      "GenerationState": {
+        "enum": [
+          "queued",
+          "running",
+          "succeeded",
+          "failed",
+          "blocked",
+          "cancelled"
+        ],
+        "title": "GenerationState",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ImportReferenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "reference": {
+            "$ref": "#/components/schemas/ImportedReferenceInput"
+          }
+        },
+        "required": [
+          "concept_version",
+          "reference"
+        ],
+        "title": "ImportReferenceRequest",
+        "type": "object"
+      },
+      "ImportVariantRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/CommandContext"
+          },
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Reference Ids",
+            "type": "array"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "command",
+          "concept_version",
+          "title",
+          "reference_ids"
+        ],
+        "title": "ImportVariantRequest",
+        "type": "object"
+      },
+      "ImportedReferenceInput": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_uri": {
+            "minLength": 1,
+            "title": "Artifact Uri",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ArtifactProvenance"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ReferenceSource"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "view": {
+            "$ref": "#/components/schemas/RequiredView"
+          }
+        },
+        "required": [
+          "title",
+          "view",
+          "artifact_uri",
+          "source",
+          "provenance"
+        ],
+        "title": "ImportedReferenceInput",
+        "type": "object"
+      },
+      "PermissionStatus": {
+        "enum": [
+          "cleared",
+          "warning",
+          "blocked"
+        ],
+        "title": "PermissionStatus",
+        "type": "string"
+      },
+      "PlatformBudget": {
+        "additionalProperties": false,
+        "properties": {
+          "max_material_slots": {
+            "exclusiveMinimum": 0.0,
+            "title": "Max Material Slots",
+            "type": "integer"
+          },
+          "max_texture_size_px": {
+            "exclusiveMinimum": 0.0,
+            "title": "Max Texture Size Px",
+            "type": "integer"
+          },
+          "max_triangles": {
+            "exclusiveMinimum": 0.0,
+            "title": "Max Triangles",
+            "type": "integer"
+          },
+          "target_platform": {
+            "minLength": 1,
+            "title": "Target Platform",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_platform",
+          "max_triangles",
+          "max_texture_size_px",
+          "max_material_slots"
+        ],
+        "title": "PlatformBudget",
+        "type": "object"
+      },
+      "ProposeChangeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "base_version": {
+            "minimum": 1.0,
+            "title": "Base Version",
+            "type": "integer"
+          },
+          "expected_result": {
+            "minLength": 1,
+            "title": "Expected Result",
+            "type": "string"
+          },
+          "impact_scope": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Impact Scope",
+            "type": "array"
+          },
+          "patch": {
+            "$ref": "#/components/schemas/ConceptPatch"
+          },
+          "proposed_by": {
+            "minLength": 1,
+            "title": "Proposed By",
+            "type": "string"
+          },
+          "proposed_by_type": {
+            "enum": [
+              "user",
+              "agent"
+            ],
+            "title": "Proposed By Type",
+            "type": "string"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "risk": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Risk",
+            "type": "string"
+          },
+          "rollback_plan": {
+            "minLength": 1,
+            "title": "Rollback Plan",
+            "type": "string"
+          },
+          "validation_plan": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Validation Plan",
+            "type": "array"
+          }
+        },
+        "required": [
+          "base_version",
+          "patch",
+          "rationale",
+          "expected_result",
+          "impact_scope",
+          "risk",
+          "validation_plan",
+          "rollback_plan",
+          "proposed_by",
+          "proposed_by_type"
+        ],
+        "title": "ProposeChangeRequest",
+        "type": "object"
+      },
+      "ReferenceKind": {
+        "enum": [
+          "imported",
+          "generated"
+        ],
+        "title": "ReferenceKind",
+        "type": "string"
+      },
+      "ReferenceSource": {
+        "additionalProperties": false,
+        "properties": {
+          "creator": {
+            "minLength": 1,
+            "title": "Creator",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ReferenceKind"
+          },
+          "license_name": {
+            "minLength": 1,
+            "title": "License Name",
+            "type": "string"
+          },
+          "license_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Uri"
+          },
+          "permission_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permission Notes"
+          },
+          "permission_status": {
+            "$ref": "#/components/schemas/PermissionStatus"
+          },
+          "source_uri": {
+            "minLength": 1,
+            "title": "Source Uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "source_uri",
+          "creator",
+          "license_name",
+          "permission_status"
+        ],
+        "title": "ReferenceSource",
+        "type": "object"
+      },
+      "RequiredView": {
+        "enum": [
+          "front",
+          "back",
+          "left",
+          "right",
+          "top",
+          "bottom",
+          "three_quarter",
+          "turnaround"
+        ],
+        "title": "RequiredView",
+        "type": "string"
+      },
+      "ReviewAction": {
+        "enum": [
+          "approve",
+          "reject"
+        ],
+        "title": "ReviewAction",
+        "type": "string"
+      },
+      "ReviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "acknowledge_license_warning": {
+            "default": false,
+            "title": "Acknowledge License Warning",
+            "type": "boolean"
+          },
+          "action": {
+            "$ref": "#/components/schemas/ReviewAction"
+          },
+          "command": {
+            "$ref": "#/components/schemas/CommandContext"
+          },
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "command",
+          "concept_version",
+          "action",
+          "rationale"
+        ],
+        "title": "ReviewRequest",
+        "type": "object"
+      },
+      "ReviewVerdict": {
+        "enum": [
+          "match",
+          "mismatch",
+          "uncertain"
+        ],
+        "title": "ReviewVerdict",
+        "type": "string"
+      },
+      "StyleAssessment": {
+        "enum": [
+          "consistent",
+          "needs_review",
+          "inconsistent"
+        ],
+        "title": "StyleAssessment",
+        "type": "string"
+      },
+      "StyleCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "assessment": {
+            "$ref": "#/components/schemas/StyleAssessment"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "concept_version": {
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "title": "Created By",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/StyleEvidenceInput"
+            },
+            "minItems": 1,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "evidence_coverage": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Evidence Coverage",
+            "type": "number"
+          },
+          "is_subjective": {
+            "const": true,
+            "default": true,
+            "title": "Is Subjective",
+            "type": "boolean"
+          },
+          "method": {
+            "const": "declared-evidence-review",
+            "default": "declared-evidence-review",
+            "title": "Method",
+            "type": "string"
+          },
+          "style_check_id": {
+            "title": "Style Check Id",
+            "type": "string"
+          },
+          "unevaluated_criteria": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unevaluated Criteria",
+            "type": "array"
+          },
+          "variant_id": {
+            "title": "Variant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "style_check_id",
+          "concept_id",
+          "concept_version",
+          "variant_id",
+          "evidence",
+          "assessment",
+          "confidence",
+          "evidence_coverage",
+          "unevaluated_criteria",
+          "created_by",
+          "created_at"
+        ],
+        "title": "StyleCheck",
+        "type": "object"
+      },
+      "StyleCheckRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "concept_version": {
+            "minimum": 1.0,
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "created_by": {
+            "minLength": 1,
+            "title": "Created By",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/StyleEvidenceInput"
+            },
+            "minItems": 1,
+            "title": "Evidence",
+            "type": "array"
+          }
+        },
+        "required": [
+          "concept_version",
+          "created_by",
+          "evidence"
+        ],
+        "title": "StyleCheckRequest",
+        "type": "object"
+      },
+      "StyleEvidenceInput": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "criterion": {
+            "minLength": 1,
+            "title": "Criterion",
+            "type": "string"
+          },
+          "criterion_kind": {
+            "enum": [
+              "style_constraint",
+              "forbidden_element"
+            ],
+            "title": "Criterion Kind",
+            "type": "string"
+          },
+          "evidence_reference_id": {
+            "minLength": 1,
+            "title": "Evidence Reference Id",
+            "type": "string"
+          },
+          "observed": {
+            "minLength": 1,
+            "title": "Observed",
+            "type": "string"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/ReviewVerdict"
+          }
+        },
+        "required": [
+          "criterion",
+          "criterion_kind",
+          "observed",
+          "verdict",
+          "evidence_reference_id",
+          "confidence",
+          "rationale"
+        ],
+        "title": "StyleEvidenceInput",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VariantComment": {
+        "additionalProperties": false,
+        "properties": {
+          "author_id": {
+            "title": "Author Id",
+            "type": "string"
+          },
+          "body": {
+            "minLength": 1,
+            "title": "Body",
+            "type": "string"
+          },
+          "comment_id": {
+            "title": "Comment Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "variant_id": {
+            "title": "Variant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "comment_id",
+          "variant_id",
+          "body",
+          "author_id",
+          "created_at"
+        ],
+        "title": "VariantComment",
+        "type": "object"
+      },
+      "VariantComparison": {
+        "additionalProperties": false,
+        "properties": {
+          "comparison_id": {
+            "title": "Comparison Id",
+            "type": "string"
+          },
+          "concept_id": {
+            "title": "Concept Id",
+            "type": "string"
+          },
+          "concept_version": {
+            "title": "Concept Version",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/VariantComparisonEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "comparison_id",
+          "concept_id",
+          "concept_version",
+          "entries",
+          "created_at"
+        ],
+        "title": "VariantComparison",
+        "type": "object"
+      },
+      "VariantComparisonEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "covered_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "title": "Covered Views",
+            "type": "array"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "latest_style_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StyleAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latest_style_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Style Confidence"
+          },
+          "missing_required_views": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredView"
+            },
+            "title": "Missing Required Views",
+            "type": "array"
+          },
+          "permission_statuses": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionStatus"
+            },
+            "title": "Permission Statuses",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VariantStatus"
+          },
+          "variant_id": {
+            "title": "Variant Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variant_id",
+          "status",
+          "execution_mode",
+          "covered_views",
+          "missing_required_views",
+          "permission_statuses"
+        ],
+        "title": "VariantComparisonEntry",
+        "type": "object"
+      },
+      "VariantStatus": {
+        "enum": [
+          "proposed",
+          "approved",
+          "rejected"
+        ],
+        "title": "VariantStatus",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "title": "SceneOps Concept Lab API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/concepts": {
+      "post": {
+        "operationId": "create_concept_v1_concepts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConceptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptSpec"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Concept",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}": {
+      "get": {
+        "operationId": "get_concept_v1_concepts__concept_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptSpec"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Concept",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/asset-spec-drafts": {
+      "post": {
+        "operationId": "compile_asset_spec_v1_concepts__concept_id__asset_spec_drafts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompileAssetSpecRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetSpecDraft"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compile Asset Spec",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/changes": {
+      "post": {
+        "operationId": "propose_change_v1_concepts__concept_id__changes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposeChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptChangeSet"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Propose Change",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/changes/{change_set_id}/apply": {
+      "post": {
+        "operationId": "apply_change_v1_concepts__concept_id__changes__change_set_id__apply_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "change_set_id",
+            "required": true,
+            "schema": {
+              "title": "Change Set Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptSpec"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Change",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/changes/{change_set_id}/approve": {
+      "post": {
+        "operationId": "approve_change_v1_concepts__concept_id__changes__change_set_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "change_set_id",
+            "required": true,
+            "schema": {
+              "title": "Change Set Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptChangeSet"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Change",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/comparisons": {
+      "post": {
+        "operationId": "compare_v1_concepts__concept_id__comparisons_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompareRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantComparison"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/references": {
+      "post": {
+        "operationId": "import_reference_v1_concepts__concept_id__references_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportReferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptReference"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Reference",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/review-workspace": {
+      "get": {
+        "operationId": "review_workspace_v1_concepts__concept_id__review_workspace_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptReviewWorkspace"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Workspace",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/variants/generate": {
+      "post": {
+        "operationId": "generate_variant_v1_concepts__concept_id__variants_generate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateVariantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerationOutcome"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Variant",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/variants/import": {
+      "post": {
+        "operationId": "import_variant_v1_concepts__concept_id__variants_import_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportVariantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptVariant"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Variant",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/variants/{variant_id}/comments": {
+      "post": {
+        "operationId": "comment_v1_concepts__concept_id__variants__variant_id__comments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant_id",
+            "required": true,
+            "schema": {
+              "title": "Variant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantComment"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Comment",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/variants/{variant_id}/review": {
+      "post": {
+        "operationId": "review_v1_concepts__concept_id__variants__variant_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant_id",
+            "required": true,
+            "schema": {
+              "title": "Variant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConceptDecision"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/variants/{variant_id}/style-checks": {
+      "post": {
+        "operationId": "add_style_check_v1_concepts__concept_id__variants__variant_id__style_checks_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant_id",
+            "required": true,
+            "schema": {
+              "title": "Variant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StyleCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleCheck"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Style Check",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    },
+    "/v1/concepts/{concept_id}/versions": {
+      "get": {
+        "operationId": "list_versions_v1_concepts__concept_id__versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "concept_id",
+            "required": true,
+            "schema": {
+              "title": "Concept Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConceptSpec"
+                  },
+                  "title": "Response List Versions V1 Concepts  Concept Id  Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Versions",
+        "tags": [
+          "concept-lab"
+        ]
+      }
+    }
+  }
+}

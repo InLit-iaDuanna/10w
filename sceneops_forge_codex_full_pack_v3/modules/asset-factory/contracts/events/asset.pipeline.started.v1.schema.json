@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/events/asset.pipeline.started.v1.schema.json",
+  "title": "asset.pipeline.started@1",
+  "$ref": "./asset.pipeline.event.v1.schema.json",
+  "properties": {
+    "event_type": {"const": "asset.pipeline.started"}
+  }
+}

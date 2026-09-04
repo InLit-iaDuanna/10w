@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/events/asset.version.published.v1.schema.json",
+  "title": "asset.version.published@1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "event_type": {"const": "asset.version.published"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "minLength": 1},
+    "correlation_id": {"type": "string", "minLength": 1},
+    "causation_id": {"type": "string", "minLength": 1},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"enum": ["user", "agent", "system"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "asset_version_id", "version", "artifact_ids", "approval_id"],
+      "properties": {
+        "asset_id": {"type": "string", "minLength": 1},
+        "asset_version_id": {"type": "string", "minLength": 1},
+        "version": {"type": "integer", "minimum": 1},
+        "artifact_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "approval_id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

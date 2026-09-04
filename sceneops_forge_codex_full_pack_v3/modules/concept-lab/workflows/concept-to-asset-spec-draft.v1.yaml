@@ -1,0 +1,27 @@
+schema_version: 1
+id: concept-to-asset-spec-draft
+version: 1
+owner_module: concept-lab
+description: 将概念需求推进到经过人工批准的 AssetSpec 草稿。
+nodes:
+  - id: concept.create
+    command: concept.create
+  - id: references.collect
+    any_of_commands:
+      - concept.reference.import
+      - concept.variant.generate
+  - id: style.evidence
+    command: concept.style.check
+  - id: human.review
+    command: concept.variant.review
+    approval_pause: true
+  - id: asset-spec.compile
+    command: concept.asset_spec_draft.compile
+edges:
+  - [concept.create, references.collect]
+  - [references.collect, style.evidence]
+  - [style.evidence, human.review]
+  - [human.review, asset-spec.compile]
+truthfulness:
+  generation_modes: [live, cached, mock, planned, blocked]
+  asset_spec_output: draft

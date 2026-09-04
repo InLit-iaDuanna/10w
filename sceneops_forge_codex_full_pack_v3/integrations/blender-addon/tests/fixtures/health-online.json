@@ -1,0 +1,9 @@
+{
+  "integration_id": "blender",
+  "healthy": true,
+  "mode": "mock",
+  "version": "mock-1",
+  "code": "BLENDER_MOCK_READY",
+  "message": "Deterministic fixture adapter is ready; Blender was not invoked.",
+  "checked_at": "2026-09-05T00:00:00Z"
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/manifests/asset-version.schema.json",
+  "title": "SceneOps AssetVersion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "asset_version_id",
+    "asset_id",
+    "source_asset_id",
+    "version",
+    "status",
+    "execution_mode",
+    "metrics",
+    "object_identities",
+    "outputs",
+    "quality_gates",
+    "provenance",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "asset_version_id": {"type": "string", "minLength": 1},
+    "asset_id": {"type": "string", "minLength": 1},
+    "source_asset_id": {"type": "string", "minLength": 1},
+    "version": {"type": "integer", "minimum": 1},
+    "status": {
+      "enum": [
+        "draft",
+        "validation_failed",
+        "waiting_approval",
+        "approved",
+        "published",
+        "rolled_back"
+      ]
+    },
+    "execution_mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "metrics": {"type": "object"},
+    "object_identities": {"type": "array", "items": {"type": "object"}},
+    "outputs": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "quality_gates": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "provenance": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "approval_id": {"type": ["string", "null"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "published_at": {"type": ["string", "null"], "format": "date-time"}
+  }
+}
