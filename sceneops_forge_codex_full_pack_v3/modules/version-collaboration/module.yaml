@@ -1,0 +1,66 @@
+schema_version: 1
+id: version-collaboration
+version: 0.1.0
+title: Version and Collaboration
+description: Auditable Git/LFS review, collaboration, four-layer diff, locks, approvals, and rollback proposals.
+status: active
+feature_flag: version_collaboration
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+  integrations:
+    - git
+  optional_integrations:
+    - git-lfs
+    - render-ops
+    - ai-playtest
+    - build-release
+
+contributes:
+  editors:
+    - review.version-diff
+    - review.session
+    - review.activity
+  commands:
+    - review.session.create
+    - review.comment.add
+    - review.assignment.record
+    - review.decision.record
+    - review.approval.record
+    - review.lock.acquire
+    - review.lock.release
+    - review.rollback.propose
+    - review.rollback.execute
+    - review.release.link
+  events:
+    - review.session.created@1
+    - review.revision.published@1
+    - review.comment.added@1
+    - review.assignment.recorded@1
+    - review.decision.recorded@1
+    - review.approval.recorded@1
+    - review.lock.recorded@1
+    - review.rollback.proposed@1
+    - review.rollback.executed@1
+    - review.release.linked@1
+  workflows:
+    - review-to-release
+  policy_gates:
+    - review.stale-base
+    - review.binary-lock
+    - review.rollback-approval
+
+permissions:
+  - review:read
+  - review:create
+  - review:comment
+  - review:assign
+  - review:approve
+  - version:lock
+  - version:rollback
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: version_collaboration

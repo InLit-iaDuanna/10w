@@ -1,0 +1,137 @@
+.review-surface {
+  min-height: 100%;
+  padding: 16px;
+  color: var(--text-primary);
+  background: var(--surface-1);
+}
+
+.review-surface__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.review-surface__header h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.review-surface__context,
+.review-surface__hint,
+.review-activity small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.review-mode {
+  font: 12px/18px ui-monospace, SFMono-Regular, monospace;
+}
+
+.review-mode--live,
+.review-mode--cached,
+.review-mode--mock,
+.review-mode--planned,
+.review-mode--blocked {
+  color: var(--text-secondary);
+}
+
+.review-mode--blocked,
+.review-conflicts {
+  color: var(--critical);
+}
+
+.review-layer-tabs {
+  display: flex;
+  gap: 2px;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.review-layer-tabs button,
+.review-action {
+  min-height: 28px;
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border: 1px solid var(--border-default);
+}
+
+.review-layer-tabs button[aria-pressed="true"] {
+  border-bottom-color: var(--home-amber);
+}
+
+.review-layer-result,
+.review-summary {
+  display: block;
+  margin-top: 12px;
+  white-space: pre-wrap;
+}
+
+.review-layer-state {
+  color: var(--text-secondary);
+  font: 12px/18px ui-monospace, SFMono-Regular, monospace;
+}
+
+.review-layer-result ul {
+  display: grid;
+  gap: 6px;
+  padding-left: 20px;
+}
+
+.review-layer-result li {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(160px, 1fr);
+  gap: 12px;
+}
+
+.review-layer-result small,
+.review-layer-result dd {
+  color: var(--text-secondary);
+}
+
+.review-layer-result dl {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 6px 12px;
+}
+
+.review-layer-result dd {
+  margin: 0;
+}
+
+.review-activity {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+.review-activity li {
+  display: grid;
+  grid-template-columns: 190px 1fr auto;
+  gap: 12px;
+}
+
+.review-collaboration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.review-collaboration-list {
+  padding: 10px;
+  border: 1px solid var(--border-default);
+  background: var(--surface-2);
+}
+
+.review-collaboration-list h3,
+.review-collaboration-list p {
+  margin: 0;
+}
+
+.review-collaboration-list ul {
+  margin-bottom: 0;
+  padding-left: 18px;
+}

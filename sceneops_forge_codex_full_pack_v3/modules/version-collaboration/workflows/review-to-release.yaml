@@ -1,0 +1,28 @@
+schema_version: 1
+id: review-to-release
+version: 0.1.0
+title: 评审到发布证据链
+execution_mode: planned
+inputs:
+  - project_id
+  - repository_id
+  - base_commit
+  - target_commit
+nodes:
+  - id: inspect-version
+    command: review.session.create
+    result: immutable-review-revision
+  - id: human-decision
+    command: review.decision.record
+    waits_for_approval: true
+    depends_on: [inspect-version]
+  - id: observe-core-approval
+    command: review.approval.record
+    depends_on: [human-decision]
+  - id: link-release
+    command: review.release.link
+    depends_on: [observe-core-approval]
+notes:
+  - The build-release module owns release creation and calls the final link command.
+  - Missing semantic, visual, or behavior providers stay unavailable; nodes never silently skip.
+  - Rollback is a separate ChangeSet and approval flow, not a reset step in this workflow.
