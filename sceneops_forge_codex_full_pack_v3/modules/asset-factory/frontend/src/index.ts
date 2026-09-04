@@ -12,3 +12,5 @@ export {
   manifest,
   moduleContribution,
 } from "./manifest.ts";
+
+export { ConceptAssetsWorkbench } from './ConceptAssetsWorkbench';

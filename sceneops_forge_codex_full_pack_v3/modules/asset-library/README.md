@@ -70,3 +70,7 @@ results = service.search(AssetSearchFilter(query="key", has_collider=True))
 The root module runtime, generated OpenAPI TypeScript client, artifact-store, and
 Unity consumer were absent at this task's parallel starting commit. Their wiring
 is therefore `planned`; no local result is represented as a live integration.
+
+## 独立工作台整合
+
+资产库在 `apps/labs/concept-assets/` Web 中可搜索与检查，使用公开 AssetLibraryService 和原发布验证。该入口隔离 mock 数据，重启重置；启动和最小烟测结果见入口 README，原全量测试本轮 not run / pending approval。

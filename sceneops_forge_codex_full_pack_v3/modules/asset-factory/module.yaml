@@ -11,6 +11,7 @@ requires:
     - core-kernel
     - module-runtime
     - asset-library
+    - concept-lab
   integrations:
     - blender
     - artifact-store

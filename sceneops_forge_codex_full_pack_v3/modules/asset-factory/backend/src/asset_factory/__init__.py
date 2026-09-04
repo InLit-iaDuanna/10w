@@ -65,3 +65,10 @@ __all__ = [
     "create_router",
     "canonical_command_scope",
 ]
+
+from .concept_handoff import ConceptAssetHandoff, asset_spec_from_concept
+from .workflow import build_workflow_plan
+from .lab_service import ConceptAssetLab, LabAction, LabSnapshot, create_lab_router
+
+__all__ += ["ConceptAssetHandoff", "asset_spec_from_concept", "build_workflow_plan",
+            "ConceptAssetLab", "LabAction", "LabSnapshot", "create_lab_router"]

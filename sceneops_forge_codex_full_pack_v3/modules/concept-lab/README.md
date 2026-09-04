@@ -86,3 +86,7 @@ uv run --project modules/concept-lab/backend python modules/concept-lab/scripts/
 - In-memory repository 仅用于独立模块测试；生产 repository 需要在持久化基础设施到位后注入。
 - 风格检查聚合提交的证据与置信度，不分析像素，也不宣称客观艺术评分。
 - 前端编辑器贡献已实现，但最终 generated API client 与 ModuleRuntime 注册要等待核心模块提供合同。
+
+## 独立工作台整合（本轮）
+
+源码已从仓库根归位至应用根 `modules/concept-lab/`。工作台入口见 `apps/labs/concept-assets/README.md`；Asset Factory 已通过公开 `AssetSpecDraft` 完成转换，不再是 planned 消费。旧文档中的全量测试命令仅供授权后使用，本轮仅运行工作台文档记录的最小烟测。
