@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "world-composer",
+  "version": "0.1.0",
+  "title": "World Composer",
+  "description": "Composes and validates traceable 3D worlds, annotations, paths, regions, navigation, and lighting targets.",
+  "status": "active",
+  "feature_flag": "world_composer",
+  "requires": {
+    "modules": ["core-kernel", "module-runtime", "asset-library"],
+    "integrations": [],
+    "optional_integrations": ["artifact-store", "blender", "unity"]
+  },
+  "contributes": {
+    "editors": [
+      "scene.viewport.3d",
+      "scene.outliner",
+      "scene.object.inspector",
+      "scene.annotations",
+      "scene.world.graph",
+      "scene.path-region",
+      "scene.navmesh",
+      "scene.lighting"
+    ],
+    "commands": [
+      "scene.annotation.create",
+      "scene.object.place.propose",
+      "scene.issue.restore",
+      "scene.capture.fixed.request",
+      "scene.level.validate",
+      "scene.world.update.propose",
+      "scene.recipe.apply.propose"
+    ],
+    "events": [
+      "scene.annotation.created@1",
+      "scene.object.placement_proposed@1",
+      "scene.level.validated@1"
+    ],
+    "jobs": ["world.level.validate"],
+    "workflows": ["asset-to-world-placement", "world-level-validation"],
+    "policy_gates": ["world.level"]
+  },
+  "permissions": [
+    "scene:read",
+    "scene:annotate",
+    "scene:write",
+    "scene:validate"
+  ],
+  "entrypoints": {
+    "frontend": "./frontend/src/index.ts",
+    "backend": "world_composer"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.example/schemas/logic-studio/events/logic.code_change.proposed.v1.schema.json",
+  "title": "logic.code_change.proposed@1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "event_type": {"const": "logic.code_change.proposed"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string"},
+    "correlation_id": {"type": "string"},
+    "causation_id": {"type": "string"},
+    "actor": {"type": "object"},
+    "mode": {"const": "planned"},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change_set_id", "proposal_id", "graph_id", "graph_version", "status", "target_paths"],
+      "properties": {
+        "change_set_id": {"type": "string"},
+        "proposal_id": {"type": "string"},
+        "graph_id": {"type": "string"},
+        "graph_version": {"type": "integer", "minimum": 1},
+        "status": {"const": "waiting_approval"},
+        "target_paths": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

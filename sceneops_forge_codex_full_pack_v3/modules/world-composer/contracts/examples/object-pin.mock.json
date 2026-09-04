@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "annotationId": "ann_home_key_visibility",
+  "type": "object-pin",
+  "status": "open",
+  "context": {
+    "projectId": "prj_find_my_way_home",
+    "sceneId": "scene_remember_home_hall",
+    "sceneVersion": "scene-version-0007",
+    "author": { "type": "user", "id": "usr_level_designer", "displayName": "关卡设计师" },
+    "createdAt": "2026-09-04T00:00:00Z",
+    "spatial": {
+      "reference": {
+        "kind": "object",
+        "object": { "sceneopsId": "sobj_key_instance", "displayName": "Front Door Key" }
+      },
+      "localPosition": [0, 0.1, 0],
+      "worldPosition": [2, 0.9, 3],
+      "localNormal": [0, 1, 0],
+      "worldNormal": [0, 1, 0],
+      "coordinateSystem": { "units": "meters", "handedness": "right", "upAxis": "Y", "forwardAxis": "-Z" }
+    },
+    "camera": {
+      "projection": "perspective",
+      "position": [8, 3, 12],
+      "target": [4, 1, 8],
+      "up": [0, 1, 0],
+      "verticalFovRadians": 1.0471975511965976,
+      "nearClipMeters": 0.1,
+      "farClipMeters": 500,
+      "coordinateSpace": "world",
+      "axisConvention": "right-handed-y-up",
+      "units": "meters"
+    },
+    "problem": "The key is difficult to read from the route.",
+    "intent": "Make the intended key interaction spatially unambiguous.",
+    "constraints": ["Keep the existing route width."],
+    "acceptance": ["The key is visible before entering the pickup region."],
+    "evidence": [
+      {
+        "evidenceId": "evidence_mock_capture",
+        "artifactId": "artifact_mock_capture",
+        "mediaType": "image",
+        "description": "Deterministic mock viewport capture metadata.",
+        "mode": "mock"
+      }
+    ],
+    "gameStateVersion": "game-state-v1",
+    "gameState": { "quest": "find_key", "hasKey": false },
+    "mode": "mock"
+  },
+  "details": { "kind": "object-pin" }
+}

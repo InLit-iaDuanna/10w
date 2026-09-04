@@ -1,0 +1,35 @@
+{
+  "name": "@sceneops/scene-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./fixtures": "./fixtures/index.ts",
+    "./react": "./src/react.tsx"
+  },
+  "scripts": {
+    "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/*.test.ts",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "react": "^19.2.8",
+    "three": "^0.183.2"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "three": {
+      "optional": true
+    }
+  }
+}

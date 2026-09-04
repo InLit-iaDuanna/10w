@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/events/scene.object.placement_proposed.v1.schema.json",
+  "title": "scene.object.placement_proposed@1 payload",
+  "description": "Payload only; IDs and event envelope come from core-contracts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "changeSetId",
+    "sceneId",
+    "sceneVersion",
+    "sceneopsId",
+    "assetId",
+    "assetVersionId",
+    "mode"
+  ],
+  "properties": {
+    "changeSetId": { "type": "string", "minLength": 1 },
+    "sceneId": { "type": "string", "minLength": 1 },
+    "sceneVersion": { "type": "string", "minLength": 1 },
+    "sceneopsId": { "type": "string", "minLength": 1 },
+    "assetId": { "type": "string", "minLength": 1 },
+    "assetVersionId": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["planned", "blocked"] }
+  }
+}

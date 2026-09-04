@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/contracts/world-composer/world-annotation-document.v1.schema.json",
+  "title": "World Annotation Document v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "annotationId", "type", "status", "context", "details"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "annotationId": { "type": "string", "minLength": 1 },
+    "type": {
+      "enum": [
+        "object-pin",
+        "surface-pin",
+        "point",
+        "region-volume",
+        "path-trace",
+        "relation-link",
+        "state",
+        "sketch",
+        "voice-draft"
+      ]
+    },
+    "status": { "enum": ["draft", "proposed", "open", "resolved", "archived", "rejected"] },
+    "context": {
+      "type": "object",
+      "required": [
+        "projectId",
+        "sceneId",
+        "sceneVersion",
+        "author",
+        "createdAt",
+        "spatial",
+        "camera",
+        "problem",
+        "intent",
+        "constraints",
+        "acceptance",
+        "evidence",
+        "gameStateVersion",
+        "gameState",
+        "mode"
+      ],
+      "properties": {
+        "projectId": { "type": "string", "minLength": 1 },
+        "sceneId": { "type": "string", "minLength": 1 },
+        "sceneVersion": { "type": "string", "minLength": 1 },
+        "author": {
+          "type": "object",
+          "required": ["type", "id", "displayName"],
+          "properties": {
+            "type": { "enum": ["user", "agent"] },
+            "id": { "type": "string", "minLength": 1 },
+            "displayName": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "createdAt": { "type": "string", "format": "date-time", "pattern": "Z$" },
+        "spatial": { "$ref": "#/$defs/spatial" },
+        "camera": { "$ref": "#/$defs/camera" },
+        "problem": { "type": "string", "minLength": 1 },
+        "intent": { "type": "string", "minLength": 1 },
+        "constraints": { "type": "array", "items": { "type": "string" } },
+        "acceptance": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "evidence": { "type": "array", "items": { "type": "object" } },
+        "gameStateVersion": { "type": "string", "minLength": 1 },
+        "gameState": { "type": "object" },
+        "mode": { "$ref": "#/$defs/mode" }
+      },
+      "additionalProperties": false
+    },
+    "details": {
+      "oneOf": [
+        { "type": "object", "required": ["kind"], "properties": { "kind": { "const": "object-pin" } } },
+        {
+          "type": "object",
+          "required": ["kind", "geometryVersion", "triangleVertexIndices", "barycentric"],
+          "properties": {
+            "kind": { "const": "surface-pin" },
+            "geometryVersion": { "type": "string", "minLength": 1 },
+            "triangleVertexIndices": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": { "type": "integer", "minimum": 0 }
+            },
+            "barycentric": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        },
+        { "type": "object", "required": ["kind", "label"], "properties": { "kind": { "const": "point" }, "label": { "type": "string" } } },
+        { "type": "object", "required": ["kind", "regionId", "center", "size", "rotation"], "properties": { "kind": { "const": "region-volume" } } },
+        {
+          "type": "object",
+          "required": ["kind", "pathId", "points"],
+          "properties": {
+            "kind": { "const": "path-trace" },
+            "pathId": { "type": "string", "minLength": 1 },
+            "points": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "required": ["pointId", "position"],
+                "properties": {
+                  "pointId": { "type": "string", "minLength": 1 },
+                  "position": { "$ref": "#/$defs/vector3" }
+                }
+              }
+            }
+          }
+        },
+        { "type": "object", "required": ["kind", "relation", "sourceSceneopsId", "targetSceneopsId"], "properties": { "kind": { "const": "relation-link" } } },
+        { "type": "object", "required": ["kind", "stateName", "expectedValue"], "properties": { "kind": { "const": "state" } } },
+        { "type": "object", "required": ["kind", "strokes"], "properties": { "kind": { "const": "sketch" } } },
+        {
+          "type": "object",
+          "required": ["kind", "transcript", "locale", "transcriptionConfidence", "draft"],
+          "properties": {
+            "kind": { "const": "voice-draft" },
+            "transcript": { "type": "string", "minLength": 1 },
+            "locale": { "type": "string", "minLength": 1 },
+            "transcriptionConfidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "draft": { "const": true }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "mode": { "enum": ["live", "cached", "mock", "planned", "blocked"] },
+    "vector3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number" }
+    },
+    "quaternion": {
+      "type": "object",
+      "required": ["x", "y", "z", "w"],
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "z": { "type": "number" }, "w": { "type": "number" } },
+      "additionalProperties": false
+    },
+    "coordinates": {
+      "const": { "units": "meters", "handedness": "right", "upAxis": "Y", "forwardAxis": "-Z" }
+    },
+    "spatial": {
+      "type": "object",
+      "required": ["reference", "localPosition", "worldPosition", "localNormal", "worldNormal", "coordinateSystem"],
+      "properties": {
+        "reference": {
+          "oneOf": [
+            { "type": "object", "required": ["kind", "object"], "properties": { "kind": { "const": "object" }, "object": { "type": "object", "required": ["sceneopsId", "displayName"] } } },
+            { "type": "object", "required": ["kind", "sceneId"], "properties": { "kind": { "const": "scene" }, "sceneId": { "type": "string", "minLength": 1 } } }
+          ]
+        },
+        "localPosition": { "$ref": "#/$defs/vector3" },
+        "worldPosition": { "$ref": "#/$defs/vector3" },
+        "localNormal": { "$ref": "#/$defs/vector3" },
+        "worldNormal": { "$ref": "#/$defs/vector3" },
+        "coordinateSystem": { "$ref": "#/$defs/coordinates" }
+      },
+      "additionalProperties": false
+    },
+    "camera": {
+      "type": "object",
+      "required": [
+        "position",
+        "target",
+        "up",
+        "projection",
+        "nearClipMeters",
+        "farClipMeters",
+        "coordinateSpace",
+        "axisConvention",
+        "units"
+      ],
+      "properties": {
+        "position": { "$ref": "#/$defs/vector3" },
+        "target": { "$ref": "#/$defs/vector3" },
+        "up": { "$ref": "#/$defs/vector3" },
+        "projection": { "enum": ["perspective", "orthographic"] },
+        "verticalFovRadians": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 3.141592653589793 },
+        "verticalSpanMeters": { "type": "number", "exclusiveMinimum": 0 },
+        "nearClipMeters": { "type": "number", "exclusiveMinimum": 0 },
+        "farClipMeters": { "type": "number", "exclusiveMinimum": 0 },
+        "coordinateSpace": { "const": "world" },
+        "axisConvention": { "const": "right-handed-y-up" },
+        "units": { "const": "meters" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "mode": "mock",
+  "baseVersion": "scnver_home_hall_001",
+  "asset": { "assetId": "asset_home_key_variant", "assetVersionId": "assetver_home_key_variant_001" },
+  "newSceneopsId": "sobj_home_key_variant",
+  "displayName": "HomeKeyVariant",
+  "parentSceneopsId": "sobj_home_root",
+  "worldPosition": [1.8, 0.8, 1.2],
+  "worldNormal": [0, 1, 0],
+  "dropRayOrigin": [8, 3, 12],
+  "dropRayDirection": [-0.4902756215564325, -0.1739687689393793, -0.8540285020660437],
+  "camera": {
+    "projection": "perspective",
+    "position": [8, 3, 12],
+    "target": [4, 1, 8],
+    "up": [0, 1, 0],
+    "verticalFovRadians": 1.0471975511965976,
+    "nearClipMeters": 0.1,
+    "farClipMeters": 500,
+    "coordinateSpace": "world",
+    "axisConvention": "right-handed-y-up",
+    "units": "meters"
+  },
+  "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 },
+  "scale": [1, 1, 1],
+  "collider": { "shape": "box", "enabled": true, "isTrigger": true, "sizeMeters": [0.25, 0.12, 0.08] },
+  "requirements": {
+    "colliderRequired": true,
+    "allowTriggerCollider": true,
+    "allowedScale": { "minimum": [0.75, 0.75, 0.75], "maximum": [1.25, 1.25, 1.25] },
+    "scaleSpace": "world",
+    "interactions": [{ "predicate": "unlocks", "targetSceneopsId": "sobj_home_entrance" }],
+    "navigationTarget": true
+  },
+  "rationale": "Place a reviewed key variant where it remains visible from the route.",
+  "targetIntegration": "unity"
+}

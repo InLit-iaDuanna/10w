@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "projectId": "prj_find_my_way_home",
+  "sceneId": "scn_home_hall",
+  "sceneVersion": "scnver_home_hall_001",
+  "coordinateSystem": {
+    "units": "meters",
+    "handedness": "right",
+    "upAxis": "Y",
+    "forwardAxis": "-Z"
+  },
+  "mode": "mock",
+  "objects": [
+    {
+      "sceneopsId": "sobj_home_root",
+      "displayName": "HomeHallway",
+      "parentSceneopsId": null,
+      "transform": { "position": [0, 0, 0], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": null,
+      "spawnRadiusMeters": null,
+      "navigationNodeId": null,
+      "requirements": {
+        "colliderRequired": false,
+        "allowTriggerCollider": false,
+        "allowedScale": { "minimum": [1, 1, 1], "maximum": [1, 1, 1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": false
+      }
+    },
+    {
+      "sceneopsId": "sobj_player_spawn",
+      "displayName": "PlayerSpawn",
+      "parentSceneopsId": "sobj_home_root",
+      "transform": { "position": [0, 0, 4], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "capsule", "enabled": true, "isTrigger": true, "sizeMeters": [0.8, 1.8, 0.8] },
+      "spawnRadiusMeters": 0.5,
+      "navigationNodeId": "nav_spawn",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": true,
+        "allowedScale": { "minimum": [1, 1, 1], "maximum": [1, 1, 1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": false
+      }
+    },
+    {
+      "sceneopsId": "sobj_home_key",
+      "displayName": "HomeKey",
+      "parentSceneopsId": "sobj_home_root",
+      "asset": { "assetId": "asset_home_key", "assetVersionId": "assetver_home_key_001" },
+      "transform": { "position": [2, 0.8, 1], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "box", "enabled": true, "isTrigger": true, "sizeMeters": [0.25, 0.12, 0.08] },
+      "spawnRadiusMeters": null,
+      "navigationNodeId": "nav_key",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": true,
+        "allowedScale": { "minimum": [0.75, 0.75, 0.75], "maximum": [1.25, 1.25, 1.25] },
+        "scaleSpace": "world",
+        "interactions": [{ "predicate": "unlocks", "targetSceneopsId": "sobj_home_entrance" }],
+        "navigationTarget": true
+      }
+    },
+    {
+      "sceneopsId": "sobj_home_entrance",
+      "displayName": "HomeEntrance",
+      "parentSceneopsId": "sobj_home_root",
+      "asset": { "assetId": "asset_home_door", "assetVersionId": "assetver_home_door_003" },
+      "transform": { "position": [0, 1.1, -5], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "box", "enabled": true, "isTrigger": false, "sizeMeters": [1.4, 2.2, 0.2] },
+      "spawnRadiusMeters": null,
+      "navigationNodeId": "nav_entrance",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": false,
+        "allowedScale": { "minimum": [0.9, 0.9, 0.9], "maximum": [1.1, 1.1, 1.1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": true
+      }
+    }
+  ],
+  "world": {
+    "zones": [
+      { "zoneId": "zone_home_hall", "label": "Home Hall", "objectIds": ["sobj_player_spawn", "sobj_home_key", "sobj_home_entrance"] }
+    ],
+    "interactionRegions": [
+      { "regionId": "region_key_pickup", "label": "Key Pickup", "center": [2, 0.8, 1], "size": [1, 1, 1], "relatedSceneopsIds": ["sobj_home_key"] },
+      { "regionId": "region_home_entrance", "label": "Home Entrance", "center": [0, 1, -4.5], "size": [2, 2.5, 1], "relatedSceneopsIds": ["sobj_home_entrance"] }
+    ],
+    "paths": [
+      {
+        "pathId": "path_find_key_and_home",
+        "label": "Find Key and Return Home",
+        "navNodeIds": ["nav_spawn", "nav_key", "nav_entrance"],
+        "points": [
+          { "pointId": "pathpoint_home_spawn", "position": [0, 0, 4] },
+          { "pointId": "pathpoint_home_key", "position": [2, 0, 1] },
+          { "pointId": "pathpoint_home_entrance", "position": [0, 0, -4.5] }
+        ]
+      }
+    ],
+    "relations": [
+      { "relationId": "rel_key_unlocks_home", "predicate": "unlocks", "sourceSceneopsId": "sobj_home_key", "targetSceneopsId": "sobj_home_entrance" }
+    ],
+    "lightingTargets": [
+      { "targetId": "lighttarget_home_key", "sceneopsId": "sobj_home_key", "illuminanceLux": 180, "colorTemperatureKelvin": 3200, "intent": "Make the key readable from the player route." }
+    ],
+    "navigation": {
+      "nodes": [
+        { "nodeId": "nav_spawn", "position": [0, 0, 4] },
+        { "nodeId": "nav_key", "position": [2, 0, 1] },
+        { "nodeId": "nav_entrance", "position": [0, 0, -4.5] }
+      ],
+      "edges": [
+        { "from": "nav_spawn", "to": "nav_key", "bidirectional": true },
+        { "from": "nav_key", "to": "nav_entrance", "bidirectional": true }
+      ]
+    }
+  },
+  "gateInputs": {
+    "colliders": { "state": "available", "sourceVersion": "scnver_home_hall_001", "reason": null },
+    "navigation": { "state": "available", "sourceVersion": "scnver_home_hall_001", "reason": null, "agentProfileId": "agent_player_default" },
+    "scalePolicy": { "state": "available", "sourceVersion": "scnver_home_hall_001", "reason": null },
+    "interactions": { "state": "available", "sourceVersion": "scnver_home_hall_001", "reason": null }
+  }
+}

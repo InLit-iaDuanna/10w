@@ -1,0 +1,24 @@
+{
+  "name": "@sceneops/logic-studio-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/tests/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "peerDependencies": {
+    "react": "^19.2.8",
+    "@tanstack/react-query": "^5.90.21"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@tanstack/react-query": {
+      "optional": true
+    }
+  }
+}

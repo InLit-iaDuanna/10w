@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"],
+      "three": ["./node_modules/@types/three"],
+      "three/*": ["./node_modules/@types/three/*"],
+      "@tanstack/react-query": ["./node_modules/@tanstack/react-query"],
+      "@sceneops/scene-viewer": ["../../../packages/scene-viewer/src/index.ts"],
+      "@sceneops/scene-viewer/react": ["../../../packages/scene-viewer/src/react.tsx"]
+    }
+  },
+  "include": ["src"]
+}

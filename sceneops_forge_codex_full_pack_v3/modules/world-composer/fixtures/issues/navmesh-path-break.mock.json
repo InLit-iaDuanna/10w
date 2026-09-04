@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "world_issue_warehouse_navmesh_break",
+  "mode": "mock",
+  "baseFixture": "../warehouse-escape/world.mock.json",
+  "mutation": {
+    "removeNavEdge": { "from": "nav_wh_door", "to": "nav_wh_exit" }
+  },
+  "expected": {
+    "gateId": "navmesh-break",
+    "status": "fail",
+    "pathId": "path_warehouse_escape"
+  }
+}
