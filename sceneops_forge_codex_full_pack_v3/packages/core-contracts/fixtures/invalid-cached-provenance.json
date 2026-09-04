@@ -1,0 +1,18 @@
+{
+  "adapter_version": "1.0.0",
+  "approval_state": "approved",
+  "checksum": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "created_at": "2026-09-04T00:00:00Z",
+  "creator": {
+    "id": "svc_fixture0001",
+    "type": "service"
+  },
+  "execution_mode": "cached",
+  "producing_module": "core-kernel",
+  "recipe_version": "1",
+  "related_sceneops_ids": [],
+  "source_project_id": "prj_fixture0001",
+  "source_version": "v1",
+  "tool_name": "fixture",
+  "tool_version": "1.0.0"
+}

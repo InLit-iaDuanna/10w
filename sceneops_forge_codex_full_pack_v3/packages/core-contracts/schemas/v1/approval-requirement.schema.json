@@ -1,0 +1,43 @@
+{
+  "$defs": {
+    "ActorType": {
+      "enum": [
+        "user",
+        "agent",
+        "service",
+        "system"
+      ],
+      "title": "ActorType",
+      "type": "string"
+    }
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/approval-requirement.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "allowed_actor_types": {
+      "items": {
+        "$ref": "#/$defs/ActorType"
+      },
+      "title": "Allowed Actor Types",
+      "type": "array"
+    },
+    "minimum_decisions": {
+      "default": 1,
+      "maximum": 20,
+      "minimum": 1,
+      "title": "Minimum Decisions",
+      "type": "integer"
+    },
+    "permission": {
+      "pattern": "^[a-z][a-z0-9-]*:[a-z][a-z0-9_-]*$",
+      "title": "Permission",
+      "type": "string"
+    }
+  },
+  "required": [
+    "permission"
+  ],
+  "title": "ApprovalRequirement",
+  "type": "object"
+}

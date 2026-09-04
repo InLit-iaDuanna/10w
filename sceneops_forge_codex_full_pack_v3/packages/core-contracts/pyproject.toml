@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sceneops-core-contracts"
+version = "0.1.0"
+description = "Versioned cross-module contracts for SceneOps Forge"
+requires-python = ">=3.9"
+dependencies = ["pydantic>=2.12,<3"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sceneops_core_contracts"]

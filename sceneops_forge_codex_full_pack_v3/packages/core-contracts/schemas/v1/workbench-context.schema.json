@@ -1,0 +1,185 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/workbench-context.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "active_build_id": {
+      "anyOf": [
+        {
+          "pattern": "^bld_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Build Id"
+    },
+    "active_change_set_id": {
+      "anyOf": [
+        {
+          "pattern": "^chg_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Change Set Id"
+    },
+    "active_feature_id": {
+      "anyOf": [
+        {
+          "pattern": "^fea_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Feature Id"
+    },
+    "active_issue_id": {
+      "anyOf": [
+        {
+          "pattern": "^iss_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Issue Id"
+    },
+    "active_playtest_run_id": {
+      "anyOf": [
+        {
+          "pattern": "^prun_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Playtest Run Id"
+    },
+    "active_render_job_id": {
+      "anyOf": [
+        {
+          "pattern": "^rjob_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Render Job Id"
+    },
+    "active_task_id": {
+      "anyOf": [
+        {
+          "pattern": "^tsk_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Active Task Id"
+    },
+    "branch_id": {
+      "anyOf": [
+        {
+          "pattern": "^brn_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Branch Id"
+    },
+    "camera_pose": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Camera Pose"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "pattern": "^prj_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Id"
+    },
+    "scene_id": {
+      "anyOf": [
+        {
+          "pattern": "^scn_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scene Id"
+    },
+    "selected_asset_ids": {
+      "items": {
+        "pattern": "^ast_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+        "type": "string"
+      },
+      "title": "Selected Asset Ids",
+      "type": "array"
+    },
+    "selected_scene_object_ids": {
+      "items": {
+        "pattern": "^sobj_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+        "type": "string"
+      },
+      "title": "Selected Scene Object Ids",
+      "type": "array"
+    },
+    "timeline_time": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Timeline Time"
+    }
+  },
+  "title": "WorkbenchContext",
+  "type": "object"
+}
