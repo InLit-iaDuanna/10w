@@ -1,4 +1,4 @@
-import type { ModuleContribution } from "@sceneops/core-contracts";
+import type { ModuleContribution } from "@sceneops/module-runtime";
 import { assistantConversationEditor } from "./editorDefinition.ts";
 import { manifest } from "./manifest.ts";
 
@@ -121,3 +121,8 @@ export type {
   HomeStartupDecision,
   StartupContext,
 } from "./fixtures/chatOnlyHome.ts";
+
+export { assistantConversationEditor } from "./editorDefinition.ts";
+export { LocalConversationTransport } from './fixtures/LocalConversationTransport.ts';
+export { CodeBuddyConversationTransport, getCodeBuddyModels } from './conversation/CodeBuddyConversationTransport.ts';
+export type { CodeBuddyModel, CodeBuddyModelCatalog } from './conversation/CodeBuddyConversationTransport.ts';

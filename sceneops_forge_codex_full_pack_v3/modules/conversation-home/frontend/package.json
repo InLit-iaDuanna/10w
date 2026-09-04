@@ -10,5 +10,14 @@
   "peerDependencies": {
     "@sceneops/core-contracts": "workspace:*",
     "react": ">=18 <20"
+  },
+  "dependencies": {
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/module-runtime": "workspace:*",
+    "@sceneops/api-client": "workspace:*",
+    "@tanstack/react-query": "5.90.21"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   }
 }

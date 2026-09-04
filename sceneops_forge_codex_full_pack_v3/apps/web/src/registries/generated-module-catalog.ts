@@ -2,11 +2,15 @@
 
 import { moduleContribution as coreKernelContribution } from "../../../../modules/core-kernel/frontend/src/index.ts";
 import { moduleContribution as moduleRuntimeContribution } from "../../../../modules/module-runtime/frontend/src/index.ts";
+import { moduleContribution as conversationHomeContribution } from "../../../../modules/conversation-home/frontend/src/index.ts";
+import { moduleContribution as forgeShellContribution } from "../../../../modules/forge-shell/frontend/src/index.ts";
 import { moduleContribution as runtimeFixtureContribution } from "../../../../modules/runtime-fixture/frontend/src/index.ts";
 
 export const generatedFrontendModuleCatalog = [
   coreKernelContribution, // core-kernel
   moduleRuntimeContribution, // module-runtime
+  conversationHomeContribution, // conversation-home
+  forgeShellContribution, // forge-shell
   runtimeFixtureContribution, // runtime-fixture
 ] as const;
 

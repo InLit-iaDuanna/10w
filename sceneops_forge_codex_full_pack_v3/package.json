@@ -3,7 +3,17 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.13.0",
-  "engines": { "node": ">=22.12.0" },
-  "scripts": { "lab": "node scripts/lab.mjs" },
-  "devDependencies": { "typescript": "6.0.3", "vite": "8.0.0", "@types/react": "19.2.14", "@types/react-dom": "19.2.3" }
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "lab": "node scripts/lab.mjs"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vite": "8.0.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "openapi-typescript": "7.13.0"
+  }
 }

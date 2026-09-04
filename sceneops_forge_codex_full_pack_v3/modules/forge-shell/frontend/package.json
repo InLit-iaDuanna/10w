@@ -12,7 +12,9 @@
     "typecheck": "tsc --project tsconfig.json"
   },
   "dependencies": {
-    "dockview-react": "8.2.0"
+    "dockview-react": "8.2.0",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/module-runtime": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

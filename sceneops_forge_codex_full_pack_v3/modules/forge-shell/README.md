@@ -37,12 +37,12 @@ The versioned on-disk contracts are `schemas/module-manifest-v1.schema.json`, `s
 - `live`: the production adapter uses pinned `dockview-react@8.2.0`; its edge groups own drawers, tab transfer, floating groups, popouts, resize geometry, and native mutation events.
 - `mock`: deterministic editor definitions and `RecordingDockingPort` used by tests and examples.
 - `cached`: not used.
-- `planned`: composition with the generated module catalog and real feature editors.
-- `blocked`: browser visual/interaction verification and real popout-window verification require the missing application bootstrap; the current testing authorization also permits only minimal smoke checks.
+- `live`: generated catalog composition with the real conversation editor is available in `apps/labs/shell`.
+- `planned`: broader browser/popout verification; this round only ran the minimal conversation proposal → confirmed docking path.
 
 ## Setup and tests
 
-Pinned dependencies are recorded in `frontend/pnpm-lock.yaml`. Available verification commands are:
+Pinned dependencies are recorded in the application-root `pnpm-lock.yaml`. Available verification commands are:
 
 ```text
 cd modules/forge-shell/frontend
@@ -55,4 +55,8 @@ Before the latest safety and reconciliation changes, `pnpm run typecheck`, 19 mo
 
 ## Limitations
 
-The module deliberately does not emulate Dockview pane geometry. `WorkspaceCoordinator` records typed metadata and transaction history; `DockviewPort` owns spatial behavior and exposes a serializable topology projection for native drag/close reconciliation. A blocked popout returns `POPOUT_BLOCKED`, while real cross-window lifecycle and visual behavior remain unverified until the web bootstrap exists.
+Standalone startup and current limitations are documented in `../../apps/labs/shell/README.md`. Auto-hide edges require dockview-enterprise 8.2.0, used here only in permitted local evaluation with its watermark. The module deliberately does not emulate Dockview pane geometry. `WorkspaceCoordinator` records typed metadata and transaction history; `DockviewPort` owns spatial behavior and exposes a serializable topology projection for native drag/close reconciliation. A blocked popout returns `POPOUT_BLOCKED`, while real cross-window lifecycle and visual behavior remain not run / pending approval.
+
+## Shared contracts
+
+UI types moved to `@sceneops/core-ui`; `frontend/src/index.ts` continues re-exporting them. Manifest uses generated module-runtime snake_case fields. The old shell manifest schema delegates to the canonical module-runtime schema; workspace presets remain a typed frontend contribution. `ShellToolRuntimeContext` supplies existing command handlers to the real Tool Library and Command Search editors.

@@ -1,0 +1,28 @@
+:root { color-scheme: dark; --canvas: #0d0f11; --surface-1: #15181c; --surface-2: #1b1f24; --surface-3: #242930; --text-primary: #f1ece3; --text-secondary: #a5adb6; --text-muted: #717a84; --home-amber: #eca85b; --border-subtle: #252a30; --border-default: #2f363e; --focus-ring: #76d9d6; font-family: Inter, "PingFang SC", system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body, #root, .workbench-root { margin: 0; width: 100%; height: 100%; }
+body { background: var(--canvas); color: var(--text-primary); font-size: 14px; }
+button, input, select { font: inherit; }
+button, select { cursor: pointer; background: var(--surface-2); color: inherit; border: 1px solid var(--border-default); border-radius: 4px; padding: 6px 10px; }
+input { background: var(--surface-1); color: inherit; border: 1px solid var(--border-default); padding: 8px; max-width: 100%; }
+button:hover { border-color: var(--home-amber); }
+.shell-tool-content { padding: 20px; height: calc(100% - 32px); overflow: auto; }
+.shell-tool-content h2 { font-size: 16px; }
+.shell-tool-content small { color: var(--text-secondary); font-size: 11px; }
+.workbench-error { position: fixed; bottom: 30px; left: 24px; padding: 12px; background: #4e2626; z-index: 100; }
+.is-chat-only .forge-area-header, .is-chat-only .dv-tabs-and-actions-container, .is-chat-only .forge-window-menu { display: none; }
+
+.forge-editor-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.forge-editor-body { flex: 1; min-height: 0; }
+.forge-area-header { flex: 0 0 32px; white-space: nowrap; }
+.forge-area-heading { overflow: hidden; }
+.forge-area-heading > span:first-of-type { overflow: hidden; text-overflow: ellipsis; }
+.forge-area-header nav { flex-shrink: 0; }
+.forge-area-more { position: relative; }
+.forge-area-more summary { cursor: pointer; padding: 4px 8px; }
+.forge-area-more > div { position: absolute; top: 28px; right: 0; width: 150px; z-index: 80; background: var(--surface-2); border: 1px solid var(--border-default); padding: 6px; }
+.forge-area-more button { display: block; width: 100%; text-align: left; }
+.forge-window-menu { left: auto; right: 16px; }
+.forge-edge-left, .forge-edge-right, .forge-edge-top, .forge-edge-bottom { border-color: transparent; }
+.forge-edge-handle:hover, .forge-edge-handle:focus-visible { border-color: var(--focus-ring); }
+.shell-tool-content { height: 100%; }

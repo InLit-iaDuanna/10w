@@ -2,11 +2,13 @@
 
 from core_kernel import backend_module_contribution as core_kernel_contribution
 from module_runtime import backend_module_contribution as module_runtime_contribution
+from conversation_home import backend_module_contribution as conversation_home_contribution
 from runtime_fixture import backend_module_contribution as runtime_fixture_contribution
 
 GENERATED_BACKEND_MODULE_CATALOG = (
     core_kernel_contribution,  # core-kernel
     module_runtime_contribution,  # module-runtime
+    conversation_home_contribution,  # conversation-home
     runtime_fixture_contribution,  # runtime-fixture
 )
 

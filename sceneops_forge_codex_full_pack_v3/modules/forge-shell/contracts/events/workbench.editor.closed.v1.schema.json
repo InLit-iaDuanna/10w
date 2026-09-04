@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/events/workbench.editor.closed/v1",
+  "x-event-type": "workbench.editor.closed",
+  "x-event-version": 1,
+  "type": "object",
+  "required": [
+    "instance"
+  ]
+}

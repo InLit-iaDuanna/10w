@@ -26,7 +26,7 @@ test("public contribution registers one lazy conversation editor", () => {
   const editor = moduleContribution.editors[0];
   assert.equal(editor?.id, "assistant.conversation");
   assert.equal(editor?.singleton, true);
-  assert.equal(editor?.defaultPlacement, "center");
+  assert.deepEqual(editor?.defaultPlacement, { mode: "tab" });
   assert.equal(typeof editor?.load, "function");
   assert.deepEqual(editor?.optionalIntegrations, ["llm-provider"]);
 });

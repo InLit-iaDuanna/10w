@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import type { EditorProps } from "@sceneops/core-contracts";
+import { ConversationModelPicker } from "../components/ConversationModelPicker.tsx";
+import type { CodeBuddyConversationTransport } from "../conversation/CodeBuddyConversationTransport.ts";
+import type { EditorHostProps } from "@sceneops/core-ui";
 import type { PreparedAction } from "../assistant-actions/coordinator.ts";
 import type { AssistantAction } from "../assistant-actions/types.ts";
 import type { BrowserAttachmentSource } from "../composer/attachments.ts";
@@ -29,8 +31,9 @@ import {
   type ConversationEditorRuntime,
 } from "./runtime.ts";
 
-export type ConversationEditorProps = EditorProps<ConversationEditorState> & {
+export type ConversationEditorHostProps = EditorHostProps<ConversationEditorState> & {
   runtime?: ConversationEditorRuntime;
+  modelTransport?: CodeBuddyConversationTransport;
 };
 
 const suggestions = [
@@ -48,7 +51,7 @@ const emptyContext: WorkbenchContextSummary = {
   activeIssueId: null,
 };
 
-export default function ConversationEditor(props: ConversationEditorProps) {
+export default function ConversationEditor(props: ConversationEditorHostProps) {
   const state = props.localState ?? defaultConversationEditorState;
   const runtime = props.runtime;
   const [preparedActions, setPreparedActions] = useState<
@@ -339,6 +342,7 @@ export default function ConversationEditor(props: ConversationEditorProps) {
             }
           }}
         />
+        {props.modelTransport && <ConversationModelPicker transport={props.modelTransport} disabled={isStreaming} />}
         <div className="conversation-composer__controls">
           <input
             ref={fileInputRef}

@@ -1,11 +1,9 @@
-# Prompt 03 Execution Plan
+# Shell 整合执行记录
 
-1. [complete] Read the governing product, design, architecture, module, frontend, routing, orchestration, and definition-of-done documents.
-2. [complete] Audit the greenfield repository and preserve Prompt 03 ownership boundaries.
-3. [complete] Implement `modules/forge-shell` as a self-contained, typed frontend module with a manifest, public entrypoint, deterministic fixtures, tests, documentation, schemas, and explicit execution modes.
-4. [complete] Add the minimal `apps/web` shell composition, Dockview adapter, bindable port, runtime factory, and registries without embedding domain behavior.
-5. [complete] Implement drawer interaction, editor placements, native mutation reconciliation, layout/history/persistence/migration/recovery, shared context, close confirmation, lazy/error states, Judge reset, and conversation-only initial Home.
-6. [complete] Run the requested independent read-only QA review and address its acceptance-critical findings within Prompt 03 ownership.
-7. [complete] Run the authorized public-import and minimal Home persistence smoke checks.
-8. [pending approval] Run the expanded strict typecheck, module unit suite, bridge suite, and browser/visual E2E once explicitly authorized and once the web bootstrap exists for browser checks.
-9. [complete] Review the staged patch, commit all Prompt 03 changes, and return the integration handoff.
+1. 完整阅读应用规范、原 01/02/03 提示词及共享派发表；确认自身工作树干净。
+2. 引入 core/runtime 原提交，先提交公共 workspace 和统一 lab 启动器（4f3416e）。
+3. 引入 conversation-home 和 Forge Shell，统一 UI 公开协议及生成 manifest，接线真实 handler。
+4. 完成独立 Web、工具库/命令搜索、隔离存储和确定性 transport。
+5. 按用户追加要求接入 CodeBuddy CLI 本地 API 和前端模型选择。
+6. 完成启动/导入和一条最小本地主路径；维护回归测试但不执行完整套件。
+7. 更新接入/启动/限制文档并提交自身相关修改。其余工作台无须等本任务业务整合即可复用公共骨架。

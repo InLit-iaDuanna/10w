@@ -5,3 +5,4 @@ __pycache__/
 *.tsbuildinfo
 dist/
 .playwright-cli/
+output/

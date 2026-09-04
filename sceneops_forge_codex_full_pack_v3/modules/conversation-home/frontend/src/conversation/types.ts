@@ -11,13 +11,13 @@ export type ConversationMessageStatus =
   | "failed"
   | "cancelled";
 
-export interface ConversationAttachment {
+export type ConversationAttachment = {
   attachmentId: string;
   kind: "file" | "project";
   name: string;
   mediaType?: string;
   sizeBytes?: number;
-}
+};
 
 export interface ConversationMessage {
   messageId: string;

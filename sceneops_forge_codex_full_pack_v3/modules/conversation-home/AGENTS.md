@@ -36,3 +36,7 @@ npm test
 ```
 
 After the core workspace lands, also run the repository's module-manifest validator, TypeScript checker, component suite, and catalog generator.
+
+## Integrated lab update (2026-09-05)
+
+The user requested a CodeBuddy CLI API and model selection. This module now owns that bounded text-only adapter and generated network types; it still never interprets text as executable tool commands. Do not bypass host permissions. Generated files: `frontend/src/generated/*`, `backend/src/conversation_home/generated_manifest.py`, and `contracts/codebuddy.openapi.json`. Only startup/import and one minimal local path are authorized; all broader commands above remain not run / pending approval.

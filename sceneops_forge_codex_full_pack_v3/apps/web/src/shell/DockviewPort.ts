@@ -22,7 +22,8 @@ export class DockviewPort implements DockingEnginePort {
   }
 
   capture(): JsonValue {
-    return this.#api.toJSON() as unknown as JsonValue;
+    // Dockview returns optional undefined fields; persist its JSON wire representation.
+    return JSON.parse(JSON.stringify(this.#api.toJSON())) as JsonValue;
   }
 
   describe(): DockingTopology {

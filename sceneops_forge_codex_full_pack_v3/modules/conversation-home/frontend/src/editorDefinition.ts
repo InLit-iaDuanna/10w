@@ -1,6 +1,7 @@
-import type { EditorDefinition } from "@sceneops/core-contracts";
+import type { EditorDefinition } from "@sceneops/core-ui";
 import {
   restoreConversationEditorState,
+  defaultConversationEditorState,
   serializeConversationEditorState,
   type ConversationEditorState,
 } from "./editors/state.ts";
@@ -14,10 +15,11 @@ export const assistantConversationEditor = {
     await import("./editors/conversation.css");
     return import("./editors/ConversationEditor.tsx");
   },
-  defaultPlacement: "center",
+  defaultPlacement: { mode: "tab" },
   minWidth: 320,
   minHeight: 280,
   singleton: true,
+  initialState: () => structuredClone(defaultConversationEditorState),
   requiredPermissions: ["conversation:read"],
   optionalIntegrations: ["llm-provider"],
   serializeState: serializeConversationEditorState,

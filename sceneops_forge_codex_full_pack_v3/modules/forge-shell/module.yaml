@@ -5,7 +5,6 @@ title: Forge Shell
 description: Chat-first workbench shell, edge drawers, editor orchestration, and versioned workspaces.
 status: active
 feature_flag: forge_shell
-docking_engine: dockview-react
 
 requires:
   modules:
@@ -35,18 +34,6 @@ contributes:
     - workbench.visibility.changed@1
     - workbench.context.binding_changed@1
     - workbench.drawer.changed@1
-  workspace_presets:
-    - home
-    - design
-    - assets
-    - character
-    - world
-    - logic
-    - render
-    - build
-    - playtest
-    - review
-    - judge
   jobs: []
   workflows: []
   policy_gates: []

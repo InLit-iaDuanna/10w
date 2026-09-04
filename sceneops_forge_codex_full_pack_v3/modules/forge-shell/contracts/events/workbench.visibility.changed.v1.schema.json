@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/events/workbench.visibility.changed/v1",
+  "x-event-type": "workbench.visibility.changed",
+  "x-event-version": 1,
+  "type": "object",
+  "required": [
+    "instanceId",
+    "visible",
+    "suspended"
+  ]
+}

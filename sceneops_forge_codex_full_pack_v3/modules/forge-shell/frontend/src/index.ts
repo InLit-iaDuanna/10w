@@ -75,3 +75,5 @@ export function createForgeShellModuleContribution(coordinator: WorkspaceCoordin
     workspacePresets: BUILT_IN_WORKSPACE_PRESETS,
   } as const;
 }
+export { ShellToolRuntimeContext } from './components/ToolRuntime.ts';
+export type { ShellToolRuntime } from './components/ToolRuntime.ts';

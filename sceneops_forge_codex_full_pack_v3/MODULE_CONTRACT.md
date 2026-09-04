@@ -326,3 +326,7 @@ Keep it focused. Do not duplicate the entire root file.
 - [ ] module README current;
 - [ ] root module map generated;
 - [ ] Live/Mock/Cached correctly labelled.
+
+## Shell integration update
+
+Module manifests and contributions use module-runtime public types and generated snake_case manifest fields. UI editor/command/workspace contracts live in `@sceneops/core-ui`, re-exported by Forge Shell. Editor definitions supply `initialState()` and typed placement objects, including `{ mode: "tab" }` for conversation; no duplicate UI contracts are added to the generated network core-contracts package.

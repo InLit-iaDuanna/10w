@@ -8,7 +8,7 @@ export interface AreaHeaderProps {
 
 export function AreaHeader({ contract, onAction }: AreaHeaderProps): React.ReactElement {
   const visibleActions = contract.compact
-    ? contract.actions.filter((action) => ['editor-menu', 'follow-pin', 'more', 'close'].includes(action))
+    ? contract.actions.filter((action) => ['more', 'close'].includes(action))
     : contract.actions;
   return (
     <header className={contract.active ? 'forge-area-header is-active' : 'forge-area-header'}>
@@ -18,7 +18,11 @@ export function AreaHeader({ contract, onAction }: AreaHeaderProps): React.React
         <span aria-label={`执行模式 ${contract.mode}`}>{contract.mode.toUpperCase()}</span>
       </div>
       <nav aria-label="区域操作">
-        {visibleActions.map((action) => (
+        {visibleActions.map((action) => action === 'more' ? (
+          <details className="forge-area-more" key={action}><summary>更多</summary><div>
+            {contract.actions.filter(item => item !== 'more').map(item => <button key={item} type="button" onClick={() => onAction(item)}>{ACTION_LABELS[item]}</button>)}
+          </div></details>
+        ) : (
           <button key={action} type="button" onClick={() => onAction(action)}>
             {ACTION_LABELS[action]}
           </button>

@@ -302,3 +302,6 @@
     transition: background-color 140ms ease, border-color 140ms ease;
   }
 }
+
+.conversation-model-picker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--conversation-muted); font-size: 12px; padding: 8px 0; }
+.conversation-model-picker select { max-width: 250px; font: inherit; }

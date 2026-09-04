@@ -1,10 +1,10 @@
 import type { JsonValue } from "../contracts/json.ts";
 import type { ConversationAttachment } from "../conversation/types.ts";
 
-export interface ConversationEditorState {
+export type ConversationEditorState = {
   composerDraft: string;
   pendingAttachments: ConversationAttachment[];
-}
+};
 
 export const defaultConversationEditorState: ConversationEditorState = {
   composerDraft: "",

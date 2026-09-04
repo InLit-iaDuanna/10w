@@ -19,7 +19,7 @@ export const toolLibraryEditor: EditorDefinition<ToolLibraryState> = {
   defaultPlacement: { mode: 'drawer', edge: 'left' },
   minWidth: 240,
   minHeight: 220,
-  singleton: true,
+  singleton: false,
   initialState: () => ({ query: '', selectedGroup: null }),
   serializeState: (state) => structuredClone(state),
   restoreState: restoreToolLibraryState,

@@ -88,6 +88,106 @@
     },
     {
       "contributes": {
+        "commands": [],
+        "editors": [
+          "assistant.conversation"
+        ],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Provides the chat-only initial workbench and typed assistant action handoff.",
+      "entrypoints": {
+        "backend": "conversation_home",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "conversation_home",
+      "id": "conversation-home",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "conversation:read",
+        "conversation:write"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "llm-provider"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Conversation Home",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "workbench.open_editor",
+          "workbench.close_editor",
+          "workbench.reopen_editor",
+          "workbench.move_editor",
+          "workbench.switch_editor",
+          "workspace.undo_layout",
+          "workspace.reset"
+        ],
+        "editors": [
+          "shell.tool-library",
+          "shell.command-search"
+        ],
+        "events": [
+          "workbench.editor.opened@1",
+          "workbench.editor.closed@1",
+          "workbench.editor.load_failed@1",
+          "workbench.layout.changed@1",
+          "workbench.visibility.changed@1",
+          "workbench.context.binding_changed@1",
+          "workbench.drawer.changed@1"
+        ],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Chat-first workbench shell, edge drawers, editor orchestration, and versioned workspaces.",
+      "entrypoints": {
+        "backend": null,
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "forge_shell",
+      "id": "forge-shell",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "workbench:read",
+        "workbench:write"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "conversation-home"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Forge Shell",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
         "commands": [
           "runtime.fixture.run"
         ],
@@ -138,6 +238,8 @@
   "registration_order": [
     "core-kernel",
     "module-runtime",
+    "conversation-home",
+    "forge-shell",
     "runtime-fixture"
   ],
   "schema_version": 1

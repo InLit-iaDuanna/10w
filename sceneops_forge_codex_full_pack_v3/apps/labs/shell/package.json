@@ -1,0 +1,14 @@
+{
+  "name": "@sceneops/lab-shell",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sceneops/web": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "scripts": {
+    "dev": "node dev.mjs"
+  }
+}

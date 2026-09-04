@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/events/workbench.drawer.changed/v1",
+  "x-event-type": "workbench.drawer.changed",
+  "x-event-version": 1,
+  "type": "object",
+  "required": [
+    "edge",
+    "mode",
+    "size"
+  ],
+  "properties": {
+    "edge": {
+      "enum": [
+        "left",
+        "right",
+        "top",
+        "bottom"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "hidden",
+        "peek",
+        "pinned"
+      ]
+    },
+    "size": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    }
+  }
+}

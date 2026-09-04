@@ -1,3 +1,4 @@
+import 'dockview-enterprise';
 import React, {
   Component,
   createContext,
@@ -208,6 +209,8 @@ function ForgeEditorHost({
   compact: boolean;
 }): React.ReactElement {
   const runtime = requireRuntime();
+  const [, refresh] = useState(0);
+  useEffect(() => runtime.events.on('workbench.layout.changed@1', () => refresh(value => value + 1)), [runtime]);
   const instance = runtime.getInstance(instanceId);
   const definition = instance ? runtime.editors.get(instance.editorId) : undefined;
   const availability = instance ? runtime.editorAvailability(instance.editorId) : undefined;
@@ -245,7 +248,7 @@ function ForgeEditorHost({
   const context = runtime.resolveContext(instance.instanceId);
   const header = createAreaHeaderContract(instance, context, visible, compact);
   return (
-    <>
+    <div className="forge-editor-layout">
       <AreaHeader
         contract={header}
         onAction={(action) => {
@@ -256,7 +259,7 @@ function ForgeEditorHost({
           runtime.onAreaAction(instance.instanceId, action);
         }}
       />
-      <LoadedEditor
+      <div className="forge-editor-body"><LoadedEditor
         instanceId={instance.instanceId}
         context={context}
         contextBinding={instance.contextBinding}
@@ -267,8 +270,8 @@ function ForgeEditorHost({
         close={() => { void requestClose(runtime, instance.instanceId); }}
         setTitle={(title) => runtime.setTitle(instance.instanceId, title)}
         suspended={!visible && definition.renderPolicy === 'suspend-when-hidden'}
-      />
-    </>
+      /></div>
+    </div>
   );
 }
 
@@ -366,9 +369,9 @@ class EditorErrorBoundary extends Component<
 }
 
 function usePanelCompact(api: IDockviewPanelProps<PanelParameters>['api']): boolean {
-  const [compact, setCompact] = useState(api.width > 0 && api.width < 560);
+  const [compact, setCompact] = useState(api.width > 0 && api.width < 900);
   useEffect(() => {
-    const disposable = api.onDidDimensionsChange(({ width }) => setCompact(width < 560));
+    const disposable = api.onDidDimensionsChange(({ width }) => setCompact(width < 900));
     return () => disposable.dispose();
   }, [api]);
   return compact;
