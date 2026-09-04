@@ -1,0 +1,419 @@
+{
+  "files": [
+    {
+      "path": ".agents/skills/sceneops-adapter-integration/SKILL.md",
+      "size": 950,
+      "sha256": "8e92e77291b0a71bc473c77ee8fae9e70297f7a11345ee7dcc5f4645f6f9c52e"
+    },
+    {
+      "path": ".agents/skills/sceneops-contract-first/SKILL.md",
+      "size": 887,
+      "sha256": "af4c32b190c2f0421f1055577ae70249431b57605cf3182f040aa64874971ab9"
+    },
+    {
+      "path": ".agents/skills/sceneops-docs-sync/SKILL.md",
+      "size": 668,
+      "sha256": "f7240fb55b7da0434976c48472ca322557049dfeb756c8a98486753f2d79f7a2"
+    },
+    {
+      "path": ".agents/skills/sceneops-editor-development/SKILL.md",
+      "size": 1105,
+      "sha256": "f7ce56f3f92045157efea8ddfa15b437ae65ae7dc9240dfd32feec447345116f"
+    },
+    {
+      "path": ".agents/skills/sceneops-hero-flow/SKILL.md",
+      "size": 890,
+      "sha256": "21db96cbb2c8242d6b666b9d52d048cd16f8c392f044c378039d00bf59789e5c"
+    },
+    {
+      "path": ".agents/skills/sceneops-module-scaffold/SKILL.md",
+      "size": 1371,
+      "sha256": "ff8732ebc5d99c602838a197bfde1acf73da914252baf222ee3c38b8739d7974"
+    },
+    {
+      "path": ".agents/skills/sceneops-release-review/SKILL.md",
+      "size": 866,
+      "sha256": "ea869eb25dffae16106089b9b2875cbab53eea7b0eb4a0f3bab3b10d7d62f0bb"
+    },
+    {
+      "path": ".codex/agents/asset-blender-builder.toml",
+      "size": 702,
+      "sha256": "07a1dc3652fb1b60cef7b82e00d2186067316989ceca3843aa3fd3e03a19293e"
+    },
+    {
+      "path": ".codex/agents/character-animation-builder.toml",
+      "size": 589,
+      "sha256": "e905c7d2b4126f8d8b36eeb9c1f6a5189263ef602cda7db97265cb0071b2839d"
+    },
+    {
+      "path": ".codex/agents/code-explorer.toml",
+      "size": 572,
+      "sha256": "aafc8a51136f156b87679ffbc2b8aae4a04fe692efcf11aa1ceeb61f95fc31fe"
+    },
+    {
+      "path": ".codex/agents/collaboration-release-builder.toml",
+      "size": 617,
+      "sha256": "717fdccad31896645f71595c630b453ee8f0115b2ca00ce7be8b46d41af2ea33"
+    },
+    {
+      "path": ".codex/agents/docs-maintainer.toml",
+      "size": 596,
+      "sha256": "7e0ab0d4e9ac02efa9f477e73bf14941106c5a965225b0d3894ea0664794367f"
+    },
+    {
+      "path": ".codex/agents/fixture-worker.toml",
+      "size": 523,
+      "sha256": "b4360db9ffd7df53d6614f7064f8224d10860c9aae0d06800f97563ff63453e8"
+    },
+    {
+      "path": ".codex/agents/forge-architect.toml",
+      "size": 701,
+      "sha256": "fa3dc964ccc7b1848772f1695055a3bb28af4f7967a54b431b05e4749f20f2ef"
+    },
+    {
+      "path": ".codex/agents/module-builder.toml",
+      "size": 642,
+      "sha256": "99c38446163a7a7a78889a73a6e5d7c4c65a82c6080dbea847505cbba1791c82"
+    },
+    {
+      "path": ".codex/agents/module-runtime-builder.toml",
+      "size": 646,
+      "sha256": "29509a8ab78e9806a17d403e64c668555cf8a0037918a50bd4865938688ce989"
+    },
+    {
+      "path": ".codex/agents/playtest-builder.toml",
+      "size": 622,
+      "sha256": "c226265b9500e499d0de2b64963c1c9b734e2892b82f367db9ba63eb1a32c817"
+    },
+    {
+      "path": ".codex/agents/qa-reviewer.toml",
+      "size": 650,
+      "sha256": "86b1191a607739bccf60201aa281a5f19a51d1391a7d6f00a6a626287bbdb333"
+    },
+    {
+      "path": ".codex/agents/render-ops-builder.toml",
+      "size": 639,
+      "sha256": "7b315c8e05839eb1ed7ab7c1771ed3ed2d7b747c1b4984aecb30c0a76bb2d0e0"
+    },
+    {
+      "path": ".codex/agents/security-reviewer.toml",
+      "size": 617,
+      "sha256": "15c2d9ff868426cabd32c90ff9ddb525649970b9fced11157c3294ebea67cadb"
+    },
+    {
+      "path": ".codex/agents/shell-ui-builder.toml",
+      "size": 726,
+      "sha256": "9cee5ad147d0ff626e9cb17598fd7c0334d5bd14bd926b4472011ffac762bbac"
+    },
+    {
+      "path": ".codex/agents/unity-engine-builder.toml",
+      "size": 644,
+      "sha256": "0fc4acffc2e387ce41474d6e27405630949826c8360af343bc20c87238cbfcde"
+    },
+    {
+      "path": ".codex/agents/world-logic-builder.toml",
+      "size": 623,
+      "sha256": "0d6fdbb3423a0b455193ed8452f98b6ce9516fd4cfb03ff673c3efdbf4d33a3f"
+    },
+    {
+      "path": ".codex/config.toml",
+      "size": 174,
+      "sha256": "b7b42329b202b4cf5580e7fe0ae6d7382b7fd0518fff1864abb6e72bfcf51c59"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 10394,
+      "sha256": "edaec05e3660c53b852a8faf3cad69ab8ea962b9f975e75a060e820b6fee74c3"
+    },
+    {
+      "path": "DEFINITION_OF_DONE.md",
+      "size": 3425,
+      "sha256": "d65a139ad3559f69fdfe1c35e289b705e0a8122245bae8936b84be0959067340"
+    },
+    {
+      "path": "FRONTEND_INTEGRATION.md",
+      "size": 10840,
+      "sha256": "81a55377b9f15812a9a8e8b6717ad8d42517a7af0a63e1023c8f0f75933b03a8"
+    },
+    {
+      "path": "MASTER_CODEX_PROMPT.md",
+      "size": 28963,
+      "sha256": "45af89365ab9ac446e1043ecb4d15335f00f3126ee497178126a75d7c9c25d79"
+    },
+    {
+      "path": "MODEL_ROUTING.md",
+      "size": 3466,
+      "sha256": "634624988f53fc73306daff5f8174834171dcee121854dfdf35be1617ce2d19b"
+    },
+    {
+      "path": "MODULE_CONTRACT.md",
+      "size": 7171,
+      "sha256": "dd2c13e77578d613518363dcc01400e40bde1be811f59ccd6edc53d28c2c4d8b"
+    },
+    {
+      "path": "PROMPTS/00_BOOTSTRAP_AUDIT.md",
+      "size": 3363,
+      "sha256": "68aadb5a484cbb7d4fd27b758a1b3343c9757ddda07ea6acafd3c0df9935fbdb"
+    },
+    {
+      "path": "PROMPTS/01_CORE_CONTRACTS_AND_MODULE_RUNTIME.md",
+      "size": 3703,
+      "sha256": "fe91326b807ff696b35778a182f0bfe56c7452b79527c4c465d1eb1acd54b4ab"
+    },
+    {
+      "path": "PROMPTS/02_CHAT_ONLY_HOME.md",
+      "size": 3691,
+      "sha256": "e6673fac840871be8093b4456c7427ed06c8a396e0870c9505197295f3faa4c6"
+    },
+    {
+      "path": "PROMPTS/03_FORGE_SHELL_EDGE_DOCKING.md",
+      "size": 3884,
+      "sha256": "45120dda6dcf0fb39865a81c2ec966fa98c0ccfe01d6766af890b924965b01e6"
+    },
+    {
+      "path": "PROMPTS/04_PROJECT_INTAKE_DESIGN_ROOM.md",
+      "size": 3631,
+      "sha256": "b4841b0eccdf359935c64b024102104e3c527015208d96d0b22d0ab975e7ea9e"
+    },
+    {
+      "path": "PROMPTS/05_PRODUCTION_PLANNER.md",
+      "size": 3300,
+      "sha256": "ff20a8c8e7bbc1265357656a91adb5327462e2e8fde71bc2136c0e02baff3f89"
+    },
+    {
+      "path": "PROMPTS/06_CONCEPT_LAB.md",
+      "size": 3204,
+      "sha256": "aea304916b271226d7ebe7d4d16d6bd50272d06bcc510f9bcc2642b3233b91a8"
+    },
+    {
+      "path": "PROMPTS/07_ASSET_LIBRARY_FACTORY_BLENDER.md",
+      "size": 4076,
+      "sha256": "1767374211898fc7695ee9e59f05245d5222976f40078eab58815d52b79ce7dc"
+    },
+    {
+      "path": "PROMPTS/08_CHARACTER_ANIMATION.md",
+      "size": 3376,
+      "sha256": "8c9639d4c84fb857170a97cc46eb3b21d9ecf8a17e7e924091e05c4af29eb6c3"
+    },
+    {
+      "path": "PROMPTS/09_WORLD_COMPOSER.md",
+      "size": 3847,
+      "sha256": "69d6a6b43eb39f5bd3f3778121599645ec81919c78e5182085c631a18d6a73fc"
+    },
+    {
+      "path": "PROMPTS/10_LOGIC_STUDIO.md",
+      "size": 3648,
+      "sha256": "d45d226570c4e3cfdaa7f15fdadc18f34c3bf311e0392d51993e1960d50de69a"
+    },
+    {
+      "path": "PROMPTS/11_UI_AUDIO_VFX_MODULES.md",
+      "size": 3624,
+      "sha256": "275e6bb45c5773bb63e86f33d5101b2ce6b69be8c0ad8c1df0528e574cb2088b"
+    },
+    {
+      "path": "PROMPTS/12_RENDER_OPS.md",
+      "size": 4011,
+      "sha256": "e16bb68375d11676946a8b7b8c95a48be5902431728e178453c2816e45f64ed6"
+    },
+    {
+      "path": "PROMPTS/13_ENGINE_UNITY.md",
+      "size": 3879,
+      "sha256": "200ae29d68aa879fc8231a5655408880c478158efa5589eadcadd84d1522bee3"
+    },
+    {
+      "path": "PROMPTS/14_VERSION_COLLABORATION.md",
+      "size": 3515,
+      "sha256": "fd69f7df05cc11e41c6f1c2c86441f00dfd762e350311d37c618294b7c4a91b5"
+    },
+    {
+      "path": "PROMPTS/15_AI_PLAYTEST.md",
+      "size": 3998,
+      "sha256": "20aae7576b56f74b096f7667cc1fe4b4931c3ca00ffb8f157969bdb2b0064a34"
+    },
+    {
+      "path": "PROMPTS/16_BUILD_RELEASE.md",
+      "size": 3424,
+      "sha256": "ebe4dca4ddf957e9d428c491137581c121aba384189809a4d3eea2c3781d74d8"
+    },
+    {
+      "path": "PROMPTS/17_HERO_FLOW_INTEGRATION.md",
+      "size": 3664,
+      "sha256": "442bb5886cc28c7cacfe7446b076b87d3267be810fdecd71cea97f497ce00eb3"
+    },
+    {
+      "path": "PROMPTS/18_OTHER_GAME_DEMO.md",
+      "size": 3342,
+      "sha256": "6995cf5235d90303d8d20a72e9f1c6d42a60f55682556ce3272a32e5359b03cf"
+    },
+    {
+      "path": "PROMPTS/19_INTEGRATION_CENTER_OBSERVABILITY.md",
+      "size": 3349,
+      "sha256": "ae8c5a81a9babb54ef055300f91e2fdaacf80e9fb9f96d1692209bc29a9c39e4"
+    },
+    {
+      "path": "PROMPTS/20_FRONTEND_SDK_AND_DOCS.md",
+      "size": 3463,
+      "sha256": "7d27633cf26398d526895ae13ee49b2941c7e65fe23fa48829bcd8b31ec144a3"
+    },
+    {
+      "path": "PROMPTS/21_JUDGE_MODE_AND_DELIVERY.md",
+      "size": 3669,
+      "sha256": "2320fac4a1fb7b0ca8b26dd72f41cb27ba806ed9838eee14e0f29dfa9c753b6a"
+    },
+    {
+      "path": "PROMPTS/22_SECURITY_PERFORMANCE_QA.md",
+      "size": 3847,
+      "sha256": "41c52d615c2f5b78db936f06f871330a43074d95c3bd131d56d069287d565fc2"
+    },
+    {
+      "path": "PROMPTS/23_FINAL_RELEASE_AUDIT.md",
+      "size": 3299,
+      "sha256": "904deec69df9e9c4597cf8585da091189429e38f1a04249e5880ed4a9a9d6ebf"
+    },
+    {
+      "path": "PROMPT_INDEX.md",
+      "size": 2140,
+      "sha256": "800c232a1624d872d86a4c94095dfebd48ed8fce1b0e6659c95203d23db22c82"
+    },
+    {
+      "path": "README_FIRST.md",
+      "size": 4560,
+      "sha256": "0e19af00e5802209caad84d232b85a7a4dc60b54cb06eb5fa07affd45c52722e"
+    },
+    {
+      "path": "SUBAGENTS/asset-blender-builder.md",
+      "size": 766,
+      "sha256": "43c15da3e04602040acdb80a3683d154af290e9346ea18eee5a23d31115ce27f"
+    },
+    {
+      "path": "SUBAGENTS/character-animation-builder.md",
+      "size": 730,
+      "sha256": "f6efb3f1f3294d841abdd3f095196d8cd330b25a4e00dd73d5e46ada7acb85a4"
+    },
+    {
+      "path": "SUBAGENTS/code-explorer.md",
+      "size": 679,
+      "sha256": "df7d5ec38a1a1c56fee69732297a47d2a5a3d7810d5dd7ee55c874925fc6db96"
+    },
+    {
+      "path": "SUBAGENTS/collaboration-release-builder.md",
+      "size": 726,
+      "sha256": "79b22d24e277999dffaf2a9fd22dac230c3cd62d6473b0b3f53a29cfd2743824"
+    },
+    {
+      "path": "SUBAGENTS/forge-architect.md",
+      "size": 781,
+      "sha256": "560a2bf8b4378b9c7c8c22e6a457e50c9c27572ffea7a2a511c70eef92d9fc11"
+    },
+    {
+      "path": "SUBAGENTS/module-runtime-builder.md",
+      "size": 726,
+      "sha256": "7553c9f236be1d4e4f90e83b4fac3bd35d9c31c7dec88e88f5a7b4a1b43dce83"
+    },
+    {
+      "path": "SUBAGENTS/playtest-builder.md",
+      "size": 721,
+      "sha256": "1949302c6bcecf0aaeafe4a4288da95ce62da9d251082b0711423e84babdbd43"
+    },
+    {
+      "path": "SUBAGENTS/principal.md",
+      "size": 980,
+      "sha256": "52b61e75513c53004766b7d49341917a106c12b90d5b5e1aeb17b1534bd1e43f"
+    },
+    {
+      "path": "SUBAGENTS/product-graph-builder.md",
+      "size": 752,
+      "sha256": "d82c7621d08cdb5a6e84f94ea5609a20fa4843b8e9d99d89a3a794ea54f97963"
+    },
+    {
+      "path": "SUBAGENTS/qa-security-docs.md",
+      "size": 715,
+      "sha256": "bad072f8ab5a03c990c0ae0a6bd5ad7d11c5318089007de21e0701a8202fe376"
+    },
+    {
+      "path": "SUBAGENTS/render-ops-builder.md",
+      "size": 782,
+      "sha256": "4001adb07cba4052cfabfe97555d3731b7b15e2c098c8ce21a8c533805f16d36"
+    },
+    {
+      "path": "SUBAGENTS/shell-ui-builder.md",
+      "size": 769,
+      "sha256": "b5a5fe0baffc13ccc7935ec760c950091c142e55fada2efd36b32205a4239819"
+    },
+    {
+      "path": "SUBAGENTS/unity-engine-builder.md",
+      "size": 737,
+      "sha256": "7876ad057c584bdf25ba1238060e93f0b5818c63fd5d4479ac3cf1795e6e0273"
+    },
+    {
+      "path": "SUBAGENTS/world-logic-builder.md",
+      "size": 742,
+      "sha256": "e71f4f7f4d4cb09c7babb12db48d99f2f9ec77bed0e8414ab992b4ce95823f8f"
+    },
+    {
+      "path": "SUBAGENT_ORCHESTRATION.md",
+      "size": 4301,
+      "sha256": "753a4ed70d378429c07e627560c52243363946dff0599a9a70aa793207eab1f8"
+    },
+    {
+      "path": "TEMPLATES/BUG_RECOVERY_PROMPT.md",
+      "size": 828,
+      "sha256": "8e069f3522dc20057e2c936fb1f76debd7f7ce9e6c841cd135b909e35d006f0f"
+    },
+    {
+      "path": "TEMPLATES/CONTEXT_RECOVERY_PROMPT.md",
+      "size": 851,
+      "sha256": "fe6ab861250969426240819f96412c2bdd58bdbdbe986fd0c406c75cfbc17198"
+    },
+    {
+      "path": "TEMPLATES/FINAL_REVIEW_PROMPT.md",
+      "size": 898,
+      "sha256": "a4a7d8c12fcdd44ca088a143a83359df0f51c54f7d6fe522b33f82315dbe834c"
+    },
+    {
+      "path": "TEMPLATES/INTEGRATION_REVIEW_PROMPT.md",
+      "size": 828,
+      "sha256": "96b11aff0b76e5b70566105a84c346b3478c7a360a80f360347951ed4563a040"
+    },
+    {
+      "path": "TEMPLATES/MODULE_IMPLEMENTATION_PROMPT.md",
+      "size": 1691,
+      "sha256": "2c22e1de15058b26ba9a69a2f117886686f22915b9020fcbef1216c1e53ba3c8"
+    },
+    {
+      "path": "TEMPLATES/MODULE_REVIEW_PROMPT.md",
+      "size": 912,
+      "sha256": "b5116a7e783dc1b0732fb878dbe28e40c0aadd4a9692c34f71b4d436430fe12c"
+    },
+    {
+      "path": "TEMPLATES/NEW_CONVERSATION_HANDOFF.md",
+      "size": 1386,
+      "sha256": "444cf907e3e013b248dc47e16cc7fe2d168637c3fd1469c7fe8379568d20f3af"
+    },
+    {
+      "path": "TEMPLATES/module-folder-tree.txt",
+      "size": 937,
+      "sha256": "2b668b1ccdef654b0e24cc090066f4233a96bf83cf9dc10cc28f5481fe7594a6"
+    },
+    {
+      "path": "TEMPLATES/module-manifest.example.yaml",
+      "size": 562,
+      "sha256": "08558a0ea9ccccc81d516dd3a5b520eeeea5376958b00f67100c7ac624debe54"
+    },
+    {
+      "path": "architecture.md",
+      "size": 9585,
+      "sha256": "b02db40d44565c22b59f224263341ee34515f0a73c0e29cf5c43e541925fc8fd"
+    },
+    {
+      "path": "design.md",
+      "size": 17008,
+      "sha256": "ea8c4ee8a5be3709f0c0b437fa9e2ac0e80a38ca3044c033f5f5050840c4d8a7"
+    },
+    {
+      "path": "product.md",
+      "size": 5080,
+      "sha256": "c4364694b2836bcd85670c918095b2234c98b0902c91936bdf886432cd0b32e9"
+    }
+  ]
+}

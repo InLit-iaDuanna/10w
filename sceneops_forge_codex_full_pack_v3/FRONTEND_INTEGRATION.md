@@ -1,0 +1,473 @@
+# SceneOps Forge Frontend Integration Guide
+
+Version: 2.0
+
+## 1. Purpose
+
+This guide defines how to add, replace, or integrate frontend functionality without changing the core shell. The frontend is a chat-first, dockable editor environment assembled from feature modules.
+
+A developer should be able to:
+
+- add a new feature module in one folder;
+- register one or more tool editors;
+- expose commands that chat and buttons can both invoke;
+- consume shared project/scene/build context;
+- connect to typed backend APIs;
+- handle missing integrations;
+- save editor-local state;
+- add tests and docs without editing unrelated modules.
+
+## 2. Frontend stack
+
+Default:
+
+- React + TypeScript + Vite;
+- dockview-react;
+- React Three Fiber + Drei;
+- TanStack Query;
+- small Zustand stores for transient spatial state;
+- React Flow for graphs;
+- generated OpenAPI client;
+- SSE for run progress;
+- Vitest + Testing Library + Playwright.
+
+Do not add a second docking engine, second server-state library, or module-specific API client.
+
+## 3. Composition root
+
+`apps/web` contains:
+
+```text
+apps/web/src/
+├─ main.tsx
+├─ app/
+│  ├─ providers.tsx
+│  ├─ bootstrap.ts
+│  └─ error-boundary.tsx
+├─ shell/
+│  ├─ ForgeShell.tsx
+│  ├─ ConversationHome.tsx
+│  ├─ WorkspaceManager.ts
+│  ├─ EdgeDrawerController.tsx
+│  ├─ AreaHeader.tsx
+│  └─ layout-persistence.ts
+├─ registries/
+│  ├─ generated-module-catalog.ts
+│  ├─ EditorRegistry.ts
+│  ├─ CommandRegistry.ts
+│  └─ WorkspaceRegistry.ts
+└─ styles/
+   ├─ tokens.css
+   └─ base.css
+```
+
+Business editors and feature UI do not live here.
+
+## 4. Feature module frontend
+
+```text
+modules/<module-id>/frontend/src/
+├─ index.ts
+├─ manifest.ts
+├─ editors/
+├─ components/
+├─ commands/
+├─ hooks/
+├─ state/
+├─ fixtures/
+├─ generated/
+└─ tests/
+```
+
+The public entry exports a `ModuleContribution`.
+
+```ts
+export const moduleContribution: ModuleContribution = {
+  manifest,
+  editors: [assetFactoryEditor, assetValidationEditor],
+  commands: [createAssetSpecCommand, runAssetPipelineCommand],
+};
+```
+
+## 5. Editor registration
+
+```ts
+export interface EditorDefinition<TState = unknown> {
+  id: string;
+  title: string;
+  icon: IconName;
+  category: EditorCategory;
+  load: () => Promise<{ default: React.ComponentType<EditorProps<TState>> }>;
+  defaultPlacement: EditorPlacement;
+  minWidth?: number;
+  minHeight?: number;
+  singleton?: boolean;
+  requiredPermissions?: string[];
+  requiredIntegrations?: string[];
+  optionalIntegrations?: string[];
+  serializeState?: (state: TState) => JsonValue;
+  restoreState?: (value: JsonValue) => TState;
+}
+```
+
+Example:
+
+```ts
+export const sceneViewportEditor: EditorDefinition<ViewportState> = {
+  id: 'scene.viewport.3d',
+  title: '3D Viewport',
+  icon: 'cube',
+  category: 'scene',
+  load: () => import('./editors/SceneViewportEditor'),
+  defaultPlacement: 'center',
+  minWidth: 420,
+  minHeight: 280,
+  singleton: false,
+  requiredPermissions: ['scene:read'],
+  optionalIntegrations: ['blender', 'unity'],
+  serializeState: serializeViewportState,
+  restoreState: restoreViewportState,
+};
+```
+
+Do not import heavy editor components eagerly.
+
+## 6. Editor props
+
+```ts
+export interface EditorProps<TState> {
+  instanceId: string;
+  contextBinding: ContextBinding;
+  localState: TState;
+  updateLocalState: (patch: Partial<TState>) => void;
+  commands: WorkbenchCommandClient;
+  events: WorkbenchEventClient;
+  close: () => void;
+  setTitle: (title: string) => void;
+}
+```
+
+Editors do not receive raw Dockview APIs unless the shell-specific operation cannot be represented through the command client.
+
+## 7. Chat-only home
+
+The initial layout fixture contains one editor:
+
+```json
+{
+  "workspace_id": "home",
+  "areas": [
+    {
+      "editor_id": "assistant.conversation",
+      "placement": "center",
+      "locked": false
+    }
+  ],
+  "drawers": {
+    "left": "hidden",
+    "right": "hidden",
+    "top": "hidden",
+    "bottom": "hidden"
+  }
+}
+```
+
+No module may automatically open on first load unless:
+
+- the user invoked it;
+- a saved workspace requires it;
+- Judge Mode explicitly preloads it;
+- a deep link targets it.
+
+## 8. Opening tools from chat
+
+The assistant returns a structured action, not UI-specific imperative code.
+
+```ts
+interface OpenEditorAction {
+  type: 'workbench.open_editor';
+  editorId: string;
+  placement: {
+    mode: 'replace' | 'tab' | 'split' | 'floating' | 'popout' | 'drawer';
+    direction?: 'left' | 'right' | 'above' | 'below';
+    edge?: 'left' | 'right' | 'top' | 'bottom';
+    relativeToInstanceId?: string;
+  };
+  context?: Partial<WorkbenchContext>;
+  requireConfirmation: boolean;
+}
+```
+
+The frontend validates editor availability, permissions, integrations, and placement. The assistant cannot bypass these checks.
+
+## 9. Workbench context
+
+```ts
+export interface WorkbenchContext {
+  projectId: string | null;
+  branchId: string | null;
+  sceneId: string | null;
+  selectedSceneObjectIds: string[];
+  selectedAssetIds: string[];
+  activeFeatureId: string | null;
+  activeTaskId: string | null;
+  activeChangeSetId: string | null;
+  activeRenderJobId: string | null;
+  activeBuildId: string | null;
+  activePlaytestRunId: string | null;
+  activeIssueId: string | null;
+  cameraPose?: CameraPose;
+  timelineTime?: number;
+}
+```
+
+Binding:
+
+```ts
+type ContextBinding =
+  | { mode: 'follow-global' }
+  | { mode: 'pinned'; context: Partial<WorkbenchContext> };
+```
+
+Use context IDs to query server data. Do not place entire server entities in global state.
+
+## 10. Commands
+
+All user and assistant actions share typed commands.
+
+```ts
+interface WorkbenchCommandDefinition<TInput, TResult> {
+  id: string;
+  title: string;
+  inputSchema: ZodSchema<TInput>;
+  requiredPermissions?: string[];
+  requiredIntegrations?: string[];
+  canExecute(context: WorkbenchContext, input: TInput): CommandAvailability;
+  execute(ctx: CommandExecutionContext, input: TInput): Promise<TResult>;
+}
+```
+
+Examples:
+
+```text
+workbench.open_editor
+workspace.reset
+project.create
+feature.create
+asset.pipeline.run
+scene.annotation.create
+changeset.approve
+render.recipe.run
+unity.build.run
+playtest.run
+issue.open_backpin
+release.create_candidate
+```
+
+A feature component must not duplicate command logic.
+
+## 11. Events
+
+Frontend consumes typed server events:
+
+```text
+pipeline.run.started@1
+pipeline.node.progressed@1
+changeset.waiting_approval@1
+render.variant.created@1
+build.completed@1
+playtest.step.recorded@1
+issue.created@1
+issue.backpin.resolved@1
+integration.health.changed@1
+```
+
+Use one event transport client. Modules subscribe through the event registry.
+
+## 12. API client
+
+Backend OpenAPI is the source of truth.
+
+Generation:
+
+```text
+Pydantic
+→ openapi.json
+→ generated TypeScript types/client
+→ module hooks
+```
+
+Only the shared client handles:
+
+- base URL;
+- auth;
+- request ID;
+- timeout and AbortSignal;
+- JSON serialization;
+- typed errors;
+- API version headers.
+
+No direct `fetch` in module components.
+
+## 13. Query keys
+
+Each module owns a query-key factory exported from its public entry.
+
+```ts
+export const assetKeys = {
+  all: ['assets'] as const,
+  list: (projectId: string, filter: AssetFilter) =>
+    [...assetKeys.all, 'list', projectId, filter] as const,
+  detail: (assetId: string) => [...assetKeys.all, 'detail', assetId] as const,
+};
+```
+
+Do not hardcode arrays throughout components.
+
+## 14. Error contract
+
+```json
+{
+  "code": "INTEGRATION_OFFLINE",
+  "message": "Unity is not connected.",
+  "details": {"integration_id": "unity"},
+  "request_id": "req_...",
+  "retryable": true,
+  "suggested_actions": ["integration.open", "run.retry"]
+}
+```
+
+UI behavior depends on `code` and structured fields, not message parsing.
+
+## 15. Editor-local state
+
+Serializable local state examples:
+
+- viewport camera and overlays;
+- asset-browser filters;
+- graph zoom and selection;
+- log filters;
+- version comparison choices.
+
+Do not serialize:
+
+- WebGL objects;
+- React components;
+- network clients;
+- AbortControllers;
+- large server entities;
+- secrets.
+
+## 16. Layout persistence
+
+Persist:
+
+- Dockview layout;
+- editor instances;
+- drawer state and size;
+- floating/popout groups;
+- local serializable state;
+- pinned context;
+- active workspace;
+- schema version.
+
+Required behavior:
+
+- debounce writes;
+- migrate old schema;
+- recover invalid layouts;
+- maintain a known default fixture;
+- one-click reset;
+- private and team-shared layouts.
+
+## 17. Edge drawer integration
+
+A module may contribute Tool Library entries, but the shell owns drawer mechanics.
+
+```ts
+interface ToolLibraryEntry {
+  editorId: string;
+  group: string;
+  keywords: string[];
+  recommendedEdges?: Array<'left' | 'right' | 'top' | 'bottom'>;
+}
+```
+
+Do not let modules access drawer DOM directly.
+
+## 18. 3D editor integration
+
+Use the shared `scene-viewer` package for:
+
+- GLB loading;
+- resource cache;
+- ID mapping;
+- selection;
+- camera synchronization;
+- overlays;
+- annotations;
+- drag/drop placement;
+- capture.
+
+Feature modules provide domain overlays through a registry.
+
+```ts
+interface SceneOverlayDefinition {
+  id: string;
+  label: string;
+  isAvailable(context: WorkbenchContext): boolean;
+  render(props: SceneOverlayProps): React.ReactNode;
+}
+```
+
+## 19. Adding a new module
+
+1. Run the module scaffold skill/script.
+2. Define `module.yaml`.
+3. Add module-level `AGENTS.md` and README.
+4. Define backend schemas/routes/services if required.
+5. Generate the API client.
+6. Register editors and commands.
+7. Add fixtures and failure states.
+8. Add independent tests.
+9. Add module docs.
+10. Run manifest, dependency, type, unit, and E2E checks.
+11. Regenerate the module catalog.
+
+The shell should not require manual edits beyond generated registration.
+
+## 20. Styling and theme changes
+
+- all colors, spacing, typography, borders, and motion use tokens;
+- module CSS must not redefine global tokens;
+- editor layouts use shared primitives sparingly;
+- do not wrap every section in a card;
+- modules may add semantic tokens only through the design-token extension file;
+- update `design.md` and token docs when public tokens change.
+
+## 21. Testing a frontend module
+
+Minimum:
+
+- editor registers;
+- permissions and integration requirements render correctly;
+- loading, empty, success, failure, offline, and retry states;
+- command invocation;
+- context follow and pin;
+- local state serialize/restore;
+- module can be disabled;
+- no direct external-tool calls;
+- no shell internals imported.
+
+## 22. Documentation synchronization
+
+Update in the same commit when relevant:
+
+- `FRONTEND_INTEGRATION.md`;
+- module README;
+- `docs/editor-registry.md`;
+- `docs/workbench-context.md`;
+- `docs/tool-window-development.md`;
+- `docs/api.md`;
+- `docs/events.md`;
+- generated TypeScript client.

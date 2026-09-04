@@ -1,0 +1,33 @@
+schema_version: 1
+id: example-module
+version: 0.1.0
+title: Example Module
+description: One coherent SceneOps Forge capability.
+status: active
+feature_flag: example_module
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+  integrations: []
+  optional_integrations: []
+
+contributes:
+  editors:
+    - example.editor
+  commands:
+    - example.run
+  events:
+    - example.completed@1
+  jobs: []
+  workflows: []
+  policy_gates: []
+
+permissions:
+  - example:read
+  - example:write
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: example_module

@@ -1,0 +1,36 @@
+modules/<module-id>/
+├── AGENTS.md
+├── README.md
+├── module.yaml
+├── contracts/
+│   ├── events/
+│   ├── manifests/
+│   └── examples/
+├── frontend/
+│   ├── package.json
+│   └── src/
+│       ├── index.ts
+│       ├── manifest.ts
+│       ├── editors/
+│       ├── components/
+│       ├── commands/
+│       ├── hooks/
+│       ├── state/
+│       ├── fixtures/
+│       ├── generated/
+│       └── tests/
+├── backend/
+│   ├── pyproject.toml
+│   └── src/<python_package>/
+│       ├── __init__.py
+│       ├── router.py
+│       ├── schemas.py
+│       ├── service.py
+│       ├── repository.py
+│       ├── jobs.py
+│       └── tests/
+├── workers/
+├── adapters/
+├── workflows/
+├── e2e/
+└── docs/
