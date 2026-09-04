@@ -44,3 +44,4 @@ export type {
   WorkerMonitorEditorView,
   WorkerView,
 } from "./types.ts";
+export const loadIntegrationOpsWorkbench = () => import('./workbench/IntegrationOpsWorkbench.tsx');

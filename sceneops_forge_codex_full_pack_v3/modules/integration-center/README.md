@@ -1,5 +1,11 @@
 # Integration Center
 
+## 独立 Web 工作台（新增）
+
+现在可通过 [integration-ops 启动说明](../../apps/labs/integration-ops/README.md) 独立打开 React 工作台：`pnpm --dir apps/labs/integration-ops dev`（从应用根运行，首次先安装依赖）。地址 `http://127.0.0.1:4320`。界面提供健康/能力、Worker、作业进度、项目/任务/correlation 筛选、日志与本地证据、诊断摘要。演示数据全部 Mock，固定时间明确显示。
+
+新增公开 `create_demo_workbench`、`create_workbench_router`、`OperationsWorkbench` 与前端 `loadIntegrationOpsWorkbench`。网络类型从组合 API 的 OpenAPI 生成，TanStack Query 负责服务状态。原恢复、安全与脱敏机制保持不变；独立入口仅授权只读演示查询和诊断导出。
+
 Integration Center 统一展示外部工具与 Worker 的实时探测结果、版本、能力、当前任务、队列、关联日志和恢复建议。它只依赖 vendor-neutral typed adapter，不导入 Blender、Unity、ComfyUI、Git 或存储 SDK。
 
 ## 用户与场景
@@ -39,7 +45,7 @@ disconnected -> incompatible -> unauthorized -> degraded -> busy -> connected ->
 
 两个编辑器都提供 loading、empty、ready、failed、disconnected 和 permission-denied 状态，支持搜索及只序列化本地筛选/选中项。
 
-当前仓库缺少 React/Core UI 与 generated API client。模块已完成可独立测试的 editor render model、懒加载注册和 typed client/command port；实际 React 宿主与 TanStack Query hook 在模块运行时就绪后接线。
+模块保留可独立测试的 editor render model、懒加载注册和 typed client/command port；独立工作台已增加 React 宿主、TanStack Query 与生成网络类型。全局 Shell runtime 的挂载仍由 Shell 组整合。
 
 ## 公共命令
 
@@ -160,10 +166,10 @@ Pydantic 模型是网络合同来源。当前 API 测试会生成 OpenAPI 并验
 
 | 模式 | 当前实现 |
 |---|---|
-| Live | Planned：没有 vendor adapter、Worker 主机或启动的 API 服务 |
+| Live | 本地 API 可启动；无 vendor adapter 或真实 Worker，外部功能不声明 Live |
 | Cached | 合同与 Judge fallback 已实现；Blocked：没有真实历史 run/cache repository |
 | Mock | Implemented：五类集成 fixture、Worker fixture、Gateway/recovery/API/editor 测试 |
-| Planned | generated client、TanStack Query/React mount、持久 operation ledger、core event emission |
+| Planned | 全局 Shell 注册、持久 operation ledger、core event emission；独立工作台已具备 generated client 和 React mount |
 | Blocked | 应用注册依赖缺失的 `core-kernel`、`module-runtime`、`services/api` 与 adapter modules |
 
 ## 开发与测试
@@ -189,5 +195,5 @@ pnpm --dir frontend test
 - 尚无根 core `ExecutionMode`/event transport 包；当前 Python 模块从 observability 的公共镜像使用根规格中的五值 enum。core 合同落地后应由 principal 统一替换并运行兼容测试。
 - 本任务没有获得 principal 对 shared core gateway/event transport 文件的写入分配，因此未创建竞争性的 core transport。
 - 没有真实 adapter、凭据或 Worker，所有可执行证据均为 `mock`；没有内容被宣称为 Live。
-- React mount、generated client 与应用级 E2E 受缺失前置模块阻塞；仓库已提供模块局部 editor 状态与命令定义测试。
+- 独立 React 工作台和生成客户端已实现；全局 Shell 集成与应用级 E2E 未完成。本轮仅运行启动及一条主路径烟测，其他测试 not run / pending approval。
 - `IntegrationAdapter` 端口本身不启动线程或强行中断工具 SDK；生产 adapter 必须在自身网络/进程边界实现 deadline 与 cancellation，之后才能声明 Live。

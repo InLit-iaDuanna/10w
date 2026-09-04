@@ -68,8 +68,13 @@ from .schemas import (
 )
 from .service import IntegrationCenterService, WorkerQueryPort
 from .router import create_router
+from .workbench import OperationsWorkbench, create_workbench_router
+from .workbench_demo import create_demo_workbench
 
 __all__ = [
+    "OperationsWorkbench",
+    "create_workbench_router",
+    "create_demo_workbench",
     "ActivityState",
     "AdapterError",
     "AuthorizationState",

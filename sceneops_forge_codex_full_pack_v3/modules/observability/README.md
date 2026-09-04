@@ -1,5 +1,9 @@
 # Observability
 
+## 独立 Web 工作台（新增）
+
+[integration-ops](../../apps/labs/integration-ops/README.md) 已通过本模块公共服务组合日志、进度与诊断 ZIP。前端新增公开懒加载 `loadLogPanel()`，支持级别筛选、记录展开、关联链路选择与本地证据按钮。运行 `pnpm --dir apps/labs/integration-ops dev` 可独立启动（首次安装见入口 README）。全部演示记录均为 Mock。
+
 Observability 为 SceneOps Forge 提供统一的结构化日志、任务进度、关联查询、断线重连投影和安全诊断包。它只处理可观察性数据，不判断 Blender、Unity、构建或其他业务是否成功，也不直接调用任何工具 SDK。
 
 ## 用户与场景
@@ -23,7 +27,7 @@ Observability 为 SceneOps Forge 提供统一的结构化日志、任务进度�
 - 执行模式标签；
 - 搜索与诊断包命令状态。
 
-当前仓库尚无 React/Core UI 与 generated API client。模块已完成可测试的 editor render model、懒加载定义、序列化本地筛选状态和 typed client port；React 宿主绑定属于后续组合工作。
+模块保留可测试的 editor render model、懒加载定义、序列化筛选状态和 typed client port；独立工作台已有 React 日志面板与生成 OpenAPI 客户端，公共 Shell 注册仍待组合。
 
 ### 命令
 
@@ -104,10 +108,10 @@ manifest.json
 
 | 模式 | 当前实现 |
 |---|---|
-| Live | Planned：尚无 core event transport、数据库或已启动 API 服务 |
+| Live | 独立本地 API 已可启动；core event transport 与数据库未接入，不把 Mock 工具记录称为 Live |
 | Cached | 合同已支持；Blocked：尚无真实历史运行与持久缓存仓库 |
 | Mock | Implemented：固定时间、固定 ID 的日志 fixture、事件投影与诊断导出测试 |
-| Planned | generated OpenAPI TypeScript client、SSE 适配、持久存储 |
+| Planned | SSE 适配、持久存储；独立工作台已有 generated OpenAPI TypeScript client |
 | Blocked | 应用级注册依赖缺失的 `core-kernel`、`module-runtime`、`services/api` |
 
 任何模块测试结果都只证明本地实现和 `mock` fixture，不证明外部工具 Live 执行。
@@ -137,9 +141,9 @@ pnpm --dir frontend test
 
 ## Limitations
 
-- 根仓库尚未引导 core 合同、模块运行时、API composition root 或 generated client，因此未执行应用级注册、React mount 或 SSE E2E。
+- 独立工作台具备 API composition、生成类型与 React mount；根模块运行时注册和 SSE E2E 未完成。本轮仅执行启动与一条主路径烟测，其余测试 not run / pending approval。
 - 进程内投影不提供重启后的幂等、HMAC key 或游标耐久性；幂等记录和游标与保留窗口一起有界，生产接入必须使用持久 transport。
 - 脱敏策略覆盖命名秘密、凭据、URL 与绝对路径，但无法识别完全无标记的任意随机秘密；producer 仍必须遵守“秘密不得进入日志”的入口契约，manifest 只声明已移除策略可识别的秘密。
-- FastAPI composition root 仍需安装统一、已脱敏的 request-validation 与 unexpected-error handler；`APIRouter` 本身不能替换应用级默认错误序列化器。
+- 独立工作台 composition 已安装不回显请求输入的 validation/unexpected-error handlers；其他宿主仍须提供同等处理。
 - 当前“trace”能力是 project/run/job/correlation/causation 的可查询链路；专用 span/OTel exporter 与跨进程 trace backend 仍为 Planned，不能把本地事件投影描述成完整分布式追踪。
 - 本模块不生成 Artifact 校验和，也不代替 core-storage 的下载授权与 provenance。

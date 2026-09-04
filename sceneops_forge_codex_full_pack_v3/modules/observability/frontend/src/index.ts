@@ -19,3 +19,4 @@ export type {
   LogLevel,
   StructuredLogView,
 } from "./types.ts";
+export const loadLogPanel = () => import('./components/LogPanel.tsx');
