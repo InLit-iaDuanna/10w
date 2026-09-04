@@ -530,6 +530,68 @@
           }
         }
       }
+    },
+    "/v1/design-ai/models": {
+      "get": {
+        "tags": [
+          "design-ai"
+        ],
+        "summary": "Model Catalog",
+        "operationId": "model_catalog_v1_design_ai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelCatalog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/design-ai/suggest": {
+      "post": {
+        "tags": [
+          "design-ai"
+        ],
+        "summary": "Suggest",
+        "operationId": "suggest_v1_design_ai_suggest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -621,6 +683,124 @@
           "expected_evidence"
         ],
         "title": "AcceptanceLink"
+      },
+      "AiRequest": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "brief": {
+            "type": "string",
+            "maxLength": 12000,
+            "minLength": 1,
+            "title": "Brief"
+          },
+          "current": {
+            "$ref": "#/components/schemas/AiSuggestion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model",
+          "brief",
+          "current"
+        ],
+        "title": "AiRequest"
+      },
+      "AiResult": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "const": "codebuddycli",
+            "title": "Provider",
+            "default": "codebuddycli"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "mode": {
+            "type": "string",
+            "const": "live",
+            "title": "Mode",
+            "default": "live"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "suggestion": {
+            "$ref": "#/components/schemas/AiSuggestion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model",
+          "request_id",
+          "created_at",
+          "suggestion"
+        ],
+        "title": "AiResult"
+      },
+      "AiSuggestion": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Goal"
+          },
+          "playerValue": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Playervalue"
+          },
+          "given": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Given"
+          },
+          "when": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "When"
+          },
+          "then": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Then"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "goal",
+          "playerValue",
+          "given",
+          "when",
+          "then"
+        ],
+        "title": "AiSuggestion"
       },
       "ApprovalRequirement": {
         "type": "string",
@@ -1356,6 +1536,43 @@
           "blocked"
         ],
         "title": "MilestoneState"
+      },
+      "ModelCatalog": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "const": "codebuddycli",
+            "title": "Provider",
+            "default": "codebuddycli"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "blocked"
+            ],
+            "title": "Mode"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "models",
+          "message"
+        ],
+        "title": "ModelCatalog"
       },
       "PlanStatus": {
         "type": "string",

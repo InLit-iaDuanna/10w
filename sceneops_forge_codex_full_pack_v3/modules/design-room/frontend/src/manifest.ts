@@ -9,7 +9,7 @@ export const moduleManifest = {
   requires: {
     modules: ["core-kernel", "module-runtime", "project-intake"],
     integrations: [],
-    optional_integrations: [],
+    optional_integrations: ["codebuddycli"],
   },
   contributes: {
     editors: ["project.bible", "design.gdd", "design.feature_spec"],
@@ -36,7 +36,7 @@ export const moduleManifest = {
     policy_gates: ["design.ai_change_approval", "design.planning_readiness"],
   },
   permissions: ["design:read", "design:write", "design:approve"],
-  entrypoints: { frontend: "./frontend/src/index.ts" },
+  entrypoints: { frontend: "./frontend/src/index.ts", backend: "sceneops_design_ai" },
 } as const;
 
 export const designRoomEditorDefinitions = [

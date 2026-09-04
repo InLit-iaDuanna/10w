@@ -7,11 +7,11 @@ const webPort = Number(process.env.WEB_PORT || 4311);
 const apiPort = Number(process.env.API_PORT || 8311);
 for (const port of [webPort, apiPort]) await new Promise((resolve, reject) => {
   const server = createServer();
-  server.once('error', () => reject(new Error(`127.0.0.1:${port} 已占用，请设置 WEB_PORT/API_PORT；未结束其他进程。`)));
+  server.once('error', error => reject(new Error(error.code === 'EADDRINUSE' ? `127.0.0.1:${port} 已占用，请设置 WEB_PORT/API_PORT；未结束其他进程。` : `127.0.0.1:${port} 无法监听：${error.code} ${error.message}`)));
   server.listen(port, '127.0.0.1', () => server.close(resolve));
 });
 const api = spawn(process.env.PYTHON || 'python3', ['-m','uvicorn','api:app','--host','127.0.0.1','--port',String(apiPort)], {
-  cwd: root, stdio: 'inherit', env: {...process.env, PYTHONDONTWRITEBYTECODE:'1', PYTHONPATH: fileURLToPath(new URL('../../../modules/production-planner/backend/src', import.meta.url))},
+  cwd: root, stdio: 'inherit', env: {...process.env, PYTHONDONTWRITEBYTECODE:'1', PYTHONPATH: ['production-planner','design-room'].map(module => fileURLToPath(new URL(`../../../modules/${module}/backend/src`, import.meta.url))).join(':')},
 });
 const server = await vite({root, server:{host:'127.0.0.1',port:webPort,strictPort:true,fs:{allow:[fileURLToPath(new URL('../../../',import.meta.url))]},proxy:{'/v1':`http://127.0.0.1:${apiPort}`}},resolve:{dedupe:['react','react-dom','@tanstack/react-query'],alias:{react:fileURLToPath(new URL('node_modules/react',import.meta.url)),'react-dom':fileURLToPath(new URL('node_modules/react-dom',import.meta.url)),'@tanstack/react-query':fileURLToPath(new URL('node_modules/@tanstack/react-query',import.meta.url))}}});
 await server.listen(); server.printUrls();

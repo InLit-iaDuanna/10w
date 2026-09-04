@@ -7,12 +7,22 @@
   "status": "active",
   "feature_flag": "design_room",
   "requires": {
-    "modules": ["core-kernel", "module-runtime", "project-intake"],
+    "modules": [
+      "core-kernel",
+      "module-runtime",
+      "project-intake"
+    ],
     "integrations": [],
-    "optional_integrations": []
+    "optional_integrations": [
+      "codebuddycli"
+    ]
   },
   "contributes": {
-    "editors": ["project.bible", "design.gdd", "design.feature_spec"],
+    "editors": [
+      "project.bible",
+      "design.gdd",
+      "design.feature_spec"
+    ],
     "commands": [
       "design.project_bible.save_version",
       "design.gdd.save",
@@ -33,10 +43,18 @@
     ],
     "jobs": [],
     "workflows": [],
-    "policy_gates": ["design.ai_change_approval", "design.planning_readiness"]
+    "policy_gates": [
+      "design.ai_change_approval",
+      "design.planning_readiness"
+    ]
   },
-  "permissions": ["design:read", "design:write", "design:approve"],
+  "permissions": [
+    "design:read",
+    "design:write",
+    "design:approve"
+  ],
   "entrypoints": {
-    "frontend": "./frontend/src/index.ts"
+    "frontend": "./frontend/src/index.ts",
+    "backend": "sceneops_design_ai"
   }
 }

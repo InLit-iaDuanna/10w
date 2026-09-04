@@ -8,7 +8,7 @@
 重新生成本轮合同（不运行测试）：
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=modules/production-planner/backend/src python3 modules/production-planner/backend/scripts/export_lab_contracts.py
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=modules/production-planner/backend/src:modules/design-room/backend/src python3 modules/production-planner/backend/scripts/export_lab_contracts.py
 ```
 
 实际烟测只覆盖 brief 到计划生成。其他新端点测试维护但 not run / pending approval。

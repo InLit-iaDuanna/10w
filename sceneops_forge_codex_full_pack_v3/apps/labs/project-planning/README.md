@@ -69,3 +69,17 @@ Vite 8.0.0 与 Shell 工具链对齐。初次尝试 Vite 7 时 pnpm 拒绝 esbui
 - 设计面板当前编辑一条主路径验收、一个边界情况/交付要求；完整 Bible/GDD 仍保留原公开 headless 服务，未扩展为本 lab 页面。
 - 原正式 editor registry/contribution 描述保持原样；Shell 注册和统一核心 context/client 需 Shell 组后续接入，未声称完整主应用已集成。
 - 本 worktree 未引入/更改根 workspace、共享锁文件或核心 runtime；Shell 只需复用本 lab dev 接口，并在统一锁文件纳入声明的依赖。可删去整合后的 lab 锁文件，由 Shell 组决定。
+
+## 更新：CodeBuddy CLI 模型选择
+
+设计规格页新增 **AI 模型 → 生成设计建议 → 查看差异 → 批准并应用**。前端通过 API 读取本机 CodeBuddy CLI 声明的模型列表；不会静默换模型。需用户已在终端安装并登录 `codebuddy`，API 的 PATH 能找到它。无需新 npm/pip 依赖。
+
+AI 使用 CodeBuddy 非交互结构化输出，仅发送 brief 和当前标题、目标、玩家价值、Given/When/Then；不会发送项目目录或仓库内容。CLI 缺失时工作台仍可手动编辑，AI 显示 blocked。生成结果显示 `codebuddycli / 所选模型 / live`；只有通过原 DesignChangeSet 审批后才写入设计草稿，假设仍需确认。整体项目/规划继续是 mock。
+
+本次验证：CodeBuddy `--help` 成功，发现 15 个 CLI 声明模型；工作台 4311/8311 重启成功。唯一新增本地主路径烟测为 `modules/design-room/backend/scripts/smoke_codebuddy.py`：选择 glm-5.3 → 校验 CLI argv 中的 model → 接收并验证结构化建议，CLI transport 使用 mock，无网络推理。前端启动检查进入设计页查看模型控件。真实 AI 推理、完整测试、编译构建均 **not run / pending approval**。
+
+重新生成包含 AI 的合同需同时提供两个公开 Python 包：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=modules/production-planner/backend/src:modules/design-room/backend/src python3 modules/production-planner/backend/scripts/export_lab_contracts.py
+```

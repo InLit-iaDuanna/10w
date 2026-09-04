@@ -49,3 +49,13 @@ fixtures 包含 Find My Way Home 的钥匙开门分支，以及 Warehouse Escape
 
 以上旧文中的 React/跨模块规划 blocked 描述仅适用于原始模块交付；本轮独立工作台已连通。
 正式 Shell 注册、统一身份与生产级持久化仍未接入，不能将独立 lab 当作已接入完整 Shell。
+
+## CodeBuddy AI 与模型选择
+
+独立工作台设计页新增 CodeBuddy 模型下拉框，模型来自本机 `codebuddy --help` 当前声明列表。点击生成才发起 AI 请求；不自动选模型、不自动切换备用模型。API 使用 `codebuddy --print --model <id> --output-format json --json-schema ...`，通过 stdin 传 brief 和当前六个设计字段。
+
+后端公开包 `sceneops_design_ai` 注册 `/v1/design-ai/models` 和 `/suggest`。Pydantic 拒绝无效结构化结果；CLI 缺失、模型不可用、退出失败和超时均有明确错误。CLI 从隔离空目录启动，内置工具禁用、MCP 为空、会话不持久化，不启用 bypassPermissions 或修改宿主权限。
+
+AI 建议记录 provider/model/request ID/live 来源，先通过原 `design.change.propose` 生成可查看前后差异的 ChangeSet；点击“批准并应用建议”才调用 `design.change.approve`，保留 base version 检查。批准后假设仍未确认，需要人工确认才能规划。设计/规划整体仍为隔离 mock，AI 来源的 live 不代表生产执行完成。
+
+验证：CLI 帮助导入及模型发现成功；一条本地适配器烟测通过（mock CLI transport，确认所选模型传入 argv 并验证结构化结果）；没有调用真实 AI 推理，其他测试 not run / pending approval。
