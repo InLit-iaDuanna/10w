@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "build_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Build Run Id",
+      "type": "string"
+    },
+    "game_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Game Id",
+      "type": "string"
+    },
+    "manifest_checksum": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Manifest Checksum",
+      "type": "string"
+    },
+    "manifest_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Manifest Id",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "source_commit": {
+      "pattern": "^[a-fA-F0-9]{7,64}$",
+      "title": "Source Commit",
+      "type": "string"
+    }
+  },
+  "required": [
+    "manifest_id",
+    "build_run_id",
+    "project_id",
+    "game_id",
+    "source_commit",
+    "manifest_checksum",
+    "mode"
+  ],
+  "title": "BuildManifestRecordedPayload",
+  "type": "object"
+}

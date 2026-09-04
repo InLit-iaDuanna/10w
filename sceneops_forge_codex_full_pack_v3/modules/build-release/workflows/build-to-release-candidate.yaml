@@ -1,0 +1,58 @@
+schema_version: 1
+id: build-to-release-candidate
+version: 1
+title: 构建到发布候选
+implementation_status: planned
+truthfulness_note: External Unity, Git, approval, and artifact-store nodes remain planned until their public contracts are registered.
+
+nodes:
+  - id: unity-build-a
+    owner_module: engine-unity
+    command: unity.build.run
+    output_contract: UnityBuildArtifactRef
+    state_when_unavailable: blocked
+  - id: unity-build-b
+    owner_module: engine-unity
+    command: unity.build.run
+    output_contract: UnityBuildArtifactRef
+    state_when_unavailable: blocked
+  - id: record-build-a
+    owner_module: build-release
+    command: build.manifest.record
+    input_from: unity-build-a
+  - id: record-build-b
+    owner_module: build-release
+    command: build.manifest.record
+    input_from: unity-build-b
+  - id: assemble-candidate
+    owner_module: build-release
+    command: release.candidate.create
+    requires:
+      - record-build-a
+      - record-build-b
+      - all-blocking-gates-passed
+  - id: candidate-approval
+    owner_module: version-collaboration
+    state: waiting_approval
+    approval_scope_from: assemble-candidate
+  - id: generate-patch-note
+    owner_module: build-release
+    command: release.patch-note.generate
+    approved_changesets_only: true
+  - id: deploy
+    owner_module: build-release
+    command: release.deploy
+    requires:
+      - candidate-approval
+      - generate-patch-note
+    state_when_unavailable: blocked
+
+edges:
+  - [unity-build-a, record-build-a]
+  - [unity-build-b, record-build-b]
+  - [record-build-a, assemble-candidate]
+  - [record-build-b, assemble-candidate]
+  - [assemble-candidate, candidate-approval]
+  - [assemble-candidate, generate-patch-note]
+  - [candidate-approval, deploy]
+  - [generate-patch-note, deploy]

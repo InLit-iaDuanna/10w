@@ -1,0 +1,1486 @@
+[
+  {
+    "slug": "remember-home",
+    "matrix": {
+      "matrix_id": "matrix.remember-home",
+      "project_id": "project.remember-home",
+      "game_id": "game.remember-home",
+      "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "targets": [
+        {
+          "target_id": "target.game.remember-home.development",
+          "profile": "development",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": true
+          }
+        },
+        {
+          "target_id": "target.game.remember-home.qa",
+          "profile": "qa",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        {
+          "target_id": "target.game.remember-home.judge",
+          "profile": "judge",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        {
+          "target_id": "target.game.remember-home.release_candidate",
+          "profile": "release_candidate",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        }
+      ],
+      "created_at": "2026-09-04T08:00:00Z"
+    },
+    "runs": [
+      {
+        "build_run_id": "run.remember-home.a",
+        "matrix_id": "matrix.remember-home",
+        "target_id": "target.game.remember-home.qa",
+        "project_id": "project.remember-home",
+        "game_id": "game.remember-home",
+        "profile": "qa",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "succeeded",
+        "mode": "mock",
+        "attempt": 1,
+        "started_at": "2026-09-04T08:00:00Z",
+        "finished_at": "2026-09-04T08:01:00Z",
+        "manifest_id": "manifest.remember-home.a",
+        "failure_code": null,
+        "failure_message": null
+      },
+      {
+        "build_run_id": "run.remember-home.b",
+        "matrix_id": "matrix.remember-home",
+        "target_id": "target.game.remember-home.qa",
+        "project_id": "project.remember-home",
+        "game_id": "game.remember-home",
+        "profile": "qa",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "succeeded",
+        "mode": "mock",
+        "attempt": 1,
+        "started_at": "2026-09-04T08:00:00Z",
+        "finished_at": "2026-09-04T08:01:00Z",
+        "manifest_id": "manifest.remember-home.b",
+        "failure_code": null,
+        "failure_message": null
+      }
+    ],
+    "manifests": [
+      {
+        "manifest_id": "manifest.remember-home.a",
+        "build_run_id": "run.remember-home.a",
+        "matrix_id": "matrix.remember-home",
+        "target_id": "target.game.remember-home.qa",
+        "target_definition": {
+          "target_id": "target.game.remember-home.qa",
+          "profile": "qa",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        "project_id": "project.remember-home",
+        "game_id": "game.remember-home",
+        "profile": "qa",
+        "mode": "mock",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_identity": "git:sha1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_dirty": false,
+        "module_catalog": {
+          "build-release": "0.1.0",
+          "engine-unity": "0.1.0"
+        },
+        "project_bible_version": "bible-v1",
+        "project_bible_checksum": "8a65e05582bc879edb3fa7baf0ca8072431aa4223196ada61d528b975840e88b",
+        "asset_versions": {
+          "asset.door": {
+            "version_id": "v3",
+            "checksum": "8ee9f5be58aef997e922d75995722fa3b0bf853f2bf9e5546d641625459737a9"
+          },
+          "asset.key": {
+            "version_id": "v2",
+            "checksum": "e4d7382a714b62377643d25c1cb41bb8c8560a69e3354ba64a70f8b1903f772e"
+          }
+        },
+        "scene_snapshots": {
+          "scene.home": {
+            "version_id": "snapshot-v4",
+            "checksum": "cfbe4ee731c727ed8cc2d7ea03a5487d8e719b9804e26d1d263dca8b8f3c1f9b"
+          }
+        },
+        "unity_version": "6000.0.15f1",
+        "unity_packages": {
+          "com.sceneops.runtime": "0.1.0"
+        },
+        "build_recipe_version": "recipe-v1",
+        "settings": {
+          "scripting_backend": "IL2CPP",
+          "configuration": "QA"
+        },
+        "test_evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.asset",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/asset.json",
+            "checksum": "0ed3519381e22c7fc5b80152318ff01b886ffdbad012200b36e695cb93c47728",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "asset",
+            "result": "passed",
+            "summary": "asset fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.a.scene",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/scene.json",
+            "checksum": "3106db0445024d2cde1e9687bd301c00eb08a65755f3eeb30a242e97245f08a4",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "scene",
+            "result": "passed",
+            "summary": "scene fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.a.code",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/code.json",
+            "checksum": "afb6e17022465d99d03082ccae098e77f0b04dc36bdb8109d5556b447a709ab1",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "code",
+            "result": "passed",
+            "summary": "code fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.a.render",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/render.json",
+            "checksum": "3fed6cfa847ce2a0ddaa6b7f48c383646626c579a233cfaeaf43de4c73a58005",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "render",
+            "result": "passed",
+            "summary": "render fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.a.unity_tests",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/unity_tests.json",
+            "checksum": "51e6d3de374fc14c043207a6a97108946b3e550ba59f69642061016307f24be3",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "unity_tests",
+            "result": "passed",
+            "summary": "unity_tests fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.a.performance",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/performance.json",
+            "checksum": "22526b981749d1b748bab02c1d65e19a6b7a7ee1a7a0595014e826b3a025ec69",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "performance",
+            "result": "passed",
+            "summary": "performance fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.a.ai_regression",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/ai_regression.json",
+            "checksum": "3f9a400433e7eda79255ada6cbf7228bd983534e68db52cd136d10353d5823a0",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "ai_regression",
+            "result": "passed",
+            "summary": "ai_regression fixture passed"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "artifact.remember-home.a",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "unity_player",
+            "version": "1",
+            "uri": "remember-home/a/player.bin",
+            "checksum": "db4141f3d74296bf3ffea9fc6124fb7c98b658e73c293337d058f7b4290e7bb9",
+            "size_bytes": 512,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z"
+          }
+        ],
+        "created_at": "2026-09-04T08:00:00Z",
+        "manifest_checksum": "fe17fd042e382d2933a7972bba8e30fded54b1ae7226f148ec699d8b5d16e5db"
+      },
+      {
+        "manifest_id": "manifest.remember-home.b",
+        "build_run_id": "run.remember-home.b",
+        "matrix_id": "matrix.remember-home",
+        "target_id": "target.game.remember-home.qa",
+        "target_definition": {
+          "target_id": "target.game.remember-home.qa",
+          "profile": "qa",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        "project_id": "project.remember-home",
+        "game_id": "game.remember-home",
+        "profile": "qa",
+        "mode": "mock",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_identity": "git:sha1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_dirty": false,
+        "module_catalog": {
+          "build-release": "0.1.0",
+          "engine-unity": "0.1.0"
+        },
+        "project_bible_version": "bible-v1",
+        "project_bible_checksum": "8a65e05582bc879edb3fa7baf0ca8072431aa4223196ada61d528b975840e88b",
+        "asset_versions": {
+          "asset.door": {
+            "version_id": "v3",
+            "checksum": "8ee9f5be58aef997e922d75995722fa3b0bf853f2bf9e5546d641625459737a9"
+          },
+          "asset.key": {
+            "version_id": "v2",
+            "checksum": "e4d7382a714b62377643d25c1cb41bb8c8560a69e3354ba64a70f8b1903f772e"
+          }
+        },
+        "scene_snapshots": {
+          "scene.home": {
+            "version_id": "snapshot-v4",
+            "checksum": "cfbe4ee731c727ed8cc2d7ea03a5487d8e719b9804e26d1d263dca8b8f3c1f9b"
+          }
+        },
+        "unity_version": "6000.0.15f1",
+        "unity_packages": {
+          "com.sceneops.runtime": "0.1.0"
+        },
+        "build_recipe_version": "recipe-v1",
+        "settings": {
+          "scripting_backend": "IL2CPP",
+          "configuration": "QA"
+        },
+        "test_evidence": [
+          {
+            "artifact_id": "evidence.remember-home.b.asset",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/asset.json",
+            "checksum": "0ed3519381e22c7fc5b80152318ff01b886ffdbad012200b36e695cb93c47728",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "asset",
+            "result": "passed",
+            "summary": "asset fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.b.scene",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/scene.json",
+            "checksum": "3106db0445024d2cde1e9687bd301c00eb08a65755f3eeb30a242e97245f08a4",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "scene",
+            "result": "passed",
+            "summary": "scene fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.b.code",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/code.json",
+            "checksum": "afb6e17022465d99d03082ccae098e77f0b04dc36bdb8109d5556b447a709ab1",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "code",
+            "result": "passed",
+            "summary": "code fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.b.render",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/render.json",
+            "checksum": "3fed6cfa847ce2a0ddaa6b7f48c383646626c579a233cfaeaf43de4c73a58005",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "render",
+            "result": "passed",
+            "summary": "render fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.b.unity_tests",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/unity_tests.json",
+            "checksum": "51e6d3de374fc14c043207a6a97108946b3e550ba59f69642061016307f24be3",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "unity_tests",
+            "result": "passed",
+            "summary": "unity_tests fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.b.performance",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/performance.json",
+            "checksum": "22526b981749d1b748bab02c1d65e19a6b7a7ee1a7a0595014e826b3a025ec69",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "performance",
+            "result": "passed",
+            "summary": "performance fixture passed"
+          },
+          {
+            "artifact_id": "evidence.remember-home.b.ai_regression",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/b/ai_regression.json",
+            "checksum": "3f9a400433e7eda79255ada6cbf7228bd983534e68db52cd136d10353d5823a0",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "ai_regression",
+            "result": "passed",
+            "summary": "ai_regression fixture passed"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "artifact.remember-home.b",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.b",
+            "artifact_type": "unity_player",
+            "version": "1",
+            "uri": "remember-home/b/player.bin",
+            "checksum": "db4141f3d74296bf3ffea9fc6124fb7c98b658e73c293337d058f7b4290e7bb9",
+            "size_bytes": 512,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z"
+          }
+        ],
+        "created_at": "2026-09-04T08:00:00Z",
+        "manifest_checksum": "f6fa06c92d6f09b978d582a13decc807d914b77b142f5c4af93567c2faa27816"
+      }
+    ],
+    "gates": [
+      {
+        "gate_id": "gate.remember-home.asset",
+        "category": "asset",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.asset",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/asset.json",
+            "checksum": "0ed3519381e22c7fc5b80152318ff01b886ffdbad012200b36e695cb93c47728",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "asset",
+            "result": "passed",
+            "summary": "asset fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "asset gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.remember-home.scene",
+        "category": "scene",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.scene",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/scene.json",
+            "checksum": "3106db0445024d2cde1e9687bd301c00eb08a65755f3eeb30a242e97245f08a4",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "scene",
+            "result": "passed",
+            "summary": "scene fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "scene gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.remember-home.code",
+        "category": "code",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.code",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/code.json",
+            "checksum": "afb6e17022465d99d03082ccae098e77f0b04dc36bdb8109d5556b447a709ab1",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "code",
+            "result": "passed",
+            "summary": "code fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "code gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.remember-home.render",
+        "category": "render",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.render",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/render.json",
+            "checksum": "3fed6cfa847ce2a0ddaa6b7f48c383646626c579a233cfaeaf43de4c73a58005",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "render",
+            "result": "passed",
+            "summary": "render fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "render gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.remember-home.unity_tests",
+        "category": "unity_tests",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.unity_tests",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/unity_tests.json",
+            "checksum": "51e6d3de374fc14c043207a6a97108946b3e550ba59f69642061016307f24be3",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "unity_tests",
+            "result": "passed",
+            "summary": "unity_tests fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "unity_tests gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.remember-home.performance",
+        "category": "performance",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.performance",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/performance.json",
+            "checksum": "22526b981749d1b748bab02c1d65e19a6b7a7ee1a7a0595014e826b3a025ec69",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "performance",
+            "result": "passed",
+            "summary": "performance fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "performance gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.remember-home.ai_regression",
+        "category": "ai_regression",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.remember-home.a.ai_regression",
+            "project_id": "project.remember-home",
+            "game_id": "game.remember-home",
+            "build_run_id": "run.remember-home.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "remember-home/a/ai_regression.json",
+            "checksum": "3f9a400433e7eda79255ada6cbf7228bd983534e68db52cd136d10353d5823a0",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "ai_regression",
+            "result": "passed",
+            "summary": "ai_regression fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "ai_regression gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      }
+    ],
+    "change_sets": [
+      {
+        "change_set_id": "changeset.remember-home.door",
+        "project_id": "project.remember-home",
+        "game_id": "game.remember-home",
+        "included_source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "title": "修复门锁交互",
+        "summary": "门锁现在只在持有钥匙时打开。",
+        "approved": true,
+        "approval_ids": [
+          "approval.remember-home.change"
+        ],
+        "approved_at": "2026-09-04T07:55:00Z"
+      }
+    ]
+  },
+  {
+    "slug": "warehouse-escape",
+    "matrix": {
+      "matrix_id": "matrix.warehouse-escape",
+      "project_id": "project.warehouse-escape",
+      "game_id": "game.warehouse-escape",
+      "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "targets": [
+        {
+          "target_id": "target.game.warehouse-escape.development",
+          "profile": "development",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": true
+          }
+        },
+        {
+          "target_id": "target.game.warehouse-escape.qa",
+          "profile": "qa",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        {
+          "target_id": "target.game.warehouse-escape.judge",
+          "profile": "judge",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        {
+          "target_id": "target.game.warehouse-escape.release_candidate",
+          "profile": "release_candidate",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        }
+      ],
+      "created_at": "2026-09-04T08:00:00Z"
+    },
+    "runs": [
+      {
+        "build_run_id": "run.warehouse-escape.a",
+        "matrix_id": "matrix.warehouse-escape",
+        "target_id": "target.game.warehouse-escape.qa",
+        "project_id": "project.warehouse-escape",
+        "game_id": "game.warehouse-escape",
+        "profile": "qa",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "succeeded",
+        "mode": "mock",
+        "attempt": 1,
+        "started_at": "2026-09-04T08:00:00Z",
+        "finished_at": "2026-09-04T08:01:00Z",
+        "manifest_id": "manifest.warehouse-escape.a",
+        "failure_code": null,
+        "failure_message": null
+      },
+      {
+        "build_run_id": "run.warehouse-escape.b",
+        "matrix_id": "matrix.warehouse-escape",
+        "target_id": "target.game.warehouse-escape.qa",
+        "project_id": "project.warehouse-escape",
+        "game_id": "game.warehouse-escape",
+        "profile": "qa",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "succeeded",
+        "mode": "mock",
+        "attempt": 1,
+        "started_at": "2026-09-04T08:00:00Z",
+        "finished_at": "2026-09-04T08:01:00Z",
+        "manifest_id": "manifest.warehouse-escape.b",
+        "failure_code": null,
+        "failure_message": null
+      }
+    ],
+    "manifests": [
+      {
+        "manifest_id": "manifest.warehouse-escape.a",
+        "build_run_id": "run.warehouse-escape.a",
+        "matrix_id": "matrix.warehouse-escape",
+        "target_id": "target.game.warehouse-escape.qa",
+        "target_definition": {
+          "target_id": "target.game.warehouse-escape.qa",
+          "profile": "qa",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        "project_id": "project.warehouse-escape",
+        "game_id": "game.warehouse-escape",
+        "profile": "qa",
+        "mode": "mock",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_identity": "git:sha1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_dirty": false,
+        "module_catalog": {
+          "build-release": "0.1.0",
+          "engine-unity": "0.1.0"
+        },
+        "project_bible_version": "bible-v1",
+        "project_bible_checksum": "a753e01438351b6fd3ab61d2049d791b4ee83ae18c9a795036ecf11e832a92eb",
+        "asset_versions": {
+          "asset.door": {
+            "version_id": "v3",
+            "checksum": "8ee9f5be58aef997e922d75995722fa3b0bf853f2bf9e5546d641625459737a9"
+          },
+          "asset.key": {
+            "version_id": "v2",
+            "checksum": "e4d7382a714b62377643d25c1cb41bb8c8560a69e3354ba64a70f8b1903f772e"
+          }
+        },
+        "scene_snapshots": {
+          "scene.home": {
+            "version_id": "snapshot-v4",
+            "checksum": "cfbe4ee731c727ed8cc2d7ea03a5487d8e719b9804e26d1d263dca8b8f3c1f9b"
+          }
+        },
+        "unity_version": "6000.0.15f1",
+        "unity_packages": {
+          "com.sceneops.runtime": "0.1.0"
+        },
+        "build_recipe_version": "recipe-v1",
+        "settings": {
+          "scripting_backend": "IL2CPP",
+          "configuration": "QA"
+        },
+        "test_evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.asset",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/asset.json",
+            "checksum": "cce6b8dccf34c24f2bf749ed064ef9ca0cfd0ff9a5859ddd4f0e4011a4ee3478",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "asset",
+            "result": "passed",
+            "summary": "asset fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.a.scene",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/scene.json",
+            "checksum": "a6fed80bf667c188af499709d55453241abba4a7451886c80fb89b6e426a29a6",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "scene",
+            "result": "passed",
+            "summary": "scene fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.a.code",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/code.json",
+            "checksum": "79573b2729eb8ac407f157bbbf94d17f702de23bb76a1e604eecac7daa6cd0ed",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "code",
+            "result": "passed",
+            "summary": "code fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.a.render",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/render.json",
+            "checksum": "3cd4806170ec310538e7318a37ad6bffdbfba1528f733f6efa485863baafeae2",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "render",
+            "result": "passed",
+            "summary": "render fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.a.unity_tests",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/unity_tests.json",
+            "checksum": "b9d393678c616250682f9212cbd1ca080bace0b38421c4b0d0287eeb8bf3936e",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "unity_tests",
+            "result": "passed",
+            "summary": "unity_tests fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.a.performance",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/performance.json",
+            "checksum": "a1b7c72764d7e6b76c325d2955ba22c7ede16a34eda17532800f57b450e96663",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "performance",
+            "result": "passed",
+            "summary": "performance fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.a.ai_regression",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/ai_regression.json",
+            "checksum": "eecf7dbd116793a8d513384c909976fd6bf37f18f69b9917e43cb5313f70e18e",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "ai_regression",
+            "result": "passed",
+            "summary": "ai_regression fixture passed"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "artifact.warehouse-escape.a",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "unity_player",
+            "version": "1",
+            "uri": "warehouse-escape/a/player.bin",
+            "checksum": "db4141f3d74296bf3ffea9fc6124fb7c98b658e73c293337d058f7b4290e7bb9",
+            "size_bytes": 512,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z"
+          }
+        ],
+        "created_at": "2026-09-04T08:00:00Z",
+        "manifest_checksum": "f7b304e8e65ac05f627d1f0ecdbbc5f13a14d4313a9dc876f25628f8d345969a"
+      },
+      {
+        "manifest_id": "manifest.warehouse-escape.b",
+        "build_run_id": "run.warehouse-escape.b",
+        "matrix_id": "matrix.warehouse-escape",
+        "target_id": "target.game.warehouse-escape.qa",
+        "target_definition": {
+          "target_id": "target.game.warehouse-escape.qa",
+          "profile": "qa",
+          "platform": "macos",
+          "architecture": "arm64",
+          "variant": "default",
+          "settings": {
+            "development_build": false
+          }
+        },
+        "project_id": "project.warehouse-escape",
+        "game_id": "game.warehouse-escape",
+        "profile": "qa",
+        "mode": "mock",
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_identity": "git:sha1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_dirty": false,
+        "module_catalog": {
+          "build-release": "0.1.0",
+          "engine-unity": "0.1.0"
+        },
+        "project_bible_version": "bible-v1",
+        "project_bible_checksum": "a753e01438351b6fd3ab61d2049d791b4ee83ae18c9a795036ecf11e832a92eb",
+        "asset_versions": {
+          "asset.door": {
+            "version_id": "v3",
+            "checksum": "8ee9f5be58aef997e922d75995722fa3b0bf853f2bf9e5546d641625459737a9"
+          },
+          "asset.key": {
+            "version_id": "v2",
+            "checksum": "e4d7382a714b62377643d25c1cb41bb8c8560a69e3354ba64a70f8b1903f772e"
+          }
+        },
+        "scene_snapshots": {
+          "scene.home": {
+            "version_id": "snapshot-v4",
+            "checksum": "cfbe4ee731c727ed8cc2d7ea03a5487d8e719b9804e26d1d263dca8b8f3c1f9b"
+          }
+        },
+        "unity_version": "6000.0.15f1",
+        "unity_packages": {
+          "com.sceneops.runtime": "0.1.0"
+        },
+        "build_recipe_version": "recipe-v1",
+        "settings": {
+          "scripting_backend": "IL2CPP",
+          "configuration": "QA"
+        },
+        "test_evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.b.asset",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/asset.json",
+            "checksum": "cce6b8dccf34c24f2bf749ed064ef9ca0cfd0ff9a5859ddd4f0e4011a4ee3478",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "asset",
+            "result": "passed",
+            "summary": "asset fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.b.scene",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/scene.json",
+            "checksum": "a6fed80bf667c188af499709d55453241abba4a7451886c80fb89b6e426a29a6",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "scene",
+            "result": "passed",
+            "summary": "scene fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.b.code",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/code.json",
+            "checksum": "79573b2729eb8ac407f157bbbf94d17f702de23bb76a1e604eecac7daa6cd0ed",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "code",
+            "result": "passed",
+            "summary": "code fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.b.render",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/render.json",
+            "checksum": "3cd4806170ec310538e7318a37ad6bffdbfba1528f733f6efa485863baafeae2",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "render",
+            "result": "passed",
+            "summary": "render fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.b.unity_tests",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/unity_tests.json",
+            "checksum": "b9d393678c616250682f9212cbd1ca080bace0b38421c4b0d0287eeb8bf3936e",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "unity_tests",
+            "result": "passed",
+            "summary": "unity_tests fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.b.performance",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/performance.json",
+            "checksum": "a1b7c72764d7e6b76c325d2955ba22c7ede16a34eda17532800f57b450e96663",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "performance",
+            "result": "passed",
+            "summary": "performance fixture passed"
+          },
+          {
+            "artifact_id": "evidence.warehouse-escape.b.ai_regression",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/b/ai_regression.json",
+            "checksum": "eecf7dbd116793a8d513384c909976fd6bf37f18f69b9917e43cb5313f70e18e",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "ai_regression",
+            "result": "passed",
+            "summary": "ai_regression fixture passed"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifact_id": "artifact.warehouse-escape.b",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.b",
+            "artifact_type": "unity_player",
+            "version": "1",
+            "uri": "warehouse-escape/b/player.bin",
+            "checksum": "db4141f3d74296bf3ffea9fc6124fb7c98b658e73c293337d058f7b4290e7bb9",
+            "size_bytes": 512,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z"
+          }
+        ],
+        "created_at": "2026-09-04T08:00:00Z",
+        "manifest_checksum": "6ff3863f3301e7a6034f81cfbbd05db37445b9dd95ba6f676b03c020bda14fc9"
+      }
+    ],
+    "gates": [
+      {
+        "gate_id": "gate.warehouse-escape.asset",
+        "category": "asset",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.asset",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/asset.json",
+            "checksum": "cce6b8dccf34c24f2bf749ed064ef9ca0cfd0ff9a5859ddd4f0e4011a4ee3478",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "asset",
+            "result": "passed",
+            "summary": "asset fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "asset gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.warehouse-escape.scene",
+        "category": "scene",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.scene",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/scene.json",
+            "checksum": "a6fed80bf667c188af499709d55453241abba4a7451886c80fb89b6e426a29a6",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "scene",
+            "result": "passed",
+            "summary": "scene fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "scene gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.warehouse-escape.code",
+        "category": "code",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.code",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/code.json",
+            "checksum": "79573b2729eb8ac407f157bbbf94d17f702de23bb76a1e604eecac7daa6cd0ed",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "code",
+            "result": "passed",
+            "summary": "code fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "code gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.warehouse-escape.render",
+        "category": "render",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.render",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/render.json",
+            "checksum": "3cd4806170ec310538e7318a37ad6bffdbfba1528f733f6efa485863baafeae2",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "render",
+            "result": "passed",
+            "summary": "render fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "render gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.warehouse-escape.unity_tests",
+        "category": "unity_tests",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.unity_tests",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/unity_tests.json",
+            "checksum": "b9d393678c616250682f9212cbd1ca080bace0b38421c4b0d0287eeb8bf3936e",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "unity_tests",
+            "result": "passed",
+            "summary": "unity_tests fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "unity_tests gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.warehouse-escape.performance",
+        "category": "performance",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.performance",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/performance.json",
+            "checksum": "a1b7c72764d7e6b76c325d2955ba22c7ede16a34eda17532800f57b450e96663",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "performance",
+            "result": "passed",
+            "summary": "performance fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "performance gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      },
+      {
+        "gate_id": "gate.warehouse-escape.ai_regression",
+        "category": "ai_regression",
+        "status": "passed",
+        "blocking": true,
+        "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "evidence": [
+          {
+            "artifact_id": "evidence.warehouse-escape.a.ai_regression",
+            "project_id": "project.warehouse-escape",
+            "game_id": "game.warehouse-escape",
+            "build_run_id": "run.warehouse-escape.a",
+            "artifact_type": "gate_evidence",
+            "version": "1",
+            "uri": "warehouse-escape/a/ai_regression.json",
+            "checksum": "eecf7dbd116793a8d513384c909976fd6bf37f18f69b9917e43cb5313f70e18e",
+            "size_bytes": 128,
+            "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "mode": "mock",
+            "origin_live_run_id": null,
+            "origin_live_artifact_id": null,
+            "created_at": "2026-09-04T08:00:00Z",
+            "category": "ai_regression",
+            "result": "passed",
+            "summary": "ai_regression fixture passed"
+          }
+        ],
+        "mode": "mock",
+        "summary": "ai_regression gate passed",
+        "evaluated_at": "2026-09-04T08:02:00Z"
+      }
+    ],
+    "change_sets": [
+      {
+        "change_set_id": "changeset.warehouse-escape.door",
+        "project_id": "project.warehouse-escape",
+        "game_id": "game.warehouse-escape",
+        "included_source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "title": "修复门锁交互",
+        "summary": "门锁现在只在持有钥匙时打开。",
+        "approved": true,
+        "approval_ids": [
+          "approval.warehouse-escape.change"
+        ],
+        "approved_at": "2026-09-04T07:55:00Z"
+      }
+    ]
+  }
+]

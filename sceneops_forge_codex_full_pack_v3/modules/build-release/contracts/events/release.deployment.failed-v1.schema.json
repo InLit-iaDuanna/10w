@@ -1,0 +1,79 @@
+{
+  "$defs": {
+    "DeploymentStatus": {
+      "enum": [
+        "running",
+        "succeeded",
+        "failed",
+        "rolled_back",
+        "blocked"
+      ],
+      "title": "DeploymentStatus",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "artifact_source_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "attempt": {
+      "title": "Attempt",
+      "type": "integer"
+    },
+    "candidate_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "deployment_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Deployment Id",
+      "type": "string"
+    },
+    "deployment_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "game_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Game Id",
+      "type": "string"
+    },
+    "operation_scope_fingerprint": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Operation Scope Fingerprint",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/DeploymentStatus"
+    }
+  },
+  "required": [
+    "deployment_id",
+    "candidate_id",
+    "project_id",
+    "game_id",
+    "status",
+    "attempt",
+    "operation_scope_fingerprint",
+    "deployment_mode",
+    "artifact_source_mode"
+  ],
+  "title": "ReleaseDeploymentPayload",
+  "type": "object"
+}

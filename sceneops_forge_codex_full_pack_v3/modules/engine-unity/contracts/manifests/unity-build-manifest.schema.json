@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/schemas/unity-build-manifest-1.json",
+  "title": "SceneOps Unity Build Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "build_id", "project_id", "profile", "execution_mode", "unity_version", "package_version", "source_commit", "scenes", "source_assets", "settings", "tests", "artifacts", "produced_at"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "build_id": {"type": "string", "pattern": "^bld_"},
+    "project_id": {"type": "string", "pattern": "^prj_"},
+    "profile": {"type": "string", "minLength": 1},
+    "execution_mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "unity_version": {"type": "string", "minLength": 1},
+    "package_version": {"type": "string", "minLength": 1},
+    "source_commit": {"type": "string", "minLength": 1},
+    "scenes": {"type": "array", "items": {"type": "string"}},
+    "source_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_asset_id", "source_asset_version_id"],
+        "properties": {
+          "source_asset_id": {"type": "string", "pattern": "^ast_"},
+          "source_asset_version_id": {"type": "string", "pattern": "^astv_"}
+        }
+      }
+    },
+    "settings": {"type": "object"},
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run_id", "status", "mode", "results_path"],
+        "properties": {
+          "run_id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["passed", "failed", "blocked"]},
+          "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+          "results_path": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "size_bytes"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "size_bytes": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "produced_at": {"type": "string", "format": "date-time"}
+  }
+}

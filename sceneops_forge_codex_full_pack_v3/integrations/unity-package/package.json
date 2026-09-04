@@ -1,0 +1,30 @@
+{
+  "name": "com.sceneops.forge.unity",
+  "version": "0.1.0",
+  "displayName": "SceneOps Forge Unity Integration",
+  "description": "Stable identity, telemetry, allowlisted editor commands, tests, profiling, and builds for SceneOps Forge.",
+  "unity": "2022.3",
+  "unityRelease": "62f3",
+  "license": "Proprietary",
+  "author": {
+    "name": "SceneOps Forge"
+  },
+  "keywords": [
+    "sceneops",
+    "identity",
+    "build",
+    "telemetry"
+  ],
+  "samples": [
+    {
+      "displayName": "Remember Home",
+      "description": "Key, inventory, entrance-door, and telemetry linkage.",
+      "path": "Samples~/RememberHome"
+    },
+    {
+      "displayName": "Warehouse Escape",
+      "description": "Reusable switch, door, and exit integration.",
+      "path": "Samples~/WarehouseEscape"
+    }
+  ]
+}

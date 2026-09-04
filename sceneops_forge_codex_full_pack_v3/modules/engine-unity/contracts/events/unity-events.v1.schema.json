@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/schemas/unity-events-v1.json",
+  "title": "SceneOps Unity Event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^evt_"},
+    "event_type": {
+      "enum": [
+        "unity.project.scanned",
+        "unity.asset.imported",
+        "unity.identity.mapped",
+        "unity.prefab.updated",
+        "unity.test_run.completed",
+        "unity.profile.captured",
+        "unity.build.completed",
+        "unity.build.failed"
+      ]
+    },
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "pattern": "^prj_"},
+    "correlation_id": {"type": "string", "minLength": 1},
+    "causation_id": {"type": "string", "pattern": "^req_"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"enum": ["user", "agent", "system"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "required": ["request_id", "status"],
+      "properties": {
+        "request_id": {"type": "string", "pattern": "^req_"},
+        "status": {"enum": ["succeeded", "failed", "cancelled", "blocked"]},
+        "build_id": {"type": "string", "pattern": "^bld_"},
+        "sceneops_id": {"type": "string", "pattern": "^sobj_"},
+        "scene_instance_id": {"type": "string", "pattern": "^sinst_"},
+        "artifact_id": {"type": "string"},
+        "error_code": {"type": "string"}
+      }
+    }
+  }
+}

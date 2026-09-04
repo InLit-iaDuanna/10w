@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "project_id": "prj_remember_home",
+  "source_asset_id": "ast_home_key",
+  "source_asset_version_id": "astv_home_key_001",
+  "source_file": "Assets/SceneOps/Staging/home-key.fbx",
+  "coordinate_space": {
+    "units": "meters",
+    "handedness": "right",
+    "up_axis": "Y",
+    "forward_axis": "-Z"
+  },
+  "objects": [
+    {
+      "source_object_id": "blobj_home_key",
+      "sceneops_id": "sobj_home_key",
+      "display_name": "Home Key"
+    }
+  ]
+}

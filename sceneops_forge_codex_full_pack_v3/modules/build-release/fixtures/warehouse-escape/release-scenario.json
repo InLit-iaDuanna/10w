@@ -1,0 +1,26 @@
+{
+  "fixture_version": 1,
+  "fixture_mode": "mock",
+  "project_id": "project.warehouse-escape",
+  "game_id": "game.warehouse-escape",
+  "scenario_slug": "warehouse-escape",
+  "source_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "build_profiles": [
+    "development",
+    "qa",
+    "judge",
+    "release_candidate"
+  ],
+  "mock_qa_candidate_id": "candidate.warehouse-escape.qa",
+  "mock_judge_deployment_id": "deployment.warehouse-escape.judge.mock",
+  "release_candidate_expectation": {
+    "profile": "release_candidate",
+    "status": "blocked",
+    "reason": "Mock evidence cannot satisfy the Release Candidate profile."
+  },
+  "cached_judge_expectation": {
+    "mode": "blocked",
+    "status": "blocked",
+    "reason": "No prior live Unity build and provenance exist in this spec-only repository."
+  }
+}

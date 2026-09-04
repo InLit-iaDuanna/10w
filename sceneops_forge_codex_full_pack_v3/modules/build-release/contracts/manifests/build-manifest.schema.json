@@ -1,0 +1,519 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "build_run_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Build Run Id",
+          "type": "string"
+        },
+        "checksum": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Checksum",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "game_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Game Id",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "origin_live_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Origin Live Artifact Id"
+        },
+        "origin_live_run_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Origin Live Run Id"
+        },
+        "project_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_commit": {
+          "pattern": "^[a-fA-F0-9]{7,64}$",
+          "title": "Source Commit",
+          "type": "string"
+        },
+        "uri": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Uri",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "project_id",
+        "game_id",
+        "build_run_id",
+        "artifact_type",
+        "version",
+        "uri",
+        "checksum",
+        "size_bytes",
+        "source_commit",
+        "mode",
+        "created_at"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "BuildProfile": {
+      "enum": [
+        "development",
+        "qa",
+        "judge",
+        "release_candidate"
+      ],
+      "title": "BuildProfile",
+      "type": "string"
+    },
+    "BuildTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Architecture",
+          "type": "string"
+        },
+        "platform": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Platform",
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/BuildProfile"
+        },
+        "settings": {
+          "additionalProperties": true,
+          "minProperties": 1,
+          "title": "Settings",
+          "type": "object"
+        },
+        "target_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "variant": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Variant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "profile",
+        "platform",
+        "architecture",
+        "variant",
+        "settings"
+      ],
+      "title": "BuildTarget",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "GateCategory": {
+      "enum": [
+        "asset",
+        "scene",
+        "code",
+        "render",
+        "unity_tests",
+        "performance",
+        "ai_regression"
+      ],
+      "title": "GateCategory",
+      "type": "string"
+    },
+    "GateEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "build_run_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Build Run Id",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/GateCategory"
+        },
+        "checksum": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Checksum",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "game_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Game Id",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "origin_live_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Origin Live Artifact Id"
+        },
+        "origin_live_run_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Origin Live Run Id"
+        },
+        "project_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "result": {
+          "$ref": "#/$defs/GateStatus"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_commit": {
+          "pattern": "^[a-fA-F0-9]{7,64}$",
+          "title": "Source Commit",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "uri": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Uri",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "project_id",
+        "game_id",
+        "build_run_id",
+        "artifact_type",
+        "version",
+        "uri",
+        "checksum",
+        "size_bytes",
+        "source_commit",
+        "mode",
+        "created_at",
+        "category",
+        "result",
+        "summary"
+      ],
+      "title": "GateEvidence",
+      "type": "object"
+    },
+    "GateStatus": {
+      "enum": [
+        "passed",
+        "failed",
+        "blocked"
+      ],
+      "title": "GateStatus",
+      "type": "string"
+    },
+    "VersionBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "checksum": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Checksum",
+          "type": "string"
+        },
+        "version_id": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version_id",
+        "checksum"
+      ],
+      "title": "VersionBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/ArtifactRef"
+      },
+      "minItems": 1,
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "asset_versions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/VersionBinding"
+      },
+      "minProperties": 1,
+      "title": "Asset Versions",
+      "type": "object"
+    },
+    "build_recipe_version": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Build Recipe Version",
+      "type": "string"
+    },
+    "build_run_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Build Run Id",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "game_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Game Id",
+      "type": "string"
+    },
+    "manifest_checksum": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Manifest Checksum",
+      "type": "string"
+    },
+    "manifest_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Manifest Id",
+      "type": "string"
+    },
+    "matrix_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Matrix Id",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "module_catalog": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "minProperties": 1,
+      "title": "Module Catalog",
+      "type": "object"
+    },
+    "profile": {
+      "$ref": "#/$defs/BuildProfile"
+    },
+    "project_bible_checksum": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Project Bible Checksum",
+      "type": "string"
+    },
+    "project_bible_version": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Project Bible Version",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "scene_snapshots": {
+      "additionalProperties": {
+        "$ref": "#/$defs/VersionBinding"
+      },
+      "minProperties": 1,
+      "title": "Scene Snapshots",
+      "type": "object"
+    },
+    "settings": {
+      "additionalProperties": true,
+      "minProperties": 1,
+      "title": "Settings",
+      "type": "object"
+    },
+    "source_commit": {
+      "pattern": "^[a-fA-F0-9]{7,64}$",
+      "title": "Source Commit",
+      "type": "string"
+    },
+    "source_dirty": {
+      "title": "Source Dirty",
+      "type": "boolean"
+    },
+    "source_identity": {
+      "pattern": "^git:(sha1|sha256):[a-fA-F0-9]{40,64}$",
+      "title": "Source Identity",
+      "type": "string"
+    },
+    "target_definition": {
+      "$ref": "#/$defs/BuildTarget"
+    },
+    "target_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Target Id",
+      "type": "string"
+    },
+    "test_evidence": {
+      "items": {
+        "$ref": "#/$defs/GateEvidence"
+      },
+      "minItems": 1,
+      "title": "Test Evidence",
+      "type": "array"
+    },
+    "unity_packages": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "minProperties": 1,
+      "title": "Unity Packages",
+      "type": "object"
+    },
+    "unity_version": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Unity Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "manifest_id",
+    "build_run_id",
+    "matrix_id",
+    "target_id",
+    "target_definition",
+    "project_id",
+    "game_id",
+    "profile",
+    "mode",
+    "source_commit",
+    "source_identity",
+    "source_dirty",
+    "module_catalog",
+    "project_bible_version",
+    "project_bible_checksum",
+    "asset_versions",
+    "scene_snapshots",
+    "unity_version",
+    "unity_packages",
+    "build_recipe_version",
+    "settings",
+    "test_evidence",
+    "artifacts",
+    "created_at",
+    "manifest_checksum"
+  ],
+  "title": "BuildManifest",
+  "type": "object"
+}

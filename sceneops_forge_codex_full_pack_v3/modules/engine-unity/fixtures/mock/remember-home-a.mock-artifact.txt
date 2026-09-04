@@ -1,0 +1,2 @@
+SceneOps Forge deterministic mock artifact for Remember Home Build A.
+This file is not a playable Unity build and must never be presented as live.

@@ -1,0 +1,31 @@
+schema_version: 1
+id: rollback-known-good
+version: 1
+title: 回滚到上一已知良好候选
+implementation_status: active
+
+nodes:
+  - id: select-known-good
+    owner_module: build-release
+    command: release.rollback.plan
+    fail_closed_when_none: true
+  - id: rollback-approval
+    owner_module: version-collaboration
+    state: waiting_approval
+    approval_scope_from: select-known-good
+  - id: activate-prior-candidate
+    owner_module: build-release
+    command: release.rollback.execute
+    mutation: append_only_activation
+    state_when_unavailable: blocked
+  - id: verify-activation
+    owner_module: build-release
+    checks:
+      - active-deployment-compare-and-swap
+      - artifact-checksum
+      - deployment-receipt
+
+edges:
+  - [select-known-good, rollback-approval]
+  - [rollback-approval, activate-prior-candidate]
+  - [activate-prior-candidate, verify-activation]
