@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sceneops-comfyui-adapter"
+version = "0.1.0"
+description = "Allowlisted typed ComfyUI HTTP adapter for SceneOps Forge"
+requires-python = ">=3.9"
+dependencies = ["pydantic==2.13.2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

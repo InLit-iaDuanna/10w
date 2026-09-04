@@ -1,0 +1,1503 @@
+{
+  "$defs": {
+    "AovArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "pass_type": {
+          "$ref": "#/$defs/AovPass"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "pass_type",
+        "scene",
+        "width",
+        "height",
+        "artifact"
+      ],
+      "title": "AovArtifact",
+      "type": "object"
+    },
+    "AovDependencySnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "camera_version": {
+          "minLength": 1,
+          "title": "Camera Version",
+          "type": "string"
+        },
+        "geometry_version": {
+          "minLength": 1,
+          "title": "Geometry Version",
+          "type": "string"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "lighting_version": {
+          "minLength": 1,
+          "title": "Lighting Version",
+          "type": "string"
+        },
+        "material_version": {
+          "minLength": 1,
+          "title": "Material Version",
+          "type": "string"
+        },
+        "recipe_id": {
+          "minLength": 1,
+          "title": "Recipe Id",
+          "type": "string"
+        },
+        "recipe_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Recipe Version",
+          "type": "string"
+        },
+        "renderer_version": {
+          "minLength": 1,
+          "title": "Renderer Version",
+          "type": "string"
+        },
+        "samples": {
+          "exclusiveMinimum": 0,
+          "title": "Samples",
+          "type": "integer"
+        },
+        "visibility_version": {
+          "minLength": 1,
+          "title": "Visibility Version",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "recipe_version",
+        "geometry_version",
+        "camera_version",
+        "material_version",
+        "lighting_version",
+        "visibility_version",
+        "renderer_version",
+        "samples",
+        "width",
+        "height"
+      ],
+      "title": "AovDependencySnapshot",
+      "type": "object"
+    },
+    "AovPass": {
+      "enum": [
+        "beauty",
+        "depth",
+        "normal",
+        "albedo",
+        "object_id",
+        "material_id"
+      ],
+      "title": "AovPass",
+      "type": "string"
+    },
+    "ApprovalState": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "ApprovalState",
+      "type": "string"
+    },
+    "ArtifactApprovalState": {
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "ArtifactApprovalState",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_state": {
+          "$ref": "#/$defs/ArtifactApprovalState"
+        },
+        "artifact_id": {
+          "minLength": 1,
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "minLength": 1,
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Checksum Sha256",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "creator": {
+          "minLength": 1,
+          "title": "Creator",
+          "type": "string"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "producing_module": {
+          "minLength": 1,
+          "title": "Producing Module",
+          "type": "string"
+        },
+        "related_sceneops_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Related Sceneops Ids",
+          "type": "array"
+        },
+        "source_commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Commit"
+        },
+        "source_project_id": {
+          "minLength": 1,
+          "title": "Source Project Id",
+          "type": "string"
+        },
+        "source_version": {
+          "minLength": 1,
+          "title": "Source Version",
+          "type": "string"
+        },
+        "tool_name": {
+          "minLength": 1,
+          "title": "Tool Name",
+          "type": "string"
+        },
+        "tool_version": {
+          "minLength": 1,
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "uri": {
+          "minLength": 1,
+          "title": "Uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "uri",
+        "checksum_sha256",
+        "source_project_id",
+        "source_version",
+        "producing_module",
+        "tool_name",
+        "tool_version",
+        "creator",
+        "approval_state",
+        "execution_mode",
+        "created_at"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "CachePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "capture_passes": {
+          "items": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "title": "Capture Passes",
+          "type": "array"
+        },
+        "reasons": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "title": "Reasons",
+          "type": "object"
+        },
+        "reused_passes": {
+          "items": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "title": "Reused Passes",
+          "type": "array"
+        }
+      },
+      "title": "CachePlan",
+      "type": "object"
+    },
+    "DifferenceMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "artistic_quality_measured": {
+          "const": false,
+          "default": false,
+          "title": "Artistic Quality Measured",
+          "type": "boolean"
+        },
+        "changed_pixel_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Changed Pixel Ratio",
+          "type": "number"
+        },
+        "maximum_channel_difference": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Maximum Channel Difference",
+          "type": "number"
+        },
+        "mean_absolute_difference": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Mean Absolute Difference",
+          "type": "number"
+        }
+      },
+      "required": [
+        "mean_absolute_difference",
+        "changed_pixel_ratio",
+        "maximum_channel_difference"
+      ],
+      "title": "DifferenceMetrics",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "JobFailure": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "retryable": {
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "suggested_actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Suggested Actions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "title": "JobFailure",
+      "type": "object"
+    },
+    "ProtectedRegion": {
+      "additionalProperties": false,
+      "properties": {
+        "mask_artifact_id": {
+          "minLength": 1,
+          "title": "Mask Artifact Id",
+          "type": "string"
+        },
+        "max_changed_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Max Changed Ratio",
+          "type": "number"
+        },
+        "object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Object Ids",
+          "type": "array"
+        },
+        "region_id": {
+          "minLength": 1,
+          "title": "Region Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "region_id",
+        "object_ids",
+        "mask_artifact_id",
+        "max_changed_ratio"
+      ],
+      "title": "ProtectedRegion",
+      "type": "object"
+    },
+    "ProtectedRegionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "changed_pixel_ratio": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Changed Pixel Ratio",
+          "type": "number"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "region_id": {
+          "minLength": 1,
+          "title": "Region Id",
+          "type": "string"
+        },
+        "threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "required": [
+        "region_id",
+        "changed_pixel_ratio",
+        "threshold",
+        "passed"
+      ],
+      "title": "ProtectedRegionResult",
+      "type": "object"
+    },
+    "RecipeKind": {
+      "enum": [
+        "asset_turntable",
+        "material_variant",
+        "lighting_visibility",
+        "fixed_camera_regression",
+        "marketing_still"
+      ],
+      "title": "RecipeKind",
+      "type": "string"
+    },
+    "RenderBrief": {
+      "additionalProperties": false,
+      "properties": {
+        "brief_id": {
+          "minLength": 1,
+          "title": "Brief Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "intent": {
+          "minLength": 1,
+          "title": "Intent",
+          "type": "string"
+        },
+        "protected_regions": {
+          "items": {
+            "$ref": "#/$defs/ProtectedRegion"
+          },
+          "title": "Protected Regions",
+          "type": "array"
+        },
+        "requested_by": {
+          "minLength": 1,
+          "title": "Requested By",
+          "type": "string"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "target_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Target Object Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "brief_id",
+        "scene",
+        "intent",
+        "target_object_ids",
+        "requested_by",
+        "created_at"
+      ],
+      "title": "RenderBrief",
+      "type": "object"
+    },
+    "RenderComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "after_artifact_id": {
+          "minLength": 1,
+          "title": "After Artifact Id",
+          "type": "string"
+        },
+        "before_artifact_id": {
+          "minLength": 1,
+          "title": "Before Artifact Id",
+          "type": "string"
+        },
+        "changed_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Object Ids",
+          "type": "array"
+        },
+        "comparison_id": {
+          "minLength": 1,
+          "title": "Comparison Id",
+          "type": "string"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "metrics": {
+          "$ref": "#/$defs/DifferenceMetrics"
+        },
+        "protected_regions": {
+          "items": {
+            "$ref": "#/$defs/ProtectedRegionResult"
+          },
+          "title": "Protected Regions",
+          "type": "array"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        }
+      },
+      "required": [
+        "comparison_id",
+        "before_artifact_id",
+        "after_artifact_id",
+        "scene",
+        "metrics",
+        "execution_mode"
+      ],
+      "title": "RenderComparison",
+      "type": "object"
+    },
+    "RenderJob": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "brief_id": {
+          "minLength": 1,
+          "title": "Brief Id",
+          "type": "string"
+        },
+        "cache_plan": {
+          "$ref": "#/$defs/CachePlan"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "dependency_snapshot": {
+          "$ref": "#/$defs/AovDependencySnapshot"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "failure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JobFailure"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "job_id": {
+          "minLength": 1,
+          "title": "Job Id",
+          "type": "string"
+        },
+        "progress": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Progress",
+          "type": "number"
+        },
+        "recipe_id": {
+          "minLength": 1,
+          "title": "Recipe Id",
+          "type": "string"
+        },
+        "recipe_version": {
+          "minLength": 1,
+          "title": "Recipe Version",
+          "type": "string"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "state": {
+          "$ref": "#/$defs/RenderJobState"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "brief_id",
+        "recipe_id",
+        "recipe_version",
+        "scene",
+        "dependency_snapshot",
+        "cache_plan",
+        "state",
+        "execution_mode",
+        "created_at",
+        "updated_at"
+      ],
+      "title": "RenderJob",
+      "type": "object"
+    },
+    "RenderJobState": {
+      "enum": [
+        "queued",
+        "running",
+        "waiting_approval",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ],
+      "title": "RenderJobState",
+      "type": "string"
+    },
+    "RenderRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/RecipeKind"
+        },
+        "optional_passes": {
+          "items": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "title": "Optional Passes",
+          "type": "array"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "title": "Parameters",
+          "type": "object"
+        },
+        "recipe_id": {
+          "minLength": 1,
+          "title": "Recipe Id",
+          "type": "string"
+        },
+        "required_passes": {
+          "items": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "minItems": 1,
+          "title": "Required Passes",
+          "type": "array"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        },
+        "workflow_checksum_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Workflow Checksum Sha256"
+        },
+        "workflow_reference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Workflow Reference"
+        }
+      },
+      "required": [
+        "recipe_id",
+        "version",
+        "kind",
+        "required_passes"
+      ],
+      "title": "RenderRecipe",
+      "type": "object"
+    },
+    "RenderVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenderVariantApprovalSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approval_state": {
+          "$ref": "#/$defs/ApprovalState"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "constraint_passes": {
+          "items": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "minItems": 1,
+          "title": "Constraint Passes",
+          "type": "array"
+        },
+        "job_id": {
+          "minLength": 1,
+          "title": "Job Id",
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "provenance": {
+          "$ref": "#/$defs/WorkflowProvenance"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "variant_id": {
+          "minLength": 1,
+          "title": "Variant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "variant_id",
+        "job_id",
+        "scene",
+        "output",
+        "constraint_passes",
+        "provenance",
+        "approval_state"
+      ],
+      "title": "RenderVariant",
+      "type": "object"
+    },
+    "RenderVariantApprovalSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_at": {
+          "format": "date-time",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "approved_by": {
+          "minLength": 1,
+          "title": "Approved By",
+          "type": "string"
+        },
+        "constraint_passes": {
+          "items": {
+            "$ref": "#/$defs/AovPass"
+          },
+          "minItems": 1,
+          "title": "Constraint Passes",
+          "type": "array"
+        },
+        "job_id": {
+          "minLength": 1,
+          "title": "Job Id",
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "provenance": {
+          "$ref": "#/$defs/WorkflowProvenance"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "variant_id": {
+          "minLength": 1,
+          "title": "Variant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "variant_id",
+        "job_id",
+        "scene",
+        "output",
+        "constraint_passes",
+        "provenance",
+        "approved_by",
+        "approved_at"
+      ],
+      "title": "RenderVariantApprovalSnapshot",
+      "type": "object"
+    },
+    "SceneCameraRef": {
+      "additionalProperties": false,
+      "properties": {
+        "axis_convention": {
+          "minLength": 1,
+          "title": "Axis Convention",
+          "type": "string"
+        },
+        "camera_id": {
+          "minLength": 1,
+          "title": "Camera Id",
+          "type": "string"
+        },
+        "camera_version": {
+          "minLength": 1,
+          "title": "Camera Version",
+          "type": "string"
+        },
+        "coordinate_space": {
+          "minLength": 1,
+          "title": "Coordinate Space",
+          "type": "string"
+        },
+        "distance_unit": {
+          "const": "meter",
+          "default": "meter",
+          "title": "Distance Unit",
+          "type": "string"
+        },
+        "project_id": {
+          "minLength": 1,
+          "title": "Project Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "minLength": 1,
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "scene_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Scene Object Ids",
+          "type": "array"
+        },
+        "scene_version": {
+          "minLength": 1,
+          "title": "Scene Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "scene_id",
+        "scene_version",
+        "camera_id",
+        "camera_version",
+        "scene_object_ids",
+        "coordinate_space",
+        "axis_convention"
+      ],
+      "title": "SceneCameraRef",
+      "type": "object"
+    },
+    "ValidationResult": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Object Ids",
+          "type": "array"
+        },
+        "camera_unchanged": {
+          "title": "Camera Unchanged",
+          "type": "boolean"
+        },
+        "changed_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Object Ids",
+          "type": "array"
+        },
+        "comparison_id": {
+          "minLength": 1,
+          "title": "Comparison Id",
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "deterministic_recipe_id": {
+          "minLength": 1,
+          "title": "Deterministic Recipe Id",
+          "type": "string"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "failures": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Failures",
+          "type": "array"
+        },
+        "geometry_unchanged": {
+          "title": "Geometry Unchanged",
+          "type": "boolean"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "protected_regions_passed": {
+          "title": "Protected Regions Passed",
+          "type": "boolean"
+        },
+        "scope_passed": {
+          "title": "Scope Passed",
+          "type": "boolean"
+        },
+        "validation_id": {
+          "minLength": 1,
+          "title": "Validation Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "validation_id",
+        "proposal_id",
+        "comparison_id",
+        "deterministic_recipe_id",
+        "geometry_unchanged",
+        "camera_unchanged",
+        "protected_regions_passed",
+        "scope_passed",
+        "passed",
+        "execution_mode",
+        "completed_at"
+      ],
+      "title": "ValidationResult",
+      "type": "object"
+    },
+    "WorkflowProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_version": {
+          "minLength": 1,
+          "title": "Adapter Version",
+          "type": "string"
+        },
+        "model_checksum_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Model Checksum Sha256",
+          "type": "string"
+        },
+        "model_reference": {
+          "minLength": 1,
+          "title": "Model Reference",
+          "type": "string"
+        },
+        "negative_prompt": {
+          "title": "Negative Prompt",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "title": "Parameters",
+          "type": "object"
+        },
+        "prompt": {
+          "minLength": 1,
+          "title": "Prompt",
+          "type": "string"
+        },
+        "provider": {
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "seed": {
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "workflow_checksum_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Workflow Checksum Sha256",
+          "type": "string"
+        },
+        "workflow_reference": {
+          "minLength": 1,
+          "title": "Workflow Reference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "workflow_reference",
+        "workflow_checksum_sha256",
+        "model_reference",
+        "model_checksum_sha256",
+        "seed",
+        "prompt",
+        "negative_prompt",
+        "adapter_version"
+      ],
+      "title": "WorkflowProvenance",
+      "type": "object"
+    },
+    "WritebackApprovalSnapshot": {
+      "additionalProperties": false,
+      "description": "Immutable payload that the ChangeSet approval covered.",
+      "properties": {
+        "allowed_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Object Ids",
+          "type": "array"
+        },
+        "approval_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Approval Requirements",
+          "type": "array"
+        },
+        "approved_at": {
+          "format": "date-time",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "approved_by": {
+          "minLength": 1,
+          "title": "Approved By",
+          "type": "string"
+        },
+        "base_scene_version": {
+          "minLength": 1,
+          "title": "Base Scene Version",
+          "type": "string"
+        },
+        "brief_id": {
+          "minLength": 1,
+          "title": "Brief Id",
+          "type": "string"
+        },
+        "changeset_id": {
+          "minLength": 1,
+          "title": "Changeset Id",
+          "type": "string"
+        },
+        "expected_result": {
+          "minLength": 1,
+          "title": "Expected Result",
+          "type": "string"
+        },
+        "impact_scope": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Impact Scope",
+          "type": "array"
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/WritebackOperation"
+          },
+          "minItems": 1,
+          "title": "Operations",
+          "type": "array"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "risk": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Risk",
+          "type": "string"
+        },
+        "rollback_plan": {
+          "minLength": 1,
+          "title": "Rollback Plan",
+          "type": "string"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "validation_plan": {
+          "minLength": 1,
+          "title": "Validation Plan",
+          "type": "string"
+        },
+        "variant_id": {
+          "minLength": 1,
+          "title": "Variant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "changeset_id",
+        "approved_by",
+        "approved_at",
+        "variant_id",
+        "brief_id",
+        "scene",
+        "base_scene_version",
+        "operations",
+        "rationale",
+        "expected_result",
+        "impact_scope",
+        "allowed_object_ids",
+        "risk",
+        "validation_plan",
+        "rollback_plan",
+        "approval_requirements"
+      ],
+      "title": "WritebackApprovalSnapshot",
+      "type": "object"
+    },
+    "WritebackOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "parameter_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter Name"
+        },
+        "previous_value": {
+          "title": "Previous Value"
+        },
+        "property": {
+          "$ref": "#/$defs/WritebackProperty"
+        },
+        "proposed_value": {
+          "title": "Proposed Value"
+        },
+        "target": {
+          "$ref": "#/$defs/WritebackTarget"
+        },
+        "target_object_id": {
+          "minLength": 1,
+          "title": "Target Object Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "target_object_id",
+        "property",
+        "previous_value",
+        "proposed_value"
+      ],
+      "title": "WritebackOperation",
+      "type": "object"
+    },
+    "WritebackProperty": {
+      "enum": [
+        "light.intensity",
+        "light.color",
+        "light.temperature",
+        "object.visibility",
+        "material.scalar",
+        "material.color",
+        "material.pbr_texture",
+        "render.exposure",
+        "render.post_parameter",
+        "camera.setting"
+      ],
+      "title": "WritebackProperty",
+      "type": "string"
+    },
+    "WritebackProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allowed Object Ids",
+          "type": "array"
+        },
+        "approval_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Approval Requirements",
+          "type": "array"
+        },
+        "approval_snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WritebackApprovalSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approval_state": {
+          "$ref": "#/$defs/ApprovalState",
+          "default": "pending"
+        },
+        "approved_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved At"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "base_scene_version": {
+          "minLength": 1,
+          "title": "Base Scene Version",
+          "type": "string"
+        },
+        "brief_id": {
+          "minLength": 1,
+          "title": "Brief Id",
+          "type": "string"
+        },
+        "changeset_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Changeset Id"
+        },
+        "expected_result": {
+          "minLength": 1,
+          "title": "Expected Result",
+          "type": "string"
+        },
+        "impact_scope": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Impact Scope",
+          "type": "array"
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/WritebackOperation"
+          },
+          "minItems": 1,
+          "title": "Operations",
+          "type": "array"
+        },
+        "proposal_id": {
+          "minLength": 1,
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "risk": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Risk",
+          "type": "string"
+        },
+        "rollback_plan": {
+          "minLength": 1,
+          "title": "Rollback Plan",
+          "type": "string"
+        },
+        "scene": {
+          "$ref": "#/$defs/SceneCameraRef"
+        },
+        "validation_plan": {
+          "minLength": 1,
+          "title": "Validation Plan",
+          "type": "string"
+        },
+        "variant_id": {
+          "minLength": 1,
+          "title": "Variant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "variant_id",
+        "brief_id",
+        "scene",
+        "base_scene_version",
+        "operations",
+        "rationale",
+        "expected_result",
+        "impact_scope",
+        "allowed_object_ids",
+        "risk",
+        "validation_plan",
+        "rollback_plan",
+        "approval_requirements"
+      ],
+      "title": "WritebackProposal",
+      "type": "object"
+    },
+    "WritebackTarget": {
+      "enum": [
+        "blender",
+        "unity"
+      ],
+      "title": "WritebackTarget",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "aovs": {
+      "items": {
+        "$ref": "#/$defs/AovArtifact"
+      },
+      "minItems": 1,
+      "title": "Aovs",
+      "type": "array"
+    },
+    "brief": {
+      "$ref": "#/$defs/RenderBrief"
+    },
+    "comparisons": {
+      "items": {
+        "$ref": "#/$defs/RenderComparison"
+      },
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "job": {
+      "$ref": "#/$defs/RenderJob"
+    },
+    "manifest_id": {
+      "minLength": 1,
+      "title": "Manifest Id",
+      "type": "string"
+    },
+    "recipe": {
+      "$ref": "#/$defs/RenderRecipe"
+    },
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "validations": {
+      "items": {
+        "$ref": "#/$defs/ValidationResult"
+      },
+      "title": "Validations",
+      "type": "array"
+    },
+    "variants": {
+      "items": {
+        "$ref": "#/$defs/RenderVariant"
+      },
+      "title": "Variants",
+      "type": "array"
+    },
+    "writeback_proposals": {
+      "items": {
+        "$ref": "#/$defs/WritebackProposal"
+      },
+      "title": "Writeback Proposals",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "brief",
+    "recipe",
+    "job",
+    "aovs",
+    "created_at"
+  ],
+  "title": "RenderManifest",
+  "type": "object"
+}

@@ -1,0 +1,28 @@
+schema_version: 1
+id: comfyui
+version: 0.1.0
+title: ComfyUI HTTP Adapter
+protocol: http
+default_endpoint: http://127.0.0.1:8188
+execution_modes:
+  - live
+  - mock
+capabilities:
+  - health
+  - workflow_reference
+  - enqueue
+  - progress
+  - cancel
+  - retry
+  - output_retrieval
+  - durable_enqueue_idempotency
+  - prompt_scoped_output_ownership
+security:
+  accepts_arbitrary_workflow: false
+  accepts_filesystem_paths: false
+  verifies_workflow_graph_checksum: true
+  validates_node_classes_and_binding_semantics: true
+  default_allowed_hosts:
+    - 127.0.0.1
+    - localhost
+    - "::1"

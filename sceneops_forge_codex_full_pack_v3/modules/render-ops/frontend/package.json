@@ -1,0 +1,22 @@
+{
+  "name": "@sceneops/render-ops",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@tanstack/react-query": "5.90.21",
+    "openapi-fetch": "0.17.0"
+  },
+  "peerDependencies": {
+    "react": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "@types/react": "19.2.18",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/tests/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

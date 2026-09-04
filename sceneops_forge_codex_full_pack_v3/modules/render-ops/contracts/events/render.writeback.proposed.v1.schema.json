@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://render-ops/events/render.writeback.proposed@1",
+  "title": "render.writeback.proposed@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["proposal_id", "variant_id", "brief_id", "base_scene_version", "target", "allowed_object_ids", "approval_state"],
+  "properties": {
+    "proposal_id": {"type": "string", "minLength": 1},
+    "variant_id": {"type": "string", "minLength": 1},
+    "brief_id": {"type": "string", "minLength": 1},
+    "base_scene_version": {"type": "string", "minLength": 1},
+    "target": {"enum": ["blender", "unity"]},
+    "allowed_object_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "approval_state": {"const": "pending"}
+  }
+}

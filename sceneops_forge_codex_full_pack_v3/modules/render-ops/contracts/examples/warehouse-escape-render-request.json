@@ -1,0 +1,19 @@
+{
+  "project_id": "prj_warehouse_escape",
+  "scene_id": "scn_warehouse_exit",
+  "scene_version": "scene-v3",
+  "camera_id": "cam_exit_review",
+  "camera_version": "camera-v1",
+  "recipe_id": "render.lighting-visibility",
+  "recipe_version": "1.0.0",
+  "renderer_version": "deployment-owned",
+  "samples": 64,
+  "workflow_reference": "lookdev.lighting-visibility.v1",
+  "workflow_checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parameters": {
+    "target_object_ids": ["sceneops_exit_switch"],
+    "protected_object_ids": ["sceneops_exit_door"],
+    "resolution": [1280, 720]
+  },
+  "execution_mode": "planned"
+}

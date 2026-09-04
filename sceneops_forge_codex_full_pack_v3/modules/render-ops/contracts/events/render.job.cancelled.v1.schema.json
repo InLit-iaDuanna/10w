@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://render-ops/events/render.job.cancelled@1",
+  "title": "render.job.cancelled@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_id", "attempt"],
+  "properties": {
+    "job_id": {"type": "string", "minLength": 1},
+    "attempt": {"type": "integer", "minimum": 1}
+  }
+}

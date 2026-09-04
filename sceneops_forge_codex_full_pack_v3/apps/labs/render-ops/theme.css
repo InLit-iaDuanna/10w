@@ -1,0 +1,12 @@
+:root {
+  color-scheme: dark;
+  --canvas: #0d0f11; --surface-1: #15181c; --surface-2: #1b1f24;
+  --surface-3: #242930; --text-primary: #f1ece3; --text-secondary: #a5adb6;
+  --text-muted: #717a84; --home-amber: #eca85b; --spatial-cyan: #58c8c5;
+  --ai-violet: #a58bfa; --critical: #f06d6d; --border-default: #2f363e;
+  --focus-ring: #76d9d6;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: var(--canvas); color: var(--text-primary);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }

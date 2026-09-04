@@ -1,0 +1,91 @@
+"""Stable public facade for all Render Ops Pydantic contracts.
+
+Pydantic models are the network-contract source of truth. The on-disk
+RenderManifest schema is generated from :class:`RenderManifest`.
+"""
+
+from .base_contracts import (
+    REQUIRED_DETERMINISTIC_PASSES,
+    AovArtifact,
+    AovDependencySnapshot,
+    AovPass,
+    ApprovalState,
+    ArtifactApprovalState,
+    ArtifactRef,
+    CachePlan,
+    ExecutionMode,
+    JobFailure,
+    PortableRecipeCatalog,
+    PortableRecipeDefinition,
+    ProtectedRegion,
+    RecipeKind,
+    RenderBrief,
+    RenderCaptureCommand,
+    RenderJob,
+    RenderJobState,
+    RenderRecipe,
+    SceneCameraRef,
+    StrictModel,
+    WritebackProperty,
+    WritebackTarget,
+)
+from .manifest_contracts import (
+    ManifestSummary,
+    RenderJobPlanRequest,
+    RenderManifest,
+    ValidationResult,
+    summarize_manifest,
+)
+from .review_contracts import (
+    DifferenceMetrics,
+    ProtectedRegionResult,
+    RenderComparison,
+    RenderVariant,
+    RenderVariantApprovalSnapshot,
+    WorkflowProvenance,
+)
+from .writeback_contracts import (
+    WritebackApprovalSnapshot,
+    WritebackOperation,
+    WritebackProposal,
+)
+
+__all__ = [
+    "REQUIRED_DETERMINISTIC_PASSES",
+    "AovArtifact",
+    "AovDependencySnapshot",
+    "AovPass",
+    "ApprovalState",
+    "ArtifactApprovalState",
+    "ArtifactRef",
+    "CachePlan",
+    "DifferenceMetrics",
+    "ExecutionMode",
+    "JobFailure",
+    "ManifestSummary",
+    "PortableRecipeCatalog",
+    "PortableRecipeDefinition",
+    "ProtectedRegion",
+    "ProtectedRegionResult",
+    "RecipeKind",
+    "RenderBrief",
+    "RenderCaptureCommand",
+    "RenderComparison",
+    "RenderJob",
+    "RenderJobPlanRequest",
+    "RenderJobState",
+    "RenderManifest",
+    "RenderRecipe",
+    "RenderVariant",
+    "RenderVariantApprovalSnapshot",
+    "SceneCameraRef",
+    "StrictModel",
+    "ValidationResult",
+    "WorkflowProvenance",
+    "WritebackOperation",
+    "WritebackApprovalSnapshot",
+    "WritebackProperty",
+    "WritebackProposal",
+    "WritebackTarget",
+    "summarize_manifest",
+]
