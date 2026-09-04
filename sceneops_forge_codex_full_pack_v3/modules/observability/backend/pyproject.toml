@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sceneops-observability"
+version = "0.1.0"
+description = "SceneOps Forge structured event and diagnostic gateway"
+requires-python = ">=3.9"
+dependencies = [
+  "fastapi==0.128.8",
+  "pydantic==2.13.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

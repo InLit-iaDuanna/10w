@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/observability/manifests/diagnostic-bundle.v1.schema.json",
+  "title": "Diagnostic Bundle Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "project_id",
+    "correlation_id",
+    "execution_mode",
+    "log_count",
+    "logs_truncated",
+    "redaction"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "correlation_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "execution_mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "log_count": {"type": "integer", "minimum": 0},
+    "logs_truncated": {"type": "boolean"},
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "policy_version", "recognized_secrets_removed", "unrestricted_local_paths_removed"],
+      "properties": {
+        "applied": {"const": true},
+        "policy_version": {"const": 1},
+        "recognized_secrets_removed": {"const": true},
+        "unrestricted_local_paths_removed": {"const": true}
+      }
+    }
+  }
+}

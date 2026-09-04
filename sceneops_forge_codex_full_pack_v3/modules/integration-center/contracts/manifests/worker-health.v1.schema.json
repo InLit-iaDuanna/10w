@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/integration-center/manifests/worker-health.v1.schema.json",
+  "title": "Worker Health Snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "worker_id",
+    "integration_id",
+    "display_name",
+    "lifecycle",
+    "health_state",
+    "observed_at",
+    "expires_at",
+    "is_current",
+    "worker_version",
+    "capability_ids",
+    "queue",
+    "recommended_actions",
+    "evidence"
+  ],
+  "properties": {
+    "worker_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "integration_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 120},
+    "lifecycle": {"enum": ["online", "offline", "draining", "unknown"]},
+    "health_state": {
+      "enum": ["connected", "disconnected", "degraded", "incompatible", "busy", "unauthorized", "unknown"]
+    },
+    "observed_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "expires_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "is_current": {"type": "boolean"},
+    "last_heartbeat_at": {"type": ["string", "null"], "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "worker_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$", "maxLength": 120},
+    "capability_ids": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+      "uniqueItems": true
+    },
+    "current_job": {"oneOf": [{"$ref": "#/$defs/job_pointer"}, {"type": "null"}]},
+    "queue": {"$ref": "#/$defs/queue"},
+    "recommended_actions": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {"$ref": "#/$defs/recommended_action"}
+    },
+    "evidence": {"$ref": "#/$defs/evidence"}
+  },
+  "$defs": {
+    "job_pointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "run_id",
+        "correlation_id",
+        "title",
+        "state",
+        "progress",
+        "retry_safety",
+        "resume_available",
+        "completed_step_ids"
+      ],
+      "properties": {
+        "job_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "correlation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 160},
+        "state": {"enum": ["queued", "running", "paused", "failed", "timed_out", "cancel_requested", "cancelled", "succeeded"]},
+        "progress": {"type": "number", "minimum": 0, "maximum": 1},
+        "retry_safety": {"enum": ["idempotent", "compensated", "non_idempotent"]},
+        "resume_available": {"type": "boolean"},
+        "completed_step_ids": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "queue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["depth", "running"],
+      "properties": {
+        "depth": {"type": "integer", "minimum": 0},
+        "running": {"type": "integer", "minimum": 0},
+        "oldest_queued_at": {"type": ["string", "null"], "format": "date-time", "pattern": "(?:Z|\\+00:00)$"}
+      }
+    },
+    "recommended_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command_id", "label", "available"],
+      "properties": {
+        "command_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 120},
+        "available": {"type": "boolean"},
+        "unavailable_reason": {"type": ["string", "null"], "maxLength": 500}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "observed_at"],
+      "properties": {
+        "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+        "observed_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+        "source_run_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "reason": {"type": ["string", "null"], "maxLength": 500}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "cached"}}, "required": ["mode"]},
+          "then": {
+            "required": ["source_run_id"],
+            "properties": {"source_run_id": {"type": "string", "minLength": 1}}
+          }
+        },
+        {
+          "if": {"properties": {"mode": {"enum": ["planned", "blocked"]}}, "required": ["mode"]},
+          "then": {
+            "required": ["reason"],
+            "properties": {"reason": {"type": "string", "minLength": 1, "maxLength": 500}}
+          }
+        }
+      ]
+    }
+  }
+}

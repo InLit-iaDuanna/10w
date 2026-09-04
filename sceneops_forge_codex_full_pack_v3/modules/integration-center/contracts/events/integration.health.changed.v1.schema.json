@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/integration-center/events/integration.health.changed.v1.schema.json",
+  "title": "Integration Health Changed v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "event_type": {"const": "integration.health.changed"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "correlation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "causation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"enum": ["user", "agent", "system", "worker"]},
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"}
+      }
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integration_id", "previous_state", "current"],
+      "properties": {
+        "integration_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "run_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "job_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "previous_state": {
+          "type": ["string", "null"],
+          "enum": ["connected", "disconnected", "degraded", "incompatible", "busy", "unauthorized", "unknown", null]
+        },
+        "current": {"$ref": "../manifests/integration-health.v1.schema.json"}
+      }
+    }
+  }
+}

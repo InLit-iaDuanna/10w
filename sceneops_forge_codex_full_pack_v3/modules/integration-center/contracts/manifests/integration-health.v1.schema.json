@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/integration-center/manifests/integration-health.v1.schema.json",
+  "title": "Integration Health Snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "integration_id",
+    "display_name",
+    "summary_state",
+    "connection",
+    "authorization",
+    "compatibility",
+    "availability",
+    "activity",
+    "observed_at",
+    "expires_at",
+    "capability_ids",
+    "allowlisted_command_ids",
+    "queue",
+    "circuit",
+    "recommended_actions",
+    "is_current",
+    "live_actions_enabled",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "integration_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 120},
+    "summary_state": {
+      "enum": ["connected", "disconnected", "degraded", "incompatible", "busy", "unauthorized", "unknown"]
+    },
+    "connection": {"enum": ["connected", "disconnected", "unknown"]},
+    "authorization": {"enum": ["authorized", "unauthorized", "unknown"]},
+    "compatibility": {"enum": ["compatible", "incompatible", "unknown"]},
+    "availability": {"enum": ["available", "degraded", "unknown"]},
+    "activity": {"enum": ["idle", "busy"]},
+    "observed_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "expires_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "last_seen_at": {"type": ["string", "null"], "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "tool_version": {"type": ["string", "null"], "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$", "maxLength": 120},
+    "adapter_version": {"type": ["string", "null"], "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$", "maxLength": 120},
+    "capability_ids": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+      "uniqueItems": true
+    },
+    "allowlisted_command_ids": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+      "uniqueItems": true
+    },
+    "current_job": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["job_id", "run_id", "correlation_id", "title", "state", "progress", "retry_safety", "resume_available", "completed_step_ids"],
+          "properties": {
+            "job_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+            "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+            "correlation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+            "title": {"type": "string", "minLength": 1, "maxLength": 160},
+            "state": {"enum": ["queued", "running", "paused", "failed", "timed_out", "cancel_requested", "cancelled", "succeeded"]},
+            "progress": {"type": "number", "minimum": 0, "maximum": 1},
+            "retry_safety": {"enum": ["idempotent", "compensated", "non_idempotent"]},
+            "resume_available": {"type": "boolean"},
+            "completed_step_ids": {
+              "type": "array",
+              "maxItems": 256,
+              "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+              "uniqueItems": true
+            }
+          }
+        },
+        {"type": "null"}
+      ]
+    },
+    "queue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["depth", "running"],
+      "properties": {
+        "depth": {"type": "integer", "minimum": 0},
+        "running": {"type": "integer", "minimum": 0},
+        "oldest_queued_at": {"type": ["string", "null"], "format": "date-time", "pattern": "(?:Z|\\+00:00)$"}
+      }
+    },
+    "circuit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "consecutive_failures"],
+      "properties": {
+        "state": {"enum": ["closed", "open", "half_open"]},
+        "consecutive_failures": {"type": "integer", "minimum": 0},
+        "opened_at": {"type": ["string", "null"], "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+        "retry_at": {"type": ["string", "null"], "format": "date-time", "pattern": "(?:Z|\\+00:00)$"}
+      }
+    },
+    "reason_code": {"type": ["string", "null"], "pattern": "^[A-Z0-9_]{1,120}$"},
+    "safe_reason": {"type": ["string", "null"], "maxLength": 500},
+    "recommended_actions": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command_id", "label", "available"],
+        "properties": {
+          "command_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+          "label": {"type": "string", "minLength": 1, "maxLength": 120},
+          "available": {"type": "boolean"},
+          "unavailable_reason": {"type": ["string", "null"], "maxLength": 500}
+        }
+      }
+    },
+    "is_current": {"type": "boolean"},
+    "live_actions_enabled": {"type": "boolean"},
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "observed_at"],
+      "properties": {
+        "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+        "observed_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+        "source_run_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "reason": {"type": ["string", "null"], "maxLength": 500}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "cached"}}, "required": ["mode"]},
+          "then": {
+            "required": ["source_run_id"],
+            "properties": {"source_run_id": {"type": "string", "minLength": 1}}
+          }
+        },
+        {
+          "if": {"properties": {"mode": {"enum": ["planned", "blocked"]}}, "required": ["mode"]},
+          "then": {
+            "required": ["reason"],
+            "properties": {"reason": {"type": "string", "minLength": 1, "maxLength": 500}}
+          }
+        }
+      ]
+    }
+  }
+}

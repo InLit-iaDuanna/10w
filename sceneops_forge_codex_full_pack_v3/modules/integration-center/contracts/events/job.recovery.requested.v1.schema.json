@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/integration-center/events/job.recovery.requested.v1.schema.json",
+  "title": "Job Recovery Requested v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "event_type": {"const": "job.recovery.requested"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "project_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "correlation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "causation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"enum": ["user", "agent", "system", "worker"]},
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"}
+      }
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id", "run_id", "integration_id", "operation_id", "action"],
+      "properties": {
+        "job_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "integration_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "operation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "attempt_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "action": {"enum": ["timeout", "cancel", "retry", "resume"]}
+      }
+    }
+  }
+}
