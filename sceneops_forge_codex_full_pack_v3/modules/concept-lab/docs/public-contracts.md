@@ -33,3 +33,14 @@ Prompt 07 的 Asset Factory 是最终 `AssetSpec` 合同所有者。集成时应
 ## API 错误
 
 错误响应包含 `code`、`message`、`details`、`request_id`、`retryable` 和 `suggested_actions`。前端依据 code 与结构字段显示失败，不解析英文 message。
+
+
+## CodeBuddy text advice
+
+Public Python: `CodeBuddyConceptAdvisor`, `create_advisor_router`. `GET /api/ai/models`
+returns model IDs from installed CLI help with mock/planned/blocked availability;
+`POST /api/ai/advice` accepts concept_id, model and question. Pydantic/OpenAPI owns
+request and result types. Results retain selected model, provider, concept version,
+question and UTC time. Only successful CLI JSON text is live; no review decision,
+image-generation artifact or production approval is created. Local execution smoke
+uses only the explicit mock model; real CLI inference is not run.

@@ -38,6 +38,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Models */
+        get: operations["models_api_ai_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/advice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Advice */
+        post: operations["advice_api_ai_advice_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -60,6 +94,65 @@ export interface components {
             parameters?: {
                 [key: string]: string | number | boolean | string[] | null;
             };
+        };
+        /** AdvisorCatalog */
+        AdvisorCatalog: {
+            /** Models */
+            models: components["schemas"]["AdvisorModel"][];
+            /** Message */
+            message: string;
+        };
+        /** AdvisorModel */
+        AdvisorModel: {
+            /** Id */
+            id: string;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "mock" | "codebuddy";
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "mock" | "planned" | "blocked";
+        };
+        /** AdvisorRequest */
+        AdvisorRequest: {
+            /** Concept Id */
+            concept_id: string;
+            /** Model */
+            model: string;
+            /** Question */
+            question: string;
+        };
+        /** AdvisorResult */
+        AdvisorResult: {
+            /** Model */
+            model: string;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "mock" | "codebuddy";
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "mock" | "live" | "blocked";
+            /** Concept Id */
+            concept_id: string;
+            /** Concept Version */
+            concept_version: number;
+            /** Question */
+            question: string;
+            /** Text */
+            text: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** AiGenerationMetadata */
         AiGenerationMetadata: {
@@ -1252,6 +1345,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LabSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    models_api_ai_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdvisorCatalog"];
+                };
+            };
+        };
+    };
+    advice_api_ai_advice_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdvisorRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdvisorResult"];
                 };
             };
             /** @description Validation Error */

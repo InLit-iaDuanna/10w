@@ -51,3 +51,6 @@ from .schemas import ConceptCreateInput, ReviewAction, StyleEvidenceInput
 from .workspace_schemas import ConceptReviewWorkspace
 
 __all__ += ["ConceptCreateInput", "ReviewAction", "StyleEvidenceInput", "ConceptReviewWorkspace"]
+
+from .codebuddy_advisor import CodeBuddyConceptAdvisor, create_advisor_router
+__all__ += ["CodeBuddyConceptAdvisor", "create_advisor_router"]

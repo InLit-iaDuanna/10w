@@ -37,7 +37,7 @@ Web：<http://127.0.0.1:4312>；API：<http://127.0.0.1:8312/docs>。
 - 内存会话 + 系统临时目录 `sceneops-concept-assets-*`，与项目源文件隔离；重启即新会话。一个会话制作一个资产规格，成功后禁止重复发布。
 - 本地领域处理实际执行，外部执行模式始终 `mock`；Dry-run 是 `planned`。
 - 实际图像生成、Blender、渲染、Unity 未启用，外部真实运行 `blocked` / `planned`；没有自动降级或隐式调用。
-- 本入口没有联网 AI 对话，首页按钮仅打开工具；没有复制 Shell 或核心 kernel。
+- 本入口首页按钮仅打开工具；概念板另有显式 CodeBuddy 文字建议入口；没有复制 Shell 或核心 kernel。
 
 ## 公开合同
 
@@ -72,3 +72,14 @@ node node_modules/openapi-typescript/bin/cli.js openapi.json -o ../../../modules
 ## Limitations
 
 内存与临时文件不提供跨重启持久化、多用户权限、异步 worker 队列或任意项目导入。参考图是 fixture，风格符合证据是人工声明；材质/纹理预算保留在 handoff 中，现有工厂尚不全面执行概念风格约束。生产步骤同步执行且仅 mock；取消、重试、回滚保留在原模块公开接口，但本入口尚未提供对应按钮。真实 3D 预览与外部工具仍待后续授权整合。
+
+
+## CodeBuddy CLI 与模型选择（2026-09-05）
+
+概念页右侧新增“AI 概念建议”：模型下拉框默认 `mock-concept-advisor`；选择 CodeBuddy 模型后点击“使用 CodeBuddy 生成建议”，服务端将所选 ID 传给 `codebuddy --model`，只发送当前概念规格与填写的问题。模型列表来自本机 CLI 帮助，包含 HY、GLM、MiniMax、Kimi、DeepSeek；`planned` 表示尚未确认当前账户可调用，不能当作在线检测成功。
+
+后端公开 `CodeBuddyConceptAdvisor` 和 `create_advisor_router`，API 为 `GET /api/ai/models` 与 `POST /api/ai/advice`。模型白名单来自服务端，前端不能提交 shell 命令。CLI 使用参数数组、stdin、JSON 输出、90 秒超时、禁用内置工具、空 MCP 配置、默认权限模式与不持久化会话；不会启用跳过权限，不修改宿主设置，不自动换模型。保留原有宿主安全措施。只产出文字建议，不自动批准概念、导入为评审证据、改文件或运行生产。结果分别显示 mock / live / blocked；错误不向前端返回可能包含账号信息的 stderr。
+
+宿主需已安装并登录 CodeBuddy CLI（命令为 `codebuddy`，而非 `codebuddycli`）。若当前服务是本次修改前启动，需要先在原终端 Ctrl-C，再运行上述 dev 命令。CLI 依赖沿用宿主安装，本项目未下载或安装另一套 CLI。
+
+本轮仅执行 API 导入/OpenAPI 生成与一条最小本地验证：模型目录 → 选择 mock 模型 → 得到绑定当前概念 ID 的 mock 建议，PASS。未执行真实 AI 推理或其他测试套件。读取 `codebuddy --help` 时，受限沙箱阻止了 CLI 写入用户缓存；没有修改权限或重定向用户主目录。真实账户、网络、模型权限和 CLI JSON 结果的运行验证为 **not run / pending approval**，失败时前端显示 blocked。

@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { labClient, labKeys, type LabAction } from './labClient';
+import { labClient, labKeys, advisorKeys, type LabAction } from './labClient';
 import './concept-assets.css';
 
 export function ConceptAssetsWorkbench() {
+  const [model, setModel] = useState('mock-concept-advisor');
+  const [question, setQuestion] = useState('请检查这份概念规格的制作风险，并给出改进建议。');
+  const models = useQuery({ queryKey: advisorKeys.models, queryFn: labClient.models, retry: false });
+  const advice = useMutation({ mutationFn: labClient.advise });
   const [opened, setOpened] = useState(false);
   const [tab, setTab] = useState('concept');
   const [selected, setSelected] = useState('');
@@ -22,13 +26,13 @@ export function ConceptAssetsWorkbench() {
     <button disabled={mutation.isPending || disabled} onClick={() => act(action)}>{label}</button>;
   const json = (value: unknown) => <pre>{JSON.stringify(value, null, 2)}</pre>;
   return <main>
-    <header><span>SCENEOPS FORGE / 工作台 03</span><b>MOCK · 隔离演示</b></header>
+    <header><span>SCENEOPS FORGE / 工作台 03</span><b>资产 MOCK · AI 可选模型</b></header>
     {!opened ? <section className="welcome"><small>CONCEPT → ASSET</small><h1>让创意，成为可制作的资产。</h1>
       <p>从黄铜钥匙的概念评审开始，连接风格、生产规格与资产库。</p>
       <form onSubmit={e => { e.preventDefault(); setOpened(true); }}><input aria-label="工作台命令" defaultValue="/ 打开概念与资产工具"/><button>打开工作台 →</button></form>
       <p className="muted">本地业务服务 · 参考素材和 Blender 为 mock · 不调用图像生成或渲染</p></section> : <>
       <nav><button onClick={() => setOpened(false)}>← 对话</button>{[['concept','01 概念板与评审'],['factory','02 规格与生产'],['library','03 资产库与检查']].map(([id,label]) => <button className={tab === id ? 'active' : ''} key={id} onClick={() => setTab(id)}>{label}</button>)}</nav>
-      <div className="notice">本地服务实际执行领域操作；所有外部产物均为 mock。会话仅驻留内存，重启重置。Unity：blocked（未连接）。</div>
+      <div className="notice">本地服务实际执行领域操作；图像与资产产物为 mock，AI 文字建议单独显示执行模式。会话仅驻留内存，重启重置。Unity：blocked（未连接）。</div>
       {query.isPending && <p role="status">正在连接本地 API…</p>}
       {error && <div className="error" role="alert">操作失败：{error.message}<button onClick={() => { mutation.reset(); query.refetch(); }}>重新连接 / 刷新</button></div>}
       {mutation.isPending && <p role="status">正在执行本地操作…</p>}
@@ -44,7 +48,17 @@ export function ConceptAssetsWorkbench() {
           <p className="muted">风格证据是人工声明，置信度 0.7；批准仍检查许可、必需视图和证据。</p>
           {workspace.comments.map(c => <blockquote key={c.comment_id}>{c.body}<small>{c.author_id}</small></blockquote>)}
           <details><summary>风格证据、审批与参考来源</summary>{json({checks:workspace.style_checks,decisions:workspace.decisions,references:workspace.references})}</details></>}
-      </section><aside><h2>风格规格</h2><dl><dt>比例</dt><dd>{workspace.concept.proportions}</dd><dt>尺寸（米）</dt><dd>{Object.entries(workspace.concept.dimensions).map(([k,v]) => `${k}: ${v}`).join(' · ')}</dd><dt>材质</dt><dd>{workspace.concept.materials.join(' / ')}</dd><dt>预算</dt><dd>{workspace.concept.platform_budget.max_triangles} 三角形 · {workspace.concept.platform_budget.max_texture_size_px}px</dd><dt>风格</dt><dd>{workspace.concept.style_constraints.join('；')}</dd><dt>禁止元素</dt><dd>{workspace.concept.forbidden_elements.join('；')}</dd></dl><details><summary>规格与任务来源</summary>{json(workspace.concept)}</details></aside></div>}
+      </section><aside><h2>AI 概念建议</h2>
+          <label>模型<select aria-label="AI 模型" value={model} disabled={advice.isPending || models.isPending} onChange={e => { setModel(e.target.value); advice.reset(); }}>
+            {(models.data?.models || []).map(m => <option key={m.id} value={m.id} disabled={m.mode === 'blocked'}>{m.id} · {m.provider} · {m.mode}</option>)}
+          </select></label><p className="muted">{models.data?.message || '正在读取模型列表…'}</p>
+          {models.error && <p role="alert">模型列表读取失败：{models.error.message}<button onClick={() => models.refetch()}>重试</button></p>}
+          <label>咨询问题<textarea value={question} onChange={e => setQuestion(e.target.value)}/></label>
+          <p className="muted">选择 CodeBuddy 模型并点击后，将发送当前概念规格与问题。仅生成文字建议，不替代人工审批。</p>
+          <button disabled={advice.isPending || !question.trim()} onClick={() => advice.mutate({model, question, concept_id:workspace.concept.concept_id})}>{advice.isPending ? '正在等待 CodeBuddy / Mock…' : model === 'mock-concept-advisor' ? '查看 Mock 建议' : '使用 CodeBuddy 生成建议'}</button>
+          {advice.error && <p className="error" role="alert">AI 请求失败：{advice.error.message}。可再次点击重试。</p>}
+          {advice.data && <article><b>{advice.data.mode} · {advice.data.model}</b><p className="advice" role="status">{advice.data.text}</p></article>}
+          <h2>风格规格</h2><dl><dt>比例</dt><dd>{workspace.concept.proportions}</dd><dt>尺寸（米）</dt><dd>{Object.entries(workspace.concept.dimensions).map(([k,v]) => `${k}: ${v}`).join(' · ')}</dd><dt>材质</dt><dd>{workspace.concept.materials.join(' / ')}</dd><dt>预算</dt><dd>{workspace.concept.platform_budget.max_triangles} 三角形 · {workspace.concept.platform_budget.max_texture_size_px}px</dd><dt>风格</dt><dd>{workspace.concept.style_constraints.join('；')}</dd><dt>禁止元素</dt><dd>{workspace.concept.forbidden_elements.join('；')}</dd></dl><details><summary>规格与任务来源</summary>{json(workspace.concept)}</details></aside></div>}
       {data && tab === 'factory' && <section><small>ASSET FACTORY</small><h1>从批准概念到生产规格</h1>
         {!data.handoff ? <p className="empty">先在概念板批准方案，再编译 AssetSpecDraft。</p> : <><p>{data.handoff.spec.display_name} · 预算 {data.handoff.spec.triangle_budget} triangles · mock</p>
           <details open><summary>审阅生产 ChangeSet</summary>{json(data.request?.change_set)}</details>

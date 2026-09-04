@@ -60,6 +60,62 @@
           }
         }
       }
+    },
+    "/api/ai/models": {
+      "get": {
+        "summary": "Models",
+        "operationId": "models_api_ai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvisorCatalog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/advice": {
+      "post": {
+        "summary": "Advice",
+        "operationId": "advice_api_ai_advice_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvisorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdvisorResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -145,6 +201,142 @@
           "prompt"
         ],
         "title": "AIProvenance"
+      },
+      "AdvisorCatalog": {
+        "properties": {
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/AdvisorModel"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "models",
+          "message"
+        ],
+        "title": "AdvisorCatalog"
+      },
+      "AdvisorModel": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "codebuddy"
+            ],
+            "title": "Provider"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "planned",
+              "blocked"
+            ],
+            "title": "Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "mode"
+        ],
+        "title": "AdvisorModel"
+      },
+      "AdvisorRequest": {
+        "properties": {
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concept_id",
+          "model",
+          "question"
+        ],
+        "title": "AdvisorRequest"
+      },
+      "AdvisorResult": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "codebuddy"
+            ],
+            "title": "Provider"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "live",
+              "blocked"
+            ],
+            "title": "Mode"
+          },
+          "concept_id": {
+            "type": "string",
+            "title": "Concept Id"
+          },
+          "concept_version": {
+            "type": "integer",
+            "title": "Concept Version"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "provider",
+          "mode",
+          "concept_id",
+          "concept_version",
+          "question",
+          "text",
+          "created_at"
+        ],
+        "title": "AdvisorResult"
       },
       "AiGenerationMetadata": {
         "properties": {

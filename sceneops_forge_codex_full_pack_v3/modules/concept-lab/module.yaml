@@ -15,6 +15,7 @@ requires:
   optional_integrations:
     - artifact-store
     - image-generation
+    - codebuddy-cli
 
 contributes:
   editors:
