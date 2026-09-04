@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/contracts/world-composer/world-level-document.v1.schema.json",
+  "title": "World Level Document v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "sceneId",
+    "sceneVersion",
+    "coordinateSystem",
+    "mode",
+    "objects",
+    "world",
+    "gateInputs"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "sceneId": { "type": "string", "minLength": 1 },
+    "sceneVersion": { "type": "string", "minLength": 1 },
+    "coordinateSystem": {
+      "const": { "units": "meters", "handedness": "right", "upAxis": "Y", "forwardAxis": "-Z" }
+    },
+    "mode": { "enum": ["live", "cached", "mock", "planned", "blocked"] },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sceneopsId",
+          "displayName",
+          "parentSceneopsId",
+          "transform",
+          "collider",
+          "spawnRadiusMeters",
+          "navigationNodeId",
+          "requirements"
+        ],
+        "properties": {
+          "sceneopsId": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "parentSceneopsId": { "type": ["string", "null"] },
+          "asset": {
+            "type": "object",
+            "required": ["assetId", "assetVersionId"],
+            "properties": {
+              "assetId": { "type": "string", "minLength": 1 },
+              "assetVersionId": { "type": "string", "minLength": 1 }
+            }
+          },
+          "transform": { "type": "object" },
+          "collider": { "type": ["object", "null"] },
+          "spawnRadiusMeters": { "type": ["number", "null"] },
+          "navigationNodeId": { "type": ["string", "null"] },
+          "requirements": { "type": "object" }
+        }
+      }
+    },
+    "world": {
+      "type": "object",
+      "required": ["zones", "interactionRegions", "paths", "relations", "lightingTargets", "navigation"],
+      "properties": {
+        "zones": { "type": "array" },
+        "interactionRegions": { "type": "array" },
+        "paths": { "type": "array" },
+        "relations": { "type": "array" },
+        "lightingTargets": { "type": "array" },
+        "navigation": { "type": "object", "required": ["nodes", "edges"] }
+      }
+    },
+    "gateInputs": {
+      "type": "object",
+      "required": ["colliders", "navigation", "scalePolicy", "interactions"],
+      "properties": {
+        "colliders": { "$ref": "#/$defs/input" },
+        "navigation": {
+          "allOf": [
+            { "$ref": "#/$defs/input" },
+            { "type": "object", "required": ["agentProfileId"], "properties": { "agentProfileId": { "type": ["string", "null"] } } }
+          ]
+        },
+        "scalePolicy": { "$ref": "#/$defs/input" },
+        "interactions": { "$ref": "#/$defs/input" }
+      }
+    }
+  },
+  "$defs": {
+    "input": {
+      "type": "object",
+      "required": ["state", "sourceVersion", "reason"],
+      "properties": {
+        "state": { "enum": ["available", "missing", "stale"] },
+        "sourceVersion": { "type": ["string", "null"] },
+        "reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

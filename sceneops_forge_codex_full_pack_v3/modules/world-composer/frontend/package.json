@@ -1,0 +1,23 @@
+{
+  "name": "@sceneops/world-composer-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test src/tests/*.test.ts",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "@sceneops/scene-viewer": "file:../../../packages/scene-viewer"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

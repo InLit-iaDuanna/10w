@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "projectId": "prj_warehouse_escape",
+  "sceneId": "scn_warehouse_floor",
+  "sceneVersion": "scnver_warehouse_001",
+  "coordinateSystem": {
+    "units": "meters",
+    "handedness": "right",
+    "upAxis": "Y",
+    "forwardAxis": "-Z"
+  },
+  "mode": "mock",
+  "objects": [
+    {
+      "sceneopsId": "sobj_warehouse_root",
+      "displayName": "WarehouseFloor",
+      "parentSceneopsId": null,
+      "transform": { "position": [0, 0, 0], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": null,
+      "spawnRadiusMeters": null,
+      "navigationNodeId": null,
+      "requirements": {
+        "colliderRequired": false,
+        "allowTriggerCollider": false,
+        "allowedScale": { "minimum": [1, 1, 1], "maximum": [1, 1, 1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": false
+      }
+    },
+    {
+      "sceneopsId": "sobj_warehouse_spawn",
+      "displayName": "WarehouseSpawn",
+      "parentSceneopsId": "sobj_warehouse_root",
+      "transform": { "position": [-4, 0, 4], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "capsule", "enabled": true, "isTrigger": true, "sizeMeters": [0.8, 1.8, 0.8] },
+      "spawnRadiusMeters": 0.5,
+      "navigationNodeId": "nav_wh_spawn",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": true,
+        "allowedScale": { "minimum": [1, 1, 1], "maximum": [1, 1, 1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": false
+      }
+    },
+    {
+      "sceneopsId": "sobj_warehouse_switch",
+      "displayName": "ExitSwitch",
+      "parentSceneopsId": "sobj_warehouse_root",
+      "asset": { "assetId": "asset_switch", "assetVersionId": "assetver_switch_002" },
+      "transform": { "position": [-1, 1, 0], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "box", "enabled": true, "isTrigger": true, "sizeMeters": [0.4, 0.6, 0.2] },
+      "spawnRadiusMeters": null,
+      "navigationNodeId": "nav_wh_switch",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": true,
+        "allowedScale": { "minimum": [0.8, 0.8, 0.8], "maximum": [1.2, 1.2, 1.2] },
+        "scaleSpace": "world",
+        "interactions": [{ "predicate": "opens", "targetSceneopsId": "sobj_warehouse_door" }],
+        "navigationTarget": true
+      }
+    },
+    {
+      "sceneopsId": "sobj_warehouse_door",
+      "displayName": "WarehouseDoor",
+      "parentSceneopsId": "sobj_warehouse_root",
+      "asset": { "assetId": "asset_warehouse_door", "assetVersionId": "assetver_warehouse_door_001" },
+      "transform": { "position": [2, 1.2, -2], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "box", "enabled": true, "isTrigger": false, "sizeMeters": [1.8, 2.4, 0.25] },
+      "spawnRadiusMeters": null,
+      "navigationNodeId": "nav_wh_door",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": false,
+        "allowedScale": { "minimum": [0.9, 0.9, 0.9], "maximum": [1.1, 1.1, 1.1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": true
+      }
+    },
+    {
+      "sceneopsId": "sobj_warehouse_obstacle",
+      "displayName": "ForkliftObstacle",
+      "parentSceneopsId": "sobj_warehouse_root",
+      "asset": { "assetId": "asset_forklift", "assetVersionId": "assetver_forklift_004" },
+      "transform": { "position": [0, 0, 2], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "box", "enabled": true, "isTrigger": false, "sizeMeters": [1.8, 2, 3.2] },
+      "spawnRadiusMeters": null,
+      "navigationNodeId": null,
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": false,
+        "allowedScale": { "minimum": [0.8, 0.8, 0.8], "maximum": [1.2, 1.2, 1.2] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": false
+      }
+    },
+    {
+      "sceneopsId": "sobj_warehouse_exit",
+      "displayName": "WarehouseExit",
+      "parentSceneopsId": "sobj_warehouse_root",
+      "transform": { "position": [4, 0, -4], "rotation": { "x": 0, "y": 0, "z": 0, "w": 1 }, "scale": [1, 1, 1] },
+      "collider": { "shape": "box", "enabled": true, "isTrigger": true, "sizeMeters": [1.5, 2, 1] },
+      "spawnRadiusMeters": null,
+      "navigationNodeId": "nav_wh_exit",
+      "requirements": {
+        "colliderRequired": true,
+        "allowTriggerCollider": true,
+        "allowedScale": { "minimum": [1, 1, 1], "maximum": [1, 1, 1] },
+        "scaleSpace": "world",
+        "interactions": [],
+        "navigationTarget": true
+      }
+    }
+  ],
+  "world": {
+    "zones": [
+      { "zoneId": "zone_warehouse_main", "label": "Warehouse Main Floor", "objectIds": ["sobj_warehouse_spawn", "sobj_warehouse_switch", "sobj_warehouse_door", "sobj_warehouse_obstacle", "sobj_warehouse_exit"] }
+    ],
+    "interactionRegions": [
+      { "regionId": "region_warehouse_switch", "label": "Switch Reach", "center": [-1, 1, 0], "size": [1, 2, 1], "relatedSceneopsIds": ["sobj_warehouse_switch"] }
+    ],
+    "paths": [
+      {
+        "pathId": "path_warehouse_escape",
+        "label": "Switch to Exit",
+        "navNodeIds": ["nav_wh_spawn", "nav_wh_switch", "nav_wh_door", "nav_wh_exit"],
+        "points": [
+          { "pointId": "pathpoint_wh_spawn", "position": [-4, 0, 4] },
+          { "pointId": "pathpoint_wh_switch", "position": [-1, 0, 0] },
+          { "pointId": "pathpoint_wh_door", "position": [2, 0, -2] },
+          { "pointId": "pathpoint_wh_exit", "position": [4, 0, -4] }
+        ]
+      }
+    ],
+    "relations": [
+      { "relationId": "rel_switch_opens_door", "predicate": "opens", "sourceSceneopsId": "sobj_warehouse_switch", "targetSceneopsId": "sobj_warehouse_door" }
+    ],
+    "lightingTargets": [
+      { "targetId": "lighttarget_warehouse_switch", "sceneopsId": "sobj_warehouse_switch", "illuminanceLux": 140, "colorTemperatureKelvin": 4000, "intent": "Keep the exit switch legible from the approach." }
+    ],
+    "navigation": {
+      "nodes": [
+        { "nodeId": "nav_wh_spawn", "position": [-4, 0, 4] },
+        { "nodeId": "nav_wh_switch", "position": [-1, 0, 0] },
+        { "nodeId": "nav_wh_door", "position": [2, 0, -2] },
+        { "nodeId": "nav_wh_exit", "position": [4, 0, -4] }
+      ],
+      "edges": [
+        { "from": "nav_wh_spawn", "to": "nav_wh_switch", "bidirectional": true },
+        { "from": "nav_wh_switch", "to": "nav_wh_door", "bidirectional": true },
+        { "from": "nav_wh_door", "to": "nav_wh_exit", "bidirectional": true }
+      ]
+    }
+  },
+  "gateInputs": {
+    "colliders": { "state": "available", "sourceVersion": "scnver_warehouse_001", "reason": null },
+    "navigation": { "state": "available", "sourceVersion": "scnver_warehouse_001", "reason": null, "agentProfileId": "agent_player_default" },
+    "scalePolicy": { "state": "available", "sourceVersion": "scnver_warehouse_001", "reason": null },
+    "interactions": { "state": "available", "sourceVersion": "scnver_warehouse_001", "reason": null }
+  }
+}

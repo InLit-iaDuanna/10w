@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/events/scene.level.validated.v1.schema.json",
+  "title": "scene.level.validated@1 payload",
+  "description": "Payload only; the core typed event envelope is not duplicated here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sceneId", "sceneVersion", "passed", "results", "mode"],
+  "properties": {
+    "sceneId": { "type": "string", "minLength": 1 },
+    "sceneVersion": { "type": "string", "minLength": 1 },
+    "passed": { "type": "boolean" },
+    "results": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["gateId", "status", "mode", "issues"],
+        "properties": {
+          "gateId": {
+            "enum": [
+              "missing-collider",
+              "overlapping-spawn",
+              "unreachable-target",
+              "navmesh-break",
+              "invalid-scale",
+              "missing-interaction-relationship"
+            ]
+          },
+          "status": { "enum": ["pass", "fail", "blocked"] },
+          "mode": { "enum": ["live", "cached", "mock", "planned", "blocked"] },
+          "issues": { "type": "array" }
+        }
+      }
+    },
+    "mode": { "enum": ["live", "cached", "mock", "planned", "blocked"] }
+  }
+}
