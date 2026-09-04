@@ -8,6 +8,7 @@ from .repository import ReviewRepository
 from .router import create_router, version_collaboration_exception_handler
 from .service import VersionCollaborationService
 from .sqlite_repository import SqliteReviewRepository
+from .demo import create_demo_app
 
 __all__ = (
     "ActionContext",
@@ -24,5 +25,6 @@ __all__ = (
     "VersionCollaborationService",
     "VersionReference",
     "create_router",
+    "create_demo_app",
     "version_collaboration_exception_handler",
 )

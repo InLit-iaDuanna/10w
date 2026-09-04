@@ -17,6 +17,7 @@ sys.path.insert(0, str(BACKEND_SRC))
 from version_collaboration.base import ActionContext  # noqa: E402
 from version_collaboration.router import create_router  # noqa: E402
 from version_collaboration.service import VersionCollaborationService  # noqa: E402
+from version_collaboration.demo import DemoApprovals, DemoCatalog, create_demo_router
 
 
 def build_openapi() -> dict[str, Any]:
@@ -28,6 +29,8 @@ def build_openapi() -> dict[str, Any]:
     app.include_router(
         create_router(cast(VersionCollaborationService, object()), unreachable_context)
     )
+    app.include_router(create_demo_router(cast(VersionCollaborationService, object()),
+                                          DemoCatalog(entries=()), DemoApprovals()))
     return app.openapi()
 
 
@@ -84,6 +87,18 @@ def render_typescript(openapi: dict[str, Any]) -> str:
     for name in sorted(schemas):
         lines.append(f"export type {name} = {schema_to_typescript(schemas[name])};")
         lines.append("")
+    lines.append("export interface ApiOperations {")
+    for path, methods in openapi["paths"].items():
+        for method, operation in methods.items():
+            if method not in {"get", "post"}:
+                continue
+            body = operation.get("requestBody", {}).get("content", {}).get("application/json", {}).get("schema")
+            result = next(value for code, value in operation["responses"].items() if code.startswith("2"))
+            response = result["content"]["application/json"]["schema"]
+            params = [p for p in operation.get("parameters", []) if p["in"] == "path"]
+            param_type = "{ " + " ".join(f'{p["name"]}: string;' for p in params) + " }"
+            lines.append(f'  "{method.upper()} {path}": {{ params: {param_type}; body: {schema_to_typescript(body) if body else "undefined"}; response: {schema_to_typescript(response)} }};')
+    lines.append("}")
     return "\n".join(lines)
 
 

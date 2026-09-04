@@ -1177,6 +1177,77 @@
         "title": "DecisionRequest",
         "type": "object"
       },
+      "DemoApprovalRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "pattern": "^(approved|rejected)$",
+            "title": "Outcome",
+            "type": "string"
+          },
+          "rationale": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rationale",
+          "outcome"
+        ],
+        "title": "DemoApprovalRequest",
+        "type": "object"
+      },
+      "DemoCatalog": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/DemoEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "mode": {
+            "default": "mock",
+            "title": "Mode",
+            "type": "string"
+          },
+          "persistence": {
+            "default": "\u5185\u5b58 SQLite\uff1b\u91cd\u542f\u6062\u590d\u6f14\u793a\u6570\u636e",
+            "title": "Persistence",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "title": "DemoCatalog",
+        "type": "object"
+      },
+      "DemoEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "inputs": {
+            "$ref": "#/components/schemas/CreateReviewCommand"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "review": {
+            "$ref": "#/components/schemas/ReviewSession"
+          }
+        },
+        "required": [
+          "label",
+          "review",
+          "inputs"
+        ],
+        "title": "DemoEntry",
+        "type": "object"
+      },
       "DiffState": {
         "enum": [
           "succeeded",
@@ -2881,6 +2952,79 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/lab/catalog": {
+      "get": {
+        "operationId": "get_catalog_api_lab_catalog_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoCatalog"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Catalog",
+        "tags": [
+          "version-review-demo"
+        ]
+      }
+    },
+    "/api/lab/reviews/{review_id}/mock-approval": {
+      "post": {
+        "operationId": "mock_approval_api_lab_reviews__review_id__mock_approval_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "title": "Review Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoApprovalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalObservation"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mock Approval",
+        "tags": [
+          "version-review-demo"
+        ]
+      }
+    },
     "/api/version-collaboration/locks/acquire": {
       "post": {
         "operationId": "acquire_lock_api_version_collaboration_locks_acquire_post",

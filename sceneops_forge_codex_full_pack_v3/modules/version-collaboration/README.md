@@ -40,7 +40,13 @@ review.rollback.execute
 review.release.link
 ```
 
-按钮、对话和菜单使用同一组 command definitions。前端只消费 composition root 提供的 `VersionCollaborationApi`；没有模块私有 `fetch` 客户端。
+Shell 按钮、对话和菜单使用同一组 command definitions，消费 composition root 提供的 `VersionCollaborationApi`。独立 lab 的评论与决策复用这些 definitions；lab transport 的操作签名由 Python OpenAPI 生成，不在组件内直接请求网络。
+
+### 独立版本评审工作台
+
+公开入口 `VersionReviewWorkbench`（前端）与 `create_demo_app`（后端）组合为 `apps/labs/version-review`。支持两个演示项目、四层差异、对象锚定评论、决策、MOCK 审批和追加式历史。外部输入全部 MOCK，本地计算和内存 SQLite 实际执行；重启恢复 fixture，未连接真实 Git、锁或回滚。
+
+启动与本轮精确验证记录见 [工作台 README](../../apps/labs/version-review/README.md)。本轮没有运行完整模块测试，也没有接入 AI；以后若需要 AI，应按用户要求使用 codebuddycli 并提供模型选择，不走 bridge/cbridge。
 
 ### Events
 

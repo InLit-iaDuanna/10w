@@ -12,6 +12,7 @@ export const moduleContribution: ModuleContribution = {
 };
 
 export { reviewKeys } from "./hooks/queryKeys.ts";
+export { VersionReviewWorkbench } from "./lab/VersionReviewWorkbench.tsx";
 export {
   defaultReviewEditorState,
   restoreReviewEditorState,

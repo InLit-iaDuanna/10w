@@ -45,6 +45,12 @@ export type DecisionRecord = { readonly "decision_id": string; readonly "review_
 
 export type DecisionRequest = { readonly "outcome": DecisionOutcome; readonly "rationale": string; readonly "evidence_ids"?: ReadonlyArray<string>; };
 
+export type DemoApprovalRequest = { readonly "rationale": string; readonly "outcome": string; };
+
+export type DemoCatalog = { readonly "mode"?: string; readonly "persistence"?: string; readonly "entries": ReadonlyArray<DemoEntry>; };
+
+export type DemoEntry = { readonly "label": string; readonly "review": ReviewSession; readonly "inputs": CreateReviewCommand; };
+
 export type DiffState = "succeeded" | "empty" | "unavailable" | "incompatible" | "failed";
 
 export type ExecuteRollbackRequest = { readonly "proposal_id": string; readonly "approval_id": string; readonly "current_base": VersionReference; };
@@ -112,3 +118,30 @@ export type VersionReference = { readonly "provider"?: string; readonly "reposit
 export type VisualCapture = { readonly "artifact_id": string; readonly "camera_id": string; readonly "pose": CameraPose; readonly "width": number; readonly "height": number; readonly "channels"?: number; readonly "color_space": string; readonly "capture_recipe_version": string; readonly "renderer_version": string; readonly "pixels": ReadonlyArray<number>; readonly "mode": ExecutionMode; };
 
 export type VisualDiffLayer = { readonly "state": DiffState; readonly "failure_reason"?: string | null; readonly "mode": ExecutionMode; readonly "base_artifact_id"?: string | null; readonly "target_artifact_id"?: string | null; readonly "camera_id"?: string | null; readonly "changed_samples"?: number; readonly "sample_count"?: number; readonly "mean_absolute_error"?: number | null; readonly "maximum_absolute_error"?: number | null; };
+
+export interface ApiOperations {
+  "GET /api/version-collaboration/projects/{project_id}/git": { params: { project_id: string; }; body: undefined; response: GitRepositoryState };
+  "POST /api/version-collaboration/reviews": { params: {  }; body: CreateReviewCommand; response: ReviewSession };
+  "GET /api/version-collaboration/reviews/{review_id}": { params: { review_id: string; }; body: undefined; response: ReviewSession };
+  "GET /api/version-collaboration/reviews/{review_id}/revisions/{review_revision_id}": { params: { review_id: string; review_revision_id: string; }; body: undefined; response: ReviewSession };
+  "GET /api/version-collaboration/reviews/{review_id}/summary": { params: { review_id: string; }; body: undefined; response: ReviewConversationSummary };
+  "GET /api/version-collaboration/reviews/{review_id}/revisions/{review_revision_id}/summary": { params: { review_id: string; review_revision_id: string; }; body: undefined; response: ReviewConversationSummary };
+  "GET /api/version-collaboration/reviews/{review_id}/activity": { params: { review_id: string; }; body: undefined; response: ReadonlyArray<ActivityRecord> };
+  "GET /api/version-collaboration/reviews/{review_id}/comments": { params: { review_id: string; }; body: undefined; response: ReadonlyArray<ReviewComment> };
+  "POST /api/version-collaboration/reviews/{review_id}/comments": { params: { review_id: string; }; body: AddCommentRequest; response: ReviewComment };
+  "POST /api/version-collaboration/reviews/{review_id}/assignments": { params: { review_id: string; }; body: AssignmentRequest; response: AssignmentRecord };
+  "GET /api/version-collaboration/reviews/{review_id}/assignments": { params: { review_id: string; }; body: undefined; response: ReadonlyArray<AssignmentRecord> };
+  "POST /api/version-collaboration/reviews/{review_id}/decisions": { params: { review_id: string; }; body: DecisionRequest; response: DecisionRecord };
+  "GET /api/version-collaboration/reviews/{review_id}/decisions": { params: { review_id: string; }; body: undefined; response: ReadonlyArray<DecisionRecord> };
+  "POST /api/version-collaboration/reviews/{review_id}/approvals": { params: { review_id: string; }; body: ObserveApprovalRequest; response: ApprovalObservation };
+  "GET /api/version-collaboration/reviews/{review_id}/approvals": { params: { review_id: string; }; body: undefined; response: ReadonlyArray<ApprovalObservation> };
+  "GET /api/version-collaboration/reviews/{review_id}/release-links": { params: { review_id: string; }; body: undefined; response: ReadonlyArray<ReleaseEvidenceLink> };
+  "GET /api/version-collaboration/projects/{project_id}/locks": { params: { project_id: string; }; body: undefined; response: ReadonlyArray<AssetLockRecord> };
+  "POST /api/version-collaboration/locks/acquire": { params: {  }; body: AcquireLockRequest; response: AssetLockRecord };
+  "POST /api/version-collaboration/locks/release": { params: {  }; body: ReleaseLockRequest; response: AssetLockRecord };
+  "POST /api/version-collaboration/rollbacks/propose": { params: {  }; body: ProposeRollbackRequest; response: RollbackProposal };
+  "POST /api/version-collaboration/rollbacks/execute": { params: {  }; body: ExecuteRollbackRequest; response: RollbackExecution };
+  "POST /api/version-collaboration/release-links": { params: {  }; body: ReleaseLinkRequest; response: ReleaseEvidenceLink };
+  "GET /api/lab/catalog": { params: {  }; body: undefined; response: DemoCatalog };
+  "POST /api/lab/reviews/{review_id}/mock-approval": { params: { review_id: string; }; body: DemoApprovalRequest; response: ApprovalObservation };
+}

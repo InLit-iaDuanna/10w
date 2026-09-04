@@ -1,0 +1,14 @@
+{
+  "name": "@sceneops/lab-version-review",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "node dev.mjs" },
+  "dependencies": {
+    "@sceneops/version-collaboration": "workspace:*",
+    "@tanstack/react-query": "5.90.21",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.3.6"
+  },
+  "devDependencies": { "vite": "8.0.0", "typescript": "6.0.3", "@types/react": "19.2.14", "@types/react-dom": "19.2.3" }
+}
