@@ -1,0 +1,339 @@
+{
+  "$defs": {
+    "AssignmentKind": {
+      "enum": [
+        "human",
+        "agent"
+      ],
+      "title": "AssignmentKind",
+      "type": "string"
+    },
+    "BlockerCode": {
+      "enum": [
+        "missing_prerequisite",
+        "dependency_cycle",
+        "impossible_milestone_state",
+        "unmet_acceptance",
+        "approval_required",
+        "upstream_incomplete",
+        "feature_source_unavailable",
+        "operational_blocker"
+      ],
+      "title": "BlockerCode",
+      "type": "string"
+    },
+    "CriticalPath": {
+      "additionalProperties": false,
+      "properties": {
+        "estimate_basis": {
+          "items": {
+            "$ref": "#/$defs/EstimateKind"
+          },
+          "title": "Estimate Basis",
+          "type": "array"
+        },
+        "task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Task Ids",
+          "type": "array"
+        },
+        "total_hours": {
+          "minimum": 0,
+          "title": "Total Hours",
+          "type": "number"
+        }
+      },
+      "required": [
+        "task_ids",
+        "total_hours",
+        "estimate_basis"
+      ],
+      "title": "CriticalPath",
+      "type": "object"
+    },
+    "EstimateKind": {
+      "enum": [
+        "predicted",
+        "measured"
+      ],
+      "title": "EstimateKind",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "GraphEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_id": {
+          "title": "Dependency Id",
+          "type": "string"
+        },
+        "source_task_id": {
+          "title": "Source Task Id",
+          "type": "string"
+        },
+        "target_task_id": {
+          "title": "Target Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dependency_id",
+        "source_task_id",
+        "target_task_id"
+      ],
+      "title": "GraphEdge",
+      "type": "object"
+    },
+    "GraphNode": {
+      "additionalProperties": false,
+      "properties": {
+        "assignment_kind": {
+          "$ref": "#/$defs/AssignmentKind"
+        },
+        "assignment_label": {
+          "title": "Assignment Label",
+          "type": "string"
+        },
+        "blocked": {
+          "title": "Blocked",
+          "type": "boolean"
+        },
+        "estimate_hours": {
+          "title": "Estimate Hours",
+          "type": "number"
+        },
+        "estimate_kind": {
+          "$ref": "#/$defs/EstimateKind"
+        },
+        "status": {
+          "$ref": "#/$defs/TaskStatus"
+        },
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "workstream": {
+          "$ref": "#/$defs/Workstream"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "workstream",
+        "status",
+        "assignment_kind",
+        "assignment_label",
+        "estimate_kind",
+        "estimate_hours",
+        "blocked"
+      ],
+      "title": "GraphNode",
+      "type": "object"
+    },
+    "MilestoneReadiness": {
+      "additionalProperties": false,
+      "properties": {
+        "blocker_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Blocker Ids",
+          "type": "array"
+        },
+        "incomplete_task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Incomplete Task Ids",
+          "type": "array"
+        },
+        "milestone_id": {
+          "title": "Milestone Id",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/MilestoneState"
+        }
+      },
+      "required": [
+        "milestone_id",
+        "state",
+        "incomplete_task_ids",
+        "blocker_ids"
+      ],
+      "title": "MilestoneReadiness",
+      "type": "object"
+    },
+    "MilestoneState": {
+      "enum": [
+        "planned",
+        "ready",
+        "completed",
+        "blocked"
+      ],
+      "title": "MilestoneState",
+      "type": "string"
+    },
+    "TaskBlocker": {
+      "additionalProperties": false,
+      "properties": {
+        "blocker_id": {
+          "minLength": 1,
+          "title": "Blocker Id",
+          "type": "string"
+        },
+        "code": {
+          "$ref": "#/$defs/BlockerCode"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "milestone_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Milestone Id"
+        },
+        "resolution_ref_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolution Ref Id"
+        },
+        "resolved": {
+          "default": false,
+          "title": "Resolved",
+          "type": "boolean"
+        },
+        "task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Task Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocker_id",
+        "code",
+        "message",
+        "task_ids"
+      ],
+      "title": "TaskBlocker",
+      "type": "object"
+    },
+    "TaskStatus": {
+      "enum": [
+        "draft",
+        "ready",
+        "in_progress",
+        "waiting_approval",
+        "blocked",
+        "completed",
+        "cancelled"
+      ],
+      "title": "TaskStatus",
+      "type": "string"
+    },
+    "Workstream": {
+      "enum": [
+        "design",
+        "concept",
+        "asset",
+        "animation",
+        "world",
+        "logic",
+        "ui",
+        "audio",
+        "vfx",
+        "render",
+        "build",
+        "test"
+      ],
+      "title": "Workstream",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "blockers": {
+      "items": {
+        "$ref": "#/$defs/TaskBlocker"
+      },
+      "title": "Blockers",
+      "type": "array"
+    },
+    "critical_path": {
+      "$ref": "#/$defs/CriticalPath"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/GraphEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "milestone_readiness": {
+      "items": {
+        "$ref": "#/$defs/MilestoneReadiness"
+      },
+      "title": "Milestone Readiness",
+      "type": "array"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/GraphNode"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "plan_id": {
+      "title": "Plan Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "plan_id",
+    "mode",
+    "nodes",
+    "edges",
+    "critical_path",
+    "blockers",
+    "milestone_readiness"
+  ],
+  "title": "ProductionGraphView",
+  "type": "object"
+}

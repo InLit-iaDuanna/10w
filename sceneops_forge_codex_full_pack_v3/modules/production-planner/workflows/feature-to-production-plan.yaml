@@ -1,0 +1,34 @@
+schema_version: 1
+id: feature-to-production-plan
+version: 1
+title: Feature Spec to Production Plan
+execution: planned
+integration_state: blocked
+blocked_reason: core command and approval runtimes are not present
+mutates_production_tools: false
+steps:
+  - id: read_feature_projection
+    type: public_contract_read
+    contract: production-planner.feature-spec-projection@1
+  - id: draft_plan
+    type: command
+    command: production.plan.create
+    output_state: draft_unconfirmed
+  - id: validate_graph
+    type: policy_gate
+    gate: production.task.acceptance
+  - id: approve_plan
+    type: approval_pause
+    gate: production.plan.approval
+outputs:
+  - production_plan
+truthfulness:
+  supported_modes:
+    - mock
+  live: blocked
+  cached: blocked
+  planned: downstream production tasks are described but not executed
+  blocked_when:
+    - feature_spec_source_unavailable
+    - trusted_live_context_unavailable
+    - shared_runtime_unavailable

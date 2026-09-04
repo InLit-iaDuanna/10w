@@ -1,0 +1,19 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": {
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "plan_id": {
+      "title": "Plan Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "plan_id",
+    "approval_id"
+  ],
+  "title": "ProductionPlanApprovedPayload",
+  "type": "object"
+}

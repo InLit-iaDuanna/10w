@@ -1,0 +1,1563 @@
+{
+  "created": true,
+  "event_payloads": [
+    {
+      "event_type": "production.plan.drafted",
+      "event_version": 1,
+      "payload": {
+        "confirmed": false,
+        "feature_id": "feature:key-and-door",
+        "feature_revision": 1,
+        "plan_id": "plan:feature:key-and-door:r1",
+        "task_count": 12
+      }
+    }
+  ],
+  "graph": {
+    "blockers": [],
+    "critical_path": {
+      "estimate_basis": [
+        "predicted",
+        "predicted",
+        "predicted",
+        "predicted",
+        "predicted",
+        "predicted",
+        "predicted",
+        "predicted",
+        "predicted"
+      ],
+      "task_ids": [
+        "task:feature:key-and-door:design",
+        "task:feature:key-and-door:concept",
+        "task:feature:key-and-door:asset",
+        "task:feature:key-and-door:world",
+        "task:feature:key-and-door:logic",
+        "task:feature:key-and-door:vfx",
+        "task:feature:key-and-door:render",
+        "task:feature:key-and-door:build",
+        "task:feature:key-and-door:test"
+      ],
+      "total_hours": 60.0
+    },
+    "edges": [
+      {
+        "dependency_id": "dependency:feature:key-and-door:design:concept",
+        "source_task_id": "task:feature:key-and-door:design",
+        "target_task_id": "task:feature:key-and-door:concept"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:concept:asset",
+        "source_task_id": "task:feature:key-and-door:concept",
+        "target_task_id": "task:feature:key-and-door:asset"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:asset:animation",
+        "source_task_id": "task:feature:key-and-door:asset",
+        "target_task_id": "task:feature:key-and-door:animation"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:design:world",
+        "source_task_id": "task:feature:key-and-door:design",
+        "target_task_id": "task:feature:key-and-door:world"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:asset:world",
+        "source_task_id": "task:feature:key-and-door:asset",
+        "target_task_id": "task:feature:key-and-door:world"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:design:logic",
+        "source_task_id": "task:feature:key-and-door:design",
+        "target_task_id": "task:feature:key-and-door:logic"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:world:logic",
+        "source_task_id": "task:feature:key-and-door:world",
+        "target_task_id": "task:feature:key-and-door:logic"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:ui",
+        "source_task_id": "task:feature:key-and-door:logic",
+        "target_task_id": "task:feature:key-and-door:ui"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:audio",
+        "source_task_id": "task:feature:key-and-door:logic",
+        "target_task_id": "task:feature:key-and-door:audio"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:concept:vfx",
+        "source_task_id": "task:feature:key-and-door:concept",
+        "target_task_id": "task:feature:key-and-door:vfx"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:vfx",
+        "source_task_id": "task:feature:key-and-door:logic",
+        "target_task_id": "task:feature:key-and-door:vfx"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:world:render",
+        "source_task_id": "task:feature:key-and-door:world",
+        "target_task_id": "task:feature:key-and-door:render"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:vfx:render",
+        "source_task_id": "task:feature:key-and-door:vfx",
+        "target_task_id": "task:feature:key-and-door:render"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:animation:build",
+        "source_task_id": "task:feature:key-and-door:animation",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:world:build",
+        "source_task_id": "task:feature:key-and-door:world",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:build",
+        "source_task_id": "task:feature:key-and-door:logic",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:ui:build",
+        "source_task_id": "task:feature:key-and-door:ui",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:audio:build",
+        "source_task_id": "task:feature:key-and-door:audio",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:vfx:build",
+        "source_task_id": "task:feature:key-and-door:vfx",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:render:build",
+        "source_task_id": "task:feature:key-and-door:render",
+        "target_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:build:test",
+        "source_task_id": "task:feature:key-and-door:build",
+        "target_task_id": "task:feature:key-and-door:test"
+      }
+    ],
+    "milestone_readiness": [
+      {
+        "blocker_ids": [],
+        "incomplete_task_ids": [
+          "task:feature:key-and-door:design"
+        ],
+        "milestone_id": "milestone:feature:key-and-door:design-ready",
+        "state": "planned"
+      },
+      {
+        "blocker_ids": [],
+        "incomplete_task_ids": [
+          "task:feature:key-and-door:concept",
+          "task:feature:key-and-door:asset",
+          "task:feature:key-and-door:animation"
+        ],
+        "milestone_id": "milestone:feature:key-and-door:content-ready",
+        "state": "planned"
+      },
+      {
+        "blocker_ids": [],
+        "incomplete_task_ids": [
+          "task:feature:key-and-door:world",
+          "task:feature:key-and-door:logic",
+          "task:feature:key-and-door:ui",
+          "task:feature:key-and-door:audio",
+          "task:feature:key-and-door:vfx"
+        ],
+        "milestone_id": "milestone:feature:key-and-door:implementation-ready",
+        "state": "planned"
+      },
+      {
+        "blocker_ids": [],
+        "incomplete_task_ids": [
+          "task:feature:key-and-door:render"
+        ],
+        "milestone_id": "milestone:feature:key-and-door:visual-review-ready",
+        "state": "planned"
+      },
+      {
+        "blocker_ids": [],
+        "incomplete_task_ids": [
+          "task:feature:key-and-door:build"
+        ],
+        "milestone_id": "milestone:feature:key-and-door:playable-build-ready",
+        "state": "planned"
+      },
+      {
+        "blocker_ids": [],
+        "incomplete_task_ids": [
+          "task:feature:key-and-door:test"
+        ],
+        "milestone_id": "milestone:feature:key-and-door:acceptance-ready",
+        "state": "planned"
+      }
+    ],
+    "mode": "mock",
+    "nodes": [
+      {
+        "assignment_kind": "human",
+        "assignment_label": "游戏设计负责人",
+        "blocked": false,
+        "estimate_hours": 4.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:design",
+        "title": "确认功能设计",
+        "workstream": "design"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "概念代理",
+        "blocked": false,
+        "estimate_hours": 6.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:concept",
+        "title": "制作概念方向",
+        "workstream": "concept"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "资产代理",
+        "blocked": false,
+        "estimate_hours": 12.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:asset",
+        "title": "准备游戏资产",
+        "workstream": "asset"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "动画代理",
+        "blocked": false,
+        "estimate_hours": 8.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:animation",
+        "title": "准备动画",
+        "workstream": "animation"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "世界代理",
+        "blocked": false,
+        "estimate_hours": 8.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:world",
+        "title": "布置世界内容",
+        "workstream": "world"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "逻辑代理",
+        "blocked": false,
+        "estimate_hours": 12.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:logic",
+        "title": "实现玩法逻辑",
+        "workstream": "logic"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "界面代理",
+        "blocked": false,
+        "estimate_hours": 5.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:ui",
+        "title": "实现界面反馈",
+        "workstream": "ui"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "音频代理",
+        "blocked": false,
+        "estimate_hours": 4.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:audio",
+        "title": "实现音频反馈",
+        "workstream": "audio"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "特效代理",
+        "blocked": false,
+        "estimate_hours": 5.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:vfx",
+        "title": "实现视觉反馈",
+        "workstream": "vfx"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "渲染代理",
+        "blocked": false,
+        "estimate_hours": 4.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:render",
+        "title": "完成视觉评审",
+        "workstream": "render"
+      },
+      {
+        "assignment_kind": "agent",
+        "assignment_label": "构建代理",
+        "blocked": false,
+        "estimate_hours": 3.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:build",
+        "title": "生成可玩构建",
+        "workstream": "build"
+      },
+      {
+        "assignment_kind": "human",
+        "assignment_label": "测试负责人",
+        "blocked": false,
+        "estimate_hours": 6.0,
+        "estimate_kind": "predicted",
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:test",
+        "title": "验证功能验收",
+        "workstream": "test"
+      }
+    ],
+    "plan_id": "plan:feature:key-and-door:r1"
+  },
+  "plan": {
+    "approval_ref_id": null,
+    "blockers": [],
+    "change_set_id": null,
+    "dependencies": [
+      {
+        "dependency_id": "dependency:feature:key-and-door:design:concept",
+        "predecessor_task_id": "task:feature:key-and-door:design",
+        "required_output_type": "feature-design",
+        "successor_task_id": "task:feature:key-and-door:concept"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:concept:asset",
+        "predecessor_task_id": "task:feature:key-and-door:concept",
+        "required_output_type": "concept-brief",
+        "successor_task_id": "task:feature:key-and-door:asset"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:asset:animation",
+        "predecessor_task_id": "task:feature:key-and-door:asset",
+        "required_output_type": "published-asset",
+        "successor_task_id": "task:feature:key-and-door:animation"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:design:world",
+        "predecessor_task_id": "task:feature:key-and-door:design",
+        "required_output_type": "feature-design",
+        "successor_task_id": "task:feature:key-and-door:world"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:asset:world",
+        "predecessor_task_id": "task:feature:key-and-door:asset",
+        "required_output_type": "published-asset",
+        "successor_task_id": "task:feature:key-and-door:world"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:design:logic",
+        "predecessor_task_id": "task:feature:key-and-door:design",
+        "required_output_type": "feature-design",
+        "successor_task_id": "task:feature:key-and-door:logic"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:world:logic",
+        "predecessor_task_id": "task:feature:key-and-door:world",
+        "required_output_type": "scene-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:logic"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:ui",
+        "predecessor_task_id": "task:feature:key-and-door:logic",
+        "required_output_type": "logic-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:ui"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:audio",
+        "predecessor_task_id": "task:feature:key-and-door:logic",
+        "required_output_type": "logic-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:audio"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:concept:vfx",
+        "predecessor_task_id": "task:feature:key-and-door:concept",
+        "required_output_type": "concept-brief",
+        "successor_task_id": "task:feature:key-and-door:vfx"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:vfx",
+        "predecessor_task_id": "task:feature:key-and-door:logic",
+        "required_output_type": "logic-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:vfx"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:world:render",
+        "predecessor_task_id": "task:feature:key-and-door:world",
+        "required_output_type": "scene-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:render"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:vfx:render",
+        "predecessor_task_id": "task:feature:key-and-door:vfx",
+        "required_output_type": "vfx-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:render"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:animation:build",
+        "predecessor_task_id": "task:feature:key-and-door:animation",
+        "required_output_type": "animation-set",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:world:build",
+        "predecessor_task_id": "task:feature:key-and-door:world",
+        "required_output_type": "scene-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:logic:build",
+        "predecessor_task_id": "task:feature:key-and-door:logic",
+        "required_output_type": "logic-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:ui:build",
+        "predecessor_task_id": "task:feature:key-and-door:ui",
+        "required_output_type": "ui-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:audio:build",
+        "predecessor_task_id": "task:feature:key-and-door:audio",
+        "required_output_type": "audio-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:vfx:build",
+        "predecessor_task_id": "task:feature:key-and-door:vfx",
+        "required_output_type": "vfx-change-proposal",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:render:build",
+        "predecessor_task_id": "task:feature:key-and-door:render",
+        "required_output_type": "render-review",
+        "successor_task_id": "task:feature:key-and-door:build"
+      },
+      {
+        "dependency_id": "dependency:feature:key-and-door:build:test",
+        "predecessor_task_id": "task:feature:key-and-door:build",
+        "required_output_type": "playable-build",
+        "successor_task_id": "task:feature:key-and-door:test"
+      }
+    ],
+    "execution_mode": "mock",
+    "feature_id": "feature:key-and-door",
+    "feature_revision": 1,
+    "feature_source_mode": "mock",
+    "feature_title": "钥匙与家门分支",
+    "generated_at": "2026-09-04T01:02:03Z",
+    "milestones": [
+      {
+        "milestone_id": "milestone:feature:key-and-door:design-ready",
+        "required_task_ids": [
+          "task:feature:key-and-door:design"
+        ],
+        "state": "planned",
+        "title": "设计已确认"
+      },
+      {
+        "milestone_id": "milestone:feature:key-and-door:content-ready",
+        "required_task_ids": [
+          "task:feature:key-and-door:concept",
+          "task:feature:key-and-door:asset",
+          "task:feature:key-and-door:animation"
+        ],
+        "state": "planned",
+        "title": "内容已准备"
+      },
+      {
+        "milestone_id": "milestone:feature:key-and-door:implementation-ready",
+        "required_task_ids": [
+          "task:feature:key-and-door:world",
+          "task:feature:key-and-door:logic",
+          "task:feature:key-and-door:ui",
+          "task:feature:key-and-door:audio",
+          "task:feature:key-and-door:vfx"
+        ],
+        "state": "planned",
+        "title": "功能已实现"
+      },
+      {
+        "milestone_id": "milestone:feature:key-and-door:visual-review-ready",
+        "required_task_ids": [
+          "task:feature:key-and-door:render"
+        ],
+        "state": "planned",
+        "title": "视觉评审已完成"
+      },
+      {
+        "milestone_id": "milestone:feature:key-and-door:playable-build-ready",
+        "required_task_ids": [
+          "task:feature:key-and-door:build"
+        ],
+        "state": "planned",
+        "title": "可玩构建已生成"
+      },
+      {
+        "milestone_id": "milestone:feature:key-and-door:acceptance-ready",
+        "required_task_ids": [
+          "task:feature:key-and-door:test"
+        ],
+        "state": "planned",
+        "title": "功能验收已完成"
+      }
+    ],
+    "plan_id": "plan:feature:key-and-door:r1",
+    "plan_version": 1,
+    "project_id": "project:remember-home",
+    "risks": [
+      {
+        "description": "功能范围变化可能影响既有依赖与里程碑。",
+        "impact": "medium",
+        "likelihood": "medium",
+        "mitigation": "每次 Feature Spec 修订后运行计划影响分析。",
+        "risk_id": "risk:feature:key-and-door:scope",
+        "state": "open"
+      }
+    ],
+    "source_contract_version": "design-room.feature-spec@1",
+    "status": "draft_unconfirmed",
+    "tasks": [
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "role:game-designer",
+          "assignment_id": "assignment:feature:key-and-door:design",
+          "confirmed": false,
+          "display_name": "游戏设计负责人",
+          "kind": "human"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "细化功能边界、交互规则和验收口径。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:design:predicted",
+            "hours": 4.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:design:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "feature-design",
+            "output_id": "output:feature:key-and-door:design"
+          }
+        ],
+        "recommended_editor_id": "design.feature",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:design",
+        "title": "确认功能设计",
+        "workstream": "design"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:concept",
+          "assignment_id": "assignment:feature:key-and-door:concept",
+          "confirmed": false,
+          "display_name": "概念代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "为关键视觉对象与体验建立可评审的概念方向。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:concept:predicted",
+            "hours": 6.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:concept:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:design:concept",
+            "required_artifact_type": "feature-design",
+            "source_id": "task:feature:key-and-door:design",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "concept-brief",
+            "output_id": "output:feature:key-and-door:concept"
+          }
+        ],
+        "recommended_editor_id": "concept.review",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:concept",
+        "title": "制作概念方向",
+        "workstream": "concept"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:asset",
+          "assignment_id": "assignment:feature:key-and-door:asset",
+          "confirmed": false,
+          "display_name": "资产代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "创建或选用满足规格与来源要求的游戏资产。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:asset:predicted",
+            "hours": 12.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:asset:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:concept:asset",
+            "required_artifact_type": "concept-brief",
+            "source_id": "task:feature:key-and-door:concept",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "published-asset",
+            "output_id": "output:feature:key-and-door:asset"
+          }
+        ],
+        "recommended_editor_id": "asset.factory",
+        "risks": [
+          {
+            "description": "资产规格或来源未通过评审。",
+            "impact": "high",
+            "likelihood": "medium",
+            "mitigation": "在发布前执行资产 QA 与来源检查。",
+            "risk_id": "risk:feature:key-and-door:asset",
+            "state": "open"
+          }
+        ],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:asset",
+        "title": "准备游戏资产",
+        "workstream": "asset"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:animation",
+          "assignment_id": "assignment:feature:key-and-door:animation",
+          "confirmed": false,
+          "display_name": "动画代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "实现功能所需的角色或物件动画与状态。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:animation:predicted",
+            "hours": 8.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:animation:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:asset:animation",
+            "required_artifact_type": "published-asset",
+            "source_id": "task:feature:key-and-door:asset",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "animation-set",
+            "output_id": "output:feature:key-and-door:animation"
+          }
+        ],
+        "recommended_editor_id": "animation.timeline",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:animation",
+        "title": "准备动画",
+        "workstream": "animation"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:world",
+          "assignment_id": "assignment:feature:key-and-door:world",
+          "confirmed": false,
+          "display_name": "世界代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "在目标场景中放置对象并配置空间关系。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:world:predicted",
+            "hours": 8.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:world:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:design:world",
+            "required_artifact_type": "feature-design",
+            "source_id": "task:feature:key-and-door:design",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:asset:world",
+            "required_artifact_type": "published-asset",
+            "source_id": "task:feature:key-and-door:asset",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "scene-change-proposal",
+            "output_id": "output:feature:key-and-door:world"
+          }
+        ],
+        "recommended_editor_id": "scene.viewport.3d",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:world",
+        "title": "布置世界内容",
+        "workstream": "world"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:logic",
+          "assignment_id": "assignment:feature:key-and-door:logic",
+          "confirmed": false,
+          "display_name": "逻辑代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "实现状态、交互、库存与任务逻辑。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:logic:predicted",
+            "hours": 12.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:logic:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:design:logic",
+            "required_artifact_type": "feature-design",
+            "source_id": "task:feature:key-and-door:design",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:world:logic",
+            "required_artifact_type": "scene-change-proposal",
+            "source_id": "task:feature:key-and-door:world",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "logic-change-proposal",
+            "output_id": "output:feature:key-and-door:logic"
+          }
+        ],
+        "recommended_editor_id": "logic.gameplay-state",
+        "risks": [
+          {
+            "description": "交互状态与设计验收口径不一致。",
+            "impact": "high",
+            "likelihood": "medium",
+            "mitigation": "用状态图与自动化测试逐条验证验收条件。",
+            "risk_id": "risk:feature:key-and-door:logic",
+            "state": "open"
+          }
+        ],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:logic",
+        "title": "实现玩法逻辑",
+        "workstream": "logic"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:ui",
+          "assignment_id": "assignment:feature:key-and-door:ui",
+          "confirmed": false,
+          "display_name": "界面代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "实现玩家可理解的界面提示与状态反馈。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:ui:predicted",
+            "hours": 5.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:ui:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:logic:ui",
+            "required_artifact_type": "logic-change-proposal",
+            "source_id": "task:feature:key-and-door:logic",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "ui-change-proposal",
+            "output_id": "output:feature:key-and-door:ui"
+          }
+        ],
+        "recommended_editor_id": "ui.flow",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:ui",
+        "title": "实现界面反馈",
+        "workstream": "ui"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:audio",
+          "assignment_id": "assignment:feature:key-and-door:audio",
+          "confirmed": false,
+          "display_name": "音频代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "准备并连接功能所需的音频提示。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:audio:predicted",
+            "hours": 4.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:audio:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:logic:audio",
+            "required_artifact_type": "logic-change-proposal",
+            "source_id": "task:feature:key-and-door:logic",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "audio-change-proposal",
+            "output_id": "output:feature:key-and-door:audio"
+          }
+        ],
+        "recommended_editor_id": "audio.library",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:audio",
+        "title": "实现音频反馈",
+        "workstream": "audio"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:vfx",
+          "assignment_id": "assignment:feature:key-and-door:vfx",
+          "confirmed": false,
+          "display_name": "特效代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "准备并连接功能所需的视觉特效。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:vfx:predicted",
+            "hours": 5.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:vfx:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:concept:vfx",
+            "required_artifact_type": "concept-brief",
+            "source_id": "task:feature:key-and-door:concept",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:logic:vfx",
+            "required_artifact_type": "logic-change-proposal",
+            "source_id": "task:feature:key-and-door:logic",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "vfx-change-proposal",
+            "output_id": "output:feature:key-and-door:vfx"
+          }
+        ],
+        "recommended_editor_id": "vfx.preview",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:vfx",
+        "title": "实现视觉反馈",
+        "workstream": "vfx"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:key-visible-and-collectible",
+            "expected_evidence": [
+              "fixed-camera-capture",
+              "pickup-state-log"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:playable-build",
+            "expected_evidence": [
+              "build-artifact",
+              "acceptance-report"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:render",
+          "assignment_id": "assignment:feature:key-and-door:render",
+          "confirmed": false,
+          "display_name": "渲染代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "按固定视角输出视觉证据并完成评审。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:render:predicted",
+            "hours": 4.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:render:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:world:render",
+            "required_artifact_type": "scene-change-proposal",
+            "source_id": "task:feature:key-and-door:world",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:vfx:render",
+            "required_artifact_type": "vfx-change-proposal",
+            "source_id": "task:feature:key-and-door:vfx",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "render-review",
+            "output_id": "output:feature:key-and-door:render"
+          }
+        ],
+        "recommended_editor_id": "render.viewer",
+        "risks": [],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:render",
+        "title": "完成视觉评审",
+        "workstream": "render"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:playable-build",
+            "expected_evidence": [
+              "build-artifact",
+              "acceptance-report"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "agent:build",
+          "assignment_id": "assignment:feature:key-and-door:build",
+          "confirmed": false,
+          "display_name": "构建代理",
+          "kind": "agent"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "在审批后生成包含该功能的可玩构建。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:build:predicted",
+            "hours": 3.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:build:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:animation:build",
+            "required_artifact_type": "animation-set",
+            "source_id": "task:feature:key-and-door:animation",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:world:build",
+            "required_artifact_type": "scene-change-proposal",
+            "source_id": "task:feature:key-and-door:world",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:logic:build",
+            "required_artifact_type": "logic-change-proposal",
+            "source_id": "task:feature:key-and-door:logic",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:ui:build",
+            "required_artifact_type": "ui-change-proposal",
+            "source_id": "task:feature:key-and-door:ui",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:audio:build",
+            "required_artifact_type": "audio-change-proposal",
+            "source_id": "task:feature:key-and-door:audio",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:vfx:build",
+            "required_artifact_type": "vfx-change-proposal",
+            "source_id": "task:feature:key-and-door:vfx",
+            "source_kind": "task_output"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:render:build",
+            "required_artifact_type": "render-review",
+            "source_id": "task:feature:key-and-door:render",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "playable-build",
+            "output_id": "output:feature:key-and-door:build"
+          }
+        ],
+        "recommended_editor_id": "build.matrix",
+        "risks": [
+          {
+            "description": "依赖内容未合入导致构建不可验证。",
+            "impact": "high",
+            "likelihood": "medium",
+            "mitigation": "仅在所有硬依赖完成后进入构建。",
+            "risk_id": "risk:feature:key-and-door:build",
+            "state": "open"
+          }
+        ],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:build",
+        "title": "生成可玩构建",
+        "workstream": "build"
+      },
+      {
+        "acceptance": [
+          {
+            "criterion_id": "acceptance:locked-without-key",
+            "expected_evidence": [
+              "interaction-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:opens-with-key",
+            "expected_evidence": [
+              "door-state-log",
+              "game-view-capture"
+            ]
+          },
+          {
+            "criterion_id": "acceptance:playable-build",
+            "expected_evidence": [
+              "build-artifact",
+              "acceptance-report"
+            ]
+          }
+        ],
+        "approval_ref_ids": [],
+        "approval_requirement": "human",
+        "assignment": {
+          "assignee_id": "role:qa-owner",
+          "assignment_id": "assignment:feature:key-and-door:test",
+          "confirmed": false,
+          "display_name": "测试负责人",
+          "kind": "human"
+        },
+        "blockers": [],
+        "comment_thread_id": null,
+        "comments": [],
+        "confirmed": false,
+        "deliverables": [],
+        "description": "执行验收测试并关联结构化证据。",
+        "estimates": [
+          {
+            "estimate_id": "estimate:feature:key-and-door:test:predicted",
+            "hours": 6.0,
+            "kind": "predicted",
+            "mode": "mock",
+            "originating_live_run_id": null,
+            "recorded_at": "2026-09-04T01:02:03Z",
+            "run_id": null,
+            "source": "sceneops-planner-template@1"
+          }
+        ],
+        "evidence": [],
+        "inputs": [
+          {
+            "input_id": "input:feature:key-and-door:test:feature",
+            "required_artifact_type": "feature-spec",
+            "source_id": "feature:key-and-door",
+            "source_kind": "feature_spec"
+          },
+          {
+            "input_id": "input:dependency:feature:key-and-door:build:test",
+            "required_artifact_type": "playable-build",
+            "source_id": "task:feature:key-and-door:build",
+            "source_kind": "task_output"
+          }
+        ],
+        "outputs": [
+          {
+            "artifact_id": null,
+            "artifact_type": "acceptance-report",
+            "output_id": "output:feature:key-and-door:test"
+          }
+        ],
+        "recommended_editor_id": "playtest.test-case",
+        "risks": [
+          {
+            "description": "证据不足导致功能无法验收。",
+            "impact": "high",
+            "likelihood": "medium",
+            "mitigation": "为每条验收标准绑定可追溯证据。",
+            "risk_id": "risk:feature:key-and-door:test",
+            "state": "open"
+          }
+        ],
+        "status": "draft",
+        "task_id": "task:feature:key-and-door:test",
+        "title": "验证功能验收",
+        "workstream": "test"
+      }
+    ]
+  }
+}

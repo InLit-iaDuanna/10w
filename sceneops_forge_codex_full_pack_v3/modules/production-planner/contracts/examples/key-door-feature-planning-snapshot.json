@@ -1,0 +1,37 @@
+{
+  "feature_ref": {
+    "project_id": "project:remember-home",
+    "feature_id": "feature:key-and-door",
+    "revision": 1
+  },
+  "source_contract_version": "design-room.feature-spec@1",
+  "title": "钥匙与家门分支",
+  "summary": "玩家找到钥匙，将其拾取到库存，并用它打开回家的入口。",
+  "acceptance_criteria": [
+    {
+      "criterion_id": "acceptance:key-visible-and-collectible",
+      "statement": "钥匙在预期路径上可见、可识别并可拾取。",
+      "workstreams": ["design", "concept", "asset", "animation", "world", "logic", "ui", "audio", "vfx", "render"],
+      "required_evidence": ["fixed-camera-capture", "pickup-state-log"]
+    },
+    {
+      "criterion_id": "acceptance:locked-without-key",
+      "statement": "未持有钥匙时，家门保持锁定并给出清晰反馈。",
+      "workstreams": ["design", "world", "logic", "ui", "audio", "vfx", "build", "test"],
+      "required_evidence": ["interaction-state-log", "game-view-capture"]
+    },
+    {
+      "criterion_id": "acceptance:opens-with-key",
+      "statement": "持有钥匙时，交互会消耗或验证钥匙并打开家门。",
+      "workstreams": ["design", "animation", "world", "logic", "ui", "audio", "vfx", "build", "test"],
+      "required_evidence": ["door-state-log", "game-view-capture"]
+    },
+    {
+      "criterion_id": "acceptance:playable-build",
+      "statement": "该分支包含在可玩构建中，并通过逐条验收测试。",
+      "workstreams": ["render", "build", "test"],
+      "required_evidence": ["build-artifact", "acceptance-report"]
+    }
+  ],
+  "source_mode": "mock"
+}
