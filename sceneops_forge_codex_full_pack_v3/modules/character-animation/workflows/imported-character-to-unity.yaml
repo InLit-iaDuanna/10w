@@ -1,0 +1,45 @@
+schema_version: 1
+id: imported-character-to-unity
+version: 1.0.0
+title: 导入角色到 Unity
+inputs:
+  - character_bundle
+nodes:
+  - id: inspect
+    job: character.inspect
+    state_on_missing_input: failed
+  - id: review_versions
+    type: approval
+    requires:
+      - character:review
+      - animation:review
+    state: waiting_approval
+  - id: capture_preview
+    job: animation.preview.capture
+    optional_integration: character-preview
+    state_when_offline: blocked
+  - id: propose_mapping
+    command: character.unity-mapping.propose
+    state: planned
+  - id: approve_mapping
+    type: approval
+    requires:
+      - unity:write
+    state: waiting_approval
+  - id: apply_mapping
+    job: character.unity.map
+    optional_integration: unity
+    state_when_offline: blocked
+edges:
+  - [inspect, review_versions]
+  - [review_versions, capture_preview]
+  - [capture_preview, propose_mapping]
+  - [propose_mapping, approve_mapping]
+  - [approve_mapping, apply_mapping]
+rollback:
+  from: apply_mapping
+  uses: changeset.rollback_plan
+truthfulness:
+  default_external_mode: blocked
+  fixture_mode: mock
+  proposal_mode: planned

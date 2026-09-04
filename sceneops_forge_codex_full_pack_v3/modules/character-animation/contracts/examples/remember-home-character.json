@@ -1,0 +1,713 @@
+{
+  "animator_states": [
+    {
+      "animator_state_id": "anim_state_idle",
+      "character_id": "char_homekeeper",
+      "clip_version_id": "clip_idle_v1",
+      "name": "Idle",
+      "provenance": {
+        "adapter_version": "1.0.0",
+        "ai_model": null,
+        "ai_provider": null,
+        "approval_state": "approved",
+        "artifact_id": "anim_state_idle",
+        "artifact_type": "animator-state",
+        "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "created_at": "2026-09-04T00:00:00Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "negative_prompt": null,
+        "parameters": {},
+        "producing_module": "character-animation",
+        "prompt": null,
+        "recipe_version": "remember-home-character-v1",
+        "related_sceneops_ids": [
+          "clip_idle_v1"
+        ],
+        "seed": null,
+        "source_commit": "1d4f0f3",
+        "source_project_id": "prj_remember_home",
+        "source_version": "fixture-1",
+        "tool": "imported-fixture",
+        "workflow_reference": null
+      },
+      "speed": 1.0,
+      "transitions": [
+        {
+          "comparison": "greater",
+          "condition_parameter": "speed",
+          "duration_seconds": 0.15,
+          "target_state_id": "anim_state_walk",
+          "threshold": 0.1
+        }
+      ]
+    },
+    {
+      "animator_state_id": "anim_state_walk",
+      "character_id": "char_homekeeper",
+      "clip_version_id": "clip_walk_v1",
+      "name": "Walk",
+      "provenance": {
+        "adapter_version": "1.0.0",
+        "ai_model": null,
+        "ai_provider": null,
+        "approval_state": "approved",
+        "artifact_id": "anim_state_walk",
+        "artifact_type": "animator-state",
+        "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "created_at": "2026-09-04T00:00:00Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "negative_prompt": null,
+        "parameters": {},
+        "producing_module": "character-animation",
+        "prompt": null,
+        "recipe_version": "remember-home-character-v1",
+        "related_sceneops_ids": [
+          "clip_walk_v1"
+        ],
+        "seed": null,
+        "source_commit": "1d4f0f3",
+        "source_project_id": "prj_remember_home",
+        "source_version": "fixture-1",
+        "tool": "imported-fixture",
+        "workflow_reference": null
+      },
+      "speed": 1.0,
+      "transitions": [
+        {
+          "comparison": "less",
+          "condition_parameter": "speed",
+          "duration_seconds": 0.15,
+          "target_state_id": "anim_state_idle",
+          "threshold": 0.1
+        }
+      ]
+    }
+  ],
+  "character": {
+    "character_id": "char_homekeeper",
+    "coordinate_system": {
+      "forward_axis": "Z",
+      "handedness": "right",
+      "meters_per_unit": 1.0,
+      "space": "character_local",
+      "up_axis": "Y"
+    },
+    "display_name": "归家者",
+    "expected_bone_names": [
+      "Root",
+      "Pelvis",
+      "Spine",
+      "Head",
+      "Foot.L",
+      "Foot.R"
+    ],
+    "feature_links": [
+      {
+        "feature_spec_id": "feature_key_door_branch",
+        "task_ids": [
+          "task_player_traversal"
+        ]
+      }
+    ],
+    "provenance": {
+      "adapter_version": "1.0.0",
+      "ai_model": null,
+      "ai_provider": null,
+      "approval_state": "approved",
+      "artifact_id": "char_homekeeper",
+      "artifact_type": "character-spec",
+      "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-09-04T00:00:00Z",
+      "creator": "fixture_worker",
+      "execution_mode": "mock",
+      "negative_prompt": null,
+      "parameters": {},
+      "producing_module": "character-animation",
+      "prompt": null,
+      "recipe_version": "remember-home-character-v1",
+      "related_sceneops_ids": [
+        "asset_homekeeper_source"
+      ],
+      "seed": null,
+      "source_commit": "1d4f0f3",
+      "source_project_id": "prj_remember_home",
+      "source_version": "fixture-1",
+      "tool": "imported-fixture",
+      "workflow_reference": null
+    },
+    "source_asset_id": "asset_homekeeper_source",
+    "source_kind": "imported"
+  },
+  "clips": [
+    {
+      "approval": {
+        "comment": "用于确定性模块 fixture。",
+        "reviewed_at": "2026-09-04T00:00:00Z",
+        "reviewed_by": "usr_animation_lead",
+        "state": "approved"
+      },
+      "character_id": "char_homekeeper",
+      "clip_version_id": "clip_idle_v1",
+      "duration_seconds": 1.0,
+      "end_pose": {
+        "root_rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "root_translation_meters": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "event_markers": [
+        {
+          "marker_id": "marker_idle_step",
+          "name": "footstep",
+          "payload": {},
+          "time_seconds": 0.5
+        }
+      ],
+      "foot_samples": [
+        {
+          "foot": "left",
+          "planted": true,
+          "position_meters": [
+            -0.12,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.0
+        },
+        {
+          "foot": "left",
+          "planted": true,
+          "position_meters": [
+            -0.115,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.25
+        },
+        {
+          "foot": "right",
+          "planted": true,
+          "position_meters": [
+            0.12,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.5
+        },
+        {
+          "foot": "right",
+          "planted": true,
+          "position_meters": [
+            0.115,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.75
+        }
+      ],
+      "loop": true,
+      "name": "idle",
+      "previous_version_id": null,
+      "provenance": {
+        "adapter_version": "1.0.0",
+        "ai_model": null,
+        "ai_provider": null,
+        "approval_state": "approved",
+        "artifact_id": "clip_idle_v1",
+        "artifact_type": "animation-clip",
+        "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "created_at": "2026-09-04T00:00:00Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "negative_prompt": null,
+        "parameters": {},
+        "producing_module": "character-animation",
+        "prompt": null,
+        "recipe_version": "remember-home-character-v1",
+        "related_sceneops_ids": [
+          "char_homekeeper",
+          "rig_homekeeper_v1"
+        ],
+        "seed": null,
+        "source_commit": "1d4f0f3",
+        "source_project_id": "prj_remember_home",
+        "source_version": "fixture-1",
+        "tool": "imported-fixture",
+        "workflow_reference": null
+      },
+      "rig_version_id": "rig_homekeeper_v1",
+      "root_motion": "in_place",
+      "root_samples": [
+        {
+          "time_seconds": 0.0,
+          "translation_meters": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "time_seconds": 1.0,
+          "translation_meters": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "sample_rate_hz": 30.0,
+      "start_pose": {
+        "root_rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "root_translation_meters": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "version_number": 1
+    },
+    {
+      "approval": {
+        "comment": "用于确定性模块 fixture。",
+        "reviewed_at": "2026-09-04T00:00:00Z",
+        "reviewed_by": "usr_animation_lead",
+        "state": "approved"
+      },
+      "character_id": "char_homekeeper",
+      "clip_version_id": "clip_walk_v1",
+      "duration_seconds": 1.0,
+      "end_pose": {
+        "root_rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "root_translation_meters": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "event_markers": [
+        {
+          "marker_id": "marker_walk_step",
+          "name": "footstep",
+          "payload": {},
+          "time_seconds": 0.5
+        }
+      ],
+      "foot_samples": [
+        {
+          "foot": "left",
+          "planted": true,
+          "position_meters": [
+            -0.12,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.0
+        },
+        {
+          "foot": "left",
+          "planted": true,
+          "position_meters": [
+            -0.115,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.25
+        },
+        {
+          "foot": "right",
+          "planted": true,
+          "position_meters": [
+            0.12,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.5
+        },
+        {
+          "foot": "right",
+          "planted": true,
+          "position_meters": [
+            0.115,
+            0.0,
+            0.0
+          ],
+          "time_seconds": 0.75
+        }
+      ],
+      "loop": true,
+      "name": "walk",
+      "previous_version_id": null,
+      "provenance": {
+        "adapter_version": "1.0.0",
+        "ai_model": null,
+        "ai_provider": null,
+        "approval_state": "approved",
+        "artifact_id": "clip_walk_v1",
+        "artifact_type": "animation-clip",
+        "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "created_at": "2026-09-04T00:00:00Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "negative_prompt": null,
+        "parameters": {},
+        "producing_module": "character-animation",
+        "prompt": null,
+        "recipe_version": "remember-home-character-v1",
+        "related_sceneops_ids": [
+          "char_homekeeper",
+          "rig_homekeeper_v1"
+        ],
+        "seed": null,
+        "source_commit": "1d4f0f3",
+        "source_project_id": "prj_remember_home",
+        "source_version": "fixture-1",
+        "tool": "imported-fixture",
+        "workflow_reference": null
+      },
+      "rig_version_id": "rig_homekeeper_v1",
+      "root_motion": "extract",
+      "root_samples": [
+        {
+          "time_seconds": 0.0,
+          "translation_meters": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "time_seconds": 1.0,
+          "translation_meters": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "sample_rate_hz": 30.0,
+      "start_pose": {
+        "root_rotation_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "root_translation_meters": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "version_number": 1
+    }
+  ],
+  "retarget_profiles": [
+    {
+      "coordinate_system": {
+        "forward_axis": "Z",
+        "handedness": "right",
+        "meters_per_unit": 1.0,
+        "space": "character_local",
+        "up_axis": "Y"
+      },
+      "mappings": [
+        {
+          "rotation_offset_degrees": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "source_bone_id": "bone_root",
+          "target_bone_id": "target_bone_root",
+          "translation_scale": 1.0
+        },
+        {
+          "rotation_offset_degrees": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "source_bone_id": "bone_pelvis",
+          "target_bone_id": "target_bone_pelvis",
+          "translation_scale": 1.0
+        },
+        {
+          "rotation_offset_degrees": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "source_bone_id": "bone_spine",
+          "target_bone_id": "target_bone_spine",
+          "translation_scale": 1.0
+        },
+        {
+          "rotation_offset_degrees": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "source_bone_id": "bone_head",
+          "target_bone_id": "target_bone_head",
+          "translation_scale": 1.0
+        },
+        {
+          "rotation_offset_degrees": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "source_bone_id": "bone_foot_l",
+          "target_bone_id": "target_bone_foot_l",
+          "translation_scale": 1.0
+        },
+        {
+          "rotation_offset_degrees": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "source_bone_id": "bone_foot_r",
+          "target_bone_id": "target_bone_foot_r",
+          "translation_scale": 1.0
+        }
+      ],
+      "provenance": {
+        "adapter_version": "1.0.0",
+        "ai_model": null,
+        "ai_provider": null,
+        "approval_state": "approved",
+        "artifact_id": "retarget_homekeeper_unity_v1",
+        "artifact_type": "retarget-profile",
+        "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "created_at": "2026-09-04T00:00:00Z",
+        "creator": "fixture_worker",
+        "execution_mode": "mock",
+        "negative_prompt": null,
+        "parameters": {},
+        "producing_module": "character-animation",
+        "prompt": null,
+        "recipe_version": "remember-home-character-v1",
+        "related_sceneops_ids": [
+          "rig_homekeeper_v1",
+          "rig_unity_humanoid_v1"
+        ],
+        "seed": null,
+        "source_commit": "1d4f0f3",
+        "source_project_id": "prj_remember_home",
+        "source_version": "fixture-1",
+        "tool": "imported-fixture",
+        "workflow_reference": null
+      },
+      "retarget_profile_id": "retarget_homekeeper_unity_v1",
+      "root_bone_mapping": {
+        "rotation_offset_degrees": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "source_bone_id": "bone_root",
+        "target_bone_id": "target_bone_root",
+        "translation_scale": 1.0
+      },
+      "source_rig_version_id": "rig_homekeeper_v1",
+      "target_rig_version_id": "rig_unity_humanoid_v1"
+    }
+  ],
+  "rig": {
+    "approval": {
+      "comment": "用于确定性模块 fixture。",
+      "reviewed_at": "2026-09-04T00:00:00Z",
+      "reviewed_by": "usr_animation_lead",
+      "state": "approved"
+    },
+    "bones": [
+      {
+        "bone_id": "bone_root",
+        "name": "Root",
+        "parent_bone_id": null,
+        "rest_translation_meters": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "bone_id": "bone_pelvis",
+        "name": "Pelvis",
+        "parent_bone_id": "bone_root",
+        "rest_translation_meters": [
+          0.0,
+          0.9,
+          0.0
+        ]
+      },
+      {
+        "bone_id": "bone_spine",
+        "name": "Spine",
+        "parent_bone_id": "bone_pelvis",
+        "rest_translation_meters": [
+          0.0,
+          0.3,
+          0.0
+        ]
+      },
+      {
+        "bone_id": "bone_head",
+        "name": "Head",
+        "parent_bone_id": "bone_spine",
+        "rest_translation_meters": [
+          0.0,
+          0.55,
+          0.0
+        ]
+      },
+      {
+        "bone_id": "bone_foot_l",
+        "name": "Foot.L",
+        "parent_bone_id": "bone_pelvis",
+        "rest_translation_meters": [
+          -0.12,
+          -0.9,
+          0.0
+        ]
+      },
+      {
+        "bone_id": "bone_foot_r",
+        "name": "Foot.R",
+        "parent_bone_id": "bone_pelvis",
+        "rest_translation_meters": [
+          0.12,
+          -0.9,
+          0.0
+        ]
+      }
+    ],
+    "character_id": "char_homekeeper",
+    "coordinate_system": {
+      "forward_axis": "Z",
+      "handedness": "right",
+      "meters_per_unit": 1.0,
+      "space": "character_local",
+      "up_axis": "Y"
+    },
+    "previous_version_id": null,
+    "provenance": {
+      "adapter_version": "1.0.0",
+      "ai_model": null,
+      "ai_provider": null,
+      "approval_state": "approved",
+      "artifact_id": "rig_homekeeper_v1",
+      "artifact_type": "rig-version",
+      "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-09-04T00:00:00Z",
+      "creator": "fixture_worker",
+      "execution_mode": "mock",
+      "negative_prompt": null,
+      "parameters": {},
+      "producing_module": "character-animation",
+      "prompt": null,
+      "recipe_version": "remember-home-character-v1",
+      "related_sceneops_ids": [
+        "char_homekeeper"
+      ],
+      "seed": null,
+      "source_commit": "1d4f0f3",
+      "source_project_id": "prj_remember_home",
+      "source_version": "fixture-1",
+      "tool": "imported-fixture",
+      "workflow_reference": null
+    },
+    "rig_version_id": "rig_homekeeper_v1",
+    "source_rig_id": "source_rig_homekeeper",
+    "version_number": 1
+  },
+  "skin": {
+    "approval": {
+      "comment": "用于确定性模块 fixture。",
+      "reviewed_at": "2026-09-04T00:00:00Z",
+      "reviewed_by": "usr_animation_lead",
+      "state": "approved"
+    },
+    "character_id": "char_homekeeper",
+    "max_supported_influences": 4,
+    "previous_version_id": null,
+    "provenance": {
+      "adapter_version": "1.0.0",
+      "ai_model": null,
+      "ai_provider": null,
+      "approval_state": "approved",
+      "artifact_id": "skin_homekeeper_v1",
+      "artifact_type": "skin-version",
+      "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_at": "2026-09-04T00:00:00Z",
+      "creator": "fixture_worker",
+      "execution_mode": "mock",
+      "negative_prompt": null,
+      "parameters": {},
+      "producing_module": "character-animation",
+      "prompt": null,
+      "recipe_version": "remember-home-character-v1",
+      "related_sceneops_ids": [
+        "rig_homekeeper_v1"
+      ],
+      "seed": null,
+      "source_commit": "1d4f0f3",
+      "source_project_id": "prj_remember_home",
+      "source_version": "fixture-1",
+      "tool": "imported-fixture",
+      "workflow_reference": null
+    },
+    "rig_version_id": "rig_homekeeper_v1",
+    "skin_version_id": "skin_homekeeper_v1",
+    "version_number": 1,
+    "vertices": [
+      {
+        "influences": [
+          {
+            "bone_id": "bone_pelvis",
+            "weight": 1.0
+          }
+        ],
+        "vertex_index": 0
+      },
+      {
+        "influences": [
+          {
+            "bone_id": "bone_pelvis",
+            "weight": 0.55
+          },
+          {
+            "bone_id": "bone_spine",
+            "weight": 0.45
+          }
+        ],
+        "vertex_index": 1
+      },
+      {
+        "influences": [
+          {
+            "bone_id": "bone_head",
+            "weight": 1.0
+          }
+        ],
+        "vertex_index": 2
+      }
+    ]
+  }
+}

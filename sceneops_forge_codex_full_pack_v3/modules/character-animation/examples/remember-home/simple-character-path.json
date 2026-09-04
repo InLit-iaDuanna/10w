@@ -1,0 +1,16 @@
+{
+  "example_id": "remember-home-imported-character-v1",
+  "feature_spec_id": "feature_key_door_branch",
+  "task_ids": ["task_player_traversal"],
+  "source_kind": "imported",
+  "steps": [
+    {"command": "character.inspect", "expected_mode": "mock", "fixture": "contracts/examples/remember-home-character.json"},
+    {"command": "animation.preview.capture", "expected_mode": "mock", "camera_id": "camera_character_regression_v1"},
+    {"command": "character.unity-mapping.propose", "expected_mode": "planned", "requires_approval": true},
+    {"command": "character.unity-mapping.execute", "expected_mode": "blocked", "reason": "真实 Unity 适配器与 engine-unity 模块尚未集成"}
+  ],
+  "limitations": [
+    "fixture 预览不代表 Blender 或 Unity 实时执行",
+    "滑步检测是启发式提示，不替代动画师审核"
+  ]
+}
