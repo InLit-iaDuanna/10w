@@ -1,0 +1,32 @@
+{
+  "event_id": "log_mock_blender_0001",
+  "event_type": "observability.log.recorded",
+  "event_version": 1,
+  "emitted_at": "2026-09-04T00:00:00Z",
+  "level": "info",
+  "source_module": "asset-factory",
+  "source_tool": "blender",
+  "worker_id": "worker_blender_mock_01",
+  "message": "Mock export completed",
+  "context": {
+    "project_id": "prj_remember_home_mock",
+    "run_id": "run_export_mock_01",
+    "job_id": "job_export_mock_01",
+    "correlation_id": "corr_export_mock_01",
+    "causation_id": "cmd_export_mock_01"
+  },
+  "fields": {
+    "operation": "asset.export",
+    "duration_ms": 420,
+    "status": "succeeded"
+  },
+  "artifact_links": [
+    {
+      "artifact_id": "art_glb_mock_01",
+      "label": "Mock GLB",
+      "media_type": "model/gltf-binary"
+    }
+  ],
+  "mode": "mock",
+  "sequence": null
+}

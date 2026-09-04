@@ -1,0 +1,51 @@
+schema_version: 1
+id: integration-center
+version: 0.1.0
+title: Integration Center
+description: Explains integration and worker availability and coordinates safe recovery.
+status: active
+feature_flag: integration_center
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+    - observability
+  integrations: []
+  optional_integrations:
+    - blender
+    - unity
+    - comfyui
+    - git
+    - artifact-store
+
+contributes:
+  editors:
+    - integration.health
+    - worker.monitor
+  commands:
+    - integration.health.refresh
+    - integration.open_logs
+    - integration.open_setup
+    - job.cancel
+    - job.retry
+    - job.resume
+    - worker.restart.guidance
+  events:
+    - integration.health.changed@1
+    - job.recovery.requested@1
+  jobs: []
+  workflows: []
+  policy_gates:
+    - job.safe-retry
+
+permissions:
+  - integration:read
+  - integration:operate
+  - job:read
+  - job:operate
+  - observability:read
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: integration_center

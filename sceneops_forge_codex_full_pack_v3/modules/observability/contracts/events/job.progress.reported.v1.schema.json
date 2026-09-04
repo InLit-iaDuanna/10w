@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/observability/events/job.progress.reported.v1.schema.json",
+  "title": "Job Progress Reported v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "source_module",
+    "state",
+    "progress",
+    "message",
+    "context",
+    "fields",
+    "mode"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "event_type": {"const": "job.progress.reported"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "source_module": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "state": {
+      "enum": ["queued", "running", "waiting_approval", "succeeded", "failed", "cancelled", "timed_out"]
+    },
+    "progress": {"type": "number", "minimum": 0, "maximum": 1},
+    "message": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "correlation_id", "causation_id"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "run_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "job_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "correlation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "causation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"}
+      }
+    },
+    "fields": {
+      "type": "object",
+      "maxProperties": 32,
+      "propertyNames": {"pattern": "^[A-Za-z0-9_]{1,64}$"},
+      "additionalProperties": {"type": ["string", "number", "boolean", "null"], "maxLength": 1000}
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "sequence": {"type": ["integer", "null"], "minimum": 1}
+  }
+}

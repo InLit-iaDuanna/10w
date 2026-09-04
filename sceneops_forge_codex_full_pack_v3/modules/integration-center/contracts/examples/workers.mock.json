@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "mode": "mock",
+  "workers": [
+    {
+      "worker_id": "worker_blender_mock_01",
+      "integration_id": "blender",
+      "display_name": "Blender Worker Mock 01",
+      "lifecycle": "online",
+      "health_state": "connected",
+      "observed_at": "2026-09-04T00:00:00Z",
+      "expires_at": "2026-09-04T00:05:00Z",
+      "is_current": false,
+      "last_heartbeat_at": "2026-09-04T00:00:00Z",
+      "worker_version": "0.1.0",
+      "capability_ids": ["scene.scan", "asset.export"],
+      "current_job": null,
+      "queue": {"depth": 0, "running": 0, "oldest_queued_at": null},
+      "recommended_actions": [
+        {"command_id": "integration.open_logs", "label": "查看关联日志", "available": true, "unavailable_reason": null}
+      ],
+      "evidence": {"mode": "mock", "observed_at": "2026-09-04T00:00:00Z", "source_run_id": null, "reason": null}
+    },
+    {
+      "worker_id": "worker_unity_mock_01",
+      "integration_id": "unity",
+      "display_name": "Unity Worker Mock 01",
+      "lifecycle": "online",
+      "health_state": "busy",
+      "observed_at": "2026-09-04T00:00:00Z",
+      "expires_at": "2026-09-04T00:05:00Z",
+      "is_current": false,
+      "last_heartbeat_at": "2026-09-04T00:00:00Z",
+      "worker_version": "0.1.0",
+      "capability_ids": ["build.run"],
+      "current_job": {
+        "job_id": "job_unity_build_mock_01",
+        "run_id": "run_unity_build_mock_01",
+        "correlation_id": "corr_judge_mock_01",
+        "title": "Mock iOS build",
+        "state": "running",
+        "progress": 0.45,
+        "retry_safety": "idempotent",
+        "resume_available": true,
+        "completed_step_ids": ["project.scan"]
+      },
+      "queue": {"depth": 2, "running": 1, "oldest_queued_at": "2026-09-03T23:58:00Z"},
+      "recommended_actions": [
+        {"command_id": "integration.open_logs", "label": "查看当前任务日志", "available": true, "unavailable_reason": null}
+      ],
+      "evidence": {"mode": "mock", "observed_at": "2026-09-04T00:00:00Z", "source_run_id": null, "reason": null}
+    },
+    {
+      "worker_id": "worker_comfyui_mock_01",
+      "integration_id": "comfyui",
+      "display_name": "ComfyUI Worker Mock 01",
+      "lifecycle": "offline",
+      "health_state": "disconnected",
+      "observed_at": "2026-09-04T00:00:00Z",
+      "expires_at": "2026-09-04T00:05:00Z",
+      "is_current": false,
+      "last_heartbeat_at": "2026-09-03T23:45:00Z",
+      "worker_version": "0.1.0",
+      "capability_ids": ["render.submit"],
+      "current_job": null,
+      "queue": {"depth": 4, "running": 0, "oldest_queued_at": "2026-09-03T23:55:00Z"},
+      "recommended_actions": [
+        {"command_id": "worker.restart.guidance", "label": "查看安全重启说明", "available": true, "unavailable_reason": null}
+      ],
+      "evidence": {"mode": "mock", "observed_at": "2026-09-04T00:00:00Z", "source_run_id": null, "reason": null}
+    }
+  ]
+}

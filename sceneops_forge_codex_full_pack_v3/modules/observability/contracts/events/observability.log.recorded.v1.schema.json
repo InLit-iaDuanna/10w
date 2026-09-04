@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/observability/events/observability.log.recorded.v1.schema.json",
+  "title": "Observability Log Recorded v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "emitted_at",
+    "level",
+    "source_module",
+    "message",
+    "context",
+    "fields",
+    "artifact_links",
+    "mode"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "event_type": {"const": "observability.log.recorded"},
+    "event_version": {"const": 1},
+    "emitted_at": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "level": {"enum": ["trace", "debug", "info", "warning", "error", "critical"]},
+    "source_module": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "source_tool": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "worker_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+    "message": {"type": "string", "minLength": 1, "maxLength": 4000},
+    "context": {"$ref": "#/$defs/correlation_context"},
+    "fields": {
+      "type": "object",
+      "maxProperties": 32,
+      "propertyNames": {"pattern": "^[A-Za-z0-9_]{1,64}$"},
+      "additionalProperties": {"type": ["string", "number", "boolean", "null"], "maxLength": 1000}
+    },
+    "artifact_links": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {"$ref": "#/$defs/artifact_link"}
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "sequence": {"type": ["integer", "null"], "minimum": 1}
+  },
+  "$defs": {
+    "correlation_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "correlation_id", "causation_id"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "run_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "job_id": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "correlation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "causation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"}
+      }
+    },
+    "artifact_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "label"],
+      "properties": {
+        "artifact_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 160},
+        "media_type": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9.+-]+/[A-Za-z0-9.+-]+$", "maxLength": 120}
+      }
+    }
+  }
+}
