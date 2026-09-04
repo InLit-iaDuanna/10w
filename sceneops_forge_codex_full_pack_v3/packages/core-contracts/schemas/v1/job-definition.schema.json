@@ -1,0 +1,58 @@
+{
+  "$id": "https://sceneops.local/schemas/core/v1/job-definition.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cancellable": {
+      "title": "Cancellable",
+      "type": "boolean"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "input_schema": {
+      "maxLength": 512,
+      "minLength": 1,
+      "title": "Input Schema",
+      "type": "string"
+    },
+    "module_id": {
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "title": "Module Id",
+      "type": "string"
+    },
+    "output_schema": {
+      "maxLength": 512,
+      "minLength": 1,
+      "title": "Output Schema",
+      "type": "string"
+    },
+    "resumable": {
+      "title": "Resumable",
+      "type": "boolean"
+    },
+    "retryable": {
+      "title": "Retryable",
+      "type": "boolean"
+    },
+    "supports_dry_run": {
+      "const": true,
+      "default": true,
+      "title": "Supports Dry Run",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "module_id",
+    "input_schema",
+    "output_schema",
+    "cancellable",
+    "retryable",
+    "resumable"
+  ],
+  "title": "JobDefinition",
+  "type": "object"
+}

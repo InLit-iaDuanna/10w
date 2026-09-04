@@ -1,0 +1,10 @@
+{
+  "attempted_transition": "queued -> succeeded",
+  "error": {
+    "code": "INVALID_RUN_TRANSITION",
+    "message": "Run cannot transition from queued to succeeded.",
+    "retryable": false
+  },
+  "mode": "mock",
+  "status": "failed"
+}

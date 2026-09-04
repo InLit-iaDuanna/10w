@@ -1,0 +1,103 @@
+{
+  "$defs": {
+    "ActorReference": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "pattern": "^(?:usr|agt|svc|sys)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ActorType"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "ActorReference",
+      "type": "object"
+    },
+    "ActorType": {
+      "enum": [
+        "user",
+        "agent",
+        "service",
+        "system"
+      ],
+      "title": "ActorType",
+      "type": "string"
+    },
+    "ApprovalDecisionValue": {
+      "enum": [
+        "approved",
+        "rejected"
+      ],
+      "title": "ApprovalDecisionValue",
+      "type": "string"
+    }
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/approval-decision.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/ActorReference"
+    },
+    "approval_id": {
+      "pattern": "^apr_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "change_set_id": {
+      "pattern": "^chg_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Change Set Id",
+      "type": "string"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "title": "Decided At",
+      "type": "string"
+    },
+    "decision": {
+      "$ref": "#/$defs/ApprovalDecisionValue"
+    }
+  },
+  "required": [
+    "approval_id",
+    "change_set_id",
+    "decision",
+    "actor",
+    "decided_at"
+  ],
+  "title": "ApprovalDecision",
+  "type": "object"
+}

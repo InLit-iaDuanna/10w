@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/schemas/forge-shell/workspace-layout-v3.schema.json",
+  "title": "Forge Shell workspace layout v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "workspaceId", "title", "customized", "instances", "areas", "drawers",
+    "floatingGroups", "popoutGroups", "activeAreaId", "maximizedAreaId", "dockviewLayout"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "workspaceId": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "customized": { "type": "boolean" },
+    "instances": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/editorInstance" }
+    },
+    "areas": { "type": "array", "items": { "$ref": "#/$defs/area" } },
+    "drawers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["left", "right", "top", "bottom"],
+      "properties": {
+        "left": { "$ref": "#/$defs/drawer" },
+        "right": { "$ref": "#/$defs/drawer" },
+        "top": { "$ref": "#/$defs/drawer" },
+        "bottom": { "$ref": "#/$defs/drawer" }
+      }
+    },
+    "floatingGroups": { "type": "array", "items": { "$ref": "#/$defs/floatingGroup" } },
+    "popoutGroups": { "type": "array", "items": { "$ref": "#/$defs/popoutGroup" } },
+    "activeAreaId": { "type": ["string", "null"] },
+    "maximizedAreaId": { "type": ["string", "null"] },
+    "dockviewLayout": { "$ref": "#/$defs/json" }
+  },
+  "$defs": {
+    "json": {
+      "oneOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/json" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/json" } }
+      ]
+    },
+    "contextBinding": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode"],
+          "properties": { "mode": { "const": "follow-global" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "context"],
+          "properties": {
+            "mode": { "const": "pinned" },
+            "context": { "type": "object", "additionalProperties": { "$ref": "#/$defs/json" } }
+          }
+        }
+      ]
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["regionId", "edge", "visible", "size", "localState"],
+      "properties": {
+        "regionId": { "type": "string", "minLength": 1 },
+        "edge": { "enum": ["left", "right", "top", "bottom"] },
+        "visible": { "type": "boolean" },
+        "size": { "type": "number", "exclusiveMinimum": 0 },
+        "localState": { "$ref": "#/$defs/json" }
+      }
+    },
+    "editorInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instanceId", "editorId", "title", "localState", "contextBinding", "dirty", "locked",
+        "lifecycle", "executionMode", "regions"
+      ],
+      "properties": {
+        "instanceId": { "type": "string", "minLength": 1 },
+        "editorId": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "localState": { "$ref": "#/$defs/json" },
+        "contextBinding": { "$ref": "#/$defs/contextBinding" },
+        "dirty": { "type": "boolean" },
+        "locked": { "type": "boolean" },
+        "lifecycle": { "enum": ["loading", "empty", "ready", "offline", "permission-denied", "failed", "disconnected"] },
+        "executionMode": { "enum": ["live", "cached", "mock", "planned", "blocked"] },
+        "regions": { "type": "array", "items": { "$ref": "#/$defs/region" } }
+      }
+    },
+    "area": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["areaId", "tabs", "activeInstanceId", "headerPosition"],
+      "properties": {
+        "areaId": { "type": "string", "minLength": 1 },
+        "tabs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "activeInstanceId": { "type": ["string", "null"] },
+        "headerPosition": { "enum": ["top", "bottom", "left", "right"] }
+      }
+    },
+    "drawer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edge", "mode", "size", "lastOpenSize", "tabs", "activeInstanceId"],
+      "properties": {
+        "edge": { "enum": ["left", "right", "top", "bottom"] },
+        "mode": { "enum": ["hidden", "peek", "pinned"] },
+        "size": { "type": "number", "exclusiveMinimum": 0 },
+        "lastOpenSize": { "type": "number", "exclusiveMinimum": 0 },
+        "tabs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "activeInstanceId": { "type": ["string", "null"] }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["left", "top", "width", "height"],
+      "properties": {
+        "left": { "type": "number" },
+        "top": { "type": "number" },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "floatingGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["groupId", "area", "bounds"],
+      "properties": {
+        "groupId": { "type": "string", "minLength": 1 },
+        "area": { "$ref": "#/$defs/area" },
+        "bounds": { "$ref": "#/$defs/bounds" }
+      }
+    },
+    "popoutGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["groupId", "area", "bounds", "blocked"],
+      "properties": {
+        "groupId": { "type": "string", "minLength": 1 },
+        "area": { "$ref": "#/$defs/area" },
+        "bounds": { "$ref": "#/$defs/bounds" },
+        "blocked": { "type": "boolean" }
+      }
+    }
+  }
+}

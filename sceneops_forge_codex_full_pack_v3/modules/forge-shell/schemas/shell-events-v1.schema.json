@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/schemas/forge-shell/shell-events-v1.schema.json",
+  "title": "Forge Shell event payloads v1",
+  "oneOf": [
+    { "$ref": "#/$defs/editorOpened" },
+    { "$ref": "#/$defs/editorClosed" },
+    { "$ref": "#/$defs/editorLoadFailed" },
+    { "$ref": "#/$defs/layoutChanged" },
+    { "$ref": "#/$defs/visibilityChanged" },
+    { "$ref": "#/$defs/contextBindingChanged" },
+    { "$ref": "#/$defs/drawerChanged" }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": ["name", "payload"],
+      "properties": {
+        "name": { "type": "string" },
+        "payload": { "type": "object" }
+      }
+    },
+    "editorOpened": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "name": { "const": "workbench.editor.opened@1" },
+            "payload": {
+              "type": "object",
+              "required": ["instance", "placement", "source"],
+              "properties": {
+                "instance": { "type": "object" },
+                "placement": { "type": "object" },
+                "source": { "enum": ["assistant", "button", "menu", "keyboard", "tool-library", "workflow"] }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "editorClosed": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        { "properties": { "name": { "const": "workbench.editor.closed@1" }, "payload": { "required": ["instance"] } } }
+      ]
+    },
+    "editorLoadFailed": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "name": { "const": "workbench.editor.load_failed@1" },
+            "payload": {
+              "required": ["instanceId", "editorId", "code", "message"],
+              "properties": { "code": { "const": "EDITOR_LOAD_FAILED" } }
+            }
+          }
+        }
+      ]
+    },
+    "layoutChanged": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        { "properties": { "name": { "const": "workbench.layout.changed@1" }, "payload": { "required": ["workspaceId", "operation"] } } }
+      ]
+    },
+    "visibilityChanged": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        { "properties": { "name": { "const": "workbench.visibility.changed@1" }, "payload": { "required": ["instanceId", "visible", "suspended"] } } }
+      ]
+    },
+    "contextBindingChanged": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        { "properties": { "name": { "const": "workbench.context.binding_changed@1" }, "payload": { "required": ["instanceId", "binding"] } } }
+      ]
+    },
+    "drawerChanged": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "name": { "const": "workbench.drawer.changed@1" },
+            "payload": {
+              "required": ["edge", "mode", "size"],
+              "properties": {
+                "edge": { "enum": ["left", "right", "top", "bottom"] },
+                "mode": { "enum": ["hidden", "peek", "pinned"] },
+                "size": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "FIXTURE_REQUESTED_FAILURE",
+    "message": "Fixture 请求失败。",
+    "retryable": false
+  },
+  "mode": "mock",
+  "status": "failed"
+}

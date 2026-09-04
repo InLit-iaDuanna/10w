@@ -1,0 +1,27 @@
+schema_version: 1
+id: core-kernel
+version: 0.1.0
+title: Core Kernel
+description: Enforces shared run-state and ChangeSet safety primitives.
+status: active
+feature_flag: core_kernel
+requires:
+  modules: []
+  integrations: []
+  optional_integrations: []
+contributes:
+  editors: []
+  commands:
+    - core.run.transition
+  events:
+    - core.run.state_changed@1
+  jobs:
+    - core.run.transition
+  workflows: []
+  policy_gates:
+    - core.changeset.approval
+permissions:
+  - core:execute
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: core_kernel

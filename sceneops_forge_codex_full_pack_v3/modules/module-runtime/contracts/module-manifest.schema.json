@@ -1,0 +1,252 @@
+{
+  "$defs": {
+    "ModuleContributions": {
+      "additionalProperties": false,
+      "properties": {
+        "commands": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+            "type": "string"
+          },
+          "title": "Commands",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "editors": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+            "type": "string"
+          },
+          "title": "Editors",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "events": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9_]*)+@[1-9][0-9]*$",
+            "type": "string"
+          },
+          "title": "Events",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "jobs": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+            "type": "string"
+          },
+          "title": "Jobs",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "policy_gates": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+            "type": "string"
+          },
+          "title": "Policy Gates",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "workflows": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+            "type": "string"
+          },
+          "title": "Workflows",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "editors",
+        "commands",
+        "events",
+        "jobs",
+        "workflows",
+        "policy_gates"
+      ],
+      "title": "ModuleContributions",
+      "type": "object"
+    },
+    "ModuleEntrypoints": {
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "properties": {
+            "frontend": {
+              "pattern": "^\\./(?!(?:.*?/)?\\.\\.(?:/|$))(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\\.tsx?$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "frontend"
+          ]
+        },
+        {
+          "properties": {
+            "backend": {
+              "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "backend"
+          ]
+        }
+      ],
+      "properties": {
+        "backend": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Backend"
+        },
+        "frontend": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "pattern": "^\\./(?!(?:.*?/)?\\.\\.(?:/|$))(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\\.tsx?$",
+          "title": "Frontend"
+        }
+      },
+      "title": "ModuleEntrypoints",
+      "type": "object"
+    },
+    "ModuleRequirements": {
+      "additionalProperties": false,
+      "properties": {
+        "integrations": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Integrations",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "modules": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Modules",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "optional_integrations": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Optional Integrations",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "modules",
+        "integrations",
+        "optional_integrations"
+      ],
+      "title": "ModuleRequirements",
+      "type": "object"
+    },
+    "ModuleStatus": {
+      "enum": [
+        "active",
+        "experimental",
+        "deprecated"
+      ],
+      "title": "ModuleStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://sceneops.local/schemas/module-manifest/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "contributes": {
+      "$ref": "#/$defs/ModuleContributions"
+    },
+    "description": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "entrypoints": {
+      "$ref": "#/$defs/ModuleEntrypoints"
+    },
+    "feature_flag": {
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$",
+      "title": "Feature Flag",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "permissions": {
+      "items": {
+        "pattern": "^[a-z][a-z0-9-]*:[a-z][a-z0-9_-]*$",
+        "type": "string"
+      },
+      "title": "Permissions",
+      "type": "array",
+      "uniqueItems": true
+    },
+    "requires": {
+      "$ref": "#/$defs/ModuleRequirements"
+    },
+    "schema_version": {
+      "maximum": 1,
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "status": {
+      "$ref": "#/$defs/ModuleStatus"
+    },
+    "title": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "version",
+    "title",
+    "description",
+    "status",
+    "feature_flag",
+    "requires",
+    "contributes",
+    "permissions",
+    "entrypoints"
+  ],
+  "title": "ModuleManifest",
+  "type": "object"
+}

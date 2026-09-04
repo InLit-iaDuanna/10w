@@ -1,0 +1,38 @@
+{
+  "$id": "https://sceneops.local/schemas/core/v1/change-set-target.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "integration_id": {
+      "anyOf": [
+        {
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Integration Id"
+    },
+    "module_id": {
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "title": "Module Id",
+      "type": "string"
+    },
+    "object_ids": {
+      "items": {
+        "pattern": "^(?:usr|agt|svc|sys|prj|brn|scn|sobj|ast|aver|bld|run|iss|chg|apr|art|evt|cmd|corr|req|wfl|fea|tsk|rjob|prun)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+        "type": "string"
+      },
+      "title": "Object Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "module_id"
+  ],
+  "title": "ChangeSetTarget",
+  "type": "object"
+}

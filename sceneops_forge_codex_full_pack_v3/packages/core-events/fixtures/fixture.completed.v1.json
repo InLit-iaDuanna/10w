@@ -1,0 +1,12 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "value": {
+      "type": "string"
+    }
+  },
+  "required": ["value"],
+  "type": "object",
+  "x-event-type": "fixture.completed",
+  "x-event-version": 1
+}

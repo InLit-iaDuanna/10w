@@ -1,0 +1,167 @@
+.forge-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--text-primary, #f1ece3);
+  background: var(--canvas, #0d0f11);
+}
+
+.forge-dock-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.forge-area-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--border-subtle, #252a30);
+  background: var(--surface-1, #15181c);
+}
+
+.forge-area-header.is-active {
+  box-shadow: inset 0 -2px var(--home-amber, #eca85b);
+}
+
+.forge-area-heading,
+.forge-area-header nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.forge-area-header button,
+.forge-window-menu button,
+.forge-edge-handle {
+  min-width: 28px;
+  min-height: 28px;
+  color: inherit;
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.forge-area-header button:focus-visible,
+.forge-window-menu button:focus-visible,
+.forge-edge-handle:focus-visible {
+  outline: 2px solid var(--focus-ring, #76d9d6);
+  outline-offset: -2px;
+}
+
+.forge-edge-handle {
+  position: absolute;
+  z-index: 30;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 1;
+  background: transparent;
+}
+
+.forge-edge-handle-label {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--border-subtle, #252a30);
+  border-radius: 3px;
+  opacity: 0;
+  background: var(--surface-2, #1b1f24);
+  transition: opacity 160ms ease 120ms;
+}
+
+.forge-edge-handle:hover .forge-edge-handle-label,
+.forge-edge-handle:focus-visible .forge-edge-handle-label,
+.forge-edge-handle[data-judge-visible='true'] .forge-edge-handle-label {
+  opacity: 1;
+}
+
+.forge-edge-handle:focus-visible .forge-edge-handle-label,
+.forge-edge-handle[data-judge-visible='true'] .forge-edge-handle-label { transition-delay: 0ms; }
+
+.forge-edge-left,
+.forge-edge-right {
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  min-width: 12px;
+}
+
+.forge-edge-left { left: 0; border-left: 2px solid var(--spatial-cyan, #58c8c5); }
+.forge-edge-right { right: 0; border-right: 2px solid var(--spatial-cyan, #58c8c5); }
+.forge-edge-top,
+.forge-edge-bottom {
+  right: 0;
+  left: 0;
+  height: 12px;
+  min-height: 12px;
+}
+.forge-edge-top { top: 0; border-top: 2px solid var(--spatial-cyan, #58c8c5); }
+.forge-edge-bottom { bottom: 0; border-bottom: 2px solid var(--spatial-cyan, #58c8c5); }
+
+.forge-edge-left .forge-edge-handle-label,
+.forge-edge-right .forge-edge-handle-label {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.forge-edge-left .forge-edge-handle-label { left: 0; }
+.forge-edge-right .forge-edge-handle-label { right: 0; }
+.forge-edge-top .forge-edge-handle-label,
+.forge-edge-bottom .forge-edge-handle-label {
+  left: 50%;
+  transform: translateX(-50%);
+}
+.forge-edge-top .forge-edge-handle-label { top: 0; }
+.forge-edge-bottom .forge-edge-handle-label { bottom: 0; }
+
+.forge-edge-handle[data-judge-visible='true'].forge-edge-left,
+.forge-edge-handle[data-judge-visible='true'].forge-edge-right { width: 36px; }
+.forge-edge-handle[data-judge-visible='true'].forge-edge-top,
+.forge-edge-handle[data-judge-visible='true'].forge-edge-bottom { height: 36px; }
+
+.forge-edge-preview {
+  position: absolute;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--spatial-cyan, #58c8c5) 14%, transparent);
+}
+.forge-edge-preview-left { inset: 0 auto 0 0; }
+.forge-edge-preview-right { inset: 0 0 0 auto; }
+.forge-edge-preview-top { inset: 0 0 auto; }
+.forge-edge-preview-bottom { inset: auto 0 0; }
+
+.forge-window-menu {
+  position: absolute;
+  z-index: 40;
+  top: 4px;
+  left: 4px;
+  max-height: calc(100% - 8px);
+  overflow: auto;
+  border: 1px solid var(--border-subtle, #252a30);
+  background: var(--surface-2, #1b1f24);
+}
+
+.forge-window-menu fieldset { margin: 4px; border: 0; }
+.forge-window-menu button { display: block; width: 100%; background: var(--surface-2, #1b1f24); }
+.forge-restore-notice {
+  position: absolute;
+  z-index: 45;
+  top: 8px;
+  right: 8px;
+  max-width: min(440px, calc(100% - 16px));
+  border: 1px solid var(--border-subtle, #252a30);
+  border-radius: 4px;
+  background: var(--surface-2, #1b1f24);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 32%);
+}
+.forge-editor-state { padding: 16px; color: var(--text-secondary, #a5adb6); }
+.forge-editor-state.is-failed { color: var(--critical, #f06d6d); }
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-edge-handle-label { transition: none; }
+}

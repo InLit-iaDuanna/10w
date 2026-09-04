@@ -1,0 +1,21 @@
+{
+  "$id": "https://sceneops.local/events/runtime.fixture.completed/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "mode": {
+      "const": "mock"
+    },
+    "status": {
+      "enum": ["succeeded", "failed"]
+    },
+    "value": {
+      "type": "string"
+    }
+  },
+  "required": ["status", "mode"],
+  "title": "Runtime fixture completed payload",
+  "type": "object",
+  "x-event-type": "runtime.fixture.completed",
+  "x-event-version": 1
+}

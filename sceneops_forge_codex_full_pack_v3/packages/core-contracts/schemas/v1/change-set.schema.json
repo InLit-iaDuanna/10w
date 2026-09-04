@@ -1,0 +1,263 @@
+{
+  "$defs": {
+    "ActorReference": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "pattern": "^(?:usr|agt|svc|sys)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ActorType"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "ActorReference",
+      "type": "object"
+    },
+    "ActorType": {
+      "enum": [
+        "user",
+        "agent",
+        "service",
+        "system"
+      ],
+      "title": "ActorType",
+      "type": "string"
+    },
+    "ApprovalRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_actor_types": {
+          "items": {
+            "$ref": "#/$defs/ActorType"
+          },
+          "title": "Allowed Actor Types",
+          "type": "array"
+        },
+        "minimum_decisions": {
+          "default": 1,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Minimum Decisions",
+          "type": "integer"
+        },
+        "permission": {
+          "pattern": "^[a-z][a-z0-9-]*:[a-z][a-z0-9_-]*$",
+          "title": "Permission",
+          "type": "string"
+        }
+      },
+      "required": [
+        "permission"
+      ],
+      "title": "ApprovalRequirement",
+      "type": "object"
+    },
+    "ChangeSetStatus": {
+      "enum": [
+        "draft",
+        "waiting_approval",
+        "approved",
+        "rejected",
+        "executing",
+        "succeeded",
+        "failed",
+        "rolled_back"
+      ],
+      "title": "ChangeSetStatus",
+      "type": "string"
+    },
+    "ChangeSetTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "integration_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Integration Id"
+        },
+        "module_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "title": "Module Id",
+          "type": "string"
+        },
+        "object_ids": {
+          "items": {
+            "pattern": "^(?:usr|agt|svc|sys|prj|brn|scn|sobj|ast|aver|bld|run|iss|chg|apr|art|evt|cmd|corr|req|wfl|fea|tsk|rjob|prun)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+            "type": "string"
+          },
+          "title": "Object Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "module_id"
+      ],
+      "title": "ChangeSetTarget",
+      "type": "object"
+    },
+    "ImpactScope": {
+      "enum": [
+        "object",
+        "module",
+        "scene",
+        "project",
+        "repository",
+        "release"
+      ],
+      "title": "ImpactScope",
+      "type": "string"
+    },
+    "JsonValue": {},
+    "RiskLevel": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "title": "RiskLevel",
+      "type": "string"
+    }
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/change-set.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "approval_requirements": {
+      "items": {
+        "$ref": "#/$defs/ApprovalRequirement"
+      },
+      "title": "Approval Requirements",
+      "type": "array"
+    },
+    "base_version": {
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Base Version",
+      "type": "string"
+    },
+    "change_set_id": {
+      "pattern": "^chg_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Change Set Id",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "$ref": "#/$defs/ActorReference"
+    },
+    "destructive": {
+      "default": false,
+      "title": "Destructive",
+      "type": "boolean"
+    },
+    "dry_run_supported": {
+      "const": true,
+      "default": true,
+      "title": "Dry Run Supported",
+      "type": "boolean"
+    },
+    "expected_result": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Expected Result",
+      "type": "string"
+    },
+    "impact_scope": {
+      "$ref": "#/$defs/ImpactScope"
+    },
+    "previous_values": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Previous Values",
+      "type": "object"
+    },
+    "proposed_values": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Proposed Values",
+      "type": "object"
+    },
+    "rationale": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "risk": {
+      "$ref": "#/$defs/RiskLevel"
+    },
+    "rollback_plan": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Rollback Plan",
+      "type": "array"
+    },
+    "status": {
+      "$ref": "#/$defs/ChangeSetStatus",
+      "default": "draft"
+    },
+    "target": {
+      "$ref": "#/$defs/ChangeSetTarget"
+    },
+    "validation_plan": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Validation Plan",
+      "type": "array"
+    }
+  },
+  "required": [
+    "change_set_id",
+    "base_version",
+    "target",
+    "previous_values",
+    "proposed_values",
+    "rationale",
+    "expected_result",
+    "impact_scope",
+    "risk",
+    "validation_plan",
+    "rollback_plan",
+    "created_by",
+    "created_at"
+  ],
+  "title": "ChangeSet",
+  "type": "object"
+}

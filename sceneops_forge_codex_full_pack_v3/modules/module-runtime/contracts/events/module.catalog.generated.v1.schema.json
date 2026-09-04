@@ -1,0 +1,22 @@
+{
+  "$id": "https://sceneops.local/events/module.catalog.generated/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "module_ids": {
+      "items": {
+        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1
+    }
+  },
+  "required": ["schema_version", "module_ids"],
+  "title": "Module catalog generated payload",
+  "type": "object",
+  "x-event-type": "module.catalog.generated",
+  "x-event-version": 1
+}

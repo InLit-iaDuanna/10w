@@ -1,0 +1,246 @@
+{
+  "generated_by": "scripts/module-generate",
+  "modules": [
+    {
+      "contributes": {
+        "commands": [
+          "core.run.transition"
+        ],
+        "editors": [],
+        "events": [
+          "core.run.state_changed@1"
+        ],
+        "jobs": [
+          "core.run.transition"
+        ],
+        "policy_gates": [
+          "core.changeset.approval"
+        ],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Enforces shared run-state and ChangeSet safety primitives.",
+      "entrypoints": {
+        "backend": "core_kernel",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "core_kernel",
+      "id": "core-kernel",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "core:execute"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Core Kernel",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "module.catalog.inspect"
+        ],
+        "editors": [],
+        "events": [
+          "module.catalog.generated@1"
+        ],
+        "jobs": [
+          "module.catalog.build"
+        ],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Validates static modules and generates deterministic frontend and backend catalogs.",
+      "entrypoints": {
+        "backend": "module_runtime",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "module_runtime",
+      "id": "module-runtime",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "module:read",
+        "module:generate"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Module Runtime",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [
+          "assistant.conversation"
+        ],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Provides the chat-only initial workbench and typed assistant action handoff.",
+      "entrypoints": {
+        "backend": "conversation_home",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "conversation_home",
+      "id": "conversation-home",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "conversation:read",
+        "conversation:write"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "llm-provider"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Conversation Home",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "workbench.open_editor",
+          "workbench.close_editor",
+          "workbench.reopen_editor",
+          "workbench.move_editor",
+          "workbench.switch_editor",
+          "workspace.undo_layout",
+          "workspace.reset"
+        ],
+        "editors": [
+          "shell.tool-library",
+          "shell.command-search"
+        ],
+        "events": [
+          "workbench.editor.opened@1",
+          "workbench.editor.closed@1",
+          "workbench.editor.load_failed@1",
+          "workbench.layout.changed@1",
+          "workbench.visibility.changed@1",
+          "workbench.context.binding_changed@1",
+          "workbench.drawer.changed@1"
+        ],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Chat-first workbench shell, edge drawers, editor orchestration, and versioned workspaces.",
+      "entrypoints": {
+        "backend": null,
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "forge_shell",
+      "id": "forge-shell",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "workbench:read",
+        "workbench:write"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "conversation-home"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Forge Shell",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "runtime.fixture.run"
+        ],
+        "editors": [
+          "runtime.fixture"
+        ],
+        "events": [
+          "runtime.fixture.completed@1"
+        ],
+        "jobs": [
+          "runtime.fixture.execute"
+        ],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Proves deterministic registration, enablement, and explicit success and failure states.",
+      "entrypoints": {
+        "backend": "runtime_fixture",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "runtime_fixture",
+      "id": "runtime-fixture",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "runtime-fixture:read",
+        "runtime-fixture:execute"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "fixture-renderer"
+        ]
+      },
+      "schema_version": 1,
+      "status": "experimental",
+      "title": "Runtime Fixture",
+      "version": "0.1.0"
+    }
+  ],
+  "registration_order": [
+    "core-kernel",
+    "module-runtime",
+    "conversation-home",
+    "forge-shell",
+    "runtime-fixture"
+  ],
+  "schema_version": 1
+}

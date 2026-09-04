@@ -1,0 +1,46 @@
+schema_version: 1
+id: forge-shell
+version: 0.1.0
+title: Forge Shell
+description: Chat-first workbench shell, edge drawers, editor orchestration, and versioned workspaces.
+status: active
+feature_flag: forge_shell
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+    - conversation-home
+  integrations: []
+  optional_integrations: []
+
+contributes:
+  editors:
+    - shell.tool-library
+    - shell.command-search
+  commands:
+    - workbench.open_editor
+    - workbench.close_editor
+    - workbench.reopen_editor
+    - workbench.move_editor
+    - workbench.switch_editor
+    - workspace.undo_layout
+    - workspace.reset
+  events:
+    - workbench.editor.opened@1
+    - workbench.editor.closed@1
+    - workbench.editor.load_failed@1
+    - workbench.layout.changed@1
+    - workbench.visibility.changed@1
+    - workbench.context.binding_changed@1
+    - workbench.drawer.changed@1
+  jobs: []
+  workflows: []
+  policy_gates: []
+
+permissions:
+  - workbench:read
+  - workbench:write
+
+entrypoints:
+  frontend: ./frontend/src/index.ts

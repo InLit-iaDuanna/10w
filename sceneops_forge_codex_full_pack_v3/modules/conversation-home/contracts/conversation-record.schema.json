@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/contracts/conversation-home/conversation-record.schema.json",
+  "title": "SceneOps Conversation Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "conversationId",
+    "scope",
+    "messages",
+    "executionMode",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "conversationId": {
+      "type": "string",
+      "pattern": "^cnv_[A-Za-z0-9_-]+$"
+    },
+    "scope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "projectId"],
+          "properties": {
+            "kind": { "const": "project" },
+            "projectId": { "type": "string", "minLength": 3, "maxLength": 160 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "sessionId"],
+          "properties": {
+            "kind": { "const": "pre_project" },
+            "sessionId": { "type": "string", "minLength": 3, "maxLength": 160 }
+          }
+        }
+      ]
+    },
+    "messages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/message" }
+    },
+    "executionMode": { "$ref": "#/$defs/executionMode" },
+    "updatedAt": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "activeRunId": {
+      "type": ["string", "null"],
+      "pattern": "^run_[A-Za-z0-9_-]+$"
+    }
+  },
+  "$defs": {
+    "executionMode": {
+      "enum": ["live", "cached", "mock", "planned", "blocked"]
+    },
+    "attachment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attachmentId", "kind", "name"],
+      "properties": {
+        "attachmentId": { "type": "string", "pattern": "^att_[A-Za-z0-9_-]+$" },
+        "kind": { "enum": ["file", "project"] },
+        "name": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "mediaType": { "type": "string", "maxLength": 160 },
+        "sizeBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "card": {
+      "oneOf": [
+        { "$ref": "#/$defs/progressCard" },
+        { "$ref": "#/$defs/artifactCard" },
+        { "$ref": "#/$defs/errorCard" },
+        { "$ref": "#/$defs/approvalCard" },
+        { "$ref": "#/$defs/openInToolCard" },
+        { "$ref": "#/$defs/assistantActionCard" }
+      ]
+    },
+    "cardId": {
+      "type": "string",
+      "pattern": "^card_[A-Za-z0-9_-]+$"
+    },
+    "progressNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodeId", "label", "state"],
+      "properties": {
+        "nodeId": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "label": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "state": {
+          "enum": ["queued", "running", "waiting_approval", "succeeded", "failed", "cancelled", "blocked"]
+        },
+        "detail": { "type": "string", "maxLength": 2000 }
+      }
+    },
+    "progressCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cardId", "kind", "mode", "title", "runId", "nodes"],
+      "properties": {
+        "cardId": { "$ref": "#/$defs/cardId" },
+        "kind": { "const": "progress" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "runId": { "type": "string", "pattern": "^run_[A-Za-z0-9_-]+$" },
+        "nodes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/progressNode" }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifactId", "producingModule", "executionMode", "createdAt", "approvalState"],
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "producingModule": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "executionMode": { "$ref": "#/$defs/executionMode" },
+        "createdAt": { "type": "string", "format": "date-time", "pattern": "Z$" },
+        "approvalState": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "tool": { "type": "string", "maxLength": 160 },
+        "adapterVersion": { "type": "string", "maxLength": 80 }
+      }
+    },
+    "artifactCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cardId", "kind", "mode", "title", "artifactType", "provenance"],
+      "properties": {
+        "cardId": { "$ref": "#/$defs/cardId" },
+        "kind": { "const": "artifact" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "artifactType": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "previewUrl": { "type": "string", "maxLength": 2048 },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "openAction": {
+          "$ref": "https://sceneops.local/contracts/conversation-home/assistant-action.schema.json"
+        }
+      }
+    },
+    "suggestedCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commandId", "title", "input"],
+      "properties": {
+        "commandId": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "input": { "type": "object" }
+      }
+    },
+    "errorCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cardId", "kind", "mode", "code", "message", "retryable", "missingPermissions", "missingIntegrations", "suggestedActions"],
+      "properties": {
+        "cardId": { "$ref": "#/$defs/cardId" },
+        "kind": { "const": "error" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "code": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "requestId": { "type": "string", "maxLength": 160 },
+        "retryable": { "type": "boolean" },
+        "missingPermissions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+        },
+        "missingIntegrations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+        },
+        "suggestedActions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/suggestedCommand" }
+        }
+      }
+    },
+    "approvalCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cardId", "kind", "mode", "approvalId", "changeSetId", "title", "risk", "state"],
+      "properties": {
+        "cardId": { "$ref": "#/$defs/cardId" },
+        "kind": { "const": "approval" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "approvalId": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "changeSetId": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "risk": { "enum": ["low", "medium", "high", "critical"] },
+        "state": { "enum": ["requested", "waiting", "approved", "rejected", "expired"] },
+        "requestAction": {
+          "$ref": "https://sceneops.local/contracts/conversation-home/assistant-action.schema.json"
+        }
+      }
+    },
+    "openInToolCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cardId", "kind", "mode", "title", "description", "action"],
+      "properties": {
+        "cardId": { "$ref": "#/$defs/cardId" },
+        "kind": { "const": "open_in_tool" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "action": {
+          "$ref": "https://sceneops.local/contracts/conversation-home/assistant-action.schema.json"
+        }
+      }
+    },
+    "assistantActionCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cardId", "kind", "mode", "title", "action"],
+      "properties": {
+        "cardId": { "$ref": "#/$defs/cardId" },
+        "kind": { "const": "assistant_action" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "action": {
+          "$ref": "https://sceneops.local/contracts/conversation-home/assistant-action.schema.json"
+        }
+      }
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["messageId", "role", "body", "createdAt", "mode", "status", "attachments", "cards"],
+      "properties": {
+        "messageId": { "type": "string", "pattern": "^msg_[A-Za-z0-9_-]+$" },
+        "role": { "enum": ["user", "assistant", "system"] },
+        "body": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time", "pattern": "Z$" },
+        "mode": { "$ref": "#/$defs/executionMode" },
+        "status": { "enum": ["complete", "streaming", "failed", "cancelled"] },
+        "replyToMessageId": { "type": "string", "pattern": "^msg_[A-Za-z0-9_-]+$" },
+        "attachments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/attachment" }
+        },
+        "cards": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/card" }
+        }
+      }
+    }
+  }
+}

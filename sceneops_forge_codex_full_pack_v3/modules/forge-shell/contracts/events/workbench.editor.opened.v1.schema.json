@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.local/events/workbench.editor.opened/v1",
+  "x-event-type": "workbench.editor.opened",
+  "x-event-version": 1,
+  "type": "object",
+  "required": [
+    "instance",
+    "placement",
+    "source"
+  ],
+  "properties": {
+    "instance": {
+      "type": "object"
+    },
+    "placement": {
+      "type": "object"
+    },
+    "source": {
+      "enum": [
+        "assistant",
+        "button",
+        "menu",
+        "keyboard",
+        "tool-library",
+        "workflow"
+      ]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "workspaceId": "home",
+  "source": "default",
+  "areas": [
+    {
+      "editorId": "assistant.conversation",
+      "instanceId": "editor_conversation_home",
+      "placement": "center",
+      "locked": false
+    }
+  ],
+  "drawers": {
+    "left": "hidden",
+    "right": "hidden",
+    "top": "hidden",
+    "bottom": "hidden"
+  },
+  "edgeAffordances": ["left", "right", "top", "bottom"],
+  "autoOpenAdditionalEditors": false
+}
