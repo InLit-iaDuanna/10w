@@ -9,6 +9,7 @@ export type {
   RenderEditorProps,
   RenderEditorServerState,
 } from "./contracts.ts";
+export { RenderLabWorkbench } from './lab/RenderLabWorkbench';
 export { commandIds, eventIds, moduleContribution, renderEditors, renderKeys } from "./manifest.ts";
 export { buildPresentation, executionModeLabel } from "./presentation.ts";
 export {

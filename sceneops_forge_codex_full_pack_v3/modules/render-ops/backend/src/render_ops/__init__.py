@@ -1,5 +1,7 @@
 """Public API for the SceneOps Render Ops module."""
 
+from .lab_router import create_render_lab_router
+
 from .cache import plan_aov_cache, validate_aov_artifacts, validate_aov_set
 from .capture import (
     AovCaptureWorker,
@@ -69,6 +71,7 @@ from .writeback import (
 )
 
 __all__ = [
+    "create_render_lab_router",
     "AovArtifact",
     "AovCaptureWorker",
     "AovDependencySnapshot",
