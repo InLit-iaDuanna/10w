@@ -207,6 +207,14 @@ AI outputs additionally record provider/model, workflow hash, prompt, negative p
 
 ## 16. Tests
 
+### 16.1 Test execution authorization
+
+- Unless the user explicitly authorizes broader testing in the current conversation, run only the smallest relevant smoke test for the changed scope.
+- Full unit, integration, end-to-end, security, performance, build, render, Unity, Blender, and playtest suites require explicit user permission before execution.
+- Tests and fixtures must still be implemented and maintained where required, but unexecuted suites must be reported as `not run` or `pending approval`, never as passed.
+- Permission to run one named test or smoke check does not authorize other suites.
+- Smoke testing should be limited to startup/import validation and one minimal primary-path check, without long-running external-tool operations.
+
 A feature is incomplete without:
 
 1. a success-path test;
