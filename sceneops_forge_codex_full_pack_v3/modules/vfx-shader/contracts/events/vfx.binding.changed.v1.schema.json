@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://vfx-shader/events/vfx.binding.changed@1",
+  "title": "VFX binding changed event intent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^evt_"},
+    "event_type": {"const": "vfx.binding.changed"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "pattern": "^prj_"},
+    "correlation_id": {"type": "string", "pattern": "^corr_"},
+    "causation_id": {"type": "string", "pattern": "^cmd_"},
+    "actor": {"type": "object", "additionalProperties": false, "required": ["type", "id"], "properties": {"type": {"enum": ["user", "agent", "system"]}, "id": {"type": "string", "minLength": 1}}},
+    "mode": {"enum": ["live", "cached", "mock"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recipe_id", "binding_id", "enabled", "change_set_id"],
+      "properties": {
+        "recipe_id": {"type": "string", "pattern": "^vfxrec_"},
+        "binding_id": {"type": "string", "pattern": "^vfxbind_"},
+        "enabled": {"type": "boolean"},
+        "change_set_id": {"type": "string", "pattern": "^chg_"}
+      }
+    }
+  }
+}

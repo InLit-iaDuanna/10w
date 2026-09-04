@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.dev/contracts/ui-studio/events/ui.flow.validated.v1.json",
+  "type": "object", "additionalProperties": false,
+  "properties": {
+    "event_id": {"type": "string"}, "event_type": {"const": "ui.flow.validated"}, "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"}, "project_id": {"type": "string"}, "correlation_id": {"type": "string"}, "causation_id": {"type": "string"},
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]}, "actor": {"type": "object", "additionalProperties": false, "properties": {"type": {"type": "string"}, "id": {"type": "string"}}, "required": ["type", "id"]},
+    "payload": {"type": "object", "additionalProperties": false, "properties": {"flow_id": {"type": "string"}, "valid": {"type": "boolean"}, "issue_codes": {"type": "array", "items": {"type": "string"}}}, "required": ["flow_id", "valid", "issue_codes"]}
+  },
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"]
+}

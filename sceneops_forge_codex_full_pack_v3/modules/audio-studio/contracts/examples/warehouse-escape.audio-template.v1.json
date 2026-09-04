@@ -1,0 +1,1 @@
+{"fixture_mode":"mock","project_id":"prj_warehouse_escape","bindings":[{"gameplay_event":"gameplay.switch.activated","target_sceneops_id":"so_switch_warehouse_01","mixer_group":"SFX/Interact"},{"gameplay_event":"gameplay.exit.unlocked","target_sceneops_id":"so_exit_warehouse_01","mixer_group":"SFX/Environment"}]}

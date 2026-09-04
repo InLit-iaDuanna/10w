@@ -1,0 +1,55 @@
+{
+  "fixture_kind": "deterministic_mock",
+  "recipe_id": "vfxrec_home_doorway_highlight",
+  "version": "1.0.0",
+  "template_id": "subtle_interaction_highlight_v1",
+  "title_zh": "回家门口与钥匙柔和高亮",
+  "shader_family": "sceneops/subtle-outline-pulse",
+  "quality_tier": "medium",
+  "parameter_specs": [
+    {"key": "color", "kind": "color", "label_zh": "高亮颜色", "default": "#ECA85B"},
+    {"key": "intensity", "kind": "float", "label_zh": "强度", "default": 0.34, "minimum": 0.0, "maximum": 1.0, "step": 0.01},
+    {"key": "pulse_hz", "kind": "float", "label_zh": "呼吸频率", "default": 0.55, "minimum": 0.1, "maximum": 2.0, "step": 0.05},
+    {"key": "edge_width_px", "kind": "float", "label_zh": "边缘宽度", "default": 1.5, "minimum": 0.5, "maximum": 4.0, "step": 0.25},
+    {"key": "soft_particles", "kind": "boolean", "label_zh": "柔和粒子", "default": true}
+  ],
+  "parameters": {
+    "color": "#ECA85B",
+    "intensity": 0.34,
+    "pulse_hz": 0.55,
+    "edge_width_px": 1.5,
+    "soft_particles": true
+  },
+  "particle_count": 28,
+  "estimated_overdraw_layers": 1.35,
+  "estimated_screen_coverage_percent": 5.5,
+  "bindings": [
+    {"binding_id": "vfxbind_home_key_picked_up", "event_name": "gameplay.key.picked_up", "target_sceneops_id": "so_key_home_01", "action": "pulse", "enabled": false},
+    {"binding_id": "vfxbind_home_door_unlocked", "event_name": "gameplay.door.unlocked", "target_sceneops_id": "so_door_home_01", "action": "enable", "enabled": false}
+  ],
+  "provenance": {
+    "artifact_id": "artifact_mock_vfx_home_highlight_v1",
+    "artifact_type": "vfx_shader_recipe",
+    "source_project_id": "prj_find_my_way_home",
+    "source_version": "fixture-1",
+    "source_commit": null,
+    "related_sceneops_ids": ["so_key_home_01", "so_door_home_01"],
+    "producing_module": "vfx-shader",
+    "tool": "deterministic-fixture",
+    "adapter_version": "fixture-v1",
+    "recipe_version": "1.0.0",
+    "creator": "sceneops-fixture-author",
+    "execution_mode": "mock",
+    "timestamp": "2026-09-04T00:00:00Z",
+    "checksum_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "approval_state": "approved",
+    "ai_provider": null,
+    "ai_model": null,
+    "workflow_hash": null,
+    "prompt": null,
+    "negative_prompt": null,
+    "seed": null,
+    "ai_parameters": {}
+  },
+  "optional": true
+}

@@ -1,0 +1,11 @@
+{
+  "fixture_id": "ui-visual-key-door-v1",
+  "mode": "mock",
+  "profile": "iphone-notch-landscape",
+  "screens": [
+    {"id": "hud.home", "anchor": "safe-top-left", "text": "寻找回家的钥匙"},
+    {"id": "prompt.key-picked", "anchor": "safe-bottom-center", "text": "获得：家门钥匙"},
+    {"id": "prompt.door-locked", "anchor": "safe-bottom-center", "text": "门锁着，需要找到钥匙。"},
+    {"id": "prompt.door-unlocked", "anchor": "safe-bottom-center", "text": "钥匙转动，门已解锁。"}
+  ]
+}
