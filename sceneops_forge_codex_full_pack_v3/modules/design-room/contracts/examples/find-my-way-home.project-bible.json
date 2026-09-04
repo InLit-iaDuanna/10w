@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "documentType": "project-bible",
+  "bibleId": "bible_find_my_way_home",
+  "projectId": "prj_find_my_way_home",
+  "sourceIntakeId": "intake_find_my_way_home",
+  "title": "Find My Way Home Project Bible",
+  "status": "approved",
+  "gameGoal": "让玩家通过观察环境、寻找关键物品并安全回到家。",
+  "targetPlayers": [
+    {
+      "audienceId": "audience_exploration_players",
+      "description": "喜欢紧凑叙事探索的玩家",
+      "playerNeeds": ["清晰但不过度直白的引导", "可理解的交互反馈"]
+    }
+  ],
+  "coreLoop": [
+    { "stepId": "loop_observe", "order": 1, "action": "观察环境", "feedback": "视觉与音频线索", "playerValue": "形成路线假设" },
+    { "stepId": "loop_explore", "order": 2, "action": "探索路径", "feedback": "发现关键物品", "playerValue": "推进目标" },
+    { "stepId": "loop_unlock", "order": 3, "action": "解锁入口", "feedback": "门打开并更新目标", "playerValue": "获得归家感" }
+  ],
+  "visualRules": [{ "id": "visual_warm_home", "statement": "家的方向使用温暖琥珀色线索。", "rationale": "强化归家身份。" }],
+  "audioRules": [{ "id": "audio_confirm_actions", "statement": "拾取和解锁必须有不同的确认音。", "rationale": "避免只依赖视觉。" }],
+  "interactionRules": [{ "id": "interaction_one_action", "statement": "同一时刻只突出一个主要交互动作。", "rationale": "降低歧义。" }],
+  "namingRules": [{ "id": "naming_stable_ids", "statement": "生产实体使用稳定英文 ID，显示名称可本地化。", "rationale": "保持跨工具身份。" }],
+  "platformBudgets": [
+    { "budgetId": "budget_fps_60", "platform": "Windows", "metric": "frame_rate", "limit": 60, "unit": "fps", "measurementContext": "1920x1080 gameplay build" }
+  ],
+  "prohibitedChanges": [{ "id": "prohibit_silent_unlock", "statement": "不得让门在没有钥匙时自动打开。", "scope": "key-door feature" }],
+  "approvedDecisionIds": ["decision_key_visibility"],
+  "assumptions": []
+}

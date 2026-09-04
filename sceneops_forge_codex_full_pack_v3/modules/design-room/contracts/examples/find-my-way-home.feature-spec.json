@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "documentType": "feature-spec",
+  "featureSpecId": "feature_key_door_branch",
+  "projectId": "prj_find_my_way_home",
+  "gddId": "gdd_find_my_way_home",
+  "title": "钥匙开门分支",
+  "status": "approved",
+  "goal": "玩家找到钥匙后才能打开家门并完成该目标。",
+  "playerValue": "发现、理解并完成归家路径。",
+  "inputs": [
+    { "id": "input_key_pickup", "statement": "玩家拾取钥匙", "source": "player" },
+    { "id": "input_door_interact", "statement": "玩家与家门交互", "source": "player" }
+  ],
+  "outputs": [
+    { "id": "output_inventory", "statement": "背包包含 home_key", "consumer": "system" },
+    { "id": "output_door_open", "statement": "家门进入 opened 状态", "consumer": "player" }
+  ],
+  "dependencies": [
+    { "dependencyId": "system_inventory", "kind": "system", "requiredState": "available" },
+    { "dependencyId": "decision_key_visibility", "kind": "decision", "requiredState": "decided" }
+  ],
+  "edgeCases": [
+    { "id": "edge_door_without_key", "statement": "没有钥匙时与门交互", "expectedBehavior": "门保持锁定并给出明确反馈" },
+    { "id": "edge_pickup_twice", "statement": "重复拾取钥匙", "expectedBehavior": "保持单一库存条目且不重复触发任务" }
+  ],
+  "acceptanceCriteria": [
+    { "criterionId": "ac_key_required", "title": "钥匙是开门前置条件", "given": "玩家未拾取 home_key", "when": "玩家与家门交互", "then": "门保持锁定并显示缺少钥匙的反馈", "priority": "must" },
+    { "criterionId": "ac_door_opens", "title": "持钥匙可开门", "given": "玩家背包含 home_key", "when": "玩家与家门交互", "then": "门打开、播放音效并更新归家目标", "priority": "must" }
+  ],
+  "requiredDeliverables": [
+    { "requirementId": "req_asset_key", "kind": "asset", "description": "可识别的家门钥匙", "existingArtifactId": null },
+    { "requirementId": "req_scene_key_branch", "kind": "scene", "description": "主路径旁的钥匙短分支", "existingArtifactId": null },
+    { "requirementId": "req_script_lock", "kind": "script", "description": "背包、拾取与门锁状态逻辑", "existingArtifactId": null },
+    { "requirementId": "req_ui_prompt", "kind": "ui", "description": "拾取与缺少钥匙提示", "existingArtifactId": null },
+    { "requirementId": "req_audio_key_door", "kind": "audio", "description": "拾取、锁定与解锁音效", "existingArtifactId": null },
+    { "requirementId": "req_vfx_door", "kind": "vfx", "description": "轻量解锁反馈", "existingArtifactId": null }
+  ],
+  "requiredTests": [
+    { "testId": "test_key_door_happy", "level": "playtest", "description": "拾取钥匙并打开家门", "linkedCriterionIds": ["ac_door_opens"] },
+    { "testId": "test_key_door_locked", "level": "integration", "description": "无钥匙时门保持锁定", "linkedCriterionIds": ["ac_key_required"] }
+  ],
+  "assumptions": []
+}

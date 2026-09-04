@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "documentType": "gdd",
+  "gddId": "gdd_find_my_way_home",
+  "projectId": "prj_find_my_way_home",
+  "title": "Find My Way Home GDD",
+  "status": "approved",
+  "executiveSummary": "一段通过环境线索、钥匙与家门完成的短篇归家体验。",
+  "designPillars": [
+    { "id": "pillar_readable", "statement": "空间线索可读" },
+    { "id": "pillar_homecoming", "statement": "回家具有情绪回报" }
+  ],
+  "playerExperienceGoals": [{ "id": "experience_discovery", "statement": "玩家自行发现钥匙用途。" }],
+  "gameplaySystems": [
+    {
+      "systemId": "system_key_door",
+      "name": "钥匙与门",
+      "purpose": "控制回家入口的解锁条件。",
+      "inputs": [{ "id": "input_interact", "statement": "玩家交互" }],
+      "outputs": [{ "id": "output_door_state", "statement": "门锁状态与任务进度" }],
+      "dependencyIds": ["system_inventory"],
+      "edgeCases": [{ "id": "edge_repeat_interact", "statement": "玩家重复使用已解锁门。" }]
+    }
+  ],
+  "progression": [{ "id": "progress_home", "statement": "发现钥匙 → 拾取 → 返回家门 → 解锁" }],
+  "worldStructure": [{ "id": "world_branch", "statement": "钥匙位于主路可见的短分支。" }],
+  "economyRules": [],
+  "failureRecovery": [{ "id": "recovery_key", "statement": "遗漏钥匙时提供逐步增强的环境线索。" }],
+  "dependencyIds": ["system_inventory"],
+  "assumptions": []
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://project-intake/events/project.intake.drafted/v1",
+  "title": "project.intake.drafted@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intakeId", "kind", "status", "inferredFields", "missingFields"],
+  "properties": {
+    "intakeId": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["new-project", "existing-project"] },
+    "status": { "enum": ["draft", "needs-confirmation", "ready"] },
+    "inferredFields": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fieldKey" },
+      "uniqueItems": true
+    },
+    "missingFields": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fieldKey" },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "fieldKey": {
+      "enum": [
+        "projectName",
+        "targetPlatforms",
+        "engine",
+        "dccs",
+        "projectRoots",
+        "teamRoles",
+        "styleGoals",
+        "performanceBudgets",
+        "integrationRequirements"
+      ]
+    }
+  }
+}

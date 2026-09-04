@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://design-room/manifests/project-bible/v1",
+  "title": "Project Bible v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "bibleId",
+    "projectId",
+    "sourceIntakeId",
+    "title",
+    "status",
+    "gameGoal",
+    "targetPlayers",
+    "coreLoop",
+    "visualRules",
+    "audioRules",
+    "interactionRules",
+    "namingRules",
+    "platformBudgets",
+    "prohibitedChanges",
+    "approvedDecisionIds",
+    "assumptions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "documentType": { "const": "project-bible" },
+    "bibleId": { "type": "string", "minLength": 1 },
+    "projectId": { "type": "string", "minLength": 1 },
+    "sourceIntakeId": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["draft", "in-review", "approved"] },
+    "gameGoal": { "type": "string", "minLength": 1 },
+    "targetPlayers": { "type": "array", "items": { "type": "object" } },
+    "coreLoop": { "type": "array", "items": { "type": "object" } },
+    "visualRules": { "type": "array", "items": { "type": "object" } },
+    "audioRules": { "type": "array", "items": { "type": "object" } },
+    "interactionRules": { "type": "array", "items": { "type": "object" } },
+    "namingRules": { "type": "array", "items": { "type": "object" } },
+    "platformBudgets": { "type": "array", "items": { "type": "object" } },
+    "prohibitedChanges": { "type": "array", "items": { "type": "object" } },
+    "approvedDecisionIds": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "assumptions": { "type": "array", "items": { "$ref": "#/$defs/assumption" } }
+  },
+  "$defs": {
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "sourceMessageId", "status"],
+      "properties": {
+        "id": { "type": "string" },
+        "statement": { "type": "string" },
+        "sourceMessageId": { "type": "string" },
+        "status": { "enum": ["unconfirmed", "confirmed", "rejected"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sceneops://design-room/events/design.project_bible.versioned/v1",
+  "title": "design.project_bible.versioned@1 payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["documentType", "documentId", "versionId", "versionNumber"],
+  "properties": {
+    "documentType": { "const": "project-bible" },
+    "documentId": { "type": "string", "minLength": 1 },
+    "versionId": { "type": "string", "minLength": 1 },
+    "versionNumber": { "type": "integer", "minimum": 1 }
+  }
+}

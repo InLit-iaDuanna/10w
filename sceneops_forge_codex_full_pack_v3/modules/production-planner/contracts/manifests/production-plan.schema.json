@@ -1,0 +1,874 @@
+{
+  "$defs": {
+    "AcceptanceEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "minLength": 1,
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "criterion_id": {
+          "minLength": 1,
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "evidence_id": {
+          "minLength": 1,
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "evidence_type": {
+          "minLength": 1,
+          "title": "Evidence Type",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "outcome": {
+          "$ref": "#/$defs/EvidenceOutcome"
+        },
+        "run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Id"
+        },
+        "task_id": {
+          "minLength": 1,
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "criterion_id",
+        "evidence_type",
+        "task_id",
+        "artifact_id",
+        "outcome",
+        "mode",
+        "captured_at"
+      ],
+      "title": "AcceptanceEvidence",
+      "type": "object"
+    },
+    "AcceptanceLink": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "minLength": 1,
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "expected_evidence": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Expected Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "criterion_id",
+        "expected_evidence"
+      ],
+      "title": "AcceptanceLink",
+      "type": "object"
+    },
+    "ApprovalRequirement": {
+      "enum": [
+        "none",
+        "human"
+      ],
+      "title": "ApprovalRequirement",
+      "type": "string"
+    },
+    "Assignment": {
+      "additionalProperties": false,
+      "properties": {
+        "assignee_id": {
+          "minLength": 1,
+          "title": "Assignee Id",
+          "type": "string"
+        },
+        "assignment_id": {
+          "minLength": 1,
+          "title": "Assignment Id",
+          "type": "string"
+        },
+        "confirmed": {
+          "default": false,
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "display_name": {
+          "minLength": 1,
+          "title": "Display Name",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssignmentKind"
+        }
+      },
+      "required": [
+        "assignment_id",
+        "kind",
+        "assignee_id",
+        "display_name"
+      ],
+      "title": "Assignment",
+      "type": "object"
+    },
+    "AssignmentKind": {
+      "enum": [
+        "human",
+        "agent"
+      ],
+      "title": "AssignmentKind",
+      "type": "string"
+    },
+    "BlockerCode": {
+      "enum": [
+        "missing_prerequisite",
+        "dependency_cycle",
+        "impossible_milestone_state",
+        "unmet_acceptance",
+        "approval_required",
+        "upstream_incomplete",
+        "feature_source_unavailable",
+        "operational_blocker"
+      ],
+      "title": "BlockerCode",
+      "type": "string"
+    },
+    "DeliverableLink": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "minLength": 1,
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "minLength": 1,
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "link_id": {
+          "minLength": 1,
+          "title": "Link Id",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "output_id": {
+          "minLength": 1,
+          "title": "Output Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "link_id",
+        "output_id",
+        "artifact_id",
+        "artifact_type",
+        "mode"
+      ],
+      "title": "DeliverableLink",
+      "type": "object"
+    },
+    "Estimate": {
+      "additionalProperties": false,
+      "properties": {
+        "estimate_id": {
+          "minLength": 1,
+          "title": "Estimate Id",
+          "type": "string"
+        },
+        "hours": {
+          "exclusiveMinimum": 0,
+          "title": "Hours",
+          "type": "number"
+        },
+        "kind": {
+          "$ref": "#/$defs/EstimateKind"
+        },
+        "mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "originating_live_run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Originating Live Run Id"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "run_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Id"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "estimate_id",
+        "kind",
+        "hours",
+        "source",
+        "mode",
+        "recorded_at"
+      ],
+      "title": "Estimate",
+      "type": "object"
+    },
+    "EstimateKind": {
+      "enum": [
+        "predicted",
+        "measured"
+      ],
+      "title": "EstimateKind",
+      "type": "string"
+    },
+    "EvidenceOutcome": {
+      "enum": [
+        "passed",
+        "failed"
+      ],
+      "title": "EvidenceOutcome",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "Milestone": {
+      "additionalProperties": false,
+      "properties": {
+        "milestone_id": {
+          "minLength": 1,
+          "title": "Milestone Id",
+          "type": "string"
+        },
+        "required_task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Required Task Ids",
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/MilestoneState",
+          "default": "planned"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "milestone_id",
+        "title",
+        "required_task_ids"
+      ],
+      "title": "Milestone",
+      "type": "object"
+    },
+    "MilestoneState": {
+      "enum": [
+        "planned",
+        "ready",
+        "completed",
+        "blocked"
+      ],
+      "title": "MilestoneState",
+      "type": "string"
+    },
+    "PlanStatus": {
+      "enum": [
+        "draft_unconfirmed",
+        "approved",
+        "blocked"
+      ],
+      "title": "PlanStatus",
+      "type": "string"
+    },
+    "ProductionTask": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance": {
+          "items": {
+            "$ref": "#/$defs/AcceptanceLink"
+          },
+          "minItems": 1,
+          "title": "Acceptance",
+          "type": "array"
+        },
+        "approval_ref_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Approval Ref Ids",
+          "type": "array"
+        },
+        "approval_requirement": {
+          "$ref": "#/$defs/ApprovalRequirement"
+        },
+        "assignment": {
+          "$ref": "#/$defs/Assignment"
+        },
+        "blockers": {
+          "items": {
+            "$ref": "#/$defs/TaskBlocker"
+          },
+          "title": "Blockers",
+          "type": "array"
+        },
+        "comment_thread_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment Thread Id"
+        },
+        "comments": {
+          "items": {
+            "$ref": "#/$defs/TaskCommentReference"
+          },
+          "title": "Comments",
+          "type": "array"
+        },
+        "confirmed": {
+          "default": false,
+          "title": "Confirmed",
+          "type": "boolean"
+        },
+        "deliverables": {
+          "items": {
+            "$ref": "#/$defs/DeliverableLink"
+          },
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "estimates": {
+          "items": {
+            "$ref": "#/$defs/Estimate"
+          },
+          "minItems": 1,
+          "title": "Estimates",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/AcceptanceEvidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/TaskInput"
+          },
+          "minItems": 1,
+          "title": "Inputs",
+          "type": "array"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/TaskOutput"
+          },
+          "minItems": 1,
+          "title": "Outputs",
+          "type": "array"
+        },
+        "recommended_editor_id": {
+          "minLength": 1,
+          "title": "Recommended Editor Id",
+          "type": "string"
+        },
+        "risks": {
+          "items": {
+            "$ref": "#/$defs/Risk"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/TaskStatus",
+          "default": "draft"
+        },
+        "task_id": {
+          "minLength": 1,
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "workstream": {
+          "$ref": "#/$defs/Workstream"
+        }
+      },
+      "required": [
+        "task_id",
+        "workstream",
+        "title",
+        "description",
+        "assignment",
+        "inputs",
+        "outputs",
+        "acceptance",
+        "estimates",
+        "approval_requirement",
+        "recommended_editor_id"
+      ],
+      "title": "ProductionTask",
+      "type": "object"
+    },
+    "Risk": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "impact": {
+          "pattern": "^(low|medium|high)$",
+          "title": "Impact",
+          "type": "string"
+        },
+        "likelihood": {
+          "pattern": "^(low|medium|high)$",
+          "title": "Likelihood",
+          "type": "string"
+        },
+        "mitigation": {
+          "minLength": 1,
+          "title": "Mitigation",
+          "type": "string"
+        },
+        "risk_id": {
+          "minLength": 1,
+          "title": "Risk Id",
+          "type": "string"
+        },
+        "state": {
+          "default": "open",
+          "pattern": "^(open|mitigated|accepted)$",
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "risk_id",
+        "description",
+        "likelihood",
+        "impact",
+        "mitigation"
+      ],
+      "title": "Risk",
+      "type": "object"
+    },
+    "TaskBlocker": {
+      "additionalProperties": false,
+      "properties": {
+        "blocker_id": {
+          "minLength": 1,
+          "title": "Blocker Id",
+          "type": "string"
+        },
+        "code": {
+          "$ref": "#/$defs/BlockerCode"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "milestone_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Milestone Id"
+        },
+        "resolution_ref_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolution Ref Id"
+        },
+        "resolved": {
+          "default": false,
+          "title": "Resolved",
+          "type": "boolean"
+        },
+        "task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Task Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocker_id",
+        "code",
+        "message",
+        "task_ids"
+      ],
+      "title": "TaskBlocker",
+      "type": "object"
+    },
+    "TaskCommentReference": {
+      "additionalProperties": false,
+      "properties": {
+        "comment_id": {
+          "minLength": 1,
+          "title": "Comment Id",
+          "type": "string"
+        },
+        "comment_thread_id": {
+          "minLength": 1,
+          "title": "Comment Thread Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "comment_id",
+        "comment_thread_id"
+      ],
+      "title": "TaskCommentReference",
+      "type": "object"
+    },
+    "TaskDependency": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_id": {
+          "minLength": 1,
+          "title": "Dependency Id",
+          "type": "string"
+        },
+        "predecessor_task_id": {
+          "minLength": 1,
+          "title": "Predecessor Task Id",
+          "type": "string"
+        },
+        "required_output_type": {
+          "minLength": 1,
+          "title": "Required Output Type",
+          "type": "string"
+        },
+        "successor_task_id": {
+          "minLength": 1,
+          "title": "Successor Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dependency_id",
+        "predecessor_task_id",
+        "successor_task_id",
+        "required_output_type"
+      ],
+      "title": "TaskDependency",
+      "type": "object"
+    },
+    "TaskInput": {
+      "additionalProperties": false,
+      "properties": {
+        "input_id": {
+          "minLength": 1,
+          "title": "Input Id",
+          "type": "string"
+        },
+        "required_artifact_type": {
+          "minLength": 1,
+          "title": "Required Artifact Type",
+          "type": "string"
+        },
+        "source_id": {
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_kind": {
+          "pattern": "^(feature_spec|task_output)$",
+          "title": "Source Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_id",
+        "source_kind",
+        "source_id",
+        "required_artifact_type"
+      ],
+      "title": "TaskInput",
+      "type": "object"
+    },
+    "TaskOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "artifact_type": {
+          "minLength": 1,
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "output_id": {
+          "minLength": 1,
+          "title": "Output Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "output_id",
+        "artifact_type"
+      ],
+      "title": "TaskOutput",
+      "type": "object"
+    },
+    "TaskStatus": {
+      "enum": [
+        "draft",
+        "ready",
+        "in_progress",
+        "waiting_approval",
+        "blocked",
+        "completed",
+        "cancelled"
+      ],
+      "title": "TaskStatus",
+      "type": "string"
+    },
+    "Workstream": {
+      "enum": [
+        "design",
+        "concept",
+        "asset",
+        "animation",
+        "world",
+        "logic",
+        "ui",
+        "audio",
+        "vfx",
+        "render",
+        "build",
+        "test"
+      ],
+      "title": "Workstream",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "approval_ref_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approval Ref Id"
+    },
+    "blockers": {
+      "items": {
+        "$ref": "#/$defs/TaskBlocker"
+      },
+      "title": "Blockers",
+      "type": "array"
+    },
+    "change_set_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Change Set Id"
+    },
+    "dependencies": {
+      "items": {
+        "$ref": "#/$defs/TaskDependency"
+      },
+      "title": "Dependencies",
+      "type": "array"
+    },
+    "execution_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "feature_id": {
+      "minLength": 1,
+      "title": "Feature Id",
+      "type": "string"
+    },
+    "feature_revision": {
+      "minimum": 1,
+      "title": "Feature Revision",
+      "type": "integer"
+    },
+    "feature_source_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "feature_title": {
+      "minLength": 1,
+      "title": "Feature Title",
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "milestones": {
+      "items": {
+        "$ref": "#/$defs/Milestone"
+      },
+      "minItems": 1,
+      "title": "Milestones",
+      "type": "array"
+    },
+    "plan_id": {
+      "minLength": 1,
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "plan_version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Plan Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "risks": {
+      "items": {
+        "$ref": "#/$defs/Risk"
+      },
+      "title": "Risks",
+      "type": "array"
+    },
+    "source_contract_version": {
+      "minLength": 1,
+      "title": "Source Contract Version",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/PlanStatus"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/ProductionTask"
+      },
+      "minItems": 1,
+      "title": "Tasks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "plan_id",
+    "project_id",
+    "feature_id",
+    "feature_revision",
+    "feature_title",
+    "source_contract_version",
+    "status",
+    "execution_mode",
+    "feature_source_mode",
+    "generated_at",
+    "tasks",
+    "dependencies",
+    "milestones"
+  ],
+  "title": "ProductionPlan",
+  "type": "object"
+}

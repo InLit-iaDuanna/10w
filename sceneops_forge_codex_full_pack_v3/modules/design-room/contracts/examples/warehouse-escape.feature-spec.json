@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "documentType": "feature-spec",
+  "featureSpecId": "feature_switch_exit",
+  "projectId": "prj_warehouse_escape",
+  "gddId": null,
+  "title": "仓库开关与出口",
+  "status": "draft",
+  "goal": "玩家触发开关、避开障碍并到达出口。",
+  "playerValue": "理解空间因果关系并完成逃脱。",
+  "inputs": [{ "id": "input_switch", "statement": "玩家触发墙面开关", "source": "player" }],
+  "outputs": [{ "id": "output_exit_open", "statement": "出口门解锁", "consumer": "player" }],
+  "dependencies": [{ "dependencyId": "system_navigation", "kind": "system", "requiredState": "available" }],
+  "edgeCases": [{ "id": "edge_blocked_path", "statement": "障碍使目标不可达", "expectedBehavior": "测试失败并回指障碍碰撞体" }],
+  "acceptanceCriteria": [{ "criterionId": "ac_exit", "title": "开关解锁出口", "given": "出口门锁定", "when": "玩家触发开关", "then": "出口门解锁且路径可达", "priority": "must" }],
+  "requiredDeliverables": [
+    { "requirementId": "req_switch_asset", "kind": "asset", "description": "墙面开关", "existingArtifactId": null },
+    { "requirementId": "req_warehouse_scene", "kind": "scene", "description": "仓库障碍与出口", "existingArtifactId": null },
+    { "requirementId": "req_switch_logic", "kind": "script", "description": "开关到门的状态连接", "existingArtifactId": null }
+  ],
+  "requiredTests": [{ "testId": "test_warehouse_exit", "level": "playtest", "description": "触发开关并抵达出口", "linkedCriterionIds": ["ac_exit"] }],
+  "assumptions": []
+}

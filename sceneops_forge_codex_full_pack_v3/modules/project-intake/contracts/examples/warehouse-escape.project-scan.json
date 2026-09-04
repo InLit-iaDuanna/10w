@@ -1,0 +1,17 @@
+{
+  "adapterId": "fixture.unity-project-scan",
+  "adapterVersion": "0.1.0-fixture",
+  "scanId": "scan_warehouse_escape_001",
+  "scannedAt": "2026-09-04T02:00:01Z",
+  "mode": "mock",
+  "detected": {
+    "projectName": "Warehouse Escape",
+    "targetPlatforms": ["Windows"],
+    "engine": { "toolId": "unity", "displayName": "Unity", "version": "2022.3.55f1" },
+    "dccs": [],
+    "integrationRequirements": [
+      { "integrationId": "unity", "capability": "scan", "required": true, "notes": "由 fixture 扫描检测。" }
+    ]
+  },
+  "warnings": ["未发现团队角色与性能预算。"]
+}
