@@ -1,0 +1,14 @@
+{
+  "name": "@sceneops/lab-character-animation",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "node dev.mjs" },
+  "dependencies": {
+    "@sceneops/character-animation": "workspace:*",
+    "@tanstack/react-query": "5.90.21",
+    "openapi-fetch": "0.15.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": { "vite": "8.0.0", "typescript": "6.0.3" }
+}

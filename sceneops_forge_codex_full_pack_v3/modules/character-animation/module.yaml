@@ -1,0 +1,69 @@
+schema_version: 1
+id: character-animation
+version: 0.1.0
+title: Character and Animation
+description: Inspects, versions, previews, retargets, and maps imported character animation data.
+status: active
+feature_flag: character_animation
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+    - asset-library
+    - design-room
+    - production-planner
+  integrations: []
+  optional_integrations:
+    - artifact-store
+    - blender
+    - unity
+    - automatic-rigging
+    - retargeting
+
+contributes:
+  editors:
+    - character.editor
+    - character.rig-inspector
+    - character.skin-qa
+    - animation.timeline
+    - animation.retarget-preview
+    - animation.animator-graph
+  commands:
+    - character.inspect
+    - character.version.compare
+    - character.version.review
+    - animation.preview.capture
+    - animation.retarget.preview
+    - character.unity-mapping.propose
+    - character.unity-mapping.execute
+  events:
+    - character.inspected@1
+    - rig.version.approved@1
+    - animation.clip.approved@1
+    - animation.preview.captured@1
+    - unity.character.mapping.applied@1
+  jobs:
+    - character.inspect
+    - animation.preview.capture
+    - character.unity.map
+  workflows:
+    - imported-character-to-unity
+  policy_gates:
+    - character.skeleton
+    - character.skin-weights
+    - animation.clip
+    - character.version-approval
+
+permissions:
+  - character:read
+  - character:write
+  - character:review
+  - animation:read
+  - animation:write
+  - animation:review
+  - unity:write
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: sceneops_character_animation

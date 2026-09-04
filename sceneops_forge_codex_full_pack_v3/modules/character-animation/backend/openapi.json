@@ -1,0 +1,3033 @@
+{
+  "components": {
+    "schemas": {
+      "AnimationClipSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalRecord",
+            "default": {
+              "state": "draft"
+            }
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "clip_version_id": {
+            "minLength": 3,
+            "title": "Clip Version Id",
+            "type": "string"
+          },
+          "duration_seconds": {
+            "title": "Duration Seconds",
+            "type": "number"
+          },
+          "end_pose": {
+            "$ref": "#/components/schemas/LoopPose"
+          },
+          "event_markers": {
+            "items": {
+              "$ref": "#/components/schemas/AnimationEventMarker"
+            },
+            "title": "Event Markers",
+            "type": "array"
+          },
+          "foot_samples": {
+            "items": {
+              "$ref": "#/components/schemas/FootPlantSample"
+            },
+            "title": "Foot Samples",
+            "type": "array"
+          },
+          "loop": {
+            "title": "Loop",
+            "type": "boolean"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "previous_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Id"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "rig_version_id": {
+            "minLength": 3,
+            "title": "Rig Version Id",
+            "type": "string"
+          },
+          "root_motion": {
+            "enum": [
+              "in_place",
+              "extract",
+              "apply"
+            ],
+            "title": "Root Motion",
+            "type": "string"
+          },
+          "root_samples": {
+            "items": {
+              "$ref": "#/components/schemas/RootMotionSample"
+            },
+            "title": "Root Samples",
+            "type": "array"
+          },
+          "sample_rate_hz": {
+            "title": "Sample Rate Hz",
+            "type": "number"
+          },
+          "start_pose": {
+            "$ref": "#/components/schemas/LoopPose"
+          },
+          "version_number": {
+            "minimum": 1.0,
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "clip_version_id",
+          "character_id",
+          "rig_version_id",
+          "version_number",
+          "name",
+          "duration_seconds",
+          "sample_rate_hz",
+          "loop",
+          "root_motion",
+          "start_pose",
+          "end_pose",
+          "provenance"
+        ],
+        "title": "AnimationClipSpec",
+        "type": "object"
+      },
+      "AnimationEventMarker": {
+        "additionalProperties": false,
+        "properties": {
+          "marker_id": {
+            "minLength": 3,
+            "title": "Marker Id",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "time_seconds": {
+            "title": "Time Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "marker_id",
+          "name",
+          "time_seconds"
+        ],
+        "title": "AnimationEventMarker",
+        "type": "object"
+      },
+      "AnimatorStateSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "animator_state_id": {
+            "minLength": 3,
+            "title": "Animator State Id",
+            "type": "string"
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "clip_version_id": {
+            "minLength": 3,
+            "title": "Clip Version Id",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "speed": {
+            "exclusiveMinimum": 0.0,
+            "title": "Speed",
+            "type": "number"
+          },
+          "transitions": {
+            "items": {
+              "$ref": "#/components/schemas/AnimatorTransitionSpec"
+            },
+            "title": "Transitions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "animator_state_id",
+          "character_id",
+          "name",
+          "clip_version_id",
+          "speed",
+          "provenance"
+        ],
+        "title": "AnimatorStateSpec",
+        "type": "object"
+      },
+      "AnimatorTransitionSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "comparison": {
+            "enum": [
+              "equals",
+              "not_equals",
+              "greater",
+              "less"
+            ],
+            "title": "Comparison",
+            "type": "string"
+          },
+          "condition_parameter": {
+            "minLength": 1,
+            "title": "Condition Parameter",
+            "type": "string"
+          },
+          "duration_seconds": {
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": "number"
+          },
+          "target_state_id": {
+            "minLength": 3,
+            "title": "Target State Id",
+            "type": "string"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "number"
+          }
+        },
+        "required": [
+          "target_state_id",
+          "condition_parameter",
+          "comparison",
+          "threshold",
+          "duration_seconds"
+        ],
+        "title": "AnimatorTransitionSpec",
+        "type": "object"
+      },
+      "ApiError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "retryable": {
+            "title": "Retryable",
+            "type": "boolean"
+          },
+          "suggested_actions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggested Actions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details",
+          "request_id",
+          "retryable",
+          "suggested_actions"
+        ],
+        "title": "ApiError",
+        "type": "object"
+      },
+      "ApprovalRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "state": {
+            "$ref": "#/components/schemas/ApprovalState",
+            "default": "draft"
+          }
+        },
+        "title": "ApprovalRecord",
+        "type": "object"
+      },
+      "ApprovalState": {
+        "enum": [
+          "draft",
+          "waiting_approval",
+          "approved",
+          "rejected"
+        ],
+        "title": "ApprovalState",
+        "type": "string"
+      },
+      "BoneChange": {
+        "additionalProperties": false,
+        "properties": {
+          "bone_id": {
+            "title": "Bone Id",
+            "type": "string"
+          },
+          "change": {
+            "enum": [
+              "added",
+              "removed",
+              "renamed",
+              "reparented"
+            ],
+            "title": "Change",
+            "type": "string"
+          },
+          "previous_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Value"
+          },
+          "proposed_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Value"
+          }
+        },
+        "required": [
+          "bone_id",
+          "change"
+        ],
+        "title": "BoneChange",
+        "type": "object"
+      },
+      "BoneSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "bone_id": {
+            "minLength": 3,
+            "title": "Bone Id",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_bone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Bone Id"
+          },
+          "rest_translation_meters": {
+            "default": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Rest Translation Meters",
+            "type": "array"
+          }
+        },
+        "required": [
+          "bone_id",
+          "name"
+        ],
+        "title": "BoneSpec",
+        "type": "object"
+      },
+      "ChangeSet": {
+        "additionalProperties": false,
+        "properties": {
+          "approval_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Approval Requirements",
+            "type": "array"
+          },
+          "approval_state": {
+            "$ref": "#/components/schemas/ApprovalState",
+            "default": "waiting_approval"
+          },
+          "base_version": {
+            "minLength": 1,
+            "title": "Base Version",
+            "type": "string"
+          },
+          "changeset_id": {
+            "minLength": 3,
+            "title": "Changeset Id",
+            "type": "string"
+          },
+          "dry_run": {
+            "const": true,
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "expected_result": {
+            "minLength": 1,
+            "title": "Expected Result",
+            "type": "string"
+          },
+          "impact_scope": {
+            "enum": [
+              "object",
+              "character",
+              "project"
+            ],
+            "title": "Impact Scope",
+            "type": "string"
+          },
+          "previous_values": {
+            "additionalProperties": true,
+            "title": "Previous Values",
+            "type": "object"
+          },
+          "proposed_values": {
+            "additionalProperties": true,
+            "title": "Proposed Values",
+            "type": "object"
+          },
+          "rationale": {
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "risk": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Risk",
+            "type": "string"
+          },
+          "rollback_plan": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Rollback Plan",
+            "type": "array"
+          },
+          "target_integration": {
+            "enum": [
+              "blender",
+              "unity"
+            ],
+            "title": "Target Integration",
+            "type": "string"
+          },
+          "target_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Target Object Ids",
+            "type": "array"
+          },
+          "validation_plan": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Validation Plan",
+            "type": "array"
+          }
+        },
+        "required": [
+          "changeset_id",
+          "base_version",
+          "target_integration",
+          "target_object_ids",
+          "previous_values",
+          "proposed_values",
+          "rationale",
+          "expected_result",
+          "impact_scope",
+          "risk",
+          "validation_plan",
+          "rollback_plan",
+          "approval_requirements"
+        ],
+        "title": "ChangeSet",
+        "type": "object"
+      },
+      "CharacterBundle": {
+        "additionalProperties": false,
+        "properties": {
+          "animator_states": {
+            "items": {
+              "$ref": "#/components/schemas/AnimatorStateSpec"
+            },
+            "title": "Animator States",
+            "type": "array"
+          },
+          "character": {
+            "$ref": "#/components/schemas/CharacterSpec"
+          },
+          "clips": {
+            "items": {
+              "$ref": "#/components/schemas/AnimationClipSpec"
+            },
+            "minItems": 1,
+            "title": "Clips",
+            "type": "array"
+          },
+          "retarget_profiles": {
+            "items": {
+              "$ref": "#/components/schemas/RetargetProfile"
+            },
+            "title": "Retarget Profiles",
+            "type": "array"
+          },
+          "rig": {
+            "$ref": "#/components/schemas/RigVersion"
+          },
+          "skin": {
+            "$ref": "#/components/schemas/SkinVersion"
+          }
+        },
+        "required": [
+          "character",
+          "rig",
+          "skin",
+          "clips"
+        ],
+        "title": "CharacterBundle",
+        "type": "object"
+      },
+      "CharacterInspectionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "bundle": {
+            "$ref": "#/components/schemas/CharacterBundle"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "bundle",
+          "mode"
+        ],
+        "title": "CharacterInspectionRequest",
+        "type": "object"
+      },
+      "CharacterInspectionResult": {
+        "additionalProperties": false,
+        "properties": {
+          "bundle": {
+            "$ref": "#/components/schemas/CharacterBundle"
+          },
+          "report": {
+            "$ref": "#/components/schemas/QualityReport"
+          }
+        },
+        "required": [
+          "bundle",
+          "report"
+        ],
+        "title": "CharacterInspectionResult",
+        "type": "object"
+      },
+      "CharacterSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "coordinate_system": {
+            "$ref": "#/components/schemas/CoordinateSystem"
+          },
+          "display_name": {
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "expected_bone_names": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Expected Bone Names",
+            "type": "array"
+          },
+          "feature_links": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureLink"
+            },
+            "minItems": 1,
+            "title": "Feature Links",
+            "type": "array"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "source_asset_id": {
+            "minLength": 3,
+            "title": "Source Asset Id",
+            "type": "string"
+          },
+          "source_kind": {
+            "enum": [
+              "imported",
+              "generated"
+            ],
+            "title": "Source Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "character_id",
+          "display_name",
+          "source_asset_id",
+          "source_kind",
+          "feature_links",
+          "expected_bone_names",
+          "coordinate_system",
+          "provenance"
+        ],
+        "title": "CharacterSpec",
+        "type": "object"
+      },
+      "CheckStatus": {
+        "enum": [
+          "pass",
+          "warning",
+          "fail",
+          "blocked"
+        ],
+        "title": "CheckStatus",
+        "type": "string"
+      },
+      "ClipVersionDiff": {
+        "additionalProperties": false,
+        "properties": {
+          "base_clip_version_id": {
+            "title": "Base Clip Version Id",
+            "type": "string"
+          },
+          "duration_delta_seconds": {
+            "title": "Duration Delta Seconds",
+            "type": "number"
+          },
+          "event_marker_changes": {
+            "items": {
+              "$ref": "#/components/schemas/EventMarkerChange"
+            },
+            "title": "Event Marker Changes",
+            "type": "array"
+          },
+          "loop_changed": {
+            "title": "Loop Changed",
+            "type": "boolean"
+          },
+          "proposed_clip_version_id": {
+            "title": "Proposed Clip Version Id",
+            "type": "string"
+          },
+          "reversible": {
+            "const": true,
+            "default": true,
+            "title": "Reversible",
+            "type": "boolean"
+          },
+          "root_motion_changed": {
+            "title": "Root Motion Changed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "base_clip_version_id",
+          "proposed_clip_version_id",
+          "duration_delta_seconds",
+          "loop_changed",
+          "root_motion_changed",
+          "event_marker_changes"
+        ],
+        "title": "ClipVersionDiff",
+        "type": "object"
+      },
+      "CoordinateSystem": {
+        "additionalProperties": false,
+        "properties": {
+          "forward_axis": {
+            "enum": [
+              "X",
+              "Y",
+              "Z",
+              "-X",
+              "-Y",
+              "-Z"
+            ],
+            "title": "Forward Axis",
+            "type": "string"
+          },
+          "handedness": {
+            "enum": [
+              "left",
+              "right"
+            ],
+            "title": "Handedness",
+            "type": "string"
+          },
+          "meters_per_unit": {
+            "title": "Meters Per Unit",
+            "type": "number"
+          },
+          "space": {
+            "enum": [
+              "character_local",
+              "rig_local",
+              "unity_local"
+            ],
+            "title": "Space",
+            "type": "string"
+          },
+          "up_axis": {
+            "enum": [
+              "X",
+              "Y",
+              "Z",
+              "-X",
+              "-Y",
+              "-Z"
+            ],
+            "title": "Up Axis",
+            "type": "string"
+          }
+        },
+        "required": [
+          "space",
+          "handedness",
+          "up_axis",
+          "forward_axis",
+          "meters_per_unit"
+        ],
+        "title": "CoordinateSystem",
+        "type": "object"
+      },
+      "EventMarkerChange": {
+        "additionalProperties": false,
+        "properties": {
+          "change": {
+            "enum": [
+              "added",
+              "removed",
+              "renamed",
+              "retimed"
+            ],
+            "title": "Change",
+            "type": "string"
+          },
+          "marker_id": {
+            "title": "Marker Id",
+            "type": "string"
+          },
+          "previous_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Value"
+          },
+          "proposed_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Value"
+          }
+        },
+        "required": [
+          "marker_id",
+          "change"
+        ],
+        "title": "EventMarkerChange",
+        "type": "object"
+      },
+      "ExecutionMode": {
+        "enum": [
+          "live",
+          "cached",
+          "mock",
+          "planned",
+          "blocked"
+        ],
+        "title": "ExecutionMode",
+        "type": "string"
+      },
+      "FeatureLink": {
+        "additionalProperties": false,
+        "properties": {
+          "feature_spec_id": {
+            "minLength": 3,
+            "title": "Feature Spec Id",
+            "type": "string"
+          },
+          "task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Task Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "feature_spec_id",
+          "task_ids"
+        ],
+        "title": "FeatureLink",
+        "type": "object"
+      },
+      "FixedPreviewCamera": {
+        "additionalProperties": false,
+        "properties": {
+          "camera_id": {
+            "minLength": 3,
+            "title": "Camera Id",
+            "type": "string"
+          },
+          "coordinate_space": {
+            "const": "character_local",
+            "default": "character_local",
+            "title": "Coordinate Space",
+            "type": "string"
+          },
+          "position_meters": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Position Meters",
+            "type": "array"
+          },
+          "resolution_height": {
+            "exclusiveMinimum": 0.0,
+            "title": "Resolution Height",
+            "type": "integer"
+          },
+          "resolution_width": {
+            "exclusiveMinimum": 0.0,
+            "title": "Resolution Width",
+            "type": "integer"
+          },
+          "target_meters": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Target Meters",
+            "type": "array"
+          },
+          "vertical_fov_degrees": {
+            "exclusiveMaximum": 179.0,
+            "exclusiveMinimum": 1.0,
+            "title": "Vertical Fov Degrees",
+            "type": "number"
+          }
+        },
+        "required": [
+          "camera_id",
+          "position_meters",
+          "target_meters",
+          "vertical_fov_degrees",
+          "resolution_width",
+          "resolution_height"
+        ],
+        "title": "FixedPreviewCamera",
+        "type": "object"
+      },
+      "FootPlantSample": {
+        "additionalProperties": false,
+        "properties": {
+          "foot": {
+            "enum": [
+              "left",
+              "right"
+            ],
+            "title": "Foot",
+            "type": "string"
+          },
+          "planted": {
+            "title": "Planted",
+            "type": "boolean"
+          },
+          "position_meters": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Position Meters",
+            "type": "array"
+          },
+          "time_seconds": {
+            "title": "Time Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "time_seconds",
+          "foot",
+          "planted",
+          "position_meters"
+        ],
+        "title": "FootPlantSample",
+        "type": "object"
+      },
+      "IntegrationAvailability": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "integration_id": {
+            "title": "Integration Id",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "supported_operations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Supported Operations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "integration_id",
+          "available",
+          "mode",
+          "message",
+          "supported_operations"
+        ],
+        "title": "IntegrationAvailability",
+        "type": "object"
+      },
+      "IntegrationStatusResult": {
+        "additionalProperties": false,
+        "properties": {
+          "generated_sources_message": {
+            "title": "Generated Sources Message",
+            "type": "string"
+          },
+          "imported_character_path_available": {
+            "const": true,
+            "default": true,
+            "title": "Imported Character Path Available",
+            "type": "boolean"
+          },
+          "integrations": {
+            "items": {
+              "$ref": "#/components/schemas/IntegrationAvailability"
+            },
+            "title": "Integrations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "integrations",
+          "generated_sources_message"
+        ],
+        "title": "IntegrationStatusResult",
+        "type": "object"
+      },
+      "LoopPose": {
+        "additionalProperties": false,
+        "properties": {
+          "root_rotation_degrees": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Root Rotation Degrees",
+            "type": "array"
+          },
+          "root_translation_meters": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Root Translation Meters",
+            "type": "array"
+          }
+        },
+        "required": [
+          "root_translation_meters",
+          "root_rotation_degrees"
+        ],
+        "title": "LoopPose",
+        "type": "object"
+      },
+      "PreviewArtifact": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_uri": {
+            "minLength": 1,
+            "title": "Artifact Uri",
+            "type": "string"
+          },
+          "baseline_preview_artifact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Preview Artifact Id"
+          },
+          "camera": {
+            "$ref": "#/components/schemas/FixedPreviewCamera"
+          },
+          "captured_at": {
+            "format": "date-time",
+            "title": "Captured At",
+            "type": "string"
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "clip_version_id": {
+            "minLength": 3,
+            "title": "Clip Version Id",
+            "type": "string"
+          },
+          "duration_seconds": {
+            "exclusiveMinimum": 0.0,
+            "title": "Duration Seconds",
+            "type": "number"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "frame_count": {
+            "exclusiveMinimum": 0.0,
+            "title": "Frame Count",
+            "type": "integer"
+          },
+          "frame_difference_score": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Difference Score"
+          },
+          "media_type": {
+            "enum": [
+              "video/mp4",
+              "image/png",
+              "application/vnd.sceneops.animation-preview+json"
+            ],
+            "title": "Media Type",
+            "type": "string"
+          },
+          "preview_artifact_id": {
+            "minLength": 3,
+            "title": "Preview Artifact Id",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "rig_version_id": {
+            "minLength": 3,
+            "title": "Rig Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "preview_artifact_id",
+          "character_id",
+          "rig_version_id",
+          "clip_version_id",
+          "artifact_uri",
+          "media_type",
+          "frame_count",
+          "duration_seconds",
+          "camera",
+          "captured_at",
+          "execution_mode",
+          "provenance"
+        ],
+        "title": "PreviewArtifact",
+        "type": "object"
+      },
+      "PreviewCaptureRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "baseline_preview": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreviewArtifact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "camera": {
+            "$ref": "#/components/schemas/FixedPreviewCamera"
+          },
+          "character": {
+            "$ref": "#/components/schemas/CharacterSpec"
+          },
+          "clip": {
+            "$ref": "#/components/schemas/AnimationClipSpec"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          },
+          "rig": {
+            "$ref": "#/components/schemas/RigVersion"
+          },
+          "timeout_seconds": {
+            "default": 30,
+            "exclusiveMinimum": 0.0,
+            "title": "Timeout Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "request_id",
+          "character",
+          "rig",
+          "clip",
+          "camera"
+        ],
+        "title": "PreviewCaptureRequest",
+        "type": "object"
+      },
+      "PreviewComparisonRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "baseline": {
+            "$ref": "#/components/schemas/PreviewArtifact"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/PreviewArtifact"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "baseline",
+          "candidate"
+        ],
+        "title": "PreviewComparisonRequest",
+        "type": "object"
+      },
+      "PreviewRegressionResult": {
+        "additionalProperties": false,
+        "properties": {
+          "baseline_preview_artifact_id": {
+            "title": "Baseline Preview Artifact Id",
+            "type": "string"
+          },
+          "candidate_preview_artifact_id": {
+            "title": "Candidate Preview Artifact Id",
+            "type": "string"
+          },
+          "frame_difference_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frame Difference Score"
+          },
+          "limitation": {
+            "title": "Limitation",
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "passed",
+              "warning",
+              "blocked"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "same_fixed_camera": {
+            "title": "Same Fixed Camera",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "baseline_preview_artifact_id",
+          "candidate_preview_artifact_id",
+          "same_fixed_camera",
+          "frame_difference_score",
+          "outcome",
+          "limitation"
+        ],
+        "title": "PreviewRegressionResult",
+        "type": "object"
+      },
+      "Provenance": {
+        "additionalProperties": false,
+        "properties": {
+          "adapter_version": {
+            "minLength": 1,
+            "title": "Adapter Version",
+            "type": "string"
+          },
+          "ai_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Model"
+          },
+          "ai_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Provider"
+          },
+          "approval_state": {
+            "$ref": "#/components/schemas/ApprovalState"
+          },
+          "artifact_id": {
+            "minLength": 3,
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_type": {
+            "minLength": 3,
+            "title": "Artifact Type",
+            "type": "string"
+          },
+          "checksum_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Checksum Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "creator": {
+            "minLength": 1,
+            "title": "Creator",
+            "type": "string"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "negative_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negative Prompt"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "producing_module": {
+            "const": "character-animation",
+            "default": "character-animation",
+            "title": "Producing Module",
+            "type": "string"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
+          "recipe_version": {
+            "minLength": 1,
+            "title": "Recipe Version",
+            "type": "string"
+          },
+          "related_sceneops_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Related Sceneops Ids",
+            "type": "array"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "source_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Commit"
+          },
+          "source_project_id": {
+            "minLength": 3,
+            "title": "Source Project Id",
+            "type": "string"
+          },
+          "source_version": {
+            "minLength": 1,
+            "title": "Source Version",
+            "type": "string"
+          },
+          "tool": {
+            "minLength": 1,
+            "title": "Tool",
+            "type": "string"
+          },
+          "workflow_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workflow Reference"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "source_project_id",
+          "source_version",
+          "tool",
+          "adapter_version",
+          "recipe_version",
+          "creator",
+          "execution_mode",
+          "created_at",
+          "checksum_sha256",
+          "approval_state"
+        ],
+        "title": "Provenance",
+        "type": "object"
+      },
+      "QualityCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "minLength": 3,
+            "title": "Code",
+            "type": "string"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "title": "Evidence",
+            "type": "object"
+          },
+          "heuristic": {
+            "default": false,
+            "title": "Heuristic",
+            "type": "boolean"
+          },
+          "limitation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limitation"
+          },
+          "message": {
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CheckStatus"
+          }
+        },
+        "required": [
+          "code",
+          "status",
+          "severity",
+          "message"
+        ],
+        "title": "QualityCheck",
+        "type": "object"
+      },
+      "QualityReport": {
+        "additionalProperties": false,
+        "properties": {
+          "automated_outcome": {
+            "enum": [
+              "passed",
+              "warnings",
+              "failed",
+              "blocked"
+            ],
+            "title": "Automated Outcome",
+            "type": "string"
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/QualityCheck"
+            },
+            "minItems": 1,
+            "title": "Checks",
+            "type": "array"
+          },
+          "human_quality_approval": {
+            "const": false,
+            "default": false,
+            "title": "Human Quality Approval",
+            "type": "boolean"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "report_id": {
+            "minLength": 3,
+            "title": "Report Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "report_id",
+          "character_id",
+          "mode",
+          "checks",
+          "automated_outcome"
+        ],
+        "title": "QualityReport",
+        "type": "object"
+      },
+      "RetargetBoneMapping": {
+        "additionalProperties": false,
+        "properties": {
+          "rotation_offset_degrees": {
+            "default": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Rotation Offset Degrees",
+            "type": "array"
+          },
+          "source_bone_id": {
+            "minLength": 3,
+            "title": "Source Bone Id",
+            "type": "string"
+          },
+          "target_bone_id": {
+            "minLength": 3,
+            "title": "Target Bone Id",
+            "type": "string"
+          },
+          "translation_scale": {
+            "default": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Translation Scale",
+            "type": "number"
+          }
+        },
+        "required": [
+          "source_bone_id",
+          "target_bone_id"
+        ],
+        "title": "RetargetBoneMapping",
+        "type": "object"
+      },
+      "RetargetPreviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "camera": {
+            "$ref": "#/components/schemas/FixedPreviewCamera"
+          },
+          "character": {
+            "$ref": "#/components/schemas/CharacterSpec"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/RetargetProfile"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          },
+          "source_clip": {
+            "$ref": "#/components/schemas/AnimationClipSpec"
+          },
+          "source_rig": {
+            "$ref": "#/components/schemas/RigVersion"
+          },
+          "target_rig": {
+            "$ref": "#/components/schemas/RigVersion"
+          },
+          "timeout_seconds": {
+            "default": 30,
+            "exclusiveMinimum": 0.0,
+            "title": "Timeout Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "request_id",
+          "character",
+          "source_rig",
+          "target_rig",
+          "source_clip",
+          "profile",
+          "camera"
+        ],
+        "title": "RetargetPreviewRequest",
+        "type": "object"
+      },
+      "RetargetPreviewResult": {
+        "additionalProperties": false,
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/QualityCheck"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreviewArtifact"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profile_valid": {
+            "title": "Profile Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "profile_valid",
+          "checks",
+          "preview",
+          "mode"
+        ],
+        "title": "RetargetPreviewResult",
+        "type": "object"
+      },
+      "RetargetProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate_system": {
+            "$ref": "#/components/schemas/CoordinateSystem"
+          },
+          "mappings": {
+            "items": {
+              "$ref": "#/components/schemas/RetargetBoneMapping"
+            },
+            "minItems": 1,
+            "title": "Mappings",
+            "type": "array"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "retarget_profile_id": {
+            "minLength": 3,
+            "title": "Retarget Profile Id",
+            "type": "string"
+          },
+          "root_bone_mapping": {
+            "$ref": "#/components/schemas/RetargetBoneMapping"
+          },
+          "source_rig_version_id": {
+            "minLength": 3,
+            "title": "Source Rig Version Id",
+            "type": "string"
+          },
+          "target_rig_version_id": {
+            "minLength": 3,
+            "title": "Target Rig Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "retarget_profile_id",
+          "source_rig_version_id",
+          "target_rig_version_id",
+          "coordinate_system",
+          "mappings",
+          "root_bone_mapping",
+          "provenance"
+        ],
+        "title": "RetargetProfile",
+        "type": "object"
+      },
+      "ReviewDecision": {
+        "enum": [
+          "approve",
+          "reject"
+        ],
+        "title": "ReviewDecision",
+        "type": "string"
+      },
+      "RigVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalRecord",
+            "default": {
+              "state": "draft"
+            }
+          },
+          "bones": {
+            "items": {
+              "$ref": "#/components/schemas/BoneSpec"
+            },
+            "minItems": 1,
+            "title": "Bones",
+            "type": "array"
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "coordinate_system": {
+            "$ref": "#/components/schemas/CoordinateSystem"
+          },
+          "previous_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Id"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "rig_version_id": {
+            "minLength": 3,
+            "title": "Rig Version Id",
+            "type": "string"
+          },
+          "source_rig_id": {
+            "minLength": 3,
+            "title": "Source Rig Id",
+            "type": "string"
+          },
+          "version_number": {
+            "minimum": 1.0,
+            "title": "Version Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rig_version_id",
+          "character_id",
+          "version_number",
+          "source_rig_id",
+          "bones",
+          "coordinate_system",
+          "provenance"
+        ],
+        "title": "RigVersion",
+        "type": "object"
+      },
+      "RigVersionDiff": {
+        "additionalProperties": false,
+        "properties": {
+          "base_rig_version_id": {
+            "title": "Base Rig Version Id",
+            "type": "string"
+          },
+          "bone_changes": {
+            "items": {
+              "$ref": "#/components/schemas/BoneChange"
+            },
+            "title": "Bone Changes",
+            "type": "array"
+          },
+          "coordinate_system_changed": {
+            "title": "Coordinate System Changed",
+            "type": "boolean"
+          },
+          "proposed_rig_version_id": {
+            "title": "Proposed Rig Version Id",
+            "type": "string"
+          },
+          "reversible": {
+            "const": true,
+            "default": true,
+            "title": "Reversible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "base_rig_version_id",
+          "proposed_rig_version_id",
+          "bone_changes",
+          "coordinate_system_changed"
+        ],
+        "title": "RigVersionDiff",
+        "type": "object"
+      },
+      "RootMotionSample": {
+        "additionalProperties": false,
+        "properties": {
+          "time_seconds": {
+            "title": "Time Seconds",
+            "type": "number"
+          },
+          "translation_meters": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Translation Meters",
+            "type": "array"
+          }
+        },
+        "required": [
+          "time_seconds",
+          "translation_meters"
+        ],
+        "title": "RootMotionSample",
+        "type": "object"
+      },
+      "Severity": {
+        "enum": [
+          "info",
+          "warning",
+          "error"
+        ],
+        "title": "Severity",
+        "type": "string"
+      },
+      "SkinInfluence": {
+        "additionalProperties": false,
+        "properties": {
+          "bone_id": {
+            "minLength": 3,
+            "title": "Bone Id",
+            "type": "string"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "bone_id",
+          "weight"
+        ],
+        "title": "SkinInfluence",
+        "type": "object"
+      },
+      "SkinVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalRecord",
+            "default": {
+              "state": "draft"
+            }
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "max_supported_influences": {
+            "default": 4,
+            "minimum": 1.0,
+            "title": "Max Supported Influences",
+            "type": "integer"
+          },
+          "previous_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Version Id"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "rig_version_id": {
+            "minLength": 3,
+            "title": "Rig Version Id",
+            "type": "string"
+          },
+          "skin_version_id": {
+            "minLength": 3,
+            "title": "Skin Version Id",
+            "type": "string"
+          },
+          "version_number": {
+            "minimum": 1.0,
+            "title": "Version Number",
+            "type": "integer"
+          },
+          "vertices": {
+            "items": {
+              "$ref": "#/components/schemas/VertexWeights"
+            },
+            "minItems": 1,
+            "title": "Vertices",
+            "type": "array"
+          }
+        },
+        "required": [
+          "skin_version_id",
+          "character_id",
+          "rig_version_id",
+          "version_number",
+          "vertices",
+          "provenance"
+        ],
+        "title": "SkinVersion",
+        "type": "object"
+      },
+      "UnityCharacterMapping": {
+        "additionalProperties": false,
+        "properties": {
+          "approval_state": {
+            "$ref": "#/components/schemas/ApprovalState"
+          },
+          "changeset_id": {
+            "minLength": 3,
+            "title": "Changeset Id",
+            "type": "string"
+          },
+          "character_id": {
+            "minLength": 3,
+            "title": "Character Id",
+            "type": "string"
+          },
+          "clip_version_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Clip Version Ids",
+            "type": "array"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "mapping_id": {
+            "minLength": 3,
+            "title": "Mapping Id",
+            "type": "string"
+          },
+          "rig_version_id": {
+            "minLength": 3,
+            "title": "Rig Version Id",
+            "type": "string"
+          },
+          "skin_version_id": {
+            "minLength": 3,
+            "title": "Skin Version Id",
+            "type": "string"
+          },
+          "source_provenance_artifact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 3,
+            "title": "Source Provenance Artifact Ids",
+            "type": "array"
+          },
+          "source_provenance_checksums": {
+            "items": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "minItems": 3,
+            "title": "Source Provenance Checksums",
+            "type": "array"
+          },
+          "unity_animator_controller_id": {
+            "minLength": 3,
+            "title": "Unity Animator Controller Id",
+            "type": "string"
+          },
+          "unity_game_object_sceneops_id": {
+            "minLength": 3,
+            "title": "Unity Game Object Sceneops Id",
+            "type": "string"
+          },
+          "unity_prefab_id": {
+            "minLength": 3,
+            "title": "Unity Prefab Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mapping_id",
+          "character_id",
+          "rig_version_id",
+          "skin_version_id",
+          "clip_version_ids",
+          "unity_prefab_id",
+          "unity_game_object_sceneops_id",
+          "unity_animator_controller_id",
+          "source_provenance_artifact_ids",
+          "source_provenance_checksums",
+          "changeset_id",
+          "approval_state",
+          "execution_mode"
+        ],
+        "title": "UnityCharacterMapping",
+        "type": "object"
+      },
+      "UnityMappingExecutionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "changeset": {
+            "$ref": "#/components/schemas/ChangeSet"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/UnityCharacterMapping"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "default": 30,
+            "exclusiveMinimum": 0.0,
+            "title": "Timeout Seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "request_id",
+          "mapping",
+          "changeset"
+        ],
+        "title": "UnityMappingExecutionRequest",
+        "type": "object"
+      },
+      "UnityMappingProposalRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "base_unity_version": {
+            "minLength": 1,
+            "title": "Base Unity Version",
+            "type": "string"
+          },
+          "bundle": {
+            "$ref": "#/components/schemas/CharacterBundle"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          },
+          "unity_animator_controller_id": {
+            "minLength": 3,
+            "title": "Unity Animator Controller Id",
+            "type": "string"
+          },
+          "unity_game_object_sceneops_id": {
+            "minLength": 3,
+            "title": "Unity Game Object Sceneops Id",
+            "type": "string"
+          },
+          "unity_prefab_id": {
+            "minLength": 3,
+            "title": "Unity Prefab Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "bundle",
+          "unity_prefab_id",
+          "unity_game_object_sceneops_id",
+          "unity_animator_controller_id",
+          "base_unity_version"
+        ],
+        "title": "UnityMappingProposalRequest",
+        "type": "object"
+      },
+      "UnityMappingProposalResult": {
+        "additionalProperties": false,
+        "properties": {
+          "changeset": {
+            "$ref": "#/components/schemas/ChangeSet"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/UnityCharacterMapping"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          }
+        },
+        "required": [
+          "mapping",
+          "changeset"
+        ],
+        "title": "UnityMappingProposalResult",
+        "type": "object"
+      },
+      "VersionComparisonRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RigVersion"
+              },
+              {
+                "$ref": "#/components/schemas/AnimationClipSpec"
+              }
+            ],
+            "title": "Base"
+          },
+          "entity_type": {
+            "enum": [
+              "rig",
+              "clip"
+            ],
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "proposed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RigVersion"
+              },
+              {
+                "$ref": "#/components/schemas/AnimationClipSpec"
+              }
+            ],
+            "title": "Proposed"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "entity_type",
+          "base",
+          "proposed"
+        ],
+        "title": "VersionComparisonRequest",
+        "type": "object"
+      },
+      "VersionComparisonResult": {
+        "additionalProperties": false,
+        "properties": {
+          "diff": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RigVersionDiff"
+              },
+              {
+                "$ref": "#/components/schemas/ClipVersionDiff"
+              }
+            ],
+            "title": "Diff"
+          },
+          "entity_type": {
+            "enum": [
+              "rig",
+              "clip"
+            ],
+            "title": "Entity Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity_type",
+          "diff"
+        ],
+        "title": "VersionComparisonResult",
+        "type": "object"
+      },
+      "VersionReviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "minLength": 1,
+            "title": "Comment",
+            "type": "string"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/ReviewDecision"
+          },
+          "entity_id": {
+            "minLength": 3,
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "enum": [
+              "rig",
+              "clip"
+            ],
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "request_id": {
+            "minLength": 3,
+            "title": "Request Id",
+            "type": "string"
+          },
+          "reviewed_at": {
+            "format": "date-time",
+            "title": "Reviewed At",
+            "type": "string"
+          },
+          "reviewer_id": {
+            "minLength": 3,
+            "title": "Reviewer Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "entity_type",
+          "entity_id",
+          "decision",
+          "reviewer_id",
+          "reviewed_at",
+          "comment"
+        ],
+        "title": "VersionReviewRequest",
+        "type": "object"
+      },
+      "VersionReviewResult": {
+        "additionalProperties": false,
+        "properties": {
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalRecord"
+          },
+          "entity_id": {
+            "title": "Entity Id",
+            "type": "string"
+          },
+          "entity_type": {
+            "enum": [
+              "rig",
+              "clip"
+            ],
+            "title": "Entity Type",
+            "type": "string"
+          },
+          "rollback_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rollback Version Id"
+          }
+        },
+        "required": [
+          "entity_type",
+          "entity_id",
+          "approval",
+          "rollback_version_id"
+        ],
+        "title": "VersionReviewResult",
+        "type": "object"
+      },
+      "VertexWeights": {
+        "additionalProperties": false,
+        "properties": {
+          "influences": {
+            "items": {
+              "$ref": "#/components/schemas/SkinInfluence"
+            },
+            "title": "Influences",
+            "type": "array"
+          },
+          "vertex_index": {
+            "minimum": 0.0,
+            "title": "Vertex Index",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "vertex_index",
+          "influences"
+        ],
+        "title": "VertexWeights",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "SceneOps Character and Animation API",
+    "version": "0.1.0",
+    "x-generated-by": "backend/scripts/export_contracts.py"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/modules/character-animation/inspect": {
+      "post": {
+        "operationId": "inspect_api_modules_character_animation_inspect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CharacterInspectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterInspectionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Inspect",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/integrations": {
+      "get": {
+        "operationId": "integration_status_api_modules_character_animation_integrations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Integration Status",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/previews/capture": {
+      "post": {
+        "operationId": "capture_preview_api_modules_character_animation_previews_capture_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewCaptureRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewArtifact"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Capture Preview",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/previews/compare": {
+      "post": {
+        "operationId": "compare_previews_api_modules_character_animation_previews_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewRegressionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Compare Previews",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/previews/retarget": {
+      "post": {
+        "operationId": "preview_retarget_api_modules_character_animation_previews_retarget_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetargetPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetargetPreviewResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Preview Retarget",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/unity-mappings/execute": {
+      "post": {
+        "operationId": "execute_mapping_api_modules_character_animation_unity_mappings_execute_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnityMappingExecutionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnityCharacterMapping"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Execute Mapping",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/unity-mappings/propose": {
+      "post": {
+        "operationId": "propose_mapping_api_modules_character_animation_unity_mappings_propose_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnityMappingProposalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnityMappingProposalResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Propose Mapping",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/versions/compare": {
+      "post": {
+        "operationId": "compare_versions_api_modules_character_animation_versions_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionComparisonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionComparisonResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Compare Versions",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    },
+    "/api/modules/character-animation/versions/review": {
+      "post": {
+        "operationId": "review_version_api_modules_character_animation_versions_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionReviewResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Invalid character-animation request"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Approval or version conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Schema validation failed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Optional integration unavailable"
+          }
+        },
+        "summary": "Review Version",
+        "tags": [
+          "character-animation"
+        ]
+      }
+    }
+  }
+}

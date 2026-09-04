@@ -1,0 +1,88 @@
+{
+  "changeset": {
+    "approval_requirements": [
+      "character:review",
+      "unity:write"
+    ],
+    "approval_state": "waiting_approval",
+    "base_version": "unity_project_12",
+    "changeset_id": "changeset_remember_home_unity",
+    "dry_run": true,
+    "expected_result": "Unity Prefab 保留独立身份并引用指定 Animator Controller。",
+    "impact_scope": "character",
+    "previous_values": {},
+    "proposed_values": {
+      "approval_state": "waiting_approval",
+      "changeset_id": "changeset_remember_home_unity",
+      "character_id": "char_homekeeper",
+      "clip_version_ids": [
+        "clip_idle_v1",
+        "clip_walk_v1"
+      ],
+      "execution_mode": "planned",
+      "mapping_id": "mapping_remember_home_unity",
+      "rig_version_id": "rig_homekeeper_v1",
+      "skin_version_id": "skin_homekeeper_v1",
+      "source_provenance_artifact_ids": [
+        "rig_homekeeper_v1",
+        "skin_homekeeper_v1",
+        "clip_idle_v1",
+        "clip_walk_v1"
+      ],
+      "source_provenance_checksums": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "unity_animator_controller_id": "animator_homekeeper_v1",
+      "unity_game_object_sceneops_id": "sceneobj_player_homekeeper",
+      "unity_prefab_id": "prefab_homekeeper_v1"
+    },
+    "rationale": "将已批准角色、Rig、Skin 与动画片段映射到 Unity Prefab。",
+    "risk": "medium",
+    "rollback_plan": [
+      "恢复 base Unity 版本",
+      "移除本 ChangeSet 新增的角色映射"
+    ],
+    "target_integration": "unity",
+    "target_object_ids": [
+      "prefab_homekeeper_v1",
+      "sceneobj_player_homekeeper"
+    ],
+    "validation_plan": [
+      "重新扫描 Prefab 身份",
+      "运行固定相机动画回归",
+      "验证 Animator 状态引用"
+    ]
+  },
+  "mapping": {
+    "approval_state": "waiting_approval",
+    "changeset_id": "changeset_remember_home_unity",
+    "character_id": "char_homekeeper",
+    "clip_version_ids": [
+      "clip_idle_v1",
+      "clip_walk_v1"
+    ],
+    "execution_mode": "planned",
+    "mapping_id": "mapping_remember_home_unity",
+    "rig_version_id": "rig_homekeeper_v1",
+    "skin_version_id": "skin_homekeeper_v1",
+    "source_provenance_artifact_ids": [
+      "rig_homekeeper_v1",
+      "skin_homekeeper_v1",
+      "clip_idle_v1",
+      "clip_walk_v1"
+    ],
+    "source_provenance_checksums": [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "unity_animator_controller_id": "animator_homekeeper_v1",
+    "unity_game_object_sceneops_id": "sceneobj_player_homekeeper",
+    "unity_prefab_id": "prefab_homekeeper_v1"
+  },
+  "mode": "planned"
+}

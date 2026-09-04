@@ -1,0 +1,17 @@
+.ca-workbench { max-width:1600px; margin:auto; padding:28px; }
+.ca-workbench header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; }
+.ca-workbench h1 { font-size:28px; margin:6px 0; } .ca-workbench h2 { font-size:16px; margin:20px 0 12px; }
+.ca-eyebrow { color:var(--text-secondary); font-size:11px; letter-spacing:2px; }
+.ca-workbench p { color:var(--text-secondary); } .ca-mode { color:var(--home-amber); font-size:12px; }
+.ca-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:20px 0; }
+.ca-workbench button,.ca-workbench input,.ca-workbench select { border:1px solid var(--border-default); border-radius:4px; background:var(--surface-2); color:var(--text-primary); padding:8px 12px; }
+.ca-workbench nav { display:flex; flex-wrap:wrap; gap:4px; padding-bottom:14px; border-bottom:1px solid var(--border-default); }
+.ca-workbench nav button { border:0; border-radius:0; background:transparent; border-bottom:2px solid transparent; }
+.ca-workbench nav button[aria-current] { border-bottom-color:var(--home-amber); color:var(--home-amber); }
+.ca-columns { display:grid; grid-template-columns:minmax(0,1fr) 340px; min-height:500px; }
+.ca-main { padding:20px 24px 20px 0; min-width:0; } .ca-workbench aside { border-left:1px solid var(--border-default); padding:10px 0 20px 24px; min-width:0; }
+.ca-form { display:grid; gap:14px; max-width:800px; border:0; margin:20px 0; padding:0; min-width:0; } .ca-form legend { font-size:16px; font-weight:600; padding:12px 0; } .ca-form label { display:grid; gap:6px; } .ca-form input[type=checkbox] { width:20px; height:20px; }
+.ca-workbench pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; background:var(--surface-1); padding:12px; border:1px solid var(--border-default); }
+.ca-workbench details { border-bottom:1px solid var(--border-default); padding:10px 0; } .ca-workbench summary { cursor:pointer; overflow-wrap:anywhere; }
+.ca-workbench .ca-error { color:var(--critical); } .ca-state { border-left:2px solid var(--spatial-cyan); padding-left:16px; margin:20px 0; } .ca-state code { display:block; }
+@media(max-width:850px) { .ca-workbench { padding:16px; } .ca-columns { grid-template-columns:1fr; } .ca-workbench aside { border-left:0; border-top:1px solid var(--border-default); padding:10px 0; } .ca-workbench header { flex-direction:column; } }
