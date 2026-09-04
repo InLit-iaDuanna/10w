@@ -1,0 +1,2062 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SceneOps Forge Production Planner",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/v1/production-planner/commands/production.plan.create": {
+      "post": {
+        "tags": [
+          "production-planner"
+        ],
+        "summary": "Create Plan",
+        "operationId": "create_plan_v1_production_planner_commands_production_plan_create_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanCommandRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePlanCommandResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannerErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production-planner/plans/{plan_id}": {
+      "get": {
+        "tags": [
+          "production-planner"
+        ],
+        "summary": "Get Plan",
+        "operationId": "get_plan_v1_production_planner_plans__plan_id__get",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production-planner/plans/{plan_id}/graph": {
+      "get": {
+        "tags": [
+          "production-planner"
+        ],
+        "summary": "Get Graph",
+        "operationId": "get_graph_v1_production_planner_plans__plan_id__graph_get",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionGraphView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/create": {
+      "post": {
+        "summary": "Create",
+        "operationId": "create_v1_planning_lab_create_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePlanCommandResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/edit": {
+      "post": {
+        "summary": "Edit",
+        "operationId": "edit_v1_planning_lab__plan_id__edit_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabEditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/assignment": {
+      "post": {
+        "summary": "Assign",
+        "operationId": "assign_v1_planning_lab__plan_id__assignment_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabAssignmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/dependencies": {
+      "post": {
+        "summary": "Dependencies",
+        "operationId": "dependencies_v1_planning_lab__plan_id__dependencies_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabDependenciesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/milestones": {
+      "post": {
+        "summary": "Milestones",
+        "operationId": "milestones_v1_planning_lab__plan_id__milestones_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabMilestonesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/approve": {
+      "post": {
+        "summary": "Approve",
+        "operationId": "approve_v1_planning_lab__plan_id__approve_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/transition": {
+      "post": {
+        "summary": "Transition",
+        "operationId": "transition_v1_planning_lab__plan_id__transition_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabTransitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/planning-lab/{plan_id}/resolve": {
+      "post": {
+        "summary": "Resolve",
+        "operationId": "resolve_v1_planning_lab__plan_id__resolve_post",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabResolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionPlan"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcceptanceEvidence": {
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Evidence Id"
+          },
+          "criterion_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Criterion Id"
+          },
+          "evidence_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Evidence Type"
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/EvidenceOutcome"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "criterion_id",
+          "evidence_type",
+          "task_id",
+          "artifact_id",
+          "outcome",
+          "mode",
+          "captured_at"
+        ],
+        "title": "AcceptanceEvidence"
+      },
+      "AcceptanceLink": {
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Criterion Id"
+          },
+          "expected_evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Expected Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "expected_evidence"
+        ],
+        "title": "AcceptanceLink"
+      },
+      "ApprovalRequirement": {
+        "type": "string",
+        "enum": [
+          "none",
+          "human"
+        ],
+        "title": "ApprovalRequirement"
+      },
+      "Assignment": {
+        "properties": {
+          "assignment_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Assignment Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AssignmentKind"
+          },
+          "assignee_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Assignee Id"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Display Name"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "assignment_id",
+          "kind",
+          "assignee_id",
+          "display_name"
+        ],
+        "title": "Assignment"
+      },
+      "AssignmentKind": {
+        "type": "string",
+        "enum": [
+          "human",
+          "agent"
+        ],
+        "title": "AssignmentKind"
+      },
+      "BlockerCode": {
+        "type": "string",
+        "enum": [
+          "missing_prerequisite",
+          "dependency_cycle",
+          "impossible_milestone_state",
+          "unmet_acceptance",
+          "approval_required",
+          "upstream_incomplete",
+          "feature_source_unavailable",
+          "operational_blocker"
+        ],
+        "title": "BlockerCode"
+      },
+      "CreatePlanCommandRequest": {
+        "properties": {
+          "feature_ref": {
+            "$ref": "#/components/schemas/FeatureSpecReference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "feature_ref"
+        ],
+        "title": "CreatePlanCommandRequest"
+      },
+      "CreatePlanCommandResponse": {
+        "properties": {
+          "created": {
+            "type": "boolean",
+            "title": "Created"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/ProductionPlan"
+          },
+          "graph": {
+            "$ref": "#/components/schemas/ProductionGraphView"
+          },
+          "event_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/PlannerEventPayload"
+            },
+            "type": "array",
+            "title": "Event Payloads"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "created",
+          "plan",
+          "graph",
+          "event_payloads"
+        ],
+        "title": "CreatePlanCommandResponse"
+      },
+      "CriticalPath": {
+        "properties": {
+          "task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Task Ids"
+          },
+          "total_hours": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Total Hours"
+          },
+          "estimate_basis": {
+            "items": {
+              "$ref": "#/components/schemas/EstimateKind"
+            },
+            "type": "array",
+            "title": "Estimate Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_ids",
+          "total_hours",
+          "estimate_basis"
+        ],
+        "title": "CriticalPath"
+      },
+      "DeliverableLink": {
+        "properties": {
+          "link_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Link Id"
+          },
+          "output_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Output Id"
+          },
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Id"
+          },
+          "artifact_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Type"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "link_id",
+          "output_id",
+          "artifact_id",
+          "artifact_type",
+          "mode"
+        ],
+        "title": "DeliverableLink"
+      },
+      "Estimate": {
+        "properties": {
+          "estimate_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Estimate Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/EstimateKind"
+          },
+          "hours": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Hours"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "originating_live_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Originating Live Run Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "estimate_id",
+          "kind",
+          "hours",
+          "source",
+          "mode",
+          "recorded_at"
+        ],
+        "title": "Estimate"
+      },
+      "EstimateKind": {
+        "type": "string",
+        "enum": [
+          "predicted",
+          "measured"
+        ],
+        "title": "EstimateKind"
+      },
+      "EvidenceOutcome": {
+        "type": "string",
+        "enum": [
+          "passed",
+          "failed"
+        ],
+        "title": "EvidenceOutcome"
+      },
+      "ExecutionMode": {
+        "type": "string",
+        "enum": [
+          "live",
+          "cached",
+          "mock",
+          "planned",
+          "blocked"
+        ],
+        "title": "ExecutionMode"
+      },
+      "FeatureAcceptanceCriterion": {
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Criterion Id"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Statement"
+          },
+          "workstreams": {
+            "items": {
+              "$ref": "#/components/schemas/Workstream"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Workstreams"
+          },
+          "required_evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Required Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "statement",
+          "workstreams",
+          "required_evidence"
+        ],
+        "title": "FeatureAcceptanceCriterion"
+      },
+      "FeaturePlanningSnapshot": {
+        "properties": {
+          "feature_ref": {
+            "$ref": "#/components/schemas/FeatureSpecReference"
+          },
+          "source_contract_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Contract Version"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "acceptance_criteria": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureAcceptanceCriterion"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Acceptance Criteria"
+          },
+          "source_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "feature_ref",
+          "source_contract_version",
+          "title",
+          "summary",
+          "acceptance_criteria",
+          "source_mode"
+        ],
+        "title": "FeaturePlanningSnapshot"
+      },
+      "FeatureSpecReference": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "feature_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Feature Id"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "feature_id",
+          "revision"
+        ],
+        "title": "FeatureSpecReference"
+      },
+      "GraphEdge": {
+        "properties": {
+          "dependency_id": {
+            "type": "string",
+            "title": "Dependency Id"
+          },
+          "source_task_id": {
+            "type": "string",
+            "title": "Source Task Id"
+          },
+          "target_task_id": {
+            "type": "string",
+            "title": "Target Task Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dependency_id",
+          "source_task_id",
+          "target_task_id"
+        ],
+        "title": "GraphEdge"
+      },
+      "GraphNode": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "workstream": {
+            "$ref": "#/components/schemas/Workstream"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "assignment_kind": {
+            "$ref": "#/components/schemas/AssignmentKind"
+          },
+          "assignment_label": {
+            "type": "string",
+            "title": "Assignment Label"
+          },
+          "estimate_kind": {
+            "$ref": "#/components/schemas/EstimateKind"
+          },
+          "estimate_hours": {
+            "type": "number",
+            "title": "Estimate Hours"
+          },
+          "blocked": {
+            "type": "boolean",
+            "title": "Blocked"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "title",
+          "workstream",
+          "status",
+          "assignment_kind",
+          "assignment_label",
+          "estimate_kind",
+          "estimate_hours",
+          "blocked"
+        ],
+        "title": "GraphNode"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LabApprovalRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "title": "LabApprovalRequest"
+      },
+      "LabAssignmentRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/Assignment"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "task_id",
+          "assignment"
+        ],
+        "title": "LabAssignmentRequest"
+      },
+      "LabCreateRequest": {
+        "properties": {
+          "snapshot": {
+            "$ref": "#/components/schemas/FeaturePlanningSnapshot"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshot"
+        ],
+        "title": "LabCreateRequest"
+      },
+      "LabDependenciesRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/TaskDependency"
+            },
+            "type": "array",
+            "title": "Dependencies"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "dependencies"
+        ],
+        "title": "LabDependenciesRequest"
+      },
+      "LabEditRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "task_id",
+          "title",
+          "description"
+        ],
+        "title": "LabEditRequest"
+      },
+      "LabMilestonesRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "milestones": {
+            "items": {
+              "$ref": "#/components/schemas/Milestone"
+            },
+            "type": "array",
+            "title": "Milestones"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "milestones"
+        ],
+        "title": "LabMilestonesRequest"
+      },
+      "LabResolutionRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "blocker_id": {
+            "type": "string",
+            "title": "Blocker Id"
+          },
+          "resolution_ref_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Resolution Ref Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "task_id",
+          "blocker_id",
+          "resolution_ref_id"
+        ],
+        "title": "LabResolutionRequest"
+      },
+      "LabTransitionRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "target": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "blocker": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskBlocker"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "task_id",
+          "target"
+        ],
+        "title": "LabTransitionRequest"
+      },
+      "Milestone": {
+        "properties": {
+          "milestone_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Milestone Id"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "required_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Required Task Ids"
+          },
+          "state": {
+            "$ref": "#/components/schemas/MilestoneState",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "milestone_id",
+          "title",
+          "required_task_ids"
+        ],
+        "title": "Milestone"
+      },
+      "MilestoneReadiness": {
+        "properties": {
+          "milestone_id": {
+            "type": "string",
+            "title": "Milestone Id"
+          },
+          "state": {
+            "$ref": "#/components/schemas/MilestoneState"
+          },
+          "incomplete_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Incomplete Task Ids"
+          },
+          "blocker_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocker Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "milestone_id",
+          "state",
+          "incomplete_task_ids",
+          "blocker_ids"
+        ],
+        "title": "MilestoneReadiness"
+      },
+      "MilestoneState": {
+        "type": "string",
+        "enum": [
+          "planned",
+          "ready",
+          "completed",
+          "blocked"
+        ],
+        "title": "MilestoneState"
+      },
+      "PlanStatus": {
+        "type": "string",
+        "enum": [
+          "draft_unconfirmed",
+          "approved",
+          "blocked"
+        ],
+        "title": "PlanStatus"
+      },
+      "PlannerErrorResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          },
+          "suggested_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggested Actions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details",
+          "request_id",
+          "retryable",
+          "suggested_actions"
+        ],
+        "title": "PlannerErrorResponse"
+      },
+      "PlannerEventPayload": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "event_version": {
+            "type": "integer",
+            "title": "Event Version",
+            "default": 1
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_type",
+          "payload"
+        ],
+        "title": "PlannerEventPayload"
+      },
+      "ProductionGraphView": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "critical_path": {
+            "$ref": "#/components/schemas/CriticalPath"
+          },
+          "blockers": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBlocker"
+            },
+            "type": "array",
+            "title": "Blockers"
+          },
+          "milestone_readiness": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneReadiness"
+            },
+            "type": "array",
+            "title": "Milestone Readiness"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_id",
+          "mode",
+          "nodes",
+          "edges",
+          "critical_path",
+          "blockers",
+          "milestone_readiness"
+        ],
+        "title": "ProductionGraphView"
+      },
+      "ProductionPlan": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Plan Id"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "feature_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Feature Id"
+          },
+          "feature_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Feature Revision"
+          },
+          "feature_title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Feature Title"
+          },
+          "plan_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Plan Version",
+            "default": 1
+          },
+          "source_contract_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Contract Version"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PlanStatus"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "feature_source_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "change_set_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Set Id"
+          },
+          "approval_ref_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Ref Id"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionTask"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Tasks"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/TaskDependency"
+            },
+            "type": "array",
+            "title": "Dependencies"
+          },
+          "milestones": {
+            "items": {
+              "$ref": "#/components/schemas/Milestone"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Milestones"
+          },
+          "risks": {
+            "items": {
+              "$ref": "#/components/schemas/Risk"
+            },
+            "type": "array",
+            "title": "Risks"
+          },
+          "blockers": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBlocker"
+            },
+            "type": "array",
+            "title": "Blockers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_id",
+          "project_id",
+          "feature_id",
+          "feature_revision",
+          "feature_title",
+          "source_contract_version",
+          "status",
+          "execution_mode",
+          "feature_source_mode",
+          "generated_at",
+          "tasks",
+          "dependencies",
+          "milestones"
+        ],
+        "title": "ProductionPlan"
+      },
+      "ProductionTask": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "workstream": {
+            "$ref": "#/components/schemas/Workstream"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Description"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus",
+            "default": "draft"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/Assignment"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/TaskInput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Inputs"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOutput"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Outputs"
+          },
+          "acceptance": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceLink"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Acceptance"
+          },
+          "estimates": {
+            "items": {
+              "$ref": "#/components/schemas/Estimate"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Estimates"
+          },
+          "approval_requirement": {
+            "$ref": "#/components/schemas/ApprovalRequirement"
+          },
+          "recommended_editor_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Recommended Editor Id"
+          },
+          "risks": {
+            "items": {
+              "$ref": "#/components/schemas/Risk"
+            },
+            "type": "array",
+            "title": "Risks"
+          },
+          "blockers": {
+            "items": {
+              "$ref": "#/components/schemas/TaskBlocker"
+            },
+            "type": "array",
+            "title": "Blockers"
+          },
+          "comment_thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment Thread Id"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/TaskCommentReference"
+            },
+            "type": "array",
+            "title": "Comments"
+          },
+          "deliverables": {
+            "items": {
+              "$ref": "#/components/schemas/DeliverableLink"
+            },
+            "type": "array",
+            "title": "Deliverables"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceEvidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "approval_ref_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approval Ref Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "workstream",
+          "title",
+          "description",
+          "assignment",
+          "inputs",
+          "outputs",
+          "acceptance",
+          "estimates",
+          "approval_requirement",
+          "recommended_editor_id"
+        ],
+        "title": "ProductionTask"
+      },
+      "Risk": {
+        "properties": {
+          "risk_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Risk Id"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Description"
+          },
+          "likelihood": {
+            "type": "string",
+            "pattern": "^(low|medium|high)$",
+            "title": "Likelihood"
+          },
+          "impact": {
+            "type": "string",
+            "pattern": "^(low|medium|high)$",
+            "title": "Impact"
+          },
+          "mitigation": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Mitigation"
+          },
+          "state": {
+            "type": "string",
+            "pattern": "^(open|mitigated|accepted)$",
+            "title": "State",
+            "default": "open"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "risk_id",
+          "description",
+          "likelihood",
+          "impact",
+          "mitigation"
+        ],
+        "title": "Risk"
+      },
+      "TaskBlocker": {
+        "properties": {
+          "blocker_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Blocker Id"
+          },
+          "code": {
+            "$ref": "#/components/schemas/BlockerCode"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Message"
+          },
+          "task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Task Ids"
+          },
+          "milestone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestone Id"
+          },
+          "resolved": {
+            "type": "boolean",
+            "title": "Resolved",
+            "default": false
+          },
+          "resolution_ref_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Ref Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "blocker_id",
+          "code",
+          "message",
+          "task_ids"
+        ],
+        "title": "TaskBlocker"
+      },
+      "TaskCommentReference": {
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Comment Id"
+          },
+          "comment_thread_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Comment Thread Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "comment_id",
+          "comment_thread_id"
+        ],
+        "title": "TaskCommentReference"
+      },
+      "TaskDependency": {
+        "properties": {
+          "dependency_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Dependency Id"
+          },
+          "predecessor_task_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Predecessor Task Id"
+          },
+          "successor_task_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Successor Task Id"
+          },
+          "required_output_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Required Output Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dependency_id",
+          "predecessor_task_id",
+          "successor_task_id",
+          "required_output_type"
+        ],
+        "title": "TaskDependency"
+      },
+      "TaskInput": {
+        "properties": {
+          "input_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Input Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "pattern": "^(feature_spec|task_output)$",
+            "title": "Source Kind"
+          },
+          "source_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Id"
+          },
+          "required_artifact_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Required Artifact Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "input_id",
+          "source_kind",
+          "source_id",
+          "required_artifact_type"
+        ],
+        "title": "TaskInput"
+      },
+      "TaskOutput": {
+        "properties": {
+          "output_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Output Id"
+          },
+          "artifact_type": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Type"
+          },
+          "artifact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "output_id",
+          "artifact_type"
+        ],
+        "title": "TaskOutput"
+      },
+      "TaskStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "ready",
+          "in_progress",
+          "waiting_approval",
+          "blocked",
+          "completed",
+          "cancelled"
+        ],
+        "title": "TaskStatus"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Workstream": {
+        "type": "string",
+        "enum": [
+          "design",
+          "concept",
+          "asset",
+          "animation",
+          "world",
+          "logic",
+          "ui",
+          "audio",
+          "vfx",
+          "render",
+          "build",
+          "test"
+        ],
+        "title": "Workstream"
+      }
+    }
+  }
+}

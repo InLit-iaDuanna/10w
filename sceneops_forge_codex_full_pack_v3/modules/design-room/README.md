@@ -39,3 +39,13 @@ fixtures 包含 Find My Way Home 的钥匙开门分支，以及 Warehouse Escape
 ## 当前集成状态
 
 模块逻辑、mock fixtures 和独立测试可运行。由于起点尚无 core runtime、API persistence、ForgeShell 和 Production Planner，真实 React/Dockview 渲染、生成 catalog、服务端持久化和 planner 消费当前是 **planned/blocked by prerequisites**。本文不把它们描述为 live。
+
+
+## 独立 Web 工作台（本轮新增）
+
+现在可从应用根运行 `pnpm --dir apps/labs/project-planning dev`，访问 http://127.0.0.1:4311。
+首次依赖安装、运行事实、手动路径及限制见 [工作台说明](../../apps/labs/project-planning/README.md)。
+公开 `loadDesignPanel()` 返回真实 React 懒加载组件；旧 headless view model 与命令保持兼容。
+
+以上旧文中的 React/跨模块规划 blocked 描述仅适用于原始模块交付；本轮独立工作台已连通。
+正式 Shell 注册、统一身份与生产级持久化仍未接入，不能将独立 lab 当作已接入完整 Shell。

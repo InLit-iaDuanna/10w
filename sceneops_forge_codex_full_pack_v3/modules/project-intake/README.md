@@ -38,3 +38,13 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 - 仓库尚无持久化/API 组合根，当前 repository 是可替换的内存实现。
 - 本模块不实现 Unity/Blender 扫描；真实扫描由后续 integration adapter 实现公开协议。
 - 本模块不创建生产任务，准备完成后仅发出 typed event 供 `production-planner` 消费。
+
+
+## 独立 Web 工作台（本轮新增）
+
+现在可从应用根运行 `pnpm --dir apps/labs/project-planning dev`，访问 http://127.0.0.1:4311。
+首次依赖安装、运行事实、手动路径及限制见 [工作台说明](../../apps/labs/project-planning/README.md)。
+公开 `loadIntakePanel()` 返回真实 React 懒加载组件；旧 headless view model 与命令保持兼容。
+
+以上旧文中的 React/跨模块规划 blocked 描述仅适用于原始模块交付；本轮独立工作台已连通。
+正式 Shell 注册、统一身份与生产级持久化仍未接入，不能将独立 lab 当作已接入完整 Shell。

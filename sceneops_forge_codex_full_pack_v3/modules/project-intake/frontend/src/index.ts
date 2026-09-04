@@ -11,3 +11,4 @@ export type {
 } from "./commands/projectIntakeCommands.ts";
 export { createProjectIntakeRuntime } from "./runtime.ts";
 export * from "./manifest.ts";
+export const loadIntakePanel = () => import('./IntakePanel.tsx').then(module => ({default:module.IntakePanel}));

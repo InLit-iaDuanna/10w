@@ -1,0 +1,4 @@
+node_modules/
+.venv/
+# pnpm-generated pending build-script decision; not an application permission policy.
+pnpm-workspace.yaml

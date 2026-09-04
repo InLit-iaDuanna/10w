@@ -11,3 +11,4 @@ export type {
 } from "./commands/designRoomCommands.ts";
 export { createDesignRoomRuntime } from "./runtime.ts";
 export * from "./manifest.ts";
+export const loadDesignPanel = () => import('./DesignPanel.tsx').then(module => ({default:module.DesignPanel}));

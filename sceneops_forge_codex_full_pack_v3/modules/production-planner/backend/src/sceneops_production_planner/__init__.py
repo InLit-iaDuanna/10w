@@ -34,4 +34,7 @@ __all__ = [
     "VerifiedApproval",
     "VerifiedRunTiming",
     "create_router",
+    "create_planning_lab_app",
 ]
+
+from .lab import create_planning_lab_app

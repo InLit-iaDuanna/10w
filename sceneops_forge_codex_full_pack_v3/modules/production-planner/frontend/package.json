@@ -5,5 +5,12 @@
   "type": "module",
   "scripts": {
     "test": "node --experimental-strip-types --test src/tests/*.test.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "react": "19.2.8",
+    "@tanstack/react-query": "5.90.21"
   }
 }

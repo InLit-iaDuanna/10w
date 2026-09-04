@@ -44,3 +44,7 @@ export type {
   ProductionPlan,
   ProductionTask,
 } from "./generated/contracts.ts";
+export {createPlanningClient} from './generated/lab-client.ts';
+export type {PlanningClient} from './generated/lab-client.ts';
+export {projectFeatureForPlanning} from './featureProjection.ts';
+export const loadPlanningPanel = () => import('./PlanningPanel.tsx').then(module => ({default:module.PlanningPanel}));

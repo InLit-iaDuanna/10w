@@ -163,3 +163,13 @@ node --experimental-strip-types --test frontend/src/tests/*.test.ts
 - 推荐 editor ID 依据书面产品合同配置，尚不能在缺失模块中做注册表验证。
 - 官方 module catalog、feature flag 组合、生成式 shared API client 和跨模块 E2E 需在 00/01/03/04 任务完成后验证。
 - 根 `STATUS.md` 与 `EXECUTION_PLAN.md` 在本任务起点不存在，且不属于本模块写入边界。
+
+
+## 独立 Web 工作台（本轮新增）
+
+现在可从应用根运行 `pnpm --dir apps/labs/project-planning dev`，访问 http://127.0.0.1:4311。
+首次依赖安装、运行事实、手动路径及限制见 [工作台说明](../../apps/labs/project-planning/README.md)。
+公开 `loadPlanningPanel()` 返回真实 React 懒加载组件；旧 headless view model 与命令保持兼容。
+
+以上旧文中的 React/跨模块规划 blocked 描述仅适用于原始模块交付；本轮独立工作台已连通。
+正式 Shell 注册、统一身份与生产级持久化仍未接入，不能将独立 lab 当作已接入完整 Shell。
