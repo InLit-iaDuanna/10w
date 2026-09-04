@@ -1,0 +1,71 @@
+.sceneops-release-editor {
+  display: grid;
+  align-content: start;
+  min-height: 100%;
+  color: var(--text-primary);
+  background: var(--surface-1);
+}
+
+.sceneops-release-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.sceneops-release-editor__header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.sceneops-release-editor__description,
+.sceneops-release-editor__state,
+.sceneops-release-editor__action {
+  margin: 0;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sceneops-release-editor__state {
+  display: grid;
+  gap: 6px;
+}
+
+.sceneops-release-editor__state span,
+.sceneops-release-editor__state p,
+.sceneops-release-editor__description,
+.sceneops-release-editor__action span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.sceneops-release-mode {
+  font: 12px/18px ui-monospace, monospace;
+}
+
+.sceneops-release-mode--live { color: var(--success); }
+.sceneops-release-mode--cached { color: var(--text-secondary); }
+.sceneops-release-mode--mock { color: var(--ai-violet); }
+.sceneops-release-mode--planned { color: var(--warning); }
+.sceneops-release-mode--blocked { color: var(--critical); }
+
+.sceneops-release-editor__action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sceneops-release-editor button {
+  min-height: 28px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: var(--text-primary);
+  background: var(--surface-3);
+}
+
+.sceneops-release-editor button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

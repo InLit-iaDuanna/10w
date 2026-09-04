@@ -1,0 +1,17 @@
+{
+  "name": "@sceneops/build-release-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": ">=18",
+    "typescript": ">=5.5"
+  }
+}

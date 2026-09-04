@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "CandidateStatus": {
+      "enum": [
+        "blocked",
+        "waiting_approval",
+        "ready",
+        "deployed",
+        "rolled_back"
+      ],
+      "title": "CandidateStatus",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "candidate_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "game_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Game Id",
+      "type": "string"
+    },
+    "manifest_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+        "type": "string"
+      },
+      "title": "Manifest Ids",
+      "type": "array"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "project_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "source_commit": {
+      "pattern": "^[a-fA-F0-9]{7,64}$",
+      "title": "Source Commit",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/CandidateStatus"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "project_id",
+    "game_id",
+    "source_commit",
+    "manifest_ids",
+    "status",
+    "mode"
+  ],
+  "title": "ReleaseCandidateCreatedPayload",
+  "type": "object"
+}

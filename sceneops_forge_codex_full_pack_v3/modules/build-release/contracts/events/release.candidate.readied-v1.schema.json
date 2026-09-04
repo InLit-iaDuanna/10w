@@ -1,0 +1,46 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "approval_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+        "type": "string"
+      },
+      "title": "Approval Ids",
+      "type": "array"
+    },
+    "candidate_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{2,127}$",
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "scope_fingerprint": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Scope Fingerprint",
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "scope_fingerprint",
+    "approval_ids",
+    "mode"
+  ],
+  "title": "ReleaseCandidateReadiedPayload",
+  "type": "object"
+}
