@@ -1,0 +1,157 @@
+{
+  "$defs": {
+    "BackpinTargetType": {
+      "enum": [
+        "scene_object",
+        "asset",
+        "component",
+        "script",
+        "feature",
+        "acceptance_criterion"
+      ],
+      "title": "BackpinTargetType",
+      "type": "string"
+    },
+    "SourceRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "source_record_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Source Record Id",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "source_version": {
+          "minLength": 1,
+          "title": "Source Version",
+          "type": "string"
+        },
+        "target_type": {
+          "$ref": "#/$defs/BackpinTargetType"
+        },
+        "target_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sceneops Id"
+        },
+        "locator": {
+          "minLength": 1,
+          "title": "Locator",
+          "type": "string"
+        },
+        "owning_module": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Owning Module",
+          "type": "string"
+        },
+        "component_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Component Id"
+        },
+        "related_sceneops_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Related Sceneops Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_record_id",
+        "project_id",
+        "build_id",
+        "source_version",
+        "target_type",
+        "target_id",
+        "locator",
+        "owning_module"
+      ],
+      "title": "SourceRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "catalog_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Catalog Id",
+      "type": "string"
+    },
+    "records": {
+      "minProperties": 1,
+      "patternProperties": {
+        "^[A-Za-z0-9][A-Za-z0-9._:-]*$": {
+          "$ref": "#/$defs/SourceRecord"
+        }
+      },
+      "propertyNames": {
+        "maxLength": 160,
+        "minLength": 3
+      },
+      "title": "Records",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "catalog_id",
+    "records"
+  ],
+  "title": "SourceCatalog",
+  "type": "object"
+}

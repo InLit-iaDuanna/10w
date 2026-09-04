@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "test_case_id": "test.warehouse.switch-door-exit",
+  "version": 1,
+  "project_id": "project.warehouse-escape",
+  "name": "仓库开关、门与出口",
+  "objective": "启动墙面开关，穿过仓库门，绕过障碍并抵达出口。",
+  "scene_id": "scene.warehouse-main",
+  "agent_mode": "explorer",
+  "seed": 1502,
+  "goals": [
+    {
+      "goal_id": "goal.warehouse-exit",
+      "description": "启动开关并抵达出口",
+      "acceptance_criterion_ids": ["acceptance.switch-opens-door", "acceptance.exit-reachable"]
+    }
+  ],
+  "controls": {
+    "max_steps": 20,
+    "max_duration_ms": 60000,
+    "action_timeout_ms": 2000,
+    "allowed_action_kinds": ["move", "look", "interact", "confirm", "cancel", "registered"],
+    "registered_action_ids": ["action.climb-low-obstacle"],
+    "allow_destructive": false,
+    "stall_steps": 4,
+    "repeated_failure_threshold": 3,
+    "pose_epsilon_m": 0.05,
+    "max_frame_time_ms": 33.4,
+    "max_memory_mb": 768
+  },
+  "regression_metrics": [
+    {"metric_id": "goal_completion", "direction": "maximize", "tolerance": 0, "unit": "ratio"},
+    {"metric_id": "navigation_failures", "direction": "minimize", "tolerance": 0, "unit": "count"},
+    {"metric_id": "elapsed_steps", "direction": "minimize", "tolerance": 1, "unit": "count"}
+  ],
+  "limitation_labels": [
+    "该配置只描述机器可观察目标；仍需真人验证体验与可访问性。"
+  ]
+}

@@ -1,0 +1,1051 @@
+{
+  "$defs": {
+    "ActionKind": {
+      "enum": [
+        "move",
+        "look",
+        "interact",
+        "use_item",
+        "confirm",
+        "cancel",
+        "registered"
+      ],
+      "title": "ActionKind",
+      "type": "string"
+    },
+    "ActionOutcome": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "timed_out",
+        "cancelled"
+      ],
+      "title": "ActionOutcome",
+      "type": "string"
+    },
+    "ActionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "$ref": "#/$defs/ActionOutcome"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Code"
+        },
+        "feedback": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Feedback",
+          "type": "array"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "outcome",
+        "duration_ms"
+      ],
+      "title": "ActionResult",
+      "type": "object"
+    },
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "minLength": 1,
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Uri"
+        },
+        "source_project_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Source Project Id",
+          "type": "string"
+        },
+        "source_version": {
+          "minLength": 1,
+          "title": "Source Version",
+          "type": "string"
+        },
+        "source_commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Commit"
+        },
+        "related_sceneops_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Related Sceneops Ids",
+          "type": "array"
+        },
+        "producing_module": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Producing Module",
+          "type": "string"
+        },
+        "tool_name": {
+          "minLength": 1,
+          "title": "Tool Name",
+          "type": "string"
+        },
+        "tool_version": {
+          "minLength": 1,
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "workflow_version": {
+          "minLength": 1,
+          "title": "Workflow Version",
+          "type": "string"
+        },
+        "creator_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Creator Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "approval_state": {
+          "enum": [
+            "unreviewed",
+            "approved",
+            "rejected"
+          ],
+          "title": "Approval State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "execution_mode",
+        "source_project_id",
+        "source_version",
+        "producing_module",
+        "tool_name",
+        "tool_version",
+        "workflow_version",
+        "creator_id",
+        "created_at",
+        "approval_state"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "AvailableAction": {
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Action Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActionKind"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "target_sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Sceneops Id"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "advances_goal_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Advances Goal Ids",
+          "type": "array"
+        },
+        "goal_relevance": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Goal Relevance",
+          "type": "number"
+        },
+        "destructive": {
+          "default": false,
+          "title": "Destructive",
+          "type": "boolean"
+        },
+        "registered_action_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registered Action Id"
+        },
+        "feedback_expected": {
+          "default": false,
+          "title": "Feedback Expected",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "action_id",
+        "kind",
+        "label"
+      ],
+      "title": "AvailableAction",
+      "type": "object"
+    },
+    "CameraEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "camera_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Camera Id",
+          "type": "string"
+        },
+        "pose": {
+          "$ref": "#/$defs/Pose"
+        },
+        "field_of_view_deg": {
+          "exclusiveMaximum": 180,
+          "exclusiveMinimum": 0,
+          "title": "Field Of View Deg",
+          "type": "number"
+        },
+        "screenshot_artifact_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screenshot Artifact Id"
+        }
+      },
+      "required": [
+        "camera_id",
+        "pose",
+        "field_of_view_deg"
+      ],
+      "title": "CameraEvidence",
+      "type": "object"
+    },
+    "EventActor": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "user",
+            "agent",
+            "system"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "EventActor",
+      "type": "object"
+    },
+    "EvidenceBundle": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 96,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "session_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Session Id",
+          "type": "string"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "step_indices": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": "Step Indices",
+          "type": "array"
+        },
+        "camera": {
+          "$ref": "#/$defs/CameraEvidence"
+        },
+        "trajectory": {
+          "items": {
+            "$ref": "#/$defs/Pose"
+          },
+          "minItems": 1,
+          "title": "Trajectory",
+          "type": "array"
+        },
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "title": "Artifacts",
+          "type": "array"
+        },
+        "structured_log_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Structured Log Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "run_id",
+        "session_id",
+        "execution_mode",
+        "captured_at",
+        "build_id",
+        "scene_id",
+        "step_indices",
+        "camera",
+        "trajectory"
+      ],
+      "title": "EvidenceBundle",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "FailureKind": {
+      "enum": [
+        "timeout",
+        "stall",
+        "soft_lock",
+        "unreachable_goal",
+        "repeated_failed_interaction",
+        "navigation_error",
+        "collider_error",
+        "missing_feedback",
+        "quest_state_mismatch",
+        "runtime_error",
+        "performance_regression",
+        "telemetry_loss"
+      ],
+      "title": "FailureKind",
+      "type": "string"
+    },
+    "FailureSignal": {
+      "additionalProperties": false,
+      "properties": {
+        "signal_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Signal Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/FailureKind"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "detected_at": {
+          "format": "date-time",
+          "title": "Detected At",
+          "type": "string"
+        },
+        "step_indices": {
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": "Step Indices",
+          "type": "array"
+        },
+        "target_sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Sceneops Id"
+        },
+        "evidence_artifact_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Artifact Ids",
+          "type": "array"
+        },
+        "details": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Details",
+          "type": "object"
+        },
+        "producer_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Producer Id",
+          "type": "string"
+        },
+        "producer_version": {
+          "minLength": 1,
+          "title": "Producer Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signal_id",
+        "kind",
+        "severity",
+        "message",
+        "detected_at",
+        "step_indices",
+        "producer_id",
+        "producer_version"
+      ],
+      "title": "FailureSignal",
+      "type": "object"
+    },
+    "GoalProgress": {
+      "additionalProperties": false,
+      "properties": {
+        "goal_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Goal Id",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/GoalState"
+        },
+        "value": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "goal_id",
+        "state",
+        "value"
+      ],
+      "title": "GoalProgress",
+      "type": "object"
+    },
+    "GoalState": {
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "blocked"
+      ],
+      "title": "GoalState",
+      "type": "string"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "telemetry_sequence": {
+          "minimum": 0,
+          "title": "Telemetry Sequence",
+          "type": "integer"
+        },
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "actor_sceneops_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Actor Sceneops Id",
+          "type": "string"
+        },
+        "pose": {
+          "$ref": "#/$defs/Pose"
+        },
+        "camera": {
+          "$ref": "#/$defs/CameraEvidence"
+        },
+        "game_state": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Game State",
+          "type": "object"
+        },
+        "goals": {
+          "items": {
+            "$ref": "#/$defs/GoalProgress"
+          },
+          "title": "Goals",
+          "type": "array"
+        },
+        "available_actions": {
+          "items": {
+            "$ref": "#/$defs/AvailableAction"
+          },
+          "title": "Available Actions",
+          "type": "array"
+        },
+        "runtime_errors": {
+          "items": {
+            "$ref": "#/$defs/RuntimeErrorRecord"
+          },
+          "title": "Runtime Errors",
+          "type": "array"
+        },
+        "frame_time_ms": {
+          "minimum": 0,
+          "title": "Frame Time Ms",
+          "type": "number"
+        },
+        "memory_mb": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Memory Mb"
+        }
+      },
+      "required": [
+        "observed_at",
+        "telemetry_sequence",
+        "build_id",
+        "scene_id",
+        "actor_sceneops_id",
+        "pose",
+        "camera",
+        "goals",
+        "available_actions",
+        "frame_time_ms"
+      ],
+      "title": "Observation",
+      "type": "object"
+    },
+    "PlaytestStep": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "maxLength": 96,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "step_index": {
+          "minimum": 0,
+          "title": "Step Index",
+          "type": "integer"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        },
+        "completed_at": {
+          "format": "date-time",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "post_observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "selected_action": {
+          "$ref": "#/$defs/AvailableAction"
+        },
+        "target_sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Sceneops Id"
+        },
+        "result": {
+          "$ref": "#/$defs/ActionResult"
+        },
+        "progress": {
+          "items": {
+            "$ref": "#/$defs/GoalProgress"
+          },
+          "title": "Progress",
+          "type": "array"
+        },
+        "failure_signals": {
+          "items": {
+            "$ref": "#/$defs/FailureSignal"
+          },
+          "title": "Failure Signals",
+          "type": "array"
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceBundle"
+        }
+      },
+      "required": [
+        "run_id",
+        "step_index",
+        "started_at",
+        "completed_at",
+        "build_id",
+        "scene_id",
+        "observation",
+        "post_observation",
+        "selected_action",
+        "result",
+        "progress",
+        "evidence"
+      ],
+      "title": "PlaytestStep",
+      "type": "object"
+    },
+    "Pose": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/Vector3"
+        },
+        "rotation_euler_deg": {
+          "$ref": "#/$defs/Vector3"
+        },
+        "coordinate_space": {
+          "const": "unity_world",
+          "default": "unity_world",
+          "title": "Coordinate Space",
+          "type": "string"
+        },
+        "axis_convention": {
+          "const": "left_handed_y_up_z_forward",
+          "default": "left_handed_y_up_z_forward",
+          "title": "Axis Convention",
+          "type": "string"
+        },
+        "distance_unit": {
+          "const": "meter",
+          "default": "meter",
+          "title": "Distance Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "position",
+        "rotation_euler_deg"
+      ],
+      "title": "Pose",
+      "type": "object"
+    },
+    "RuntimeErrorRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "error_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Error Id",
+          "type": "string"
+        },
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "source_sceneops_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Sceneops Id"
+        }
+      },
+      "required": [
+        "error_id",
+        "code",
+        "message"
+      ],
+      "title": "RuntimeErrorRecord",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "info",
+        "warning",
+        "error",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "Vector3": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "Vector3",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Event Version",
+      "type": "integer"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "project_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "correlation_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "causation_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Causation Id",
+      "type": "string"
+    },
+    "actor": {
+      "$ref": "#/$defs/EventActor"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "event_type": {
+      "const": "playtest.step.recorded",
+      "default": "playtest.step.recorded",
+      "title": "Event Type",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/PlaytestStep"
+    }
+  },
+  "required": [
+    "event_id",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "title": "PlaytestStepRecordedEvent",
+  "type": "object"
+}

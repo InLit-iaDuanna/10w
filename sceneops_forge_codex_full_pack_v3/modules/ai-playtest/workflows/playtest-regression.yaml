@@ -1,0 +1,34 @@
+schema_version: 1
+id: playtest-regression
+version: 1
+title: 同配置 AI Playtest 回归
+inputs:
+  - test_case_id
+  - baseline_build_id
+  - candidate_build_id
+nodes:
+  - id: baseline
+    job: playtest.execute
+  - id: approval
+    type: human_approval
+    reason: baseline issue 的已确认 source backpin 必须生成 proposal，且由 owning module 的 ChangeSet 流程审批与执行。
+  - id: candidate
+    job: playtest.execute
+  - id: compare
+    job: playtest.regression.compare
+edges:
+  - from: baseline
+    to: approval
+  - from: approval
+    to: candidate
+  - from: candidate
+    to: compare
+invariants:
+  - baseline_and_candidate_use_exact_test_configuration
+  - baseline_and_candidate_use_exact_replay_and_behavior_versions
+  - baseline_and_candidate_use_exact_measurement_recipes
+  - proposal_source_issue_belongs_to_baseline_run
+  - candidate_build_follows_the_approved_changeset
+  - comparison_references_the_baseline_and_candidate_run_ids
+  - metric_direction_and_tolerance_come_from_test_case
+  - execution_mode_is_visible

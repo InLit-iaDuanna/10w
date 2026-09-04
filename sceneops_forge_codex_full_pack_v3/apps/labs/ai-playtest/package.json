@@ -1,0 +1,9 @@
+{
+  "name": "@sceneops/lab-ai-playtest",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {"dev": "vite --host 127.0.0.1 --port 4319 --strictPort"},
+  "dependencies": {"react": "19.2.8", "react-dom": "19.2.8", "zod": "3.25.76"},
+  "devDependencies": {"vite": "6.1.0", "typescript": "6.0.3", "@types/react": "19.2.14", "@types/react-dom": "19.2.3"}
+}

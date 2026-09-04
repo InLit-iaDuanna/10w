@@ -1,0 +1,349 @@
+{
+  "$defs": {
+    "ActionKind": {
+      "enum": [
+        "move",
+        "look",
+        "interact",
+        "use_item",
+        "confirm",
+        "cancel",
+        "registered"
+      ],
+      "title": "ActionKind",
+      "type": "string"
+    },
+    "AgentMode": {
+      "enum": [
+        "smoke",
+        "goal_driven",
+        "explorer",
+        "destructive",
+        "persona"
+      ],
+      "title": "AgentMode",
+      "type": "string"
+    },
+    "MetricDirection": {
+      "enum": [
+        "maximize",
+        "minimize"
+      ],
+      "title": "MetricDirection",
+      "type": "string"
+    },
+    "PersonaHeuristic": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "base_mode": {
+          "enum": [
+            "smoke",
+            "goal_driven",
+            "explorer"
+          ],
+          "title": "Base Mode",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "base_mode",
+        "description"
+      ],
+      "title": "PersonaHeuristic",
+      "type": "object"
+    },
+    "RegressionMetricSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "metric_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Metric Id",
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/MetricDirection"
+        },
+        "tolerance": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tolerance",
+          "type": "number"
+        },
+        "unit": {
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric_id",
+        "direction",
+        "unit"
+      ],
+      "title": "RegressionMetricSpec",
+      "type": "object"
+    },
+    "TestControls": {
+      "additionalProperties": false,
+      "properties": {
+        "max_steps": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Max Steps",
+          "type": "integer"
+        },
+        "max_duration_ms": {
+          "maximum": 86400000,
+          "minimum": 1,
+          "title": "Max Duration Ms",
+          "type": "integer"
+        },
+        "action_timeout_ms": {
+          "maximum": 300000,
+          "minimum": 1,
+          "title": "Action Timeout Ms",
+          "type": "integer"
+        },
+        "allowed_action_kinds": {
+          "items": {
+            "$ref": "#/$defs/ActionKind"
+          },
+          "title": "Allowed Action Kinds",
+          "type": "array"
+        },
+        "registered_action_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Registered Action Ids",
+          "type": "array"
+        },
+        "allow_destructive": {
+          "default": false,
+          "title": "Allow Destructive",
+          "type": "boolean"
+        },
+        "destructive_sandbox_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 3,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Destructive Sandbox Id"
+        },
+        "stall_steps": {
+          "default": 3,
+          "minimum": 2,
+          "title": "Stall Steps",
+          "type": "integer"
+        },
+        "repeated_failure_threshold": {
+          "default": 2,
+          "minimum": 2,
+          "title": "Repeated Failure Threshold",
+          "type": "integer"
+        },
+        "pose_epsilon_m": {
+          "default": 0.05,
+          "exclusiveMinimum": 0,
+          "title": "Pose Epsilon M",
+          "type": "number"
+        },
+        "max_frame_time_ms": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Frame Time Ms"
+        },
+        "max_memory_mb": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Memory Mb"
+        }
+      },
+      "required": [
+        "max_steps",
+        "max_duration_ms",
+        "action_timeout_ms",
+        "allowed_action_kinds"
+      ],
+      "title": "TestControls",
+      "type": "object"
+    },
+    "TestGoal": {
+      "additionalProperties": false,
+      "properties": {
+        "goal_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Goal Id",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "acceptance_criterion_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "type": "string"
+          },
+          "title": "Acceptance Criterion Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "goal_id",
+        "description"
+      ],
+      "title": "TestGoal",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "test_case_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Test Case Id",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "objective": {
+      "minLength": 1,
+      "title": "Objective",
+      "type": "string"
+    },
+    "scene_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Scene Id",
+      "type": "string"
+    },
+    "agent_mode": {
+      "$ref": "#/$defs/AgentMode"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "goals": {
+      "items": {
+        "$ref": "#/$defs/TestGoal"
+      },
+      "title": "Goals",
+      "type": "array"
+    },
+    "controls": {
+      "$ref": "#/$defs/TestControls"
+    },
+    "regression_metrics": {
+      "items": {
+        "$ref": "#/$defs/RegressionMetricSpec"
+      },
+      "title": "Regression Metrics",
+      "type": "array"
+    },
+    "persona": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PersonaHeuristic"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "limitation_labels": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Limitation Labels",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "test_case_id",
+    "version",
+    "project_id",
+    "name",
+    "objective",
+    "scene_id",
+    "agent_mode",
+    "seed",
+    "goals",
+    "controls",
+    "regression_metrics",
+    "limitation_labels"
+  ],
+  "title": "TestCase",
+  "type": "object"
+}

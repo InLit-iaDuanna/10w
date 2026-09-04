@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-09-04T03:00:00Z",
+  "adapter": {"adapter_id": "adapter.fixture.playtest", "adapter_version": "1.0.0", "max_steps": 200},
+  "build": {
+    "build_id": "build.warehouse.fixture",
+    "project_id": "project.warehouse-escape",
+    "version": "0.1.0-fixture",
+    "scene_id": "scene.warehouse-main",
+    "telemetry_contract_version": 1
+  },
+  "actor_sceneops_id": "sceneops.warehouse-player",
+  "telemetry_recoverable": true,
+  "telemetry_loss_on_reads": [],
+  "frames": [
+    {
+      "observed_at": "2026-09-04T03:00:01Z",
+      "position_m": [0, 0, 0],
+      "frame_time_ms": 18,
+      "memory_mb": 260,
+      "game_state": {"switch_on": false, "door_open": false},
+      "goals": [{"goal_id": "goal.warehouse-exit", "state": "pending", "value": 0, "detail": "尚未启动开关"}],
+      "actions": [
+        {"action_id": "action.switch.move", "kind": "move", "label": "走向开关", "target_sceneops_id": "sceneops.warehouse-switch", "advances_goal_ids": ["goal.warehouse-exit"], "goal_relevance": 1}
+      ],
+      "results": {"action.switch.move": {"outcome": "succeeded", "detail": "arrived at switch", "feedback": ["footsteps"], "duration_ms": 400}},
+      "next_frame": {"action.switch.move": 1}
+    },
+    {
+      "observed_at": "2026-09-04T03:00:02Z",
+      "position_m": [2, 0, 1],
+      "frame_time_ms": 18.5,
+      "memory_mb": 262,
+      "game_state": {"switch_on": false, "door_open": false},
+      "goals": [{"goal_id": "goal.warehouse-exit", "state": "in_progress", "value": 0.2, "detail": "已到达开关"}],
+      "actions": [
+        {"action_id": "action.switch.interact", "kind": "interact", "label": "启动开关", "target_sceneops_id": "sceneops.warehouse-switch", "advances_goal_ids": ["goal.warehouse-exit"], "goal_relevance": 1, "feedback_expected": true}
+      ],
+      "results": {"action.switch.interact": {"outcome": "succeeded", "detail": "switch enabled", "feedback": ["switch_sound", "door_light"], "duration_ms": 120}},
+      "next_frame": {"action.switch.interact": 2}
+    },
+    {
+      "observed_at": "2026-09-04T03:00:03Z",
+      "position_m": [2, 0, 1],
+      "frame_time_ms": 19,
+      "memory_mb": 263,
+      "game_state": {"switch_on": true, "door_open": true},
+      "goals": [{"goal_id": "goal.warehouse-exit", "state": "in_progress", "value": 0.5, "detail": "仓库门已打开"}],
+      "actions": [
+        {"action_id": "action.exit.move", "kind": "move", "label": "前往出口", "target_sceneops_id": "sceneops.warehouse-exit", "advances_goal_ids": ["goal.warehouse-exit"], "goal_relevance": 1}
+      ],
+      "results": {"action.exit.move": {"outcome": "failed", "detail": "navmesh route intersects obstacle collider", "error_code": "NAVMESH_PATH_BLOCKED", "duration_ms": 300}},
+      "next_frame": {"action.exit.move": 3}
+    },
+    {
+      "observed_at": "2026-09-04T03:00:04Z",
+      "position_m": [2, 0, 1],
+      "frame_time_ms": 19,
+      "memory_mb": 263,
+      "game_state": {"switch_on": true, "door_open": true},
+      "goals": [{"goal_id": "goal.warehouse-exit", "state": "blocked", "value": 0.5, "detail": "出口路径被障碍碰撞体阻断"}],
+      "actions": [
+        {"action_id": "action.exit.cancel", "kind": "cancel", "label": "取消移动", "target_sceneops_id": "sceneops.warehouse-exit", "goal_relevance": 0}
+      ],
+      "results": {"action.exit.cancel": {"outcome": "succeeded", "detail": "movement cancelled", "feedback": ["movement_stop"], "duration_ms": 20}},
+      "next_frame": {"action.exit.cancel": 3}
+    }
+  ],
+  "source_candidates": [
+    {
+      "source_record_id": "source-record.warehouse-obstacle.fixture",
+      "source_record_uri": "contracts/examples/source-catalog.v1.json#source-record.warehouse-obstacle.fixture",
+      "target_type": "scene_object",
+      "target_id": "scene-object.warehouse-obstacle",
+      "sceneops_id": "sceneops.warehouse-obstacle",
+      "related_sceneops_ids": ["sceneops.warehouse-exit"],
+      "locator": "Warehouse_Main/Obstacles/PalletStack_03",
+      "owning_module": "world-composer",
+      "build_id": "build.warehouse.fixture",
+      "failure_kinds": ["navigation_error", "unreachable_goal"],
+      "evidence_artifact_ids": []
+    }
+  ],
+  "metric_rules": {
+    "goal_completion": {"source": "goal_value", "goal_id": "goal.warehouse-exit"},
+    "navigation_failures": {"source": "failed_action_count", "error_code_prefix": "NAV"},
+    "elapsed_steps": {"source": "action_count"}
+  }
+}

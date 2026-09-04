@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-09-04T02:00:00Z",
+  "adapter": {"adapter_id": "adapter.fixture.playtest", "adapter_version": "1.0.0", "max_steps": 200},
+  "build": {
+    "build_id": "build.hero.after",
+    "project_id": "project.find-home",
+    "version": "0.8.1-after-door-fix",
+    "scene_id": "scene.home-hallway",
+    "telemetry_contract_version": 1
+  },
+  "actor_sceneops_id": "sceneops.hero-player",
+  "telemetry_recoverable": true,
+  "telemetry_loss_on_reads": [],
+  "frames": [
+    {
+      "observed_at": "2026-09-04T02:00:01Z",
+      "position_m": [0, 0, 0],
+      "frame_time_ms": 15.0,
+      "memory_mb": 220,
+      "game_state": {"has_key": false, "door_open": false},
+      "goals": [{"goal_id": "goal.key-door", "state": "pending", "value": 0, "detail": "尚未接近钥匙"}],
+      "actions": [
+        {"action_id": "action.key.move", "kind": "move", "label": "走向钥匙", "target_sceneops_id": "sceneops.hallway-key", "parameters": {"distance_m": 2.5}, "advances_goal_ids": ["goal.key-door"], "goal_relevance": 1}
+      ],
+      "results": {"action.key.move": {"outcome": "succeeded", "detail": "arrived at key", "feedback": ["footsteps"], "duration_ms": 500}},
+      "next_frame": {"action.key.move": 1}
+    },
+    {
+      "observed_at": "2026-09-04T02:00:02Z",
+      "position_m": [2.5, 0, 0],
+      "frame_time_ms": 15.3,
+      "memory_mb": 221,
+      "game_state": {"has_key": false, "door_open": false},
+      "goals": [{"goal_id": "goal.key-door", "state": "in_progress", "value": 0.25, "detail": "已到达钥匙"}],
+      "actions": [
+        {"action_id": "action.key.interact", "kind": "interact", "label": "拾取钥匙", "target_sceneops_id": "sceneops.hallway-key", "advances_goal_ids": ["goal.key-door"], "goal_relevance": 1, "feedback_expected": true}
+      ],
+      "results": {"action.key.interact": {"outcome": "succeeded", "detail": "key acquired", "feedback": ["pickup_sound", "inventory_icon"], "duration_ms": 180}},
+      "next_frame": {"action.key.interact": 2}
+    },
+    {
+      "observed_at": "2026-09-04T02:00:03Z",
+      "position_m": [2.5, 0, 0],
+      "frame_time_ms": 15.7,
+      "memory_mb": 223,
+      "game_state": {"has_key": true, "door_open": false},
+      "goals": [{"goal_id": "goal.key-door", "state": "in_progress", "value": 0.5, "detail": "已拾取钥匙"}],
+      "actions": [
+        {"action_id": "action.door.move", "kind": "move", "label": "走向家门", "target_sceneops_id": "sceneops.home-door", "parameters": {"distance_m": 5.0}, "advances_goal_ids": ["goal.key-door"], "goal_relevance": 1}
+      ],
+      "results": {"action.door.move": {"outcome": "succeeded", "detail": "arrived at door", "feedback": ["footsteps"], "duration_ms": 700}},
+      "next_frame": {"action.door.move": 3}
+    },
+    {
+      "observed_at": "2026-09-04T02:00:04Z",
+      "position_m": [7.5, 0, 0],
+      "frame_time_ms": 16.0,
+      "memory_mb": 225,
+      "game_state": {"has_key": true, "door_open": false},
+      "goals": [{"goal_id": "goal.key-door", "state": "in_progress", "value": 0.6, "detail": "已到达家门"}],
+      "actions": [
+        {"action_id": "action.door.interact", "kind": "interact", "label": "用钥匙开门", "target_sceneops_id": "sceneops.home-door", "advances_goal_ids": ["goal.key-door"], "goal_relevance": 1, "feedback_expected": true}
+      ],
+      "results": {"action.door.interact": {"outcome": "succeeded", "detail": "door unlocked and opened", "feedback": ["unlock_sound", "door_animation", "quest_update"], "duration_ms": 220}},
+      "next_frame": {"action.door.interact": 4}
+    },
+    {
+      "observed_at": "2026-09-04T02:00:05Z",
+      "position_m": [7.5, 0, 0],
+      "frame_time_ms": 16.1,
+      "memory_mb": 225,
+      "game_state": {"has_key": true, "door_open": true},
+      "goals": [{"goal_id": "goal.key-door", "state": "completed", "value": 1, "detail": "家门已打开"}],
+      "actions": [],
+      "results": {},
+      "next_frame": {}
+    }
+  ],
+  "source_candidates": [
+    {
+      "source_record_id": "source-record.home-door.after",
+      "source_record_uri": "contracts/examples/source-catalog.v1.json#source-record.home-door.after",
+      "target_type": "component",
+      "target_id": "component.home-door-interaction",
+      "sceneops_id": "sceneops.home-door",
+      "locator": "Assets/Scripts/HomeDoorInteraction.cs#HomeDoorInteraction",
+      "owning_module": "logic-studio",
+      "build_id": "build.hero.after",
+      "component_id": "component.home-door-interaction",
+      "failure_kinds": ["collider_error", "repeated_failed_interaction"],
+      "evidence_artifact_ids": []
+    }
+  ],
+  "metric_rules": {
+    "goal_completion": {"source": "goal_value", "goal_id": "goal.key-door"},
+    "failed_interactions": {"source": "failed_action_count", "action_kind": "interact"},
+    "max_frame_time_ms": {"source": "max_observation", "observation_field": "frame_time_ms"}
+  }
+}

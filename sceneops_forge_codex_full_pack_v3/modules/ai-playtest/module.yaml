@@ -1,0 +1,60 @@
+schema_version: 1
+id: ai-playtest
+version: 0.1.0
+title: AI Playtest
+description: Runs bounded AI playtests, records evidence, backpins issues, and compares exact test reruns.
+status: active
+feature_flag: ai_playtest
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+  integrations: []
+  optional_integrations:
+    - unity-playtest-runner
+    - artifact-store
+    - llm-provider
+
+contributes:
+  editors:
+    - playtest.game-view
+    - playtest.agent-monitor
+    - playtest.trajectory
+    - playtest.step-log
+    - playtest.issue-browser
+    - playtest.regression
+  commands:
+    - playtest.run
+    - playtest.cancel
+    - playtest.issue.open-backpin
+    - playtest.issue.review-backpin
+    - playtest.changeset.propose
+    - playtest.regression.compare
+  events:
+    - playtest.run.started@1
+    - playtest.step.recorded@1
+    - playtest.issue.created@1
+    - playtest.issue.backpin.resolved@1
+    - playtest.regression.compared@1
+  jobs:
+    - playtest.execute
+    - playtest.regression.compare
+  workflows:
+    - playtest-regression
+  policy_gates:
+    - playtest.action-bounds
+    - playtest.destructive-containment
+    - playtest.exact-regression-config
+
+permissions:
+  - playtest:read
+  - playtest:run
+  - playtest:cancel
+  - issue:read
+  - issue:write
+  - changeset:propose
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: ai_playtest

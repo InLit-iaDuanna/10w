@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "EventActor": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "user",
+            "agent",
+            "system"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "EventActor",
+      "type": "object"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "PlaytestRunStartedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "maxLength": 96,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "test_case_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Test Case Id",
+          "type": "string"
+        },
+        "build_id": {
+          "maxLength": 160,
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "title": "Build Id",
+          "type": "string"
+        },
+        "execution_mode": {
+          "$ref": "#/$defs/ExecutionMode"
+        }
+      },
+      "required": [
+        "run_id",
+        "test_case_id",
+        "build_id",
+        "execution_mode"
+      ],
+      "title": "PlaytestRunStartedPayload",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Event Version",
+      "type": "integer"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "project_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "correlation_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "causation_id": {
+      "maxLength": 160,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "title": "Causation Id",
+      "type": "string"
+    },
+    "actor": {
+      "$ref": "#/$defs/EventActor"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "event_type": {
+      "const": "playtest.run.started",
+      "default": "playtest.run.started",
+      "title": "Event Type",
+      "type": "string"
+    },
+    "payload": {
+      "$ref": "#/$defs/PlaytestRunStartedPayload"
+    }
+  },
+  "required": [
+    "event_id",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "title": "PlaytestRunStartedEvent",
+  "type": "object"
+}
