@@ -89,6 +89,8 @@ export const moduleContribution: ModuleContribution = {
 };
 ```
 
+模块自己的 `frontend/src/generated/module-manifest.ts` 由 `module.yaml` 生成，公开入口引用该文件，不手抄 manifest。Web composition root 直接消费 `apps/web/src/registries/generated-module-catalog.ts`；运行 `scripts/module-generate` 更新，不手工维护 import 或 feature switch。
+
 ## 5. Editor registration
 
 ```ts
@@ -433,6 +435,18 @@ interface SceneOverlayDefinition {
 9. Add module docs.
 10. Run manifest, dependency, type, unit, and E2E checks.
 11. Regenerate the module catalog.
+
+当前命令：
+
+```bash
+scripts/module-scaffold <module-id> --title "..." --description "..."
+scripts/module-validate
+scripts/module-test <module-id>
+scripts/module-generate
+scripts/module-generate --check
+```
+
+前端可通过 `@sceneops/module-runtime` 的 `resolveFrontendModuleStates` 解析 feature flag、依赖和 missing integration metadata。`disabled` 与 `blocked` 必须显示其中文原因；仅 optional integration 缺失时模块保持 enabled 并显示降级说明。
 
 The shell should not require manual edits beyond generated registration.
 

@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+root = Path(__file__).resolve().parents[1]
+sys.path[:0] = [
+    str(root / "modules" / "module-runtime" / "backend" / "src"),
+    str(root / "packages" / "core-events" / "src"),
+    str(root / "packages" / "core-contracts" / "src"),
+]
+
+from module_runtime.cli import main
+
+raise SystemExit(main(["--repo", str(root), "scaffold", *sys.argv[1:]]))

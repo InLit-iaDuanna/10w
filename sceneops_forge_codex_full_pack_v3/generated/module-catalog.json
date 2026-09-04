@@ -1,0 +1,144 @@
+{
+  "generated_by": "scripts/module-generate",
+  "modules": [
+    {
+      "contributes": {
+        "commands": [
+          "core.run.transition"
+        ],
+        "editors": [],
+        "events": [
+          "core.run.state_changed@1"
+        ],
+        "jobs": [
+          "core.run.transition"
+        ],
+        "policy_gates": [
+          "core.changeset.approval"
+        ],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Enforces shared run-state and ChangeSet safety primitives.",
+      "entrypoints": {
+        "backend": "core_kernel",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "core_kernel",
+      "id": "core-kernel",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "core:execute"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Core Kernel",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "module.catalog.inspect"
+        ],
+        "editors": [],
+        "events": [
+          "module.catalog.generated@1"
+        ],
+        "jobs": [
+          "module.catalog.build"
+        ],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Validates static modules and generates deterministic frontend and backend catalogs.",
+      "entrypoints": {
+        "backend": "module_runtime",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "module_runtime",
+      "id": "module-runtime",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "module:read",
+        "module:generate"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Module Runtime",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "runtime.fixture.run"
+        ],
+        "editors": [
+          "runtime.fixture"
+        ],
+        "events": [
+          "runtime.fixture.completed@1"
+        ],
+        "jobs": [
+          "runtime.fixture.execute"
+        ],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Proves deterministic registration, enablement, and explicit success and failure states.",
+      "entrypoints": {
+        "backend": "runtime_fixture",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "runtime_fixture",
+      "id": "runtime-fixture",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "runtime-fixture:read",
+        "runtime-fixture:execute"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "fixture-renderer"
+        ]
+      },
+      "schema_version": 1,
+      "status": "experimental",
+      "title": "Runtime Fixture",
+      "version": "0.1.0"
+    }
+  ],
+  "registration_order": [
+    "core-kernel",
+    "module-runtime",
+    "runtime-fixture"
+  ],
+  "schema_version": 1
+}

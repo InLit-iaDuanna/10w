@@ -1,0 +1,37 @@
+{
+  "approval_requirements": [
+    {
+      "allowed_actor_types": ["user"],
+      "minimum_decisions": 1,
+      "permission": "scene:approve"
+    }
+  ],
+  "base_version": "scene-v7",
+  "change_set_id": "chg_fixture0001",
+  "created_at": "2026-09-04T00:00:00Z",
+  "created_by": {
+    "display_name": "Fixture User",
+    "id": "usr_fixture0001",
+    "type": "user"
+  },
+  "destructive": false,
+  "dry_run_supported": true,
+  "expected_result": "Door opens after approval.",
+  "impact_scope": "scene",
+  "previous_values": {
+    "locked": true
+  },
+  "proposed_values": {
+    "locked": false
+  },
+  "rationale": "Apply the approved gameplay rule.",
+  "risk": "medium",
+  "rollback_plan": ["Restore locked=true from the captured base version."],
+  "status": "waiting_approval",
+  "target": {
+    "integration_id": "unity",
+    "module_id": "core-kernel",
+    "object_ids": ["sobj_fixture001"]
+  },
+  "validation_plan": ["Run the deterministic door interaction test."]
+}

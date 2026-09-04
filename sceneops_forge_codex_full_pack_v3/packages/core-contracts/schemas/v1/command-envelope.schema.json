@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "ActorReference": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "pattern": "^(?:usr|agt|svc|sys)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ActorType"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "ActorReference",
+      "type": "object"
+    },
+    "ActorType": {
+      "enum": [
+        "user",
+        "agent",
+        "service",
+        "system"
+      ],
+      "title": "ActorType",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "JsonValue": {}
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/command-envelope.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/ActorReference"
+    },
+    "command_id": {
+      "pattern": "^cmd_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Command Id",
+      "type": "string"
+    },
+    "command_type": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+      "title": "Command Type",
+      "type": "string"
+    },
+    "command_version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Command Version",
+      "type": "integer"
+    },
+    "correlation_id": {
+      "pattern": "^corr_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "issued_at": {
+      "format": "date-time",
+      "title": "Issued At",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "payload": {
+      "$ref": "#/$defs/JsonValue"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "pattern": "^prj_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Id"
+    }
+  },
+  "required": [
+    "command_id",
+    "command_type",
+    "issued_at",
+    "correlation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "title": "CommandEnvelope",
+  "type": "object"
+}

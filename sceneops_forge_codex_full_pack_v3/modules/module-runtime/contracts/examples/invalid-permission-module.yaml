@@ -1,0 +1,22 @@
+schema_version: 1
+id: invalid-permission
+version: 0.1.0
+title: Invalid Permission
+description: A deterministic invalid module manifest fixture.
+status: experimental
+feature_flag: invalid_permission
+requires:
+  modules: []
+  integrations: []
+  optional_integrations: []
+contributes:
+  editors: []
+  commands: []
+  events: []
+  jobs: []
+  workflows: []
+  policy_gates: []
+permissions:
+  - invalid permission
+entrypoints:
+  frontend: ./frontend/src/index.ts

@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sceneops-core-kernel"
+version = "0.1.0"
+description = "Shared run-state and ChangeSet policy kernel for SceneOps Forge"
+requires-python = ">=3.9"
+dependencies = ["sceneops-core-contracts>=0.1,<0.2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/core_kernel"]

@@ -1,0 +1,30 @@
+schema_version: 1
+id: example-module
+version: 0.1.0
+title: Example Module
+description: A deterministic valid module manifest fixture.
+status: experimental
+feature_flag: example_module
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+  integrations: []
+  optional_integrations:
+    - example-renderer
+contributes:
+  editors:
+    - example.editor
+  commands:
+    - example.run
+  events:
+    - example.completed@1
+  jobs:
+    - example.execute
+  workflows: []
+  policy_gates: []
+permissions:
+  - example:read
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: example_module

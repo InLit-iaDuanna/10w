@@ -1,0 +1,12 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sceneops-runtime-fixture"
+version = "0.1.0"
+description = "Deterministic module runtime registration fixture"
+requires-python = ">=3.9"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/runtime_fixture"]

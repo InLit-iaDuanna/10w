@@ -110,6 +110,18 @@ entrypoints:
   backend: asset_factory
 ```
 
+### 3.1 Schema source and strictness
+
+Manifest v1 的 Pydantic source 位于 `modules/module-runtime/backend/src/module_runtime/manifest.py`，生成 JSON Schema 位于 `modules/module-runtime/contracts/module-manifest.schema.json`。
+
+- 目录名必须与 `id` 相同；
+- `requires` 和 `contributes` 的所有列表字段都必须显式出现，可以为空；
+- 至少声明一个 frontend 或 backend 公开入口；
+- frontend 入口必须留在模块目录内；backend 入口是公开 Python package；
+- Event schema 文件使用 `contracts/events/<event-type>.v<version>.schema.json`，其 `x-event-type` / `x-event-version` 必须与 manifest 一致。
+
+执行 `scripts/module-validate` 检查 schema、入口、依赖、贡献 ID、事件版本和 import boundary；执行 `scripts/module-generate --check` 检查所有生成目录是否最新。
+
 ## 4. Public surface
 
 ### Frontend
@@ -157,6 +169,15 @@ class BackendModuleContribution(Protocol):
     event_handlers: list[EventHandler]
     policy_gates: list[PolicyGate]
 ```
+
+Frontend 与 backend composition root 分别消费生成的：
+
+```text
+apps/web/src/registries/generated-module-catalog.ts
+services/api/generated_module_catalog.py
+```
+
+不得另建手工 module switch。生成顺序是确定性的 dependency order。
 
 ## 6. Cross-module communication
 
@@ -253,12 +274,11 @@ Every module must include:
 Run convention:
 
 ```text
-pnpm test:module <module-id>
-uv run pytest modules/<module-id>/backend
-pnpm e2e:module <module-id>
+scripts/module-test <module-id>
+scripts/module-test all
 ```
 
-Codex should create equivalent scripts that fit the actual repository.
+该命令从 manifest 发现模块自己的 Python 与 TypeScript tests；新增模块无需修改 test switch。
 
 ## 13. Module documentation
 

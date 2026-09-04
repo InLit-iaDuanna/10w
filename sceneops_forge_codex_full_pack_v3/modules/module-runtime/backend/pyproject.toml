@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sceneops-module-runtime"
+version = "0.1.0"
+description = "Static manifest validation and module catalog generation for SceneOps Forge"
+requires-python = ">=3.9"
+dependencies = [
+  "pydantic>=2.12,<3",
+  "PyYAML>=6,<7",
+  "sceneops-core-events>=0.1,<0.2",
+]
+
+[project.scripts]
+sceneops-modules = "module_runtime.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/module_runtime"]

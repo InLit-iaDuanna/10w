@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Run independent SceneOps core and module-runtime test suites."""
+
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BASE_PYTHON_PATHS = [
+    ROOT,
+    ROOT / "packages" / "core-contracts" / "src",
+    ROOT / "packages" / "core-events" / "src",
+]
+CORE_SUITES = {
+    "core-contracts": [
+        [
+            sys.executable,
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "packages/core-contracts/tests",
+            "-p",
+            "test_*.py",
+        ],
+        [
+            "node",
+            "--experimental-strip-types",
+            "--check",
+            "packages/core-contracts/frontend/src/index.ts",
+        ],
+    ],
+    "core-events": [
+        [
+            sys.executable,
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "packages/core-events/tests",
+            "-p",
+            "test_*.py",
+        ]
+    ],
+}
+
+
+def discovered_modules():
+    return sorted(
+        path.name
+        for path in (ROOT / "modules").iterdir()
+        if path.is_dir() and (path / "module.yaml").is_file()
+    )
+
+
+def module_commands(module_id):
+    module_root = ROOT / "modules" / module_id
+    manifest = yaml.safe_load((module_root / "module.yaml").read_text(encoding="utf-8"))
+    commands = []
+    backend = manifest["entrypoints"].get("backend")
+    test_directories = []
+    root_tests = module_root / "tests"
+    if root_tests.is_dir():
+        test_directories.append(root_tests)
+    if backend:
+        package_tests = (
+            module_root / "backend" / "src" / Path(*backend.split(".")) / "tests"
+        )
+        if package_tests.is_dir():
+            test_directories.append(package_tests)
+    for test_directory in test_directories:
+        commands.append(
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                str(test_directory.relative_to(ROOT)),
+                "-p",
+                "test_*.py",
+            ]
+        )
+    frontend_tests = sorted(
+        (module_root / "frontend" / "src" / "tests").glob("*.test.ts")
+    )
+    if frontend_tests:
+        commands.append(
+            [
+                "node",
+                "--experimental-strip-types",
+                "--test",
+                *(str(path.relative_to(ROOT)) for path in frontend_tests),
+            ]
+        )
+    if not commands:
+        raise RuntimeError(f"module has no independent tests: {module_id}")
+    return commands
+
+
+def run(command, environment):
+    print("+ " + " ".join(command), flush=True)
+    return subprocess.run(command, cwd=ROOT, env=environment, check=False).returncode
+
+
+def main():
+    requested = sys.argv[1] if len(sys.argv) > 1 else "all"
+    modules = discovered_modules()
+    valid = {*CORE_SUITES, *modules, "all"}
+    if len(sys.argv) > 2 or requested not in valid:
+        print(
+            "usage: scripts/module-test [all|"
+            + "|".join([*CORE_SUITES, *modules])
+            + "]",
+            file=sys.stderr,
+        )
+        return 2
+    selected = [*CORE_SUITES, *modules] if requested == "all" else [requested]
+    environment = os.environ.copy()
+    existing = environment.get("PYTHONPATH")
+    module_python_paths = [
+        ROOT / "modules" / module_id / "backend" / "src" for module_id in modules
+    ]
+    paths = [str(path) for path in [*BASE_PYTHON_PATHS, *module_python_paths]]
+    if existing:
+        paths.append(existing)
+    environment["PYTHONPATH"] = os.pathsep.join(paths)
+
+    command_count = 0
+    for suite in selected:
+        commands = CORE_SUITES.get(suite) or module_commands(suite)
+        for command in commands:
+            command_count += 1
+            result = run(command, environment)
+            if result != 0:
+                return result
+    if requested == "all":
+        verification = [
+            [str(ROOT / "scripts" / "module-validate")],
+            [str(ROOT / "scripts" / "module-generate"), "--check"],
+            [sys.executable, "packages/core-contracts/tools/generate.py", "--check"],
+        ]
+        for command in verification:
+            command_count += 1
+            result = run(command, environment)
+            if result != 0:
+                return result
+    print(f"Passed {len(selected)} suites across {command_count} commands.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

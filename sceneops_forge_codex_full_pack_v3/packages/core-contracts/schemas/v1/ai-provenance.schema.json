@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/ai-provenance.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "model": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    },
+    "negative_prompt": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Negative Prompt"
+    },
+    "parameters": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Parameters",
+      "type": "object"
+    },
+    "prompt": {
+      "title": "Prompt",
+      "type": "string"
+    },
+    "provider": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Provider",
+      "type": "string"
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Seed"
+    },
+    "workflow_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Workflow Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provider",
+    "model",
+    "workflow_hash",
+    "prompt"
+  ],
+  "title": "AiProvenance",
+  "type": "object"
+}

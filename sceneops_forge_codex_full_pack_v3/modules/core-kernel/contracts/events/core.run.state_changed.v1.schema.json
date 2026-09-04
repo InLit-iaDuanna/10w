@@ -1,0 +1,38 @@
+{
+  "$id": "https://sceneops.local/events/core.run.state_changed/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "from_state": {
+      "enum": [
+        "queued",
+        "running",
+        "waiting_approval",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "rolled_back"
+      ]
+    },
+    "run_id": {
+      "pattern": "^run_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "type": "string"
+    },
+    "to_state": {
+      "enum": [
+        "queued",
+        "running",
+        "waiting_approval",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "rolled_back"
+      ]
+    }
+  },
+  "required": ["run_id", "from_state", "to_state"],
+  "title": "Core run state changed payload",
+  "type": "object",
+  "x-event-type": "core.run.state_changed",
+  "x-event-version": 1
+}

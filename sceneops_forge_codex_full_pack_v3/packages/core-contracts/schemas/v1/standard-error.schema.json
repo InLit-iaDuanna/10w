@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "JsonValue": {}
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/standard-error.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "pattern": "^[A-Z][A-Z0-9_]{2,79}$",
+      "title": "Code",
+      "type": "string"
+    },
+    "details": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Details",
+      "type": "object"
+    },
+    "message": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "request_id": {
+      "anyOf": [
+        {
+          "pattern": "^req_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Request Id"
+    },
+    "retryable": {
+      "default": false,
+      "title": "Retryable",
+      "type": "boolean"
+    },
+    "suggested_actions": {
+      "items": {
+        "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+        "type": "string"
+      },
+      "title": "Suggested Actions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "StandardError",
+  "type": "object"
+}

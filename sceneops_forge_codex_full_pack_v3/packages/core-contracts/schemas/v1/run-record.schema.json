@@ -1,0 +1,170 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "JsonValue": {},
+    "RunState": {
+      "enum": [
+        "queued",
+        "running",
+        "waiting_approval",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "rolled_back"
+      ],
+      "title": "RunState",
+      "type": "string"
+    },
+    "StandardError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{2,79}$",
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Details",
+          "type": "object"
+        },
+        "message": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "pattern": "^req_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "suggested_actions": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+            "type": "string"
+          },
+          "title": "Suggested Actions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "StandardError",
+      "type": "object"
+    }
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/run-record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_ids": {
+      "items": {
+        "pattern": "^art_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+        "type": "string"
+      },
+      "title": "Artifact Ids",
+      "type": "array"
+    },
+    "attempt": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Attempt",
+      "type": "integer"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StandardError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "job_id": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$",
+      "title": "Job Id",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "run_id": {
+      "pattern": "^run_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Started At"
+    },
+    "state": {
+      "$ref": "#/$defs/RunState"
+    }
+  },
+  "required": [
+    "run_id",
+    "job_id",
+    "state",
+    "mode",
+    "created_at"
+  ],
+  "title": "RunRecord",
+  "type": "object"
+}

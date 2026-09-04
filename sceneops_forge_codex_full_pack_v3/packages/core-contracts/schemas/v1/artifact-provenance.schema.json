@@ -1,0 +1,274 @@
+{
+  "$defs": {
+    "ActorReference": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "pattern": "^(?:usr|agt|svc|sys)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ActorType"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "ActorReference",
+      "type": "object"
+    },
+    "ActorType": {
+      "enum": [
+        "user",
+        "agent",
+        "service",
+        "system"
+      ],
+      "title": "ActorType",
+      "type": "string"
+    },
+    "AiProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "negative_prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Negative Prompt"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "prompt": {
+          "title": "Prompt",
+          "type": "string"
+        },
+        "provider": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed"
+        },
+        "workflow_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Workflow Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "workflow_hash",
+        "prompt"
+      ],
+      "title": "AiProvenance",
+      "type": "object"
+    },
+    "ApprovalState": {
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "ApprovalState",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "live",
+        "cached",
+        "mock",
+        "planned",
+        "blocked"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "JsonValue": {}
+  },
+  "$id": "https://sceneops.local/schemas/core/v1/artifact-provenance.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "adapter_version": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Adapter Version",
+      "type": "string"
+    },
+    "ai": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AiProvenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "approval_state": {
+      "$ref": "#/$defs/ApprovalState"
+    },
+    "cached_from_run_id": {
+      "anyOf": [
+        {
+          "pattern": "^run_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cached From Run Id"
+    },
+    "checksum": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Checksum",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "creator": {
+      "$ref": "#/$defs/ActorReference"
+    },
+    "execution_mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "fixture_id": {
+      "anyOf": [
+        {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fixture Id"
+    },
+    "producing_module": {
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "title": "Producing Module",
+      "type": "string"
+    },
+    "recipe_version": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Recipe Version",
+      "type": "string"
+    },
+    "related_sceneops_ids": {
+      "items": {
+        "pattern": "^sobj_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+        "type": "string"
+      },
+      "title": "Related Sceneops Ids",
+      "type": "array"
+    },
+    "source_commit": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 7,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Commit"
+    },
+    "source_project_id": {
+      "pattern": "^prj_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+      "title": "Source Project Id",
+      "type": "string"
+    },
+    "source_version": {
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Source Version",
+      "type": "string"
+    },
+    "tool_name": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Tool Name",
+      "type": "string"
+    },
+    "tool_version": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_project_id",
+    "source_version",
+    "producing_module",
+    "tool_name",
+    "tool_version",
+    "adapter_version",
+    "recipe_version",
+    "creator",
+    "execution_mode",
+    "created_at",
+    "checksum",
+    "approval_state"
+  ],
+  "title": "ArtifactProvenance",
+  "type": "object"
+}
