@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "schema_version": 1,
+      "template_id": "inventory-token-opens-target",
+      "version": 1,
+      "description": "A collectible token enters inventory, unlocks a target, advances a quest, emits feedback, and reaches an ending.",
+      "required_bindings": [
+        "graph_id",
+        "scene_id",
+        "player_sceneops_id",
+        "player_display_name",
+        "collectible_sceneops_id",
+        "collectible_display_name",
+        "target_sceneops_id",
+        "target_display_name",
+        "inventory_token"
+      ],
+      "graph": {
+        "schema_version": 1,
+        "graph_id": "${graph_id}",
+        "project_id": "${project_id}",
+        "feature_spec_id": "${feature_spec_id}",
+        "version": 1,
+        "mode": "${mode}",
+        "state_variables": [
+          {"variable_id": "inventory.items", "label": "Inventory items", "value_type": "string_set", "initial_value": []},
+          {"variable_id": "target.is_open", "label": "Target open", "value_type": "boolean", "initial_value": false},
+          {"variable_id": "quest.stage", "label": "Quest stage", "value_type": "string", "initial_value": "find_collectible"}
+        ],
+        "events": [
+          {"event_id": "quest.started", "description": "The homecoming quest started."},
+          {"event_id": "target.locked_feedback_shown", "description": "Locked feedback was shown."},
+          {"event_id": "collectible.collected", "description": "The collectible entered inventory."},
+          {"event_id": "collectible.feedback_shown", "description": "Pickup feedback was shown."},
+          {"event_id": "target.opened", "description": "The target opened."},
+          {"event_id": "ending.reached", "description": "The player reached the ending."}
+        ],
+        "scene_objects": [
+          {"sceneops_id": "${player_sceneops_id}", "display_name": "${player_display_name}", "scene_id": "${scene_id}"},
+          {"sceneops_id": "${collectible_sceneops_id}", "display_name": "${collectible_display_name}", "scene_id": "${scene_id}"},
+          {"sceneops_id": "${target_sceneops_id}", "display_name": "${target_display_name}", "scene_id": "${scene_id}"}
+        ],
+        "nodes": [
+          {"node_id": "start", "kind": "start", "label": "Start", "emitted_event_ids": ["quest.started"], "acceptance_criterion_ids": ["quest_progress"]},
+          {"node_id": "quest_active", "kind": "quest", "label": "Quest active", "acceptance_criterion_ids": ["quest_progress"], "quest": {"quest_id": "quest.homecoming", "objective_key": "quest.find_collectible", "completion_event_id": "target.opened"}},
+          {"node_id": "target_interaction", "kind": "interaction", "label": "Use target", "sceneops_ids": ["${target_sceneops_id}"], "acceptance_criterion_ids": ["locked_target"]},
+          {"node_id": "locked_feedback", "kind": "feedback", "label": "Target is locked", "emitted_event_ids": ["target.locked_feedback_shown"], "acceptance_criterion_ids": ["feedback"]},
+          {"node_id": "collectible_pickup", "kind": "interaction", "label": "Collect item", "sceneops_ids": ["${collectible_sceneops_id}"], "conditions": [{"condition_id": "collectible_not_owned", "variable_id": "inventory.items", "operator": "not_contains", "value": "${inventory_token}"}], "effects": [{"effect_id": "add_collectible", "variable_id": "inventory.items", "operation": "add", "value": "${inventory_token}"}, {"effect_id": "advance_quest", "variable_id": "quest.stage", "operation": "set", "value": "open_target"}], "emitted_event_ids": ["collectible.collected"], "acceptance_criterion_ids": ["collectible_pickup", "inventory_state", "quest_progress"]},
+          {"node_id": "pickup_feedback", "kind": "feedback", "label": "Pickup feedback", "emitted_event_ids": ["collectible.feedback_shown"], "acceptance_criterion_ids": ["feedback"]},
+          {"node_id": "open_feedback", "kind": "feedback", "label": "Target opens", "effects": [{"effect_id": "open_target", "variable_id": "target.is_open", "operation": "set", "value": true}, {"effect_id": "complete_quest", "variable_id": "quest.stage", "operation": "set", "value": "complete"}], "emitted_event_ids": ["target.opened"], "acceptance_criterion_ids": ["locked_target", "quest_progress", "feedback"]},
+          {"node_id": "home_dialogue", "kind": "dialogue", "label": "Homecoming line", "acceptance_criterion_ids": ["ending"], "dialogue": {"dialogue_id": "dialogue.homecoming", "speaker_sceneops_id": "${player_sceneops_id}", "line_key": "dialogue.homecoming.arrived", "choices": [{"choice_id": "continue", "text_key": "dialogue.continue", "target_node_id": "ending"}]}},
+          {"node_id": "ending", "kind": "ending", "label": "Home reached", "emitted_event_ids": ["ending.reached"], "acceptance_criterion_ids": ["ending"]}
+        ],
+        "edges": [
+          {"edge_id": "start_to_quest", "source_node_id": "start", "target_node_id": "quest_active"},
+          {"edge_id": "quest_to_target", "source_node_id": "quest_active", "target_node_id": "target_interaction"},
+          {"edge_id": "target_locked", "source_node_id": "target_interaction", "target_node_id": "locked_feedback", "conditions": [{"condition_id": "missing_collectible", "variable_id": "inventory.items", "operator": "not_contains", "value": "${inventory_token}"}]},
+          {"edge_id": "locked_to_collectible", "source_node_id": "locked_feedback", "target_node_id": "collectible_pickup"},
+          {"edge_id": "collectible_to_feedback", "source_node_id": "collectible_pickup", "target_node_id": "pickup_feedback"},
+          {"edge_id": "feedback_to_target", "source_node_id": "pickup_feedback", "target_node_id": "target_interaction"},
+          {"edge_id": "target_unlocked", "source_node_id": "target_interaction", "target_node_id": "open_feedback", "conditions": [{"condition_id": "has_collectible", "variable_id": "inventory.items", "operator": "contains", "value": "${inventory_token}"}]},
+          {"edge_id": "open_to_dialogue", "source_node_id": "open_feedback", "target_node_id": "home_dialogue"},
+          {"edge_id": "dialogue_to_ending", "source_node_id": "home_dialogue", "target_node_id": "ending"}
+        ],
+        "relationships": [
+          {"relationship_id": "collectible_collected_by_player", "source_sceneops_id": "${collectible_sceneops_id}", "target_sceneops_id": "${player_sceneops_id}", "relation_type": "collected_by", "template_id": "inventory-token-opens-target"},
+          {"relationship_id": "collectible_unlocks_target", "source_sceneops_id": "${collectible_sceneops_id}", "target_sceneops_id": "${target_sceneops_id}", "relation_type": "unlocks", "template_id": "inventory-token-opens-target"}
+        ],
+        "acceptance_criteria": [
+          {"criterion_id": "collectible_pickup", "description": "The player can collect the configured item."},
+          {"criterion_id": "inventory_state", "description": "The collected token is retained in inventory state."},
+          {"criterion_id": "locked_target", "description": "The configured target stays locked without the token and opens with it."},
+          {"criterion_id": "quest_progress", "description": "Quest state advances from finding the item to completion."},
+          {"criterion_id": "feedback", "description": "Locked, pickup, and opening feedback events are emitted."},
+          {"criterion_id": "ending", "description": "The configured ending is reachable after opening the target."}
+        ],
+        "generated_tests": [
+          {"test_id": "hero.edit_mode.identity", "test_kind": "edit_mode", "target_node_ids": ["collectible_pickup", "target_interaction"], "acceptance_criterion_ids": ["collectible_pickup", "inventory_state"]},
+          {"test_id": "hero.play_mode.key_door", "test_kind": "play_mode", "target_node_ids": ["locked_feedback", "open_feedback", "ending"], "acceptance_criterion_ids": ["locked_target", "quest_progress"]},
+          {"test_id": "hero.behavior.homecoming", "test_kind": "behavior", "target_node_ids": ["pickup_feedback", "home_dialogue", "ending"], "acceptance_criterion_ids": ["feedback", "ending"]}
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "template_id": "switch-opens-target",
+      "version": 1,
+      "description": "A configured switch activates a configured target and reaches an ending.",
+      "required_bindings": [
+        "graph_id",
+        "scene_id",
+        "player_sceneops_id",
+        "player_display_name",
+        "switch_sceneops_id",
+        "switch_display_name",
+        "target_sceneops_id",
+        "target_display_name"
+      ],
+      "graph": {
+        "schema_version": 1,
+        "graph_id": "${graph_id}",
+        "project_id": "${project_id}",
+        "feature_spec_id": "${feature_spec_id}",
+        "version": 1,
+        "mode": "${mode}",
+        "state_variables": [
+          {"variable_id": "switch.is_active", "label": "Switch active", "value_type": "boolean", "initial_value": false},
+          {"variable_id": "target.is_open", "label": "Target open", "value_type": "boolean", "initial_value": false}
+        ],
+        "events": [
+          {"event_id": "switch.activated", "description": "The switch was activated."},
+          {"event_id": "switch.feedback_shown", "description": "Switch feedback was shown."},
+          {"event_id": "target.opened", "description": "The target opened."},
+          {"event_id": "ending.reached", "description": "The player reached the exit."}
+        ],
+        "scene_objects": [
+          {"sceneops_id": "${player_sceneops_id}", "display_name": "${player_display_name}", "scene_id": "${scene_id}"},
+          {"sceneops_id": "${switch_sceneops_id}", "display_name": "${switch_display_name}", "scene_id": "${scene_id}"},
+          {"sceneops_id": "${target_sceneops_id}", "display_name": "${target_display_name}", "scene_id": "${scene_id}"}
+        ],
+        "nodes": [
+          {"node_id": "start", "kind": "start", "label": "Start"},
+          {"node_id": "switch_interaction", "kind": "interaction", "label": "Activate switch", "sceneops_ids": ["${switch_sceneops_id}"], "effects": [{"effect_id": "activate_switch", "variable_id": "switch.is_active", "operation": "set", "value": true}], "emitted_event_ids": ["switch.activated"], "acceptance_criterion_ids": ["switch_activation"]},
+          {"node_id": "switch_feedback", "kind": "feedback", "label": "Switch feedback", "emitted_event_ids": ["switch.feedback_shown"], "acceptance_criterion_ids": ["feedback"]},
+          {"node_id": "target_interaction", "kind": "interaction", "label": "Open target", "sceneops_ids": ["${target_sceneops_id}"], "conditions": [{"condition_id": "switch_active", "variable_id": "switch.is_active", "operator": "equals", "value": true}], "acceptance_criterion_ids": ["target_open"]},
+          {"node_id": "open_feedback", "kind": "feedback", "label": "Target opens", "effects": [{"effect_id": "open_target", "variable_id": "target.is_open", "operation": "set", "value": true}], "emitted_event_ids": ["target.opened"], "acceptance_criterion_ids": ["target_open", "feedback"]},
+          {"node_id": "ending", "kind": "ending", "label": "Exit reached", "emitted_event_ids": ["ending.reached"], "acceptance_criterion_ids": ["ending"]}
+        ],
+        "edges": [
+          {"edge_id": "start_to_switch", "source_node_id": "start", "target_node_id": "switch_interaction"},
+          {"edge_id": "switch_to_feedback", "source_node_id": "switch_interaction", "target_node_id": "switch_feedback"},
+          {"edge_id": "feedback_to_target", "source_node_id": "switch_feedback", "target_node_id": "target_interaction"},
+          {"edge_id": "target_to_open", "source_node_id": "target_interaction", "target_node_id": "open_feedback"},
+          {"edge_id": "open_to_ending", "source_node_id": "open_feedback", "target_node_id": "ending"}
+        ],
+        "relationships": [
+          {"relationship_id": "switch_controls_target", "source_sceneops_id": "${switch_sceneops_id}", "target_sceneops_id": "${target_sceneops_id}", "relation_type": "controls", "template_id": "switch-opens-target"}
+        ],
+        "acceptance_criteria": [
+          {"criterion_id": "switch_activation", "description": "The configured switch can be activated."},
+          {"criterion_id": "target_open", "description": "The configured target opens after switch activation."},
+          {"criterion_id": "feedback", "description": "Switch and target feedback events are emitted."},
+          {"criterion_id": "ending", "description": "The exit ending becomes reachable."}
+        ],
+        "generated_tests": [
+          {"test_id": "warehouse.edit_mode.identity", "test_kind": "edit_mode", "target_node_ids": ["switch_interaction", "target_interaction"], "acceptance_criterion_ids": ["switch_activation"]},
+          {"test_id": "warehouse.play_mode.switch_door", "test_kind": "play_mode", "target_node_ids": ["switch_interaction", "open_feedback", "ending"], "acceptance_criterion_ids": ["target_open", "ending"]},
+          {"test_id": "warehouse.behavior.feedback", "test_kind": "behavior", "target_node_ids": ["switch_feedback", "open_feedback"], "acceptance_criterion_ids": ["feedback"]}
+        ]
+      }
+    }
+  ]
+}

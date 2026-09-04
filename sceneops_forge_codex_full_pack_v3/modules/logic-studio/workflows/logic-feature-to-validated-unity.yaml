@@ -1,0 +1,62 @@
+schema_version: 1
+id: logic-feature-to-validated-unity
+version: 1
+title: 功能规格到已验证 Unity 逻辑
+input:
+  feature_spec_id: stable_id
+  graph_id: stable_id
+nodes:
+  - id: compile-graph
+    command: logic.interaction.compile
+    output: gameplay_graph
+  - id: validate-graph
+    job: logic.graph.validate
+    depends_on:
+      - compile-graph
+    gate: logic.graph.valid
+  - id: generate-tests
+    job: logic.test_plan.generate
+    depends_on:
+      - validate-graph
+  - id: decide-code-change
+    depends_on:
+      - validate-graph
+    outcomes:
+      data_driven:
+        state: succeeded
+        reason: GameplayGraph compiles without C#.
+      csharp_required:
+        state: planned
+        next: propose-code-change
+  - id: propose-code-change
+    command: logic.code_change.propose
+    depends_on:
+      - decide-code-change
+    output: code_change_set
+  - id: approve-code-change
+    command: logic.code_change.approve
+    depends_on:
+      - propose-code-change
+    pause: explicit_human_approval
+    gate: logic.code_change.approved
+  - id: apply-code-change
+    command: logic.code_change.apply
+    adapter: unity
+    depends_on:
+      - approve-code-change
+    dry_run_required: true
+  - id: compile-and-test
+    job: logic.unity.code.validate
+    depends_on:
+      - apply-code-change
+    gate: logic.compile_tests.passed
+    on_failure: rollback-code-change
+  - id: rollback-code-change
+    command: logic.code_change.rollback
+    compensation_for: apply-code-change
+execution_modes:
+  - live
+  - cached
+  - mock
+  - planned
+  - blocked

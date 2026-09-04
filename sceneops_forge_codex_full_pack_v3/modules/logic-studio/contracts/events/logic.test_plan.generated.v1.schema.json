@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.example/schemas/logic-studio/events/logic.test_plan.generated.v1.schema.json",
+  "title": "logic.test_plan.generated@1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "event_version", "occurred_at", "project_id", "correlation_id", "causation_id", "actor", "mode", "payload"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "event_type": {"const": "logic.test_plan.generated"},
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string"},
+    "correlation_id": {"type": "string"},
+    "causation_id": {"type": "string"},
+    "actor": {"type": "object"},
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["graph_id", "graph_version", "test_ids"],
+      "properties": {
+        "graph_id": {"type": "string"},
+        "graph_version": {"type": "integer", "minimum": 1},
+        "test_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

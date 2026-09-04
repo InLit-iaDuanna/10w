@@ -1,0 +1,16 @@
+{
+  "template_id": "switch-opens-target",
+  "project_id": "prj_warehouse_escape",
+  "feature_spec_id": "feat_switch_exit",
+  "mode": "mock",
+  "bindings": {
+    "graph_id": "graph_warehouse_switch_door",
+    "scene_id": "scene_warehouse_floor",
+    "player_sceneops_id": "sobj_player_escape",
+    "player_display_name": "逃生者",
+    "switch_sceneops_id": "sobj_wall_switch_02",
+    "switch_display_name": "墙面开关",
+    "target_sceneops_id": "sobj_exit_door_01",
+    "target_display_name": "出口门"
+  }
+}

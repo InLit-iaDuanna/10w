@@ -1,0 +1,17 @@
+{
+  "template_id": "inventory-token-opens-target",
+  "project_id": "prj_remember_home",
+  "feature_spec_id": "feat_key_door_branch",
+  "mode": "mock",
+  "bindings": {
+    "graph_id": "graph_remember_home_key_door",
+    "scene_id": "scene_home_hallway",
+    "player_sceneops_id": "sobj_player_homecoming",
+    "player_display_name": "归家者",
+    "collectible_sceneops_id": "sobj_brass_key_01",
+    "collectible_display_name": "黄铜钥匙",
+    "target_sceneops_id": "sobj_home_door_01",
+    "target_display_name": "家门",
+    "inventory_token": "asset_key_home_01"
+  }
+}
