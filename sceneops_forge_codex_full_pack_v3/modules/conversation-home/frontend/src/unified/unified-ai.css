@@ -1,0 +1,17 @@
+.unified-ai-conversation { height: 100%; min-height: 0; display: flex; flex-direction: column; color: var(--text-primary, #f1ece3); background: var(--canvas, #0d0f11); padding: 24px clamp(16px, 5vw, 80px); box-sizing: border-box; }
+.unified-ai-transcript { flex: 1; overflow: auto; min-height: 0; }
+.unified-ai-conversation article, .unified-ai-advice article { padding: 12px 0; border-bottom: 1px solid var(--border-subtle, #252a30); }
+.unified-ai-conversation article p, .unified-ai-advice article p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.unified-ai-conversation small, .unified-ai-advice small { color: var(--text-secondary, #a5adb6); }
+.unified-ai-welcome { padding: 10vh 0; text-align: center; }
+.unified-ai-welcome h1 { font-size: 30px; }
+.unified-ai-conversation textarea, .unified-ai-advice textarea { width: 100%; min-height: 80px; box-sizing: border-box; resize: vertical; color: inherit; background: var(--surface-1, #15181c); border: 1px solid var(--border-default, #2f363e); border-radius: 6px; padding: 12px; font: inherit; }
+.unified-ai-model { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0; }
+.unified-ai-model select { background: var(--surface-1, #15181c); color: inherit; padding: 5px; border: 1px solid var(--border-default, #2f363e); }
+.unified-ai-input-label { display: grid; gap: 6px; font-size: 12px; }
+.unified-ai-actions { display: flex; gap: 12px; justify-content: space-between; align-items: center; padding-top: 8px; }
+.unified-ai-conversation button, .unified-ai-advice button { padding: 6px 12px; color: inherit; background: var(--surface-2, #1b1f24); border: 1px solid var(--border-default, #2f363e); border-radius: 4px; cursor: pointer; }
+.unified-ai-conversation button:disabled, .unified-ai-advice button:disabled { opacity: .45; cursor: default; }
+.unified-ai-conversation [role=alert], .unified-ai-advice [role=alert] { color: var(--critical, #f06d6d); }
+.unified-ai-advice { margin-top: 12px; padding: 12px; border-top: 1px solid var(--border-default, #2f363e); color: var(--text-primary, #f1ece3); }
+.unified-ai-advice summary { cursor: pointer; }

@@ -197,3 +197,5 @@ pnpm --dir frontend test
 - 没有真实 adapter、凭据或 Worker，所有可执行证据均为 `mock`；没有内容被宣称为 Live。
 - 独立 React 工作台和生成客户端已实现；全局 Shell 集成与应用级 E2E 未完成。本轮仅运行启动及一条主路径烟测，其他测试 not run / pending approval。
 - `IntegrationAdapter` 端口本身不启动线程或强行中断工具 SDK；生产 adapter 必须在自身网络/进程边界实现 deadline 与 cancellation，之后才能声明 Live。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

@@ -86,3 +86,5 @@ unless an executable is explicitly configured.
 ## 概念与资产独立工作台
 
 `apps/labs/concept-assets/README.md` 提供一条命令启动的 Web/API。新增公开 `ConceptAssetHandoff`、`asset_spec_from_concept`、`ConceptAssetLab`、`LabAction`、`LabSnapshot`、`create_lab_router`；工厂声明依赖 concept-lab，消费其公开批准草稿，不导入模块内部文件。前端公开 `ConceptAssetsWorkbench`，实际调用原领域服务。所有外部适配器固定 mock，未启动 Blender 或渲染。本轮测试仅见入口烟测记录；原测试套件 not run / pending approval。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

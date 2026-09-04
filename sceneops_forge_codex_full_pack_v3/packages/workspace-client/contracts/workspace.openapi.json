@@ -1,0 +1,718 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/workspace/projects": {
+      "get": {
+        "tags": [
+          "workspace"
+        ],
+        "summary": "Projects",
+        "operationId": "workspaceListProjects",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "workspace"
+        ],
+        "summary": "Create Project",
+        "operationId": "workspaceCreateProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/modules": {
+      "get": {
+        "tags": [
+          "workspace"
+        ],
+        "summary": "Modules",
+        "operationId": "workspaceListModules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/projects/{project_id}/modules/{module_id}": {
+      "get": {
+        "tags": [
+          "workspace"
+        ],
+        "summary": "Get Document",
+        "operationId": "workspaceGetModuleDocument",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "project-planning",
+                "concept-assets",
+                "character-animation",
+                "world-logic",
+                "ui-audio-vfx",
+                "render-ops",
+                "unity-build",
+                "version-review",
+                "ai-playtest",
+                "integration-ops"
+              ],
+              "type": "string",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleDocument"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "workspace"
+        ],
+        "summary": "Save Document",
+        "operationId": "workspaceSaveModuleDocument",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "project-planning",
+                "concept-assets",
+                "character-animation",
+                "world-logic",
+                "ui-audio-vfx",
+                "render-ops",
+                "unity-build",
+                "version-review",
+                "ai-playtest",
+                "integration-ops"
+              ],
+              "type": "string",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentSave"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleDocument"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/projects/{project_id}/modules/{module_id}/sample": {
+      "post": {
+        "tags": [
+          "workspace"
+        ],
+        "summary": "Import Sample",
+        "operationId": "workspaceImportModuleSample",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "project-planning",
+                "concept-assets",
+                "character-animation",
+                "world-logic",
+                "ui-audio-vfx",
+                "render-ops",
+                "unity-build",
+                "version-review",
+                "ai-playtest",
+                "integration-ops"
+              ],
+              "type": "string",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleDocument"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DocumentSave": {
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_revision",
+          "payload"
+        ],
+        "title": "DocumentSave"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JsonValue": {},
+      "ModuleDocument": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "module_id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "version-review",
+              "ai-playtest",
+              "integration-ops"
+            ],
+            "title": "Module Id"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Revision"
+          },
+          "sample_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "remember-home",
+                  "warehouse-escape"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Id"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "module_id",
+          "revision"
+        ],
+        "title": "ModuleDocument"
+      },
+      "ModuleList": {
+        "properties": {
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/WorkbenchRegistration"
+            },
+            "type": "array",
+            "title": "Modules"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "modules"
+        ],
+        "title": "ModuleList"
+      },
+      "Project": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "mode": {
+            "type": "string",
+            "const": "planned",
+            "title": "Mode",
+            "default": "planned"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "name",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Project"
+      },
+      "ProjectCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ProjectCreate"
+      },
+      "ProjectList": {
+        "properties": {
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            },
+            "type": "array",
+            "title": "Projects"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "projects"
+        ],
+        "title": "ProjectList"
+      },
+      "SampleImport": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "enum": [
+              "remember-home",
+              "warehouse-escape"
+            ],
+            "title": "Sample Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sample_id"
+        ],
+        "title": "SampleImport"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WorkbenchRegistration": {
+        "properties": {
+          "module_id": {
+            "type": "string",
+            "title": "Module Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "mode": {
+            "type": "string",
+            "const": "planned",
+            "title": "Mode",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "module_id",
+          "title"
+        ],
+        "title": "WorkbenchRegistration"
+      },
+      "WorkspaceError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "WorkspaceError"
+      }
+    }
+  }
+}

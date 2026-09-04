@@ -15,6 +15,7 @@
     "@sceneops/core-ui": "workspace:*",
     "@sceneops/module-runtime": "workspace:*",
     "@sceneops/api-client": "workspace:*",
+    "@sceneops/workspace-client": "workspace:*",
     "@tanstack/react-query": "5.90.21"
   },
   "exports": {

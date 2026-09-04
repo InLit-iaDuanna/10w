@@ -10,7 +10,7 @@ from .lab_contracts import LabState, LabRecipeInput, LabProposalInput, LabCompar
 from .lab_service import RenderLabService
 
 
-def create_render_lab_router():
+def create_render_lab_router(*, service_factory=RenderLabService):
     router = APIRouter(prefix="/api/render-lab", tags=["render-lab"])
     sessions = {}
     lock = RLock()
@@ -20,7 +20,7 @@ def create_render_lab_router():
             raise HTTPException(403, "请通过本地渲染工作台操作。")
         with lock:
             if session_id not in sessions:
-                sessions[session_id] = RenderLabService()
+                sessions[session_id] = service_factory()
             return sessions[session_id]
 
     def invoke(service, action):
@@ -74,7 +74,7 @@ def create_render_lab_router():
     @router.post("/{session_id}/reset", response_model=LabState, operation_id="renderLabReset")
     def reset(session_id: UUID, service=Depends(session)):
         with lock:
-            sessions[session_id] = RenderLabService()
+            sessions[session_id] = service_factory()
             return sessions[session_id].snapshot()
 
     return router

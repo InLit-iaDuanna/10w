@@ -17,7 +17,7 @@ class DemoProject(ContractModel):
 
 
 class OperationsSnapshot(ContractModel):
-    mode: Literal["mock"] = "mock"
+    mode: Literal["mock", "planned"] = "mock"
     fixture_time: datetime
     projects: list[DemoProject]
     integrations: list[IntegrationHealthSnapshot]
@@ -40,11 +40,12 @@ class LocalEvidence(ContractModel):
 
 class OperationsWorkbench:
     def __init__(self, service: IntegrationCenterService, logs: ObservabilityGateway,
-                 projects: list[DemoProject], fixture_time: datetime):
+                 projects: list[DemoProject], fixture_time: datetime, mode: Literal["mock", "planned"] = "mock"):
         self.service = service
         self.logs = logs
         self.projects = projects
         self.fixture_time = fixture_time
+        self.mode = mode
 
     def authorize_project(self, permission: str, project_id: str) -> None:
         if project_id not in {project.project_id for project in self.projects}:
@@ -71,7 +72,7 @@ class OperationsWorkbench:
                        and (not job_id or worker.current_job.job_id == job_id)
                        and (not correlation_id or worker.current_job.correlation_id == correlation_id)]
         summary = self.service.judge_summary(context, self.fixture_time)
-        return OperationsSnapshot(fixture_time=self.fixture_time, projects=self.projects,
+        return OperationsSnapshot(mode=self.mode, fixture_time=self.fixture_time, projects=self.projects,
             integrations=summary.integrations, workers=workers, summary=summary,
             progress=progress, logs=page.items, total_logs=page.total,
             job_ids=sorted({log.context.job_id for log in all_logs.items if log.context.job_id}),

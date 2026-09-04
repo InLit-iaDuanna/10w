@@ -2,6 +2,7 @@ import { playtestCommands } from "./commands/definitions.ts";
 import { playtestEditors } from "./editor-definitions.ts";
 import { manifest } from "./manifest.ts";
 export const loadAIPlaytestWorkbench = () => import("./workbench/AIPlaytestWorkbench.tsx");
+export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');
 
 export { editorStatus, editorStateLabels, executionModeLabels } from "./editor-state.ts";
 export { playtestCommands } from "./commands/definitions.ts";

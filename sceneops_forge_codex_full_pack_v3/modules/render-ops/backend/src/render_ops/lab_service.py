@@ -22,18 +22,23 @@ from .writeback import approve_writeback
 class RenderLabService:
     """One instance per browser session; state lasts until API restart/reset."""
 
-    def __init__(self):
+    def __init__(self, *, seed: bool = True, project_id: str | None = None):
         self.domain = RenderOpsService()
         self.fixture = mock_manifest()
+        if project_id:
+            scene = self.fixture.brief.scene.model_copy(update={"project_id": project_id})
+            brief = self.fixture.brief.model_copy(update={"scene": scene})
+            self.fixture = self.fixture.model_copy(update={"brief": brief})
         self.repository = RenderJobRepository()
         self.queue = RenderQueue(self.repository)
         self.records = []
         self.activity = []
-        initial = LabRecipeInput(
-            recipe_id="render.lighting-visibility", prompt="让门廊钥匙区域更清晰，保留门体轮廓。"
-        )
-        record = self.plan(initial)
-        self.load_fixture(record.job.job_id)
+        if seed:
+            initial = LabRecipeInput(
+                recipe_id="render.lighting-visibility", prompt="让门廊钥匙区域更清晰，保留门体轮廓。"
+            )
+            record = self.plan(initial)
+            self.load_fixture(record.job.job_id)
 
     def snapshot(self):
         for record in self.records:

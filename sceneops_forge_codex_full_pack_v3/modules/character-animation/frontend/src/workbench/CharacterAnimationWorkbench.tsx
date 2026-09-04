@@ -1,22 +1,23 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import type { AnimationClipSpec, CharacterBundle, CharacterInspectionResult, UnityMappingProposalResult } from '../api-types';
-import type { CharacterAnimationApiPort, EditorRuntimeState } from '../types';
+import type { CharacterAnimationApiPort, EditorRuntimeState, WorkbenchContext } from '../types';
 import { characterAnimationEditors } from '../editorDefinitions';
 import { characterAnimationCommands } from '../commands';
 import { rememberHomeCharacterBundle } from '../fixtures/rememberHome';
 import './workbench.css';
 
 const editors = characterAnimationEditors.map((definition) => ({ ...definition, Component: lazy(definition.load) }));
-const context = {
+const standaloneContext = {
   projectId: 'project_remember_home', selectedAssetIds: ['asset_homekeeper_source'],
   activeFeatureId: 'feature_key_door_branch', activeTaskId: 'task_player_traversal', activeChangeSetId: null,
 };
 const permissions = new Set(['character:read', 'animation:read', 'character:write']);
 const requestId = () => `lab_${crypto.randomUUID()}`;
 
-export function CharacterAnimationWorkbench({ api }: { api: CharacterAnimationApiPort }) {
-  const [bundle, setBundle] = useState<CharacterBundle>(() => structuredClone(rememberHomeCharacterBundle));
+export function CharacterAnimationWorkbench({ api, initialBundle = rememberHomeCharacterBundle, context = standaloneContext, embedded = false, onBundleChange }: { api: CharacterAnimationApiPort; initialBundle?: CharacterBundle; context?: WorkbenchContext; embedded?: boolean; onBundleChange?: (bundle: CharacterBundle) => void }) {
+  const [bundle, setBundle] = useState<CharacterBundle>(() => structuredClone(initialBundle));
+  useEffect(() => { onBundleChange?.(bundle); }, [bundle, onBundleChange]);
   const [active, setActive] = useState('character.editor');
   const [selectedClip, setSelectedClip] = useState(0);
   const [draft, setDraft] = useState(false);
@@ -33,13 +34,13 @@ export function CharacterAnimationWorkbench({ api }: { api: CharacterAnimationAp
     if (!available.available) throw new Error(available.reason);
     return command.execute({ api, workbench: context }, command.inputSchema.parse(input));
   }
-  const inspection = useMutation({ mutationFn: (value: CharacterBundle) => invokeCommand<CharacterInspectionResult>('character.inspect', { request_id: requestId(), bundle: value, mode: 'mock' }) });
+  const inspection = useMutation({ mutationFn: (value: CharacterBundle) => invokeCommand<CharacterInspectionResult>('character.inspect', { request_id: requestId(), bundle: value, mode: bundle.character.provenance.execution_mode }) });
   const proposal = useMutation({ mutationFn: () => invokeCommand<UnityMappingProposalResult>('character.unity-mapping.propose', {
     request_id: requestId(), bundle, unity_prefab_id: prefab, unity_game_object_sceneops_id: objectId,
     unity_animator_controller_id: controller, base_unity_version: 'lab_unity_v1',
   }) });
   const comparison = useMutation({ mutationFn: () => invokeCommand('character.version.compare', {
-    request_id: requestId(), entity_type: 'clip', base: rememberHomeCharacterBundle.clips[selectedClip], proposed: bundle.clips[selectedClip],
+    request_id: requestId(), entity_type: 'clip', base: initialBundle.clips[selectedClip], proposed: bundle.clips[selectedClip],
   }) });
   const clip = bundle.clips[selectedClip];
   function editClip(patch: Partial<AnimationClipSpec>) {
@@ -60,7 +61,7 @@ export function CharacterAnimationWorkbench({ api }: { api: CharacterAnimationAp
     setBundle(next); setDraft(true); inspection.reset(); proposal.reset(); comparison.reset();
   }
   function reset() {
-    setBundle(structuredClone(rememberHomeCharacterBundle)); setDraft(false); setTime(0);
+    setBundle(structuredClone(initialBundle)); setDraft(false); setTime(0);
     inspection.reset(); proposal.reset(); comparison.reset();
   }
   const report = inspection.data?.report;
@@ -75,21 +76,21 @@ export function CharacterAnimationWorkbench({ api }: { api: CharacterAnimationAp
   };
   const editor = editors.find((candidate) => candidate.id === active);
   const runtime: EditorRuntimeState<unknown> = data[active]
-    ? { kind: 'ready', mode: 'mock', data: data[active] }
+    ? { kind: 'ready', mode: bundle.character.provenance.execution_mode, data: data[active] }
     : { kind: 'empty', mode: 'mock', message: active === 'animation.retarget-preview' ? '演示数据暂无重定向 Profile。' : '请点击「运行本地检查」加载质量报告。' };
   const busy = inspection.isPending || proposal.isPending || comparison.isPending;
   return <main className="ca-workbench">
-    <header><div><span className="ca-eyebrow">SCENEOPS FORGE / 工作台 04</span><h1>角色与动画</h1><p>归家者 · 导入角色的结构检查、动画草稿与引擎交接</p></div><span className="ca-mode">MOCK · 隔离演示数据</span></header>
+    {!embedded && <header><div><span className="ca-eyebrow">SCENEOPS FORGE / 工作台 04</span><h1>角色与动画</h1><p>归家者 · 导入角色的结构检查、动画草稿与引擎交接</p></div><span className="ca-mode">MOCK · 隔离演示数据</span></header>}
     <section className="ca-toolbar" aria-label="工作台操作">
       <button disabled={busy} onClick={() => inspection.mutate(bundle)}>{inspection.isPending ? '检查中…' : '运行本地检查'}</button>
-      <button disabled={busy} onClick={reset}>重置演示 / 丢弃草稿</button>
-      <span>{draft ? '草稿：仅当前页面，刷新后丢失' : '已加载确定性示例'} · 检查算法在本地真实执行，数据模式为 mock</span>
+      <button disabled={busy} onClick={reset}>恢复已载入版本 / 丢弃片段修改</button>
+      <span>{draft ? '片段已修改，请保存本地草稿' : '已载入版本'} · 检查算法在本地真实执行，数据模式为 mock</span>
     </section>
     <nav aria-label="角色动画工具">{editors.map((item) => <button key={item.id} aria-current={active === item.id ? 'page' : undefined} onClick={() => setActive(item.id)}>{item.title}</button>)}<button aria-current={active === 'unity' ? 'page' : undefined} onClick={() => setActive('unity')}>Unity 映射提案</button></nav>
     {[inspection.error, proposal.error, comparison.error].filter(Boolean).map((error, index) => <p className="ca-error" role="alert" key={index}>{error?.message}。请检查输入或确认 API 已启动，再重试原操作。</p>)}
     <div className="ca-columns"><section className="ca-main">
       {editor && <Suspense fallback={<p role="status">加载编辑器…</p>}><editor.Component instanceId={`lab-${active}`} contextBinding={{ mode: 'follow-global' }} localState={states[active]} updateLocalState={(patch: object) => setStates((previous) => ({ ...previous, [active]: { ...previous[active], ...patch } }))} runtime={runtime} invokeCommand={invokeCommand}/></Suspense>}
-      {active === 'animation.timeline' && <fieldset disabled={busy} className="ca-form"><legend>编辑片段草稿</legend>
+      {active === 'animation.timeline' && clip && <fieldset disabled={busy} className="ca-form"><legend>编辑片段草稿</legend>
         <label>片段<select value={selectedClip} onChange={(event) => { setSelectedClip(Number(event.target.value)); comparison.reset(); setTime(0); }}>{bundle.clips.map((item, index) => <option key={item.clip_version_id} value={index}>{item.name}</option>)}</select></label>
         <label>名称<input value={clip.name} onChange={(event) => editClip({ name: event.target.value })}/></label>
         <label>时长（秒）<input type="number" min="0.01" step="0.1" value={clip.duration_seconds} onChange={(event) => editClip({ duration_seconds: Number(event.target.value) })}/></label>

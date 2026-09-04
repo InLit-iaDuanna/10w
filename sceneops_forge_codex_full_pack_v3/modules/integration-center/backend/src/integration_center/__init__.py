@@ -1,4 +1,5 @@
 """Public API for the SceneOps Integration Center module."""
+from .workbench_demo import create_empty_workbench
 
 from .adapters import (
     AdapterError,

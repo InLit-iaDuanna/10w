@@ -12,8 +12,8 @@ function readAudio(file: File): Promise<string> {
   });
 }
 
-export function AudioLabPanel({ template, event, mixer: initialMixer, api, onProposal }: {
-  template: 'home' | 'warehouse'; event: string; mixer: string; onProposal: () => void;
+export function AudioLabPanel({ template, event, mixer: initialMixer, api, onProposal, allowSample = true, onMixerChange }: {
+  template: 'home' | 'warehouse'; event: string; mixer: string; onProposal: () => void; allowSample?: boolean; onMixerChange?: (value: string) => void;
   api: { fixture: () => Promise<S['DemoAudio']>; inspectFixture: () => Promise<S['Inspection']>;
     inspect: (upload: S['Upload']) => Promise<S['Inspection']>;
     propose: (draft: S['BindingDraft']) => Promise<S['Proposal']> };
@@ -41,7 +41,7 @@ export function AudioLabPanel({ template, event, mixer: initialMixer, api, onPro
     <div className="audio-drop"><span className="large-symbol" aria-hidden="true">♫</span><h3>从一段声音开始</h3>
       <p>选择本机 PCM WAV，或加载内置确定性测试信号。</p>
       <div className="actions"><label className="file-button">选择 WAV 文件<input aria-label="选择 WAV 文件" type="file" accept=".wav,audio/wav" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (file) load(file); e.target.value = ''; }} /></label>
-        <button disabled={busy} onClick={() => load()}>{inspection.isPending ? '分析中…' : '加载并分析演示音频'}</button></div>
+        {allowSample && <button disabled={busy} onClick={() => load()}>{inspection.isPending ? '分析中…' : '加载并分析演示音频'}</button>}</div>
       <small>16-bit PCM · 单 / 双声道 · ≤ 4 MiB · 不上传第三方服务</small>
     </div>
     {analysis && <><div className="section-heading"><h3>{inspection.data!.filename}</h3><small>振幅包络 · 16 个区间</small></div>
@@ -56,7 +56,7 @@ export function AudioLabPanel({ template, event, mixer: initialMixer, api, onPro
     {(inspection.error || proposal.error) && <p className="notice error" role="alert">{(inspection.error || proposal.error)?.message}</p>}
     {proposal.data && <p className="notice success">音频绑定提案已创建。资产未发布，Unity 未写入。</p>}
   </div><fieldset className="inspector" disabled={busy}><legend>事件绑定</legend>
-    <label>目标事件<input readOnly value={event} /></label><label>Mixer 分组<input value={mixer} maxLength={100} onChange={e => { setMixer(e.target.value); proposal.reset(); }} /></label>
+    <label>目标事件<input readOnly value={event} /></label><label>Mixer 分组<input value={mixer} maxLength={100} onChange={e => { setMixer(e.target.value); onMixerChange?.(e.target.value); proposal.reset(); }} /></label>
     <p className="muted">此音效为可选反馈，不阻断游戏主线。分析结果仅在当前会话有效。</p>
     <button className="primary" disabled={!analysis || !mixer.trim() || busy} onClick={() => proposal.mutate({ template, event, mixer, asset_id: inspection.data!.id })}>创建音频绑定提案</button>
     <div className="notice warning"><strong>blocked · Unity 未连接</strong><p>可分析并审阅提案。发布需要真实资产来源、资产发布审批和在线适配器，本入口不执行。</p></div>

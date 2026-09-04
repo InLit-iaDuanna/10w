@@ -7,7 +7,7 @@
   "status": "active",
   "feature_flag": "world_composer",
   "requires": {
-    "modules": ["core-kernel", "module-runtime", "asset-library"],
+    "modules": ["core-kernel", "module-runtime", "asset-library", "logic-studio"],
     "integrations": [],
     "optional_integrations": ["artifact-store", "blender", "unity"]
   },

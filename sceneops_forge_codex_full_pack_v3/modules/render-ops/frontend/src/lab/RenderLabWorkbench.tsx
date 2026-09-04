@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { renderLabApi, type LabState } from './api';
 import { RecipeForm, recipeLabels } from './RecipeForm';
 import { AovPanel, ComparisonPanel, ProposalPanel, ProvenancePanel } from './ReviewPanels';
-import './workbench.css';
+
 
 const tabs = ['变体比较', 'AOV 通道', '来源链', '审批提案'] as const;
 const states: Record<string, string> = {
@@ -20,9 +20,10 @@ function browserSession() {
   return id;
 }
 
-export function RenderLabWorkbench() {
-  const [session] = React.useState(browserSession);
-  const api = React.useMemo(() => renderLabApi(session), [session]);
+export function RenderLabWorkbench({ projectId, embedded = false, fetchImpl }: { projectId?: string; embedded?: boolean; fetchImpl?: typeof fetch } = {}) {
+  React.useEffect(() => { if (!embedded) void import('./workbench.css'); }, [embedded]);
+  const [session] = React.useState(() => projectId ?? browserSession());
+  const api = React.useMemo(() => renderLabApi(session, fetchImpl), [session, fetchImpl]);
   const key = ['render-ops', 'lab', session];
   const cache = useQueryClient();
   const query = useQuery({ queryKey: key, queryFn: api.state });
@@ -34,7 +35,7 @@ export function RenderLabWorkbench() {
   const state = query.data;
   const current = state?.jobs.find(record => record.job.job_id === selected) ?? state?.jobs[state.jobs.length - 1];
   return <div className="render-lab">
-    <header className="rl-topbar"><a className="rl-brand" href="/">S<span>SceneOps Forge</span></a>
+    {!embedded && <header className="rl-topbar"><a className="rl-brand" href="/">S<span>SceneOps Forge</span></a>
       <div className="rl-title"><small>工作台 07</small><h1>渲染与 AI 变体</h1></div>
       <span className="rl-mode">MOCK · 本地演示</span>
       <button onClick={() => setShowHelp(value => !value)}>操作说明</button>
@@ -43,7 +44,7 @@ export function RenderLabWorkbench() {
           setSelected(null); mutation.mutate(api.reset);
         }
       }}>重置演示</button>
-    </header>
+    </header>}
     <div className="rl-notice"><span className="rl-dot" />真实渲染 / ComfyUI / 工程写回：BLOCKED
       <span>本地服务可用 · 固定样本可审阅 · 不执行外部作业</span></div>
     {showHelp && <section className="rl-guide"><h2>从配方到审批提案</h2><ol>
@@ -55,6 +56,7 @@ export function RenderLabWorkbench() {
     {query.isPending && <div className="rl-empty" role="status"><h2>正在连接本地 API…</h2><p>读取演示场景、配方目录与审批记录。</p></div>}
     {query.error && <div className="rl-empty" role="alert"><h2>本地 API 未连接</h2><p>{query.error.message}</p><p>请确认工作台 dev 命令仍在运行。</p><button onClick={() => query.refetch()}>重新连接</button></div>}
     {mutation.error && <div className="rl-error" role="alert">{mutation.error.message}<button onClick={() => mutation.reset()}>关闭</button></div>}
+    {state && !current && <section><p>渲染队列为空。可编辑配方并创建待执行计划；不会自动采集或载入样例。</p><RecipeForm state={state} busy={mutation.isPending} onPlan={input => mutation.mutate(async () => { const next = await api.plan(input); setSelected(next.jobs.at(-1)?.job.job_id ?? null); return next; })}/></section>}
     {state && current && <>
       <div className="rl-workspace">
         <RecipeForm state={state} busy={mutation.isPending} onPlan={input => mutation.mutate(async () => {
@@ -91,6 +93,6 @@ export function RenderLabWorkbench() {
             </div></td></tr>)}</tbody></table></div>
       </section>
     </>}
-    <footer className="rl-footer"><span>Render Ops / 独立工作台</span><span>live · cached · <strong>mock</strong> · planned · blocked</span></footer>
+    {!embedded && <footer className="rl-footer"><span>Render Ops / 独立工作台</span><span>live · cached · <strong>mock</strong> · planned · blocked</span></footer>}
   </div>;
 }

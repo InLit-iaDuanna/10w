@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 ROOT = Path(__file__).resolve().parents[3]
 for path in ["modules/concept-lab/backend/src", "modules/asset-library/backend/src",
-             "modules/asset-factory/backend/src", "integrations/blender-addon/src"]:
+             "modules/asset-factory/backend/src", "integrations/blender-addon/src", "integrations/codebuddy-cli/src"]:
     sys.path.insert(0, str(ROOT / path))
 from asset_factory import ConceptAssetLab, create_lab_router
 from concept_lab import (ConceptLabError, concept_lab_error_handler,

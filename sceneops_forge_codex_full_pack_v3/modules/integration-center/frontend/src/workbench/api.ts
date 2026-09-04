@@ -1,7 +1,7 @@
 import createClient from 'openapi-fetch';
 import type { paths, components } from '../generated/operations-api';
 
-const client = createClient<paths>({ baseUrl: '' });
+
 export type Snapshot = components['schemas']['OperationsSnapshot'];
 export type Evidence = components['schemas']['LocalEvidence'];
 export type Health = components['schemas']['IntegrationHealthSnapshot'];
@@ -20,13 +20,15 @@ function failure(status: number): Error {
   return new Error('本地 API 连接失败。请确认工作台启动命令仍在运行，然后重试。');
 }
 
-export async function readSnapshot(filters: Filters, signal: AbortSignal): Promise<Snapshot> {
+export function createOperationsClient(fetchImpl: typeof fetch = fetch) {
+const client = createClient<paths>({ baseUrl: '', fetch: fetchImpl });
+async function readSnapshot(filters: Filters, signal: AbortSignal): Promise<Snapshot> {
   const result = await client.GET('/api/v1/integration-ops/snapshot', { params: { query: filters }, signal });
   if (!result.data) throw failure(result.response.status);
   return result.data;
 }
 
-export async function readEvidence(project: string, artifact: string, signal: AbortSignal): Promise<Evidence> {
+async function readEvidence(project: string, artifact: string, signal: AbortSignal): Promise<Evidence> {
   const result = await client.GET('/api/v1/integration-ops/evidence/{artifact_id}', {
     params: { path: { artifact_id: artifact }, query: { project_id: project } }, signal,
   });
@@ -34,7 +36,7 @@ export async function readEvidence(project: string, artifact: string, signal: Ab
   return result.data;
 }
 
-export async function downloadDiagnostics(project: string, correlation?: string): Promise<void> {
+async function downloadDiagnostics(project: string, correlation?: string): Promise<void> {
   const result = await client.POST('/api/v1/observability/diagnostics', {
     body: { project_id: project, correlation_id: correlation || null }, parseAs: 'blob',
   });
@@ -46,3 +48,6 @@ export async function downloadDiagnostics(project: string, correlation?: string)
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+return { readSnapshot, readEvidence, downloadDiagnostics };
+}
+export const { readSnapshot, readEvidence, downloadDiagnostics } = createOperationsClient();

@@ -20,9 +20,10 @@ class WorkbenchConflict(ValueError):
     pass
 
 class UnityBuildWorkbenchService:
-    def __init__(self, database: Path):
+    def __init__(self, database: Path, *, seed: bool = True, project_id: str | None = None):
         self.unity = UnityWorkbenchService()
         self.database = database
+        self.project_id = project_id
         database.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.execute("CREATE TABLE IF NOT EXISTS proposals (id TEXT PRIMARY KEY, revision INTEGER NOT NULL, content TEXT NOT NULL)")
@@ -30,8 +31,22 @@ class UnityBuildWorkbenchService:
         self.release = BuildReleaseService(InMemoryReleaseRepository(), self.catalog, {}, FixtureClock())
         self.scenarios = {}
         fixture = Path(__file__).resolve().parents[3] / "fixtures/workbench-records.mock.json"
-        for record in json.loads(fixture.read_text()):
-            self.load_scenario(record)
+        if seed:
+            for record in json.loads(fixture.read_text()):
+                self.load_scenario(record)
+
+    def import_sample(self, sample_id):
+        fixture = Path(__file__).resolve().parents[3] / "fixtures/workbench-records.mock.json"
+        record = next(row for row in json.loads(fixture.read_text()) if row["slug"] == sample_id)
+        if self.project_id:
+            def scope(value):
+                if isinstance(value, dict):
+                    return {key: self.project_id if key == "project_id" else scope(item) for key, item in value.items()}
+                if isinstance(value, list):
+                    return [scope(item) for item in value]
+                return value
+            record = scope(record)
+        self.load_scenario(record)
 
     def connect(self):
         return sqlite3.connect(self.database)

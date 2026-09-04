@@ -1,0 +1,32 @@
+# Run from the application root: python -m pip install -r services/api/requirements.txt
+fastapi==0.128.8
+pydantic==2.13.2
+uvicorn==0.39.0
+PyYAML==6.0.3
+-e packages/core-contracts
+-e packages/core-events
+-e integrations/codebuddy-cli
+-e integrations/blender-addon
+-e integrations/comfyui-adapter
+-e modules/core-kernel/backend
+-e modules/module-runtime/backend
+-e modules/project-intake/backend
+-e modules/conversation-home/backend
+-e modules/production-planner/backend
+-e modules/design-room/backend
+-e modules/concept-lab/backend
+-e modules/asset-library/backend
+-e modules/asset-factory/backend
+-e modules/character-animation/backend
+-e modules/world-composer/backend
+-e modules/logic-studio/backend
+-e modules/ui-studio/backend
+-e modules/audio-studio/backend
+-e modules/vfx-shader/backend
+-e modules/render-ops/backend
+-e modules/engine-unity/backend
+-e modules/build-release/backend
+-e modules/version-collaboration/backend
+-e modules/ai-playtest/backend
+-e modules/observability/backend
+-e modules/integration-center/backend

@@ -1,0 +1,600 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/ai/models": {
+      "get": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Models",
+        "operationId": "models_api_ai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIModels"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/settings": {
+      "get": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Settings",
+        "operationId": "settings_api_ai_settings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AISettings"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Save Settings",
+        "operationId": "save_settings_api_ai_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AISettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AISettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/conversation": {
+      "get": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Conversation",
+        "operationId": "conversation_api_ai_conversation_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIConversation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/chat": {
+      "post": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Chat",
+        "operationId": "chat_api_ai_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIConversation"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/advice": {
+      "post": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Advice",
+        "operationId": "advice_api_ai_advice_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIAdviceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIAdvice"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIAdvice": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "module_id": {
+            "type": "string",
+            "title": "Module Id"
+          },
+          "provider": {
+            "type": "string",
+            "const": "codebuddycli",
+            "title": "Provider",
+            "default": "codebuddycli"
+          },
+          "mode": {
+            "type": "string",
+            "const": "live",
+            "title": "Mode",
+            "default": "live"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "module_id",
+          "model",
+          "text"
+        ],
+        "title": "AIAdvice"
+      },
+      "AIAdviceRequest": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "module_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Module Id"
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 16000,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "context": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "module_id",
+          "prompt"
+        ],
+        "title": "AIAdviceRequest"
+      },
+      "AIChatRequest": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 16000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "context": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "AIChatRequest"
+      },
+      "AIConversation": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/AIMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "messages"
+        ],
+        "title": "AIConversation"
+      },
+      "AIMessage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "planned"
+            ],
+            "title": "Mode"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "text",
+          "model",
+          "mode",
+          "created_at"
+        ],
+        "title": "AIMessage"
+      },
+      "AIModel": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "AIModel"
+      },
+      "AIModels": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "const": "codebuddycli",
+            "title": "Provider",
+            "default": "codebuddycli"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "blocked"
+            ],
+            "title": "Mode"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/AIModel"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "available",
+          "mode",
+          "models",
+          "message"
+        ],
+        "title": "AIModels"
+      },
+      "AISettings": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": "cli-default"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AISettings"
+      },
+      "AdapterError": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "const": "blocked",
+            "title": "Mode",
+            "default": "blocked"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "AdapterError"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JsonValue": {},
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

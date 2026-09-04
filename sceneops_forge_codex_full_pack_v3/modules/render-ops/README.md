@@ -114,3 +114,5 @@ PYTHONPATH=modules/render-ops/backend/src \
   is ready for the module-runtime integration task.
 - Live writeback stays blocked until core supplies an authoritative ChangeSet
   approval verifier and the engine adapter proves durable ChangeSet replay.
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

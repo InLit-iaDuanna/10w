@@ -8,7 +8,7 @@ from .repository import ReviewRepository
 from .router import create_router, version_collaboration_exception_handler
 from .service import VersionCollaborationService
 from .sqlite_repository import SqliteReviewRepository
-from .demo import create_demo_app
+from .demo import create_demo_app, create_workspace_router
 
 __all__ = (
     "ActionContext",

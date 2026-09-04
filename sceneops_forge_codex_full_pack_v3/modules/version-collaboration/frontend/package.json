@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "test": "node --experimental-strip-types --test src/tests/*.test.ts"
   },
@@ -11,5 +13,10 @@
     "@tanstack/react-query": ">=5 <6",
     "react": ">=18 <20",
     "zod": ">=3.23 <5"
+  },
+  "dependencies": {
+    "@sceneops/workbench-ui": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/api-client": "workspace:*"
   }
 }

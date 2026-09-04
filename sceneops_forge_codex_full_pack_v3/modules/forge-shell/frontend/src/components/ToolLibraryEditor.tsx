@@ -20,7 +20,7 @@ export default function ToolLibraryEditor() {
     {runtime.editors.filter(e => `${e.title} ${e.id}`.includes(query)).map(editor => <p key={editor.id}>
       <button onClick={() => void runtime.open(editor.id, placements[placement]).catch(e => setError(e.message))}>{editor.title}</button> <small>{editor.id}</small>
     </p>)}
-    <p>拖动标签可重新停靠。右上角窗口菜单提供四边抽屉。其他业务工作台独立启动。</p>
+    <p>拖动标签可重新停靠。窗口菜单提供四边抽屉。已注册工作台在当前窗口中打开。</p>
     {error && <p role="alert">BLOCKED · {error}</p>}
   </section>;
 }

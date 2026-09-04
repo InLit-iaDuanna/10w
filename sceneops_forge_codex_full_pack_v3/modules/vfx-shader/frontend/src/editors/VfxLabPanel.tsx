@@ -3,18 +3,18 @@ import { useMutation } from '@tanstack/react-query';
 import type { components } from '../lab-api';
 type S = components['schemas'];
 
-export function VfxLabPanel({ fixture, template, event, api, onProposal }: {
-  fixture: S['VfxShaderRecipe']; template: 'home' | 'warehouse'; event: string; onProposal: () => void;
+export function VfxLabPanel({ fixture, template, event, api, onProposal, initialDraft, onDraftChange }: {
+  fixture: S['VfxShaderRecipe']; template: 'home' | 'warehouse'; event: string; onProposal: () => void; initialDraft?: S['Draft']; onDraftChange?: (draft: S['Draft']) => void;
   api: { evaluate: (draft: S['Draft']) => Promise<S['Evaluation']>; propose: (draft: S['Draft']) => Promise<S['Proposal']> };
 }) {
-  const [draft, setDraft] = useState<S['Draft']>({ template, event,
+  const [draft, setDraft] = useState<S['Draft']>(initialDraft ?? { template, event,
     parameters: fixture.parameters as S['Draft']['parameters'], quality_tier: fixture.quality_tier,
     particle_count: fixture.particle_count, estimated_overdraw_layers: fixture.estimated_overdraw_layers,
     estimated_screen_coverage_percent: fixture.estimated_screen_coverage_percent, binding_enabled: false });
-  const evaluation = useMutation({ mutationFn: api.evaluate });
-  const proposal = useMutation({ mutationFn: api.propose, onSuccess: onProposal });
+  const evaluation = useMutation({ mutationFn: (value: S['Draft']) => api.evaluate({ ...value, template, event }) });
+  const proposal = useMutation({ mutationFn: (value: S['Draft']) => api.propose({ ...value, template, event }), onSuccess: onProposal });
   const busy = evaluation.isPending || proposal.isPending;
-  const update = (next: S['Draft']) => { setDraft(next); evaluation.reset(); proposal.reset(); };
+  const update = (next: S['Draft']) => { setDraft(next); onDraftChange?.(next); evaluation.reset(); proposal.reset(); };
   const style = { '--glow-color': String(draft.parameters.color), '--glow-opacity': Number(draft.parameters.intensity),
     '--pulse-duration': `${1 / Number(draft.parameters.pulse_hz)}s`, '--edge-width': `${draft.parameters.edge_width_px}px` } as CSSProperties;
   return <div className="module-grid"><div className="editor-main">

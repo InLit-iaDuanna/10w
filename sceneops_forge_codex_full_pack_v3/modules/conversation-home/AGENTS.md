@@ -12,7 +12,7 @@ It does not own Dockview, edge-drawer mechanics, editor placement execution, pro
 - Structured assistant actions are validated and forwarded to the shared `WorkbenchCommandBus`; this module does not register a second command bus.
 - Any assistant-proposed layout mutation is previewed and explicitly confirmed before execution.
 - Command availability is rechecked immediately before execution, including permissions, integrations, and approvals.
-- Project conversations use project-persistent storage; pre-project conversations use session-scoped temporary storage.
+- Unified project and pre-project conversations use isolated local SQLite scopes per the approved integration plan; the legacy editor retains its session-scoped adapter.
 - Every run, message, and structured card displays `live`, `cached`, `mock`, `planned`, or `blocked` truthfully.
 - UI copy and module documentation are Simplified Chinese; code and contract identifiers are English.
 
@@ -25,7 +25,7 @@ It does not own Dockview, edge-drawer mechanics, editor placement execution, pro
 
 ## Generated files
 
-None in this module. Do not hand-edit a generated global module catalog when the module-runtime task is available.
+Unified network types are generated from backend/export_unified_contracts.py and OpenAPI. Do not hand-edit generated network types or the global module catalog.
 
 ## Acceptance commands
 

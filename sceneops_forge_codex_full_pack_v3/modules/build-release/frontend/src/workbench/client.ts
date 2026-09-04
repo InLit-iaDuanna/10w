@@ -4,7 +4,7 @@ export type Snapshot = components["schemas"]["WorkbenchSnapshot"];
 export type Scenario = components["schemas"]["BuildScenario"];
 export type ProposalInput = components["schemas"]["ProposalInput"];
 export type ChangeSet = components["schemas"]["ChangeSet"];
-const client = createClient<paths>();
+
 function unwrap<T>(result: { data?: T; error?: unknown }): T {
   if (result.error || !result.data)
     throw new Error(
@@ -15,7 +15,9 @@ function unwrap<T>(result: { data?: T; error?: unknown }): T {
   return result.data;
 }
 export const workbenchKeys = { snapshot: ["unity-build", "snapshot"] as const };
-export const workbenchApi = {
+export function createUnityBuildClient(fetchImpl: typeof fetch = fetch) {
+const client = createClient<paths>({ fetch: fetchImpl });
+return {
   snapshot: async () => unwrap(await client.GET("/api/unity-build/snapshot")),
   save: async (slug: string, body: ProposalInput) =>
     unwrap(
@@ -27,3 +29,5 @@ export const workbenchApi = {
   preview: async (body: ChangeSet) =>
     unwrap(await client.POST("/api/unity-build/preview", { body })),
 };
+}
+export const workbenchApi = createUnityBuildClient();

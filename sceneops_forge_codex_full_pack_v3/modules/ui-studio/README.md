@@ -29,3 +29,5 @@ cd frontend && npm test
 ## 限制
 
 根运行时和 engine-unity 的公共实现尚未存在，因此这里仅声明协议和 mock。实际 Unity 映射、像素截图比较、core-kernel 命令契约替换及 OpenAPI 路由注册需要由相应的宿主/engine-unity 所有者实现，且不得绕过本模块的 ChangeSet 批准语义。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

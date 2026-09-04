@@ -3,6 +3,9 @@
 from .adapter import CharacterToolAdapter
 from .contribution import BackendModuleContribution, backend_module_contribution
 from .service import CharacterAnimationServiceProtocol
+from .service import CharacterAnimationService
+from .sqlite_repository import SqliteVersionRepository
+from .router import create_router
 
 __all__ = [
     "BackendModuleContribution",

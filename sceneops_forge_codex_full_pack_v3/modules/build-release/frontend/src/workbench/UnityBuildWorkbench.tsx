@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  workbenchApi,
+  workbenchApi as defaultApi,
   workbenchKeys,
   type Scenario,
   type Snapshot,
   type ProposalInput,
   type ChangeSet,
 } from "./client";
-import "./workbench.css";
+
 const labels: Record<string, string> = {
   development: "开发",
   qa: "质量检查",
@@ -47,12 +47,15 @@ function download(value: unknown, name: string) {
   link.click();
   URL.revokeObjectURL(url);
 }
-export function UnityBuildWorkbench() {
+export function UnityBuildWorkbench({ api = defaultApi, embedded = false, sampleId = 'remember-home', projectId = 'standalone' }: { api?: typeof defaultApi; embedded?: boolean; sampleId?: string; projectId?: string } = {}) {
+  useEffect(() => { if (!embedded) void import('./workbench.css'); }, [embedded]);
+  const workbenchApi = api;
+  const snapshotKey = [...workbenchKeys.snapshot, projectId];
   const query = useQuery({
-    queryKey: workbenchKeys.snapshot,
+    queryKey: snapshotKey,
     queryFn: workbenchApi.snapshot,
   });
-  const [slug, setSlug] = useState("remember-home");
+  const [slug, setSlug] = useState(sampleId);
   const [tab, setTab] = useState("build");
   if (query.isPending)
     return (
@@ -80,7 +83,7 @@ export function UnityBuildWorkbench() {
     );
   return (
     <main className="ub">
-      <header>
+      {!embedded && <header>
         <div>
           <small>SCENEOPS FORGE / 工作台 08</small>
           <h1>Unity 与构建发布</h1>
@@ -91,12 +94,12 @@ export function UnityBuildWorkbench() {
             刷新记录
           </button>
         </div>
-      </header>
+      </header>}
       <div className="notice">
         <Badge mode="blocked" /> Unity 未连接 · 构建 / 测试 /
         发布未执行。可浏览完整演示证据、编辑并保存本地提案。
       </div>
-      <div className="toolbar">
+      {!embedded && <div className="toolbar">
         <label>
           示例项目{" "}
           <select value={slug} onChange={(e) => setSlug(e.target.value)}>
@@ -107,7 +110,7 @@ export function UnityBuildWorkbench() {
           </select>
         </label>
         <span>来源记录 2026-09-04 · 无 live / cached 证据</span>
-      </div>
+      </div>}
       <nav aria-label="工作台工具">
         {[
           ["build", "构建矩阵与产物"],
@@ -130,7 +133,7 @@ export function UnityBuildWorkbench() {
       ) : (
         <Release
           key={slug + ":" + scenario.proposal.revision}
-          scenario={scenario}
+          scenario={scenario} api={api} snapshotKey={snapshotKey}
         />
       )}
       <footer>
@@ -309,7 +312,8 @@ function Unity({ snapshot }: { snapshot: Snapshot }) {
     </>
   );
 }
-function Release({ scenario: s }: { scenario: Scenario }) {
+function Release({ scenario: s, api = defaultApi, snapshotKey = workbenchKeys.snapshot }: { scenario: Scenario; api?: typeof defaultApi; snapshotKey?: readonly string[] }) {
+  const workbenchApi = api;
   const client = useQueryClient();
   const p = s.proposal;
   const [title, setTitle] = useState(p.title),
@@ -322,7 +326,7 @@ function Release({ scenario: s }: { scenario: Scenario }) {
     mutationFn: (body: ProposalInput) => workbenchApi.save(s.slug, body),
     onSuccess: () => {
       setSaved(true);
-      client.invalidateQueries({ queryKey: workbenchKeys.snapshot });
+      client.invalidateQueries({ queryKey: snapshotKey });
     },
   });
   const preview = useMutation({ mutationFn: workbenchApi.preview });

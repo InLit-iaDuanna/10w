@@ -8,4 +8,5 @@ export { manifest, uiCommands, uiCommandSchemas, uiFlowEditor, uiPreviewEditor, 
 export const uiStudioKeys = { all: ["ui-studio"] as const, flow: (id: string) => ["ui-studio", "flow", id] as const };
 export const moduleContribution = { manifest, editors: [uiFlowEditor, uiPreviewEditor], commands: uiCommands };
 export { UiLabPanel } from './editors/UiLabPanel';
+export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');
 export type { paths as UiLabPaths, components as UiLabComponents } from './lab-api';

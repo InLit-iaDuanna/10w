@@ -3,3 +3,14 @@ packages:
   - apps/labs/*
   - modules/*/frontend
   - packages/*/frontend
+  - packages/scene-viewer
+overrides:
+  react: 19.2.8
+  react-dom: 19.2.8
+  '@types/react': 19.2.18
+  '@types/react-dom': 19.2.7
+  '@tanstack/react-query': 5.90.21
+  vite: 8.0.0
+  typescript: 6.0.3
+allowBuilds:
+  esbuild: false

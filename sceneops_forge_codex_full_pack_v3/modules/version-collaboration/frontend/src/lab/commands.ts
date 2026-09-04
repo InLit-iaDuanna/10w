@@ -4,6 +4,7 @@ import type { AddCommentRequest, DecisionRequest } from "../generated/api-types.
 import { reviewRequest as request } from "./client.ts";
 
 /** The standalone composition supplies the same API port as the shell editors. */
+export function createReviewCommands(request: typeof import('./client').reviewRequest) {
 const api: VersionCollaborationApi = {
   createReview: body => request("POST /api/version-collaboration/reviews", {}, body),
   getReview: review_id => request("GET /api/version-collaboration/reviews/{review_id}", { review_id }, undefined),
@@ -35,7 +36,10 @@ const context = {
 };
 
 type Inputs = { "review.comment.add": AddCommentRequest; "review.decision.record": DecisionRequest };
-export function executeReviewCommand<K extends keyof Inputs>(id: K, reviewId: string, body: Inputs[K]) {
+function executeReviewCommand<K extends keyof Inputs>(id: K, reviewId: string, body: Inputs[K]) {
   const command = commandDefinitions.find(item => item.id === id)!;
   return command.execute(context, { reviewId, body });
 }
+return executeReviewCommand;
+}
+export const executeReviewCommand = createReviewCommands(request);

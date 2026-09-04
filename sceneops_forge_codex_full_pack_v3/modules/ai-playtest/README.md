@@ -80,3 +80,5 @@ npm run typecheck --prefix modules/ai-playtest/frontend
 - 缺少 apps/web、module-runtime 与 core job runtime，不能验证 Dockview 挂载、生成 client、持久化 job 恢复或浏览器 hero flow。
 - 回钉置信度表示证据吻合程度，必须经过人工审核；被拒绝的回钉会保留而不会被覆盖。
 - AI 只能进行预筛和回归辅助，不能声称代表乐趣、偏好、无障碍或真人体验。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

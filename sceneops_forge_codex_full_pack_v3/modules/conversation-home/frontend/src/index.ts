@@ -126,3 +126,6 @@ export { assistantConversationEditor } from "./editorDefinition.ts";
 export { LocalConversationTransport } from './fixtures/LocalConversationTransport.ts';
 export { CodeBuddyConversationTransport, getCodeBuddyModels } from './conversation/CodeBuddyConversationTransport.ts';
 export type { CodeBuddyModel, CodeBuddyModelCatalog } from './conversation/CodeBuddyConversationTransport.ts';
+export { UnifiedConversation } from './unified/UnifiedConversation.tsx';
+export { AIAdvicePanel } from './unified/AIAdvicePanel.tsx';
+export { aiKeys } from './unified/aiClient.ts';

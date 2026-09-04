@@ -1,4 +1,19 @@
-# 当前状态：独立 Shell 工作台
+# 当前状态：统一入口已整合，启动空态烟测完成
+
+2026-09-05：11 个工作台历史已合入 `codex/integrated-workbench`。统一 `pnpm dev`、Web 4300/API 8300、原生工作台注册、SQLite 项目/草稿和统一 CodeBuddy 接口已实现。启动烟测确认健康、11 组注册、空项目、空聊天、模型目录及10个业务面板空态；未运行业务测试或案例。完整记录与已知限制见 `INTEGRATION_SMOKE.md`。真实 AI 尚未成功验证，可见页面的手动请求出现 503，代理未发起或重试。
+
+本轮用户已批准将 11 个工作台合入主项目整合分支。默认空工作区，本地 SQLite 保存，AI 统一 CodeBuddy CLI。只授权一次启动/导入/空态烟测；禁止 demo 案例、业务操作测试、真实 AI 请求、完整测试及生产构建。原工作树与历史数据保留。
+
+## 本轮写入所有权（已收尾）
+
+- 主代理：apps/web、packages/core-ui、packages/api-client、前端共享 workspace 客户端、根依赖/锁文件/启动脚本、生成目录、根文档与最终启动烟测。
+- ai_adapter：integrations/codebuddy-cli、modules/conversation-home（后端、统一聊天/建议前端与模块文档）、concept-lab/design-room 中已有 CodeBuddy 后端适配器的兼容委托。禁止修改主应用或项目存储。
+- workspace_backend：modules/project-intake/backend、services/api、其余业务模块后端的统一组合/空态/按项目存储适配（不改 AI 适配器），后端 requirements。先发布公开接口供前端消费。
+- workbench_editors：除 conversation-home 外的业务模块前端、apps/labs 中用于提取的前端组合入口，负责公开可嵌入编辑器、空态/项目上下文和草稿保存对接。禁止修改主 Shell、公共包、后端或根依赖。
+
+所有代理不创建新任务、不用 Bridge、不提交、不启动服务或测试。主代理统一验证并提交。
+
+## 先前 Shell 交付记录（不是本轮验证证据）
 
 2026-09-05：整合原 01 `477e673`、02 `1a14081`、03 `1eca516`；公共骨架提交 `4f3416e` 已先完成。
 

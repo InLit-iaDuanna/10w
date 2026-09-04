@@ -4,8 +4,9 @@ import { reviewRequest, type ReviewData } from "./client.ts";
 import type { DemoEntry, DecisionOutcome } from "../generated/api-types.ts";
 import { executeReviewCommand } from "./commands.ts";
 
-export function ReviewSidebar({ data, entry, target, onTarget }: {
+export function ReviewSidebar({ data, entry, target, onTarget, request = reviewRequest, execute = executeReviewCommand, projectId = 'standalone' }: {
   data: ReviewData; entry: DemoEntry; target: string; onTarget: (id: string) => void;
+  request?: typeof reviewRequest; execute?: typeof executeReviewCommand; projectId?: string;
 }) {
   const [body, setBody] = useState("");
   const [rationale, setRationale] = useState("");
@@ -17,16 +18,16 @@ export function ReviewSidebar({ data, entry, target, onTarget }: {
   const mutation = useMutation({
     mutationFn: async (action: "comment" | "decision" | "approved" | "rejected") => {
       if (action === "comment") {
-        await executeReviewCommand("review.comment.add", review.review_id, {
+        await execute("review.comment.add", review.review_id, {
           body: body.trim(), anchor: { kind: "scene_object", target_id: target,
             review_revision_id: review.review_revision_id, diff_bundle_id: review.diff.diff_bundle_id,
             version: review.target_version },
         });
       } else if (action === "decision") {
-        await executeReviewCommand("review.decision.record", review.review_id,
+        await execute("review.decision.record", review.review_id,
           { outcome, rationale: rationale.trim(), evidence_ids: review.evidence_ids });
       } else {
-        await reviewRequest("POST /api/lab/reviews/{review_id}/mock-approval", params,
+        await request("POST /api/lab/reviews/{review_id}/mock-approval", params,
           { outcome: action, rationale: rationale.trim() });
       }
       return action;
@@ -34,7 +35,7 @@ export function ReviewSidebar({ data, entry, target, onTarget }: {
     onSuccess: async action => {
       if (action === "comment") setBody("");
       setNotice(action === "comment" ? "评论已保存，并绑定当前版本与对象。" : "评审记录已保存；没有执行 Git 操作。");
-      await cache.invalidateQueries({ queryKey: ["version-review-lab", review.review_id] });
+      await cache.invalidateQueries({ queryKey: ["version-review-lab", projectId, review.review_id] });
     },
   });
   return <aside className="vr-review"><div className="vr-section-title"><h2>协作评审</h2><span className="vr-avatar">我</span></div>

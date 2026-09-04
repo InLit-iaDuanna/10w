@@ -14,3 +14,4 @@ export {
 } from "./manifest.ts";
 
 export { ConceptAssetsWorkbench } from './ConceptAssetsWorkbench';
+export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');

@@ -8,7 +8,7 @@ export type LabRecipeInput = components['schemas']['LabRecipeInput'];
 export type LabProposalInput = components['schemas']['LabProposalInput'];
 export type LabComparison = components['schemas']['LabComparison'];
 
-const client = createClient<paths>({ headers: { 'X-Render-Lab': 'local-workbench' } });
+
 
 async function result<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   const response = await request;
@@ -20,7 +20,8 @@ async function result<T>(request: Promise<{ data?: T; error?: unknown; response:
   return response.data;
 }
 
-export function renderLabApi(session: string) {
+export function renderLabApi(session: string, fetchImpl: typeof fetch = fetch) {
+  const client = createClient<paths>({ fetch: fetchImpl, headers: { 'X-Render-Lab': 'local-workbench' } });
   const path = { session_id: session };
   return {
     state: () => result(client.GET('/api/render-lab/{session_id}', { params: { path } })),

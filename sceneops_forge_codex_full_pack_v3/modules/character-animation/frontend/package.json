@@ -14,7 +14,10 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "@tanstack/react-query": "5.90.21",
-    "zod": "4.1.5"
+    "zod": "4.1.5",
+    "@sceneops/workbench-ui": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/api-client": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "6.8.0",

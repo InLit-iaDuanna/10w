@@ -1,3 +1,0 @@
-# This lab can install and start independently of the shared root toolchain.
-packages:
-  - .

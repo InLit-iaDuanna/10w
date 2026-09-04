@@ -15,7 +15,10 @@
     "typecheck": "tsc --project tsconfig.json"
   },
   "dependencies": {
-    "@sceneops/scene-viewer": "file:../../../packages/scene-viewer"
+    "@sceneops/scene-viewer": "workspace:*",
+    "@sceneops/workbench-ui": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/api-client": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.9.3"

@@ -11,5 +11,10 @@
   },
   "engines": {
     "node": ">=22.6.0"
+  },
+  "dependencies": {
+    "@sceneops/workbench-ui": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/api-client": "workspace:*"
   }
 }

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -128,20 +129,35 @@ def create_demo_router(service: VersionCollaborationService, catalog: DemoCatalo
     return router
 
 
-def create_demo_app() -> FastAPI:
+def create_demo_app(*, project_id: str | None = None, sample_id: str | None = None,
+                    database: str | Path = ":memory:", seed: bool = True) -> FastAPI:
     fixture_root = Path(__file__).resolve().parents[3] / "contracts" / "examples"
     fixtures = [json.loads((fixture_root / name).read_text()) for name in
                 ("remember-home-review.json", "warehouse-escape-review.json")]
+    if sample_id:
+        fixtures = [fixtures[0 if sample_id == "remember-home" else 1]]
+    if project_id:
+        for fixture in fixtures:
+            fixture["command"]["project_id"] = project_id
     git, approvals = DemoGit(fixtures), DemoApprovals()
     service = VersionCollaborationService(
-        repository=SqliteReviewRepository(), git=git,
+        repository=SqliteReviewRepository(database), git=git,
         project_roots={x["command"]["project_id"]: fixture_root for x in fixtures},
         change_sets=UnavailableChangeSetGateway(), approvals=approvals, events=DemoEvents(),
     )
     entries = []
-    for fixture, label in zip(fixtures, ("Remember Home · 钥匙与门", "Warehouse Escape · 出口联动")):
+    for index, fixture in enumerate(fixtures if seed else []):
+        label = "Warehouse Escape · 出口联动" if sample_id == "warehouse-escape" or (sample_id is None and index == 1) else "Remember Home · 钥匙与门"
         command = CreateReviewCommand.model_validate({**fixture["command"], "title": label})
-        review = service.create_review(command, demo_context())
+        if str(database) != ":memory:":
+            with sqlite3.connect(database) as connection:
+                connection.execute("CREATE TABLE IF NOT EXISTS review_sample_catalog (sample_id TEXT PRIMARY KEY, review_id TEXT NOT NULL)")
+                row = connection.execute("SELECT review_id FROM review_sample_catalog WHERE sample_id=?", (sample_id,)).fetchone()
+                review = service.get_review(row[0]) if row else service.create_review(command, demo_context())
+                if not row:
+                    connection.execute("INSERT INTO review_sample_catalog VALUES (?,?)", (sample_id, review.review_id))
+        else:
+            review = service.create_review(command, demo_context())
         entries.append(DemoEntry(label=label, review=review, inputs=command))
     app = FastAPI(title="Version Review 独立演示 API", version="0.1.0")
 
@@ -157,5 +173,15 @@ def create_demo_app() -> FastAPI:
 
     app.add_exception_handler(VersionCollaborationError, version_collaboration_exception_handler)
     app.include_router(create_router(service, demo_context))
-    app.include_router(create_demo_router(service, DemoCatalog(entries=tuple(entries)), approvals))
+    persistence = "模块 SQLite；Mock 评审记录本地保存" if str(database) != ":memory:" else "内存 SQLite；重启恢复演示数据"
+    app.include_router(create_demo_router(service, DemoCatalog(entries=tuple(entries), persistence=persistence), approvals))
     return app
+
+
+def create_workspace_router(database: Path, project_id: str, sample_id: str | None = None):
+    """The main host opts into a single static Mock sample, never a Git adapter."""
+    app = create_demo_app(database=database, project_id=project_id,
+        sample_id=sample_id, seed=sample_id is not None)
+    router = APIRouter()
+    router.include_router(app.router)
+    return router

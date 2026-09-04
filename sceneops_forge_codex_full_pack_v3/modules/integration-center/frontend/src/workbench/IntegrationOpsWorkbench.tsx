@@ -1,15 +1,18 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { loadLogPanel, type StructuredLogView } from '../../../../observability/frontend/src/index';
-import { downloadDiagnostics, operationsKeys, readEvidence, readSnapshot } from './api';
+import { downloadDiagnostics, operationsKeys, readEvidence, readSnapshot, createOperationsClient } from './api';
 import { EvidenceDialog, IntegrationDetails, labels, Mode, ProgressPanel, WorkerPanel } from './Panels';
-import './workbench.css';
+
 
 const Logs = lazy(loadLogPanel);
 
-export default function IntegrationOpsWorkbench() {
-  const [project, setProject] = useState('prj_home_mock');
-  const [job, setJob] = useState('');
+const standaloneClient = { readSnapshot, readEvidence, downloadDiagnostics };
+export default function IntegrationOpsWorkbench({ projectId, embedded = false, client = standaloneClient, initialJob = '' }: { projectId?: string; embedded?: boolean; client?: ReturnType<typeof createOperationsClient>; initialJob?: string } = {}) {
+  useEffect(() => { if (!embedded) void import('./workbench.css'); }, [embedded]);
+  const { readSnapshot, readEvidence, downloadDiagnostics } = client;
+  const [project, setProject] = useState(projectId ?? 'prj_home_mock');
+  const [job, setJob] = useState(initialJob);
   const [correlation, setCorrelation] = useState('');
   const [search, setSearch] = useState('');
   const [text, setText] = useState('');
@@ -32,13 +35,13 @@ export default function IntegrationOpsWorkbench() {
     fields: item.fields || {}, artifactLinks: (item.artifact_links || []).map(link => ({ artifactId: link.artifact_id, label: link.label })),
   }));
   return <main className="integration-ops">
-    <header className="ops-header"><div className="brand-mark">S<span>F</span></div><div><div className="eyebrow">SCENEOPS FORGE / WORKBENCH 11</div><h1>集成状态与运行日志</h1></div>
-      <div className="header-right"><span className="local-dot"/>本地工作台 <Mode/></div></header>
-    <div className="demo-banner"><Mode/><span>隔离演示数据 · 不连接外部工具。健康与心跳按固定样例时间解释：2026-09-04 00:01 UTC。</span><details><summary>使用说明</summary><p>先选择项目与任务，再展开集成或日志。点击证据可查看本地脱敏记录；诊断 ZIP 包含当前项目及所选 correlation 的日志和健康摘要。进度不会自动变化。</p></details></div>
+    {!embedded && <header className="ops-header"><div className="brand-mark">S<span>F</span></div><div><div className="eyebrow">SCENEOPS FORGE / WORKBENCH 11</div><h1>集成状态与运行日志</h1></div>
+      <div className="header-right"><span className="local-dot"/>本地工作台 <Mode/></div></header>}
+    {!embedded && <div className="demo-banner"><Mode/><span>隔离演示数据 · 不连接外部工具。健康与心跳按固定样例时间解释：2026-09-04 00:01 UTC。</span><details><summary>使用说明</summary><p>先选择项目与任务，再展开集成或日志。点击证据可查看本地脱敏记录；诊断 ZIP 包含当前项目及所选 correlation 的日志和健康摘要。进度不会自动变化。</p></details></div>}
     <form className="filters" onSubmit={event => { event.preventDefault(); setText(search); }}>
-      <label>项目<select value={project} onChange={event => selectProject(event.target.value)}>
+      {!embedded && <label>项目<select value={project} onChange={event => selectProject(event.target.value)}>
         {(data?.projects || [{ project_id: 'prj_home_mock', title: '归家之路 · 演示项目' }, { project_id: 'prj_warehouse_mock', title: '仓库逃脱 · 演示项目' }]).map(item => <option value={item.project_id} key={item.project_id}>{item.title}</option>)}
-      </select></label>
+      </select></label>}
       <label>任务<select value={job} onChange={event => setJob(event.target.value)}><option value="">全部任务</option>{data?.job_ids.map(id => <option key={id}>{id}</option>)}</select></label>
       <label>Correlation<input value={correlation} maxLength={200} placeholder="全部关联链路" onChange={event => setCorrelation(event.target.value)} list="correlations"/></label>
       <datalist id="correlations">{data?.correlation_ids.map(id => <option key={id} value={id}/>)}</datalist>

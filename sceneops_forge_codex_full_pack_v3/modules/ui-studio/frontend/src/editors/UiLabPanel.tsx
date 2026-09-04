@@ -3,17 +3,18 @@ import { useMutation } from '@tanstack/react-query';
 import type { components } from '../lab-api';
 type S = components['schemas'];
 
-export function UiLabPanel({ fixture, template, event, api, onProposal }: {
+export function UiLabPanel({ fixture, template, event, api, onProposal, initialDraft, onDraftChange, mode = 'mock' }: {
   fixture: S['Fixture']; template: 'home' | 'warehouse'; event: string;
   api: { check: (draft: S['Draft']) => Promise<S['Check']>; propose: (draft: S['Draft']) => Promise<S['Proposal']> };
   onProposal: () => void;
+  initialDraft?: S['Draft']; onDraftChange?: (draft: S['Draft']) => void; mode?: 'mock' | 'planned';
 }) {
-  const [draft, setDraft] = useState<S['Draft']>({ template, event, flow: fixture.flow, profile: fixture.profile, character_limit: 32 });
+  const [draft, setDraft] = useState<S['Draft']>(initialDraft ?? { template, event, flow: fixture.flow, profile: fixture.profile, character_limit: 32 });
   const [selected, setSelected] = useState(fixture.flow.entry_screen_id);
-  const check = useMutation({ mutationFn: api.check });
-  const proposal = useMutation({ mutationFn: api.propose, onSuccess: onProposal });
+  const check = useMutation({ mutationFn: (value: S['Draft']) => api.check({ ...value, template, event }) });
+  const proposal = useMutation({ mutationFn: (value: S['Draft']) => api.propose({ ...value, template, event }), onSuccess: onProposal });
   const busy = check.isPending || proposal.isPending;
-  const update = (next: S['Draft']) => { setDraft(next); check.reset(); proposal.reset(); };
+  const update = (next: S['Draft']) => { setDraft(next); onDraftChange?.(next); check.reset(); proposal.reset(); };
   const screen = draft.flow.screens.find(item => item.id === selected)!;
   const editScreen = (next: S['UiScreen']) => update({ ...draft, flow: { ...draft.flow,
     screens: draft.flow.screens.map(item => item.id === selected ? next : item) } });
@@ -22,7 +23,7 @@ export function UiLabPanel({ fixture, template, event, api, onProposal }: {
   const safeHeight = height - safe.top - safe.bottom;
   return <div className="module-grid">
     <div className="editor-main">
-      <div className="section-heading"><h2>界面流程</h2><span className="badge mock">mock · 演示草稿</span></div>
+      <div className="section-heading"><h2>界面流程</h2><span className="badge mock">{mode} · 界面草稿</span></div>
       <div className="flow-list" aria-label="流程界面">{draft.flow.screens.map(item =>
         <button key={item.id} aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}>
           <small>{item.kind}</small>{item.title}<span>{item.next_screen_ids?.join(' → ') || '流程结束'}</span>
@@ -51,6 +52,7 @@ export function UiLabPanel({ fixture, template, event, api, onProposal }: {
       {(check.error || proposal.error) && <p className="notice error" role="alert">{(check.error || proposal.error)?.message}</p>}</div>
     </div>
     <fieldset className="inspector" disabled={busy}><legend>UI 属性</legend>
+      <label>界面标题<input value={screen.title} onChange={e => editScreen({ ...screen, title: e.target.value })}/></label>
       <label>当前提示文本<textarea value={screen.localized_text['zh-CN']} onChange={e => editScreen({ ...screen, localized_text: { ...screen.localized_text, 'zh-CN': e.target.value } })} /></label>
       <label>字符预算<input type="number" min="1" max="1000" value={draft.character_limit} onChange={e => update({ ...draft, character_limit: Number(e.target.value) })} /></label>
       <div className="field-pair">{(['width', 'height'] as const).map(key => <label key={key}>{key === 'width' ? '画布宽度' : '画布高度'}<input type="number" min="1" value={draft.profile[key]} onChange={e => update({ ...draft, profile: { ...draft.profile, [key]: Number(e.target.value) } })} /></label>)}</div>

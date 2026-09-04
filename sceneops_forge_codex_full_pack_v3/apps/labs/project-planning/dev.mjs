@@ -11,7 +11,7 @@ for (const port of [webPort, apiPort]) await new Promise((resolve, reject) => {
   server.listen(port, '127.0.0.1', () => server.close(resolve));
 });
 const api = spawn(process.env.PYTHON || 'python3', ['-m','uvicorn','api:app','--host','127.0.0.1','--port',String(apiPort)], {
-  cwd: root, stdio: 'inherit', env: {...process.env, PYTHONDONTWRITEBYTECODE:'1', PYTHONPATH: ['production-planner','design-room'].map(module => fileURLToPath(new URL(`../../../modules/${module}/backend/src`, import.meta.url))).join(':')},
+  cwd: root, stdio: 'inherit', env: {...process.env, PYTHONDONTWRITEBYTECODE:'1', PYTHONPATH: [...['production-planner','design-room'].map(module => fileURLToPath(new URL(`../../../modules/${module}/backend/src`, import.meta.url))), fileURLToPath(new URL('../../../integrations/codebuddy-cli/src', import.meta.url))].join(':')},
 });
 const server = await vite({root, server:{host:'127.0.0.1',port:webPort,strictPort:true,fs:{allow:[fileURLToPath(new URL('../../../',import.meta.url))]},proxy:{'/v1':`http://127.0.0.1:${apiPort}`}},resolve:{dedupe:['react','react-dom','@tanstack/react-query'],alias:{react:fileURLToPath(new URL('node_modules/react',import.meta.url)),'react-dom':fileURLToPath(new URL('node_modules/react-dom',import.meta.url)),'@tanstack/react-query':fileURLToPath(new URL('node_modules/@tanstack/react-query',import.meta.url))}}});
 await server.listen(); server.printUrls();

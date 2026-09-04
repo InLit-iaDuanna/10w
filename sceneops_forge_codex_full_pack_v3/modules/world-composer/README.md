@@ -138,3 +138,5 @@ npm run typecheck --prefix modules/world-composer/frontend
 新增公开 Python `world_composer.workbench_router`：`POST /api/world/proposals` 把原 `WorldMutationPlan` 映射至原样引入的核心 ChangeSet。场景 ID 与对象 ID 均进入 target；level-designer/project-owner 分别要求 scene:approve/project:approve。未知审批角色映射显式报错，不自动弱化审批要求。仅提案，不保存/审批/执行生产修改。
 
 界面已支持对象选择、对象批注与视角恢复、场景关系编辑和 ChangeSet 展示。GLB 解码、真实 DCC/Unity 写回、正式 Shell 注册、其他八类批注界面的完整交互仍不在本次入口范围；原算法继续保留。完整测试与新增后端回归均 `not run / pending approval`。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

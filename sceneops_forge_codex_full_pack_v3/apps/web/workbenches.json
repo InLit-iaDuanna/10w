@@ -1,0 +1,12 @@
+[
+  {"id":"project-planning","title":"项目与制作规划","owner":"production-planner"},
+  {"id":"concept-assets","title":"概念与资产","owner":"asset-factory"},
+  {"id":"character-animation","title":"角色与动画","owner":"character-animation"},
+  {"id":"world-logic","title":"世界与逻辑","owner":"world-composer"},
+  {"id":"ui-audio-vfx","title":"界面、音频与特效","owner":"ui-studio"},
+  {"id":"render-ops","title":"渲染工作台","owner":"render-ops"},
+  {"id":"unity-build","title":"Unity 与构建","owner":"build-release"},
+  {"id":"version-review","title":"版本与评审","owner":"version-collaboration"},
+  {"id":"ai-playtest","title":"AI 游测","owner":"ai-playtest"},
+  {"id":"integration-ops","title":"集成与运维","owner":"integration-center"}
+]

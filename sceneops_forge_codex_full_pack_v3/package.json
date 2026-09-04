@@ -7,6 +7,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "generate:workbenches": "node scripts/generate-workbenches.mjs",
+    "generate:workspace": ".venv/bin/python scripts/export-workspace-contracts.py && openapi-typescript packages/workspace-client/contracts/workspace.openapi.json -o packages/workspace-client/frontend/src/generated/workspace-api.ts",
+    "generate:ai": ".venv/bin/python modules/conversation-home/backend/export_unified_contracts.py && openapi-typescript modules/conversation-home/contracts/unified-ai.openapi.json -o modules/conversation-home/frontend/src/generated/unified-ai-api.ts",
     "lab": "node scripts/lab.mjs"
   },
   "devDependencies": {

@@ -29,14 +29,14 @@ class LabAction(BaseModel):
 
 class LabSnapshot(BaseModel):
     mode: Literal["mock"] = "mock"
-    workspace: ConceptReviewWorkspace
+    workspace: ConceptReviewWorkspace | None = None
     handoff: ConceptAssetHandoff | None = None
     request: PipelineRequest | None = None
     runs: list[PipelineRun]
     assets: list[AssetRecord]
 
 class ConceptAssetLab:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, seed: bool = True, project_id: str | None = None):
         self.root = root
         root.mkdir(parents=True, exist_ok=True)
         import concept_lab
@@ -44,8 +44,10 @@ class ConceptAssetLab:
         self.concepts = ConceptLabService(adapters=[FixtureGenerationAdapter(
             fixtures / "generation-mock.json", ConceptMode.MOCK)])
         self.context = dict(actor_id="usr_local_artist", correlation_id="corr_lab", causation_id="cmd_lab")
-        self.concept = self.concepts.create_concept(ConceptCreateInput.model_validate_json(
-            (fixtures / "hero-key-concept.json").read_text()), **self.context)
+        self.project_id = project_id
+        self.concept = None
+        if seed:
+            self.import_sample("remember-home")
         self.repository = InMemoryAssetRepository()
         self.catalog = AssetLibraryService(self.repository)
         self.handoff = None
@@ -54,12 +56,26 @@ class ConceptAssetLab:
         self.lock = RLock()
 
     def snapshot(self):
-        return LabSnapshot(workspace=self.concepts.get_review_workspace(self.concept.concept_id, 1),
+        return LabSnapshot(workspace=self.concepts.get_review_workspace(self.concept.concept_id, 1) if self.concept else None,
             handoff=self.handoff, request=self.request, runs=self.runs,
             assets=self.catalog.search(AssetSearchFilter()))
 
+    def import_sample(self, sample_id: str):
+        if self.concept is not None:
+            raise ValueError("已有概念数据；请在新的项目中导入样例。")
+        import concept_lab
+        payload = json.loads((Path(concept_lab.__file__).parent / "fixtures/hero-key-concept.json").read_text())
+        if self.project_id:
+            payload["project_id"] = self.project_id
+        if sample_id == "warehouse-escape":
+            payload.update(subject="仓库出口黄铜钥匙", gameplay_function="拾取后开启仓库出口",
+                feature_id="fea_warehouse_exit", task_id="tsk_warehouse_key_concept")
+        self.concept = self.concepts.create_concept(ConceptCreateInput.model_validate(payload), **self.context)
+
     def act(self, action: LabAction):
         with self.lock:
+            if self.concept is None:
+                raise ValueError("请先明确导入概念样例；不会自动创建演示项目。")
             cid, vid = self.concept.concept_id, action.variant_id
             if action.action == "generate":
                 self.concepts.generate_variant(GenerationRequest(concept_id=cid, concept_version=1,

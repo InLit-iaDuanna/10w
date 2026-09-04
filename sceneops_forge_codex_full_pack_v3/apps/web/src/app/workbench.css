@@ -26,3 +26,10 @@ button:hover { border-color: var(--home-amber); }
 .forge-edge-left, .forge-edge-right, .forge-edge-top, .forge-edge-bottom { border-color: transparent; }
 .forge-edge-handle:hover, .forge-edge-handle:focus-visible { border-color: var(--focus-ring); }
 .shell-tool-content { height: 100%; }
+.workspace-project-button { position: fixed; top: 10px; left: 18px; z-index: 50; font-size: 12px; }
+.workbench-root:not(.is-chat-only) > .workspace-project-button { display: none; }
+.integrated-module { height: 100%; overflow: auto; padding: 12px; }
+.integrated-module-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px; border-bottom: 1px solid var(--border-default); }
+.integrated-module small { color: var(--text-secondary); }
+.integrated-module textarea { background: var(--surface-1); color: inherit; border: 1px solid var(--border-default); font: inherit; max-width: 100%; padding: 8px; }
+.integrated-module pre { white-space: pre-wrap; overflow-wrap: anywhere; }

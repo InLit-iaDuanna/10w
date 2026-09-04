@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from typing import Optional
 from threading import RLock
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from pydantic import Field
 from .models import (ContractModel, FeaturePlanningSnapshot, CreatePlanCommandRequest,
     CreatePlanCommandResponse, ProductionPlan, ProductionGraphView, Assignment,
@@ -71,10 +71,10 @@ class LabSources:
             correlation_id=str(uuid4()), command_id=str(uuid4()))
 
 
-def create_planning_lab_app() -> FastAPI:
+def create_planning_lab_app(*, repository=None, project_id=None) -> FastAPI:
     sources = LabSources()
     approvals = LabApprovals()
-    service = ProductionPlannerService(InMemoryProductionPlanRepository(), sources,
+    service = ProductionPlannerService(repository or InMemoryProductionPlanRepository(), sources,
         UnavailableRunEvidenceProvider(), approvals)
     app = create_app(service, sources)
     lock = RLock()
@@ -88,6 +88,8 @@ def create_planning_lab_app() -> FastAPI:
     @app.post('/v1/planning-lab/create', response_model=CreatePlanCommandResponse)
     def create(request: LabCreateRequest):
         snapshot = request.snapshot
+        if project_id and snapshot.feature_ref.project_id != project_id:
+            raise PlannerDomainError('PROJECT_MISMATCH', '设计投影不属于当前项目。')
         if snapshot.source_mode.value != 'mock':
             raise PlannerDomainError('MOCK_ONLY', '隔离工作台仅接收明确标记 mock 的设计投影。')
         ref = snapshot.feature_ref
@@ -133,3 +135,12 @@ def create_planning_lab_app() -> FastAPI:
         return mutate(plan_id, request, lambda: service.resolve_task_blocker(plan_id, request.task_id, request.blocker_id, request.resolution_ref_id))
 
     return app
+
+
+def create_workspace_router(database, project_id):
+    """Composition-compatible routes with an empty, persistent project repository."""
+    from .sqlite_repository import SqliteProductionPlanRepository
+    app = create_planning_lab_app(repository=SqliteProductionPlanRepository(database, project_id), project_id=project_id)
+    router = APIRouter()
+    router.include_router(app.router)
+    return router

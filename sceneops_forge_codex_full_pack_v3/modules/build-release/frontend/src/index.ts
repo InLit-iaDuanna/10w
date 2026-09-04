@@ -9,3 +9,4 @@ export const moduleContribution = {
 } as const;
 
 export { UnityBuildWorkbench } from './workbench/UnityBuildWorkbench';
+export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');

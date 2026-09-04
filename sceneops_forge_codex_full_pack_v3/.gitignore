@@ -2,7 +2,10 @@ node_modules/
 .venv/
 __pycache__/
 *.pyc
+*.egg-info/
 *.tsbuildinfo
 dist/
 .playwright-cli/
 output/
+.local/
+.pnpm-store/

@@ -1,13 +1,14 @@
 import type { ApiOperations } from "../generated/api-types.ts";
 
 /** Transport signatures are generated from the Python OpenAPI, not UI DTO copies. */
-export async function reviewRequest<K extends keyof ApiOperations>(
+export function createReviewClient(fetchImpl: typeof fetch = fetch) {
+async function reviewRequest<K extends keyof ApiOperations>(
   operation: K, params: ApiOperations[K]["params"], body: ApiOperations[K]["body"],
 ): Promise<ApiOperations[K]["response"]> {
   const [method, template] = operation.split(" ");
   const url = template.replace(/\{([^}]+)\}/g, (_, key: string) =>
     encodeURIComponent((params as Record<string, string>)[key]));
-  const response = await fetch(url, {
+  const response = await fetchImpl(url, {
     method, headers: body === undefined ? {} : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -16,7 +17,7 @@ export async function reviewRequest<K extends keyof ApiOperations>(
   return payload;
 }
 
-export async function loadReview(review_id: string) {
+async function loadReview(review_id: string) {
   const params = { review_id };
   const [review, comments, decisions, approvals, activity] = await Promise.all([
     reviewRequest("GET /api/version-collaboration/reviews/{review_id}", params, undefined),
@@ -28,4 +29,7 @@ export async function loadReview(review_id: string) {
   return { review, comments, decisions, approvals, activity };
 }
 
+return { reviewRequest, loadReview };
+}
+export const { reviewRequest, loadReview } = createReviewClient();
 export type ReviewData = Awaited<ReturnType<typeof loadReview>>;

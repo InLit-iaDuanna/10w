@@ -7,7 +7,10 @@
     "react": ">=18 <20"
   },
   "dependencies": {
-    "zod": "3.25.76"
+    "zod": "3.25.76",
+    "@sceneops/workbench-ui": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/api-client": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.3.0",

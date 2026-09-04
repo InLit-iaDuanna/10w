@@ -22,7 +22,7 @@ function start(command, args, env = process.env) {
 const venvPython = resolve(directory, '../../../.venv/bin/python');
 start(process.env.LAB_PYTHON || (existsSync(venvPython) ? venvPython : 'python3'), ['-m', 'uvicorn', 'api:app', '--host', '127.0.0.1', '--port', apiPort], {
   ...process.env, LAB_WEB_PORT: webPort,
-  PYTHONPATH: [resolve(directory, '../../../modules/conversation-home/backend/src'), process.env.PYTHONPATH].filter(Boolean).join(':'),
+  PYTHONPATH: [resolve(directory, '../../../modules/conversation-home/backend/src'), resolve(directory, '../../../integrations/codebuddy-cli/src'), process.env.PYTHONPATH].filter(Boolean).join(':'),
 });
 start(process.execPath, [resolve(directory, '../../../node_modules/vite/bin/vite.js'), '--host', '127.0.0.1', '--port', webPort, '--strictPort'], { ...process.env, LAB_API_PORT: apiPort });
 process.on('SIGINT', () => stop());

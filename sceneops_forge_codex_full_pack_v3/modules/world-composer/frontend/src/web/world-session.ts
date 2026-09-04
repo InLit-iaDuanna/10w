@@ -13,15 +13,15 @@ export const defaultWorldCamera: CameraPose = {
   coordinateSpace: 'world', axisConvention: 'right-handed-y-up', units: 'meters',
 };
 
-export function createWorldSession() {
-  const scene = parseWorldLevelDocument(fixture);
+export function createWorldSession(document: unknown = fixture) {
+  const scene = parseWorldLevelDocument(document);
   const index = loadSceneObjectIndex(scene.objects.map(object => {
     const { position, rotation, scale } = object.transform;
     const matrix = new Matrix4().compose(new ThreeVector3(...position), new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w), new ThreeVector3(...scale));
     return { nodeKey: object.sceneopsId, name: object.displayName, extras: { sceneops_id: object.sceneopsId }, parentNodeKey: object.parentSceneopsId ?? undefined, assetId: object.asset?.assetId, localMatrix: createMatrix4(matrix.elements) };
   }));
   const selection = new SceneSelectionModel(index);
-  selection.selectOnly('sobj_home_key');
+  if (scene.objects[0]) selection.selectOnly(scene.objects[0].sceneopsId);
   const resolver = new SceneTransformResolver(index);
   const objects: ScenePreviewObject[] = scene.objects.filter(object => object.parentSceneopsId !== null).map(object => ({
     sceneopsId: object.sceneopsId,
@@ -45,7 +45,7 @@ export function createObjectNote(session: WorldSession, input: {
       spatial: createObjectSpatialContext(session.index, session.resolver, input.sceneopsId, [0, 0, 0], [0, 1, 0]),
       camera: structuredClone(input.camera), problem: input.problem, intent: input.intent, acceptance: [input.acceptance],
       constraints: ['保留现有稳定对象 ID'], evidence: [], gameState: structuredClone(input.gameState),
-      gameStateVersion: input.gameStateVersion, mode: 'mock',
+      gameStateVersion: input.gameStateVersion, mode: session.scene.mode,
     }, details: { kind: 'object-pin' },
   };
   validateAnnotation(annotation);

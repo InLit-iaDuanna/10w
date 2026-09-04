@@ -142,3 +142,5 @@ Git 集成测试只操作系统临时目录中的独立仓库，并真实验证 
 - 视觉输入使用 typed pixel samples；生成真实 fixed-camera capture 和 diff image artifact 由 render/scene provider 后续接入。
 - 行为层不自行运行 AI playtest；它比较 `ai-playtest` 提供的稳定 evidence snapshots。
 - 异步 HTTP/持久化协作已实现；presence 和实时评论同步未实现，且不影响追加式审计。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

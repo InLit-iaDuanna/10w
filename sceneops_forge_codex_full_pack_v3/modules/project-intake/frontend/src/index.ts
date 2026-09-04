@@ -1,4 +1,5 @@
 export * from "./contracts.ts";
+export { WorkspaceProjects } from './WorkspaceProjects';
 export { validateIntakeForActivation } from "./validation.ts";
 export { createNewProjectIntake, createConversationProjectIntake } from "./intake.ts";
 export * from "./adapters/ProjectScanAdapter.ts";

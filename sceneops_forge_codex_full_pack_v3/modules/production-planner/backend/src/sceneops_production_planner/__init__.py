@@ -37,4 +37,5 @@ __all__ = [
     "create_planning_lab_app",
 ]
 
-from .lab import create_planning_lab_app
+from .lab import create_planning_lab_app, create_workspace_router
+from .errors import PlannerDomainError

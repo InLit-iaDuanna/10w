@@ -187,3 +187,5 @@ python3 modules/build-release/backend/scripts/export_contracts.py
 原有发布/审批/来源安全规则不变；入口不注册执行/部署/审批路由。旧“编辑器无可运行环境”描述已由此入口取代；真实外部链路仍 blocked。
 启动、接口、mock 局限与本轮精确烟测见 [工作台说明](../../apps/labs/unity-build/README.md)。
 完整旧套件本轮 **not run / pending approval**。调用工作台后端时需同时将 `modules/engine-unity/backend/src` 加入 Python 路径（独立入口已负责）。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。

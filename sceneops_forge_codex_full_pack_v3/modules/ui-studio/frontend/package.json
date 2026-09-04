@@ -4,8 +4,24 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Public UI Studio contribution declarations; runtime is composed by ForgeShell.",
-  "scripts": { "test": "node --test tests/*.test.mjs" },
-  "engines": { "node": ">=22.18.0" },
-  "exports": { ".": "./src/index.ts" },
-  "peerDependencies": { "react": ">=18", "@tanstack/react-query": "^5.80.7" }
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "@tanstack/react-query": "^5.80.7"
+  },
+  "dependencies": {
+    "@sceneops/audio-studio-frontend": "workspace:*",
+    "@sceneops/vfx-shader-frontend": "workspace:*",
+    "@sceneops/workbench-ui": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/api-client": "workspace:*"
+  }
 }

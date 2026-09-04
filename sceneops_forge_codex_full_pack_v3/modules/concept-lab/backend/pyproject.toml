@@ -6,8 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "sceneops-concept-lab"
 version = "0.1.0"
 description = "SceneOps Forge Concept Lab backend module"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
+  "sceneops-codebuddy-cli==0.1.0",
   "fastapi>=0.115,<1",
   "pydantic>=2.10,<3",
 ]

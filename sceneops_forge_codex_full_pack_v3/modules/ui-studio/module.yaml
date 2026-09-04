@@ -9,6 +9,8 @@ requires:
   modules:
     - core-kernel
     - module-runtime
+    - audio-studio
+    - vfx-shader
   integrations: []
   optional_integrations:
     - unity

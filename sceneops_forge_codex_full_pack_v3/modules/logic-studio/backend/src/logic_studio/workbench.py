@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from uuid import uuid4
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import Field
 from sceneops_core_contracts import ChangeSet
 
@@ -48,11 +48,18 @@ class GraphProposalResponse(StrictModel):
 
 _service = LogicStudioService()
 _binding = Path(__file__).resolve().parents[3] / "contracts/examples/world-workbench.binding.json"
-_demo = _service.compile_template(CompileTemplateRequest.model_validate(json.loads(_binding.read_text())))
 workbench_router = APIRouter(prefix="/logic", tags=["logic-workbench"])
 
 
+def _demo_for(project_id=None):
+    payload = json.loads(_binding.read_text())
+    if project_id:
+        payload["project_id"] = project_id
+    return _service.compile_template(CompileTemplateRequest.model_validate(payload))
+
+
 def _validate_scene_binding(graph: GameplayGraph) -> None:
+    _demo = _demo_for(graph.project_id)
     if graph.graph_id != _demo.graph_id or graph.project_id != _demo.project_id:
         raise ValueError("图不属于当前隔离样例。")
     if graph.scene_objects != _demo.scene_objects:
@@ -60,8 +67,8 @@ def _validate_scene_binding(graph: GameplayGraph) -> None:
 
 
 @workbench_router.get("/demo", response_model=GameplayGraph)
-def demo_graph():
-    return _demo
+def demo_graph(project_id: Optional[str] = Header(default=None, alias="X-SceneOps-Project")):
+    return _demo_for(project_id)
 
 
 @workbench_router.post("/validate", response_model=GraphValidationReport)
@@ -95,6 +102,7 @@ def preview(request: PreviewRequest):
 @workbench_router.post("/proposals", response_model=GraphProposalResponse)
 def propose_graph(request: GraphProposalRequest):
     try:
+        _demo = _demo_for(request.graph.project_id)
         _validate_scene_binding(request.graph)
         if request.graph.version != _demo.version + 1:
             raise ValueError("草稿版本必须为当前样例版本 + 1。")
@@ -126,6 +134,7 @@ def propose_graph(request: GraphProposalRequest):
 @workbench_router.post("/code-proposals", response_model=CodeChangeSet)
 def propose_code(proposal: CodeChangeProposal):
     try:
+        _demo = _demo_for()
         if proposal.graph_id != _demo.graph_id:
             raise ValueError("代码提案必须引用当前玩法图。")
         return _service.propose_code_change(proposal)

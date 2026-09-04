@@ -39,6 +39,23 @@ export interface WorkbenchContext {
   timelineTime?: number;
 }
 
+/** Composition contract for project-scoped workbenches; domain state stays module-owned. */
+export interface IntegratedWorkbenchProps {
+  context: WorkbenchContext;
+  project: { project_id: string; name: string; mode: 'live' | 'mock' | 'planned' };
+  document: {
+    project_id: string;
+    module_id: string;
+    revision: number;
+    sample_id: string | null;
+    payload: Record<string, JsonValue>;
+  };
+  onSave(payload: Record<string, JsonValue>): Promise<void>;
+  onContextChange(patch: Partial<WorkbenchContext>): void;
+  onDirtyChange(dirty: boolean): void;
+  suspended: boolean;
+}
+
 export type ContextBinding =
   | { mode: 'follow-global' }
   | { mode: 'pinned'; context: Partial<WorkbenchContext> };

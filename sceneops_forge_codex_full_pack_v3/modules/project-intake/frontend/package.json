@@ -14,5 +14,9 @@
   },
   "peerDependencies": {
     "react": "19.2.8"
+  },
+  "dependencies": {
+    "@sceneops/workspace-client": "workspace:*",
+    "@tanstack/react-query": "5.90.21"
   }
 }

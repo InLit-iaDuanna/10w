@@ -1,6 +1,7 @@
 """Public API for the SceneOps Render Ops module."""
 
 from .lab_router import create_render_lab_router
+from .lab_service import RenderLabService
 
 from .cache import plan_aov_cache, validate_aov_artifacts, validate_aov_set
 from .capture import (

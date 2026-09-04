@@ -97,3 +97,5 @@ npm audit --omit=dev
 - 固定相机帧差只提供回归信号，不判断表演、变形或美术质量。
 - 未提供自动绑定实现，也不承诺“完美自动绑定”。生成源必须先由上游变成有 provenance 的可导入资产。
 - 当前规格基线缺少 core-kernel、module-runtime、Asset Library、Design Room、Production Planner、ForgeShell 和 engine-unity 实现，因此目录级注册、真实 Artifact Store、真实 Unity 写入和 Playwright shell E2E 仍是 `planned`/`blocked`；模块本地合同、服务、fixture 与组件测试不依赖这些实现。
+
+统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。
