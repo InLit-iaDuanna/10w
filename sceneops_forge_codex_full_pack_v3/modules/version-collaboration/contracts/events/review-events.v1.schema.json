@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sceneops.invalid/contracts/version-collaboration/review-events.v1.schema.json",
+  "title": "SceneOps Version Collaboration Events v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "project_id",
+    "correlation_id",
+    "causation_id",
+    "actor",
+    "mode",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 3},
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "review.session.created",
+        "review.revision.published",
+        "review.comment.added",
+        "review.assignment.recorded",
+        "review.decision.recorded",
+        "review.approval.recorded",
+        "review.lock.recorded",
+        "review.rollback.proposed",
+        "review.rollback.executed",
+        "review.release.linked"
+      ]
+    },
+    "event_version": {"const": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "project_id": {"type": "string", "minLength": 3},
+    "correlation_id": {"type": "string", "minLength": 3},
+    "causation_id": {"type": "string", "minLength": 3},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": {"enum": ["user", "agent", "service"]},
+        "id": {"type": "string", "minLength": 3}
+      }
+    },
+    "mode": {"enum": ["live", "cached", "mock", "planned", "blocked"]},
+    "payload": {
+      "type": "object",
+      "required": ["review_id", "subject_id"],
+      "properties": {
+        "review_id": {"type": "string", "minLength": 3},
+        "subject_id": {"type": "string", "minLength": 3}
+      },
+      "additionalProperties": true
+    }
+  }
+}

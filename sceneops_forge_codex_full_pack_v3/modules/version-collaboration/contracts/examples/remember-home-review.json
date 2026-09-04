@@ -1,0 +1,18 @@
+{
+  "fixture_version": "1",
+  "command": {
+    "project_id": "project.remember-home",
+    "repository_id": "repo.remember-home",
+    "title": "Remember Home key and door hero flow",
+    "base_commit": "0123456789abcdef0123456789abcdef01234567",
+    "target_commit": "89abcdef0123456789abcdef0123456789abcdef",
+    "semantic_before": [{"entity_id":"hero.key","entity_kind":"scene_object","schema_id":"scene.object","schema_version":1,"artifact_id":"artifact.hero-key.base","producer_module":"world-composer","values":{"tag":"Key","active":true},"mode":"mock"}],
+    "semantic_after": [{"entity_id":"hero.key","entity_kind":"scene_object","schema_id":"scene.object","schema_version":1,"artifact_id":"artifact.hero-key.target","producer_module":"world-composer","values":{"tag":"Key","active":true,"collected":true},"mode":"mock"},{"entity_id":"hero.door","entity_kind":"scene_object","schema_id":"scene.object","schema_version":1,"artifact_id":"artifact.hero-door.target","producer_module":"world-composer","values":{"locked":false,"opensWith":"hero.key"},"mode":"mock"}],
+    "visual_before":{"artifact_id":"artifact.capture.remember.base","camera_id":"camera.hero-fixed","pose":{"position_m":[0.0,1.6,4.0],"rotation_xyzw":[0.0,0.0,0.0,1.0],"projection":"orthographic"},"width":2,"height":2,"channels":1,"color_space":"srgb","capture_recipe_version":"fixed-camera.v1","renderer_version":"fixture-renderer.1","pixels":[20,20,20,20],"mode":"mock"},
+    "visual_after":{"artifact_id":"artifact.capture.remember.target","camera_id":"camera.hero-fixed","pose":{"position_m":[0.0,1.6,4.0],"rotation_xyzw":[0.0,0.0,0.0,1.0],"projection":"orthographic"},"width":2,"height":2,"channels":1,"color_space":"srgb","capture_recipe_version":"fixed-camera.v1","renderer_version":"fixture-renderer.1","pixels":[20,20,40,40],"mode":"mock"},
+    "behavior_before":{"run_id":"run.remember.base","test_case_id":"test.key-door-flow","build_id":"build.remember.base","protocol_version":"playtest.v1","config_id":"config.remember.default","start_state_id":"state.remember.start","seed":101,"objective_succeeded":false,"assertions":[{"assertion_id":"assert.key-door","passed":false,"expected":"door opens"}],"steps":[{"step_id":"step.approach-door","action_id":"action.open-door","outcome":"door remains locked","goal_progress":0.2}],"mode":"mock"},
+    "behavior_after":{"run_id":"run.remember.target","test_case_id":"test.key-door-flow","build_id":"build.remember.target","protocol_version":"playtest.v1","config_id":"config.remember.default","start_state_id":"state.remember.start","seed":101,"objective_succeeded":true,"assertions":[{"assertion_id":"assert.key-door","passed":true,"observed":"door opens","expected":"door opens"}],"steps":[{"step_id":"step.collect-key","action_id":"action.collect-key","outcome":"key collected","goal_progress":0.5,"target_sceneops_id":"hero.key"},{"step_id":"step.open-door","action_id":"action.open-door","outcome":"door opens","goal_progress":1.0,"target_sceneops_id":"hero.door"}],"mode":"mock"},
+    "target_ids":["hero.key","hero.door"],"evidence_ids":["evidence.remember.file","evidence.remember.semantic","evidence.remember.visual","evidence.remember.behavior"]
+  },
+  "expected":{"mode":"mock","file_changes":[{"path":"scenes/RememberHome.scene","kind":"modified","additions":4,"deletions":1,"binary":false}],"lfs_pointers":[{"path":"captures/remember-home.png","object_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","size":4,"algorithm":"sha256","pointer_version":"https://git-lfs.github.com/spec/v1","object_available":false,"lock_required":false}],"semantic":"key collected and door unlocked","visual":"same fixed camera descriptor; 2 changed samples","behavior":"seed 101 and protocol playtest.v1 succeeds"}
+}

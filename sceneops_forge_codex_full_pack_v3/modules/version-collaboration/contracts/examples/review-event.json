@@ -1,0 +1,15 @@
+{
+  "event_id": "event_fixture_1",
+  "event_type": "review.comment.added",
+  "event_version": 1,
+  "occurred_at": "2026-09-04T00:00:00Z",
+  "project_id": "project_remember_home",
+  "correlation_id": "correlation_fixture_1",
+  "causation_id": "command_fixture_1",
+  "actor": {"type": "user", "id": "user_reviewer"},
+  "mode": "mock",
+  "payload": {
+    "review_id": "review_fixture_1",
+    "subject_id": "comment_fixture_1"
+  }
+}
