@@ -1,0 +1,19 @@
+{
+  "request_id": "req_fixture_export_asset",
+  "operation": "export_asset",
+  "mode": "mock",
+  "succeeded": true,
+  "data": {
+    "sceneops_ids": ["sop_hero_key_mesh"],
+    "object_identities": [
+      {"sceneops_id": "sop_hero_key_mesh", "display_name": "HeroKey", "source_object_locator": "Collection/HeroKey"}
+    ],
+    "artifacts": [
+      {"artifact_id": "art_asset_glb", "format": "glb", "project_relative_path": ".sceneops/asset-factory/run_fixture/exports/asset.glb", "media_type": "model/gltf-binary", "byte_size": 432, "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+    ]
+  },
+  "logs": [],
+  "retryable": false,
+  "error_code": null,
+  "error_message": null
+}

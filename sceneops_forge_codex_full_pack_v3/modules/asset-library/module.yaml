@@ -1,0 +1,38 @@
+schema_version: 1
+id: asset-library
+version: 0.1.0
+title: Asset Library
+description: Searchable, versioned 3D asset catalog with usage and provenance.
+status: active
+feature_flag: asset_library
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+  integrations:
+    - artifact-store
+  optional_integrations:
+    - unity
+
+contributes:
+  editors:
+    - asset.browser
+    - asset.inspector
+  commands:
+    - asset.search
+    - asset.version.publish
+  events:
+    - asset.version.published@1
+  jobs: []
+  workflows: []
+  policy_gates:
+    - asset.publication-quality
+
+permissions:
+  - asset:read
+  - asset:publish
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: asset_library

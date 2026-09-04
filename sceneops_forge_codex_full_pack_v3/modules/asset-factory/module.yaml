@@ -1,0 +1,54 @@
+schema_version: 1
+id: asset-factory
+version: 0.1.0
+title: Asset Factory
+description: Processes, validates, and publishes engine-ready 3D asset versions.
+status: active
+feature_flag: asset_factory
+
+requires:
+  modules:
+    - core-kernel
+    - module-runtime
+    - asset-library
+  integrations:
+    - blender
+    - artifact-store
+  optional_integrations: []
+
+contributes:
+  editors:
+    - asset.factory
+    - asset.validation
+  commands:
+    - asset.pipeline.preview
+    - asset.pipeline.run
+    - asset.pipeline.cancel
+    - asset.pipeline.retry
+    - asset.pipeline.rollback
+    - asset.version.publish
+  events:
+    - asset.pipeline.started@1
+    - asset.pipeline.progressed@1
+    - asset.pipeline.failed@1
+    - asset.pipeline.completed@1
+  jobs:
+    - asset.preflight
+    - asset.blender.process
+    - asset.validate
+    - asset.publish
+  workflows:
+    - asset-to-engine-ready@1
+  policy_gates:
+    - asset.geometry
+    - asset.uv-material
+    - asset.identity
+
+permissions:
+  - asset:read
+  - asset:write
+  - asset:publish
+
+entrypoints:
+  frontend: ./frontend/src/index.ts
+  backend: asset_factory

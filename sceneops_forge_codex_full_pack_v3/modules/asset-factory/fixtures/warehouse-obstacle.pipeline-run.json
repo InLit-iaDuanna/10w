@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "pipeline_run_id": "run_warehouse_obstacle_1",
+  "idempotency_key": "idem_warehouse_obstacle_1",
+  "project_id": "prj_warehouse_escape",
+  "asset_id": "ast_warehouse_obstacle",
+  "asset_version_id": "aver_warehouse_obstacle_1",
+  "requested_mode": "mock",
+  "execution_mode": "mock",
+  "state": "succeeded",
+  "change_set_id": "chg_warehouse_obstacle",
+  "creator": "fixture_worker",
+  "steps": [
+    {
+      "step_id": "run_warehouse_obstacle_1:publish",
+      "kind": "publish",
+      "state": "succeeded",
+      "execution_mode": "mock",
+      "progress": 1.0,
+      "attempts": 1,
+      "started_at": "2026-09-05T00:00:00Z",
+      "finished_at": "2026-09-05T00:00:00Z",
+      "logs": [],
+      "result": {"asset_version_id": "aver_warehouse_obstacle_1"},
+      "skip_reason": null,
+      "error_code": null
+    }
+  ],
+  "quality_gates": [
+    {"gate_id": "geometry", "label": "Geometry", "status": "passed", "blocking": true, "message": "Within budget.", "measurements": {"triangle_count": 2400}}
+  ],
+  "candidate_version": null,
+  "published_version": null,
+  "rollback_snapshot_path": ".sceneops/asset-factory/run_warehouse_obstacle_1/rollback.blend",
+  "working_copy_path": ".sceneops/asset-factory/run_warehouse_obstacle_1/working.blend",
+  "started_at": "2026-09-05T00:00:00Z",
+  "finished_at": "2026-09-05T00:00:00Z",
+  "error_code": null,
+  "error_message": null,
+  "retry_of_run_id": null
+}

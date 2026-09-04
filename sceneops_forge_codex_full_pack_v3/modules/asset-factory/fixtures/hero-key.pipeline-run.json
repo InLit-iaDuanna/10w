@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "pipeline_run_id": "run_hero_key_1",
+  "idempotency_key": "idem_hero_key_1",
+  "project_id": "prj_remember_home",
+  "asset_id": "ast_hero_key",
+  "asset_version_id": "aver_hero_key_1",
+  "requested_mode": "mock",
+  "execution_mode": "mock",
+  "state": "succeeded",
+  "change_set_id": "chg_hero_key",
+  "creator": "fixture_worker",
+  "steps": [
+    {
+      "step_id": "run_hero_key_1:publish",
+      "kind": "publish",
+      "state": "succeeded",
+      "execution_mode": "mock",
+      "progress": 1.0,
+      "attempts": 1,
+      "started_at": "2026-09-05T00:00:00Z",
+      "finished_at": "2026-09-05T00:00:00Z",
+      "logs": [],
+      "result": {"asset_version_id": "aver_hero_key_1"},
+      "skip_reason": null,
+      "error_code": null
+    }
+  ],
+  "quality_gates": [
+    {"gate_id": "geometry", "label": "Geometry", "status": "passed", "blocking": true, "message": "Within budget.", "measurements": {"triangle_count": 840}}
+  ],
+  "candidate_version": null,
+  "published_version": null,
+  "rollback_snapshot_path": ".sceneops/asset-factory/run_hero_key_1/rollback.blend",
+  "working_copy_path": ".sceneops/asset-factory/run_hero_key_1/working.blend",
+  "started_at": "2026-09-05T00:00:00Z",
+  "finished_at": "2026-09-05T00:00:00Z",
+  "error_code": null,
+  "error_message": null,
+  "retry_of_run_id": null
+}

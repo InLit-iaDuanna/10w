@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "spec": {
+    "schema_version": 1,
+    "asset_spec_id": "aspec_warehouse_obstacle",
+    "project_id": "prj_warehouse_escape",
+    "asset_id": "ast_warehouse_obstacle",
+    "display_name": "仓库路障",
+    "category": "environment",
+    "description": "Deterministic public-contract fixture.",
+    "intended_use": "level obstacle",
+    "target_dimensions_m": {"x": 2.4, "y": 0.8, "z": 1.2, "coordinate_space": "asset_local", "axis_convention": "right-handed_z-up", "unit": "meter"},
+    "triangle_budget": 5000,
+    "required_formats": ["glb", "fbx"],
+    "required_gate_ids": ["geometry", "uv_material", "identity"],
+    "requires_uv": true,
+    "requires_rig": false,
+    "requires_lods": true,
+    "requires_collider": true,
+    "created_at": "2026-09-05T00:00:00Z"
+  },
+  "source": {
+    "schema_version": 1,
+    "source_asset_id": "src_warehouse_obstacle",
+    "asset_id": "ast_warehouse_obstacle",
+    "project_id": "prj_warehouse_escape",
+    "project_relative_path": "Assets/warehouse-obstacle.blend",
+    "format": "blend",
+    "source_version": "1",
+    "source_commit": "commit_fixture",
+    "source_kind": "imported",
+    "license_name": "CC0-1.0",
+    "license_uri": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "origin_uri": "fixture://warehouse-obstacle",
+    "imported_at": "2026-09-05T00:00:00Z"
+  },
+  "source_objects": [
+    {"sceneops_id": "sop_warehouse_obstacle_mesh", "source_asset_id": "src_warehouse_obstacle", "display_name": "CrateBarrier", "source_object_locator": "Collection/CrateBarrier", "parent_sceneops_id": null}
+  ],
+  "versions": [
+    {
+      "schema_version": 1,
+      "asset_version_id": "aver_warehouse_obstacle_1",
+      "asset_id": "ast_warehouse_obstacle",
+      "source_asset_id": "src_warehouse_obstacle",
+      "version": 1,
+      "status": "published",
+      "execution_mode": "mock",
+      "metrics": {
+        "dimensions_m": {"x": 2.4, "y": 0.8, "z": 1.2, "coordinate_space": "asset_local", "axis_convention": "right-handed_z-up", "unit": "meter"},
+        "triangle_count": 2400,
+        "vertex_count": 1300,
+        "material_count": 2,
+        "texture_count": 4,
+        "has_uv": true,
+        "is_rigged": false,
+        "animation_names": [],
+        "lod_count": 2,
+        "collider_kind": "convex_hull"
+      },
+      "object_identities": [
+        {"sceneops_id": "sop_warehouse_obstacle_mesh", "source_asset_id": "src_warehouse_obstacle", "display_name": "CrateBarrier", "source_object_locator": "Collection/CrateBarrier", "parent_sceneops_id": null},
+        {"sceneops_id": "sop_warehouse_obstacle_lod1", "source_asset_id": "src_warehouse_obstacle", "display_name": "CrateBarrier_LOD1", "source_object_locator": "Generated/CrateBarrier_LOD1", "parent_sceneops_id": null}
+      ],
+      "outputs": [
+        {"artifact_id": "art_aver_warehouse_obstacle_1_glb", "artifact_type": "engine_asset", "format": "glb", "project_relative_path": "Published/warehouse-obstacle/v1/asset.glb", "media_type": "model/gltf-binary", "byte_size": 2048, "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+        {"artifact_id": "art_aver_warehouse_obstacle_1_fbx", "artifact_type": "engine_asset", "format": "fbx", "project_relative_path": "Published/warehouse-obstacle/v1/asset.fbx", "media_type": "application/octet-stream", "byte_size": 4096, "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+      ],
+      "quality_gates": [
+        {"gate_id": "geometry", "label": "Geometry", "status": "passed", "blocking": true, "message": "Within budget.", "measurements": {"triangle_count": 2400}},
+        {"gate_id": "uv_material", "label": "UV and material", "status": "passed", "blocking": true, "message": "UV and materials verified.", "measurements": {"has_uv": true}},
+        {"gate_id": "identity", "label": "Stable identity", "status": "passed", "blocking": true, "message": "Identity verified.", "measurements": {"sceneops_ids": ["sop_warehouse_obstacle_mesh", "sop_warehouse_obstacle_lod1"]}}
+      ],
+      "provenance": [
+        {
+          "artifact_id": "art_aver_warehouse_obstacle_1_glb",
+          "source_project": "prj_warehouse_escape",
+          "source_version": "1",
+          "source_commit": "commit_fixture",
+          "related_sceneops_ids": ["sop_warehouse_obstacle_mesh", "sop_warehouse_obstacle_lod1"],
+          "producing_module": "asset-factory",
+          "tool_name": "Blender",
+          "tool_version": "mock-1",
+          "adapter_version": "0.1.0",
+          "recipe_version": "asset-to-engine-ready@1",
+          "creator": "fixture_worker",
+          "execution_mode": "mock",
+          "timestamp": "2026-09-05T00:00:00Z",
+          "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "approval_state": "approved",
+          "ai": null
+        },
+        {
+          "artifact_id": "art_aver_warehouse_obstacle_1_fbx",
+          "source_project": "prj_warehouse_escape",
+          "source_version": "1",
+          "source_commit": "commit_fixture",
+          "related_sceneops_ids": ["sop_warehouse_obstacle_mesh", "sop_warehouse_obstacle_lod1"],
+          "producing_module": "asset-factory",
+          "tool_name": "Blender",
+          "tool_version": "mock-1",
+          "adapter_version": "0.1.0",
+          "recipe_version": "asset-to-engine-ready@1",
+          "creator": "fixture_worker",
+          "execution_mode": "mock",
+          "timestamp": "2026-09-05T00:00:00Z",
+          "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "approval_state": "approved",
+          "ai": null
+        }
+      ],
+      "approval_id": "apr_warehouse_obstacle",
+      "created_at": "2026-09-05T00:00:00Z",
+      "published_at": "2026-09-05T00:00:00Z"
+    }
+  ],
+  "usage_references": [
+    {
+      "usage_id": "use_warehouse_obstacle_loading_bay",
+      "asset_version_id": "aver_warehouse_obstacle_1",
+      "project_id": "prj_warehouse_escape",
+      "scene_id": "scn_warehouse_loading_bay",
+      "scene_instance_id": "sinst_warehouse_obstacle_loading_bay",
+      "unity_prefab_id": "prefab_warehouse_obstacle",
+      "unity_status": "imported",
+      "build_ids": ["bld_warehouse_escape_3"],
+      "first_seen_at": "2026-09-05T00:00:00Z"
+    }
+  ]
+}
