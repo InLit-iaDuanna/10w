@@ -6,6 +6,8 @@ V5 增加目标理解、明确选中的项目上下文、可审阅生产计划�
 
 ## 安装与启动
 
+顶部/底部拉出后现在直接显示搜索与功能列表；聊天支持 Enter 发送、Shift+Enter 换行。用户授权的扩展功能回归及未通过项见 [UI 功能验证](UI_FUNCTIONAL_VERIFICATION.md)。
+
 最新界面已改为紧凑的石墨灰/蓝色工作台：顶部保留本地项目，区域标题选择功能，更多操作收进菜单。原四边拉出和原位承载逻辑保留。范围与验证见 [UI 更新烟测](UI_REFRESH_SMOKE.md)。
 
 应用根为 `sceneops_forge_codex_full_pack_v3`。需要 Node >= 22.12、pnpm 11.13、Python 3.12；CodeBuddy CLI 可稍后自行安装及登录，缺少 CLI 不影响打开工作台。

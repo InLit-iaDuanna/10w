@@ -16,7 +16,7 @@ export const DEFAULT_EDGE_THRESHOLDS: EdgeThresholds = {
   peek: 80,
   pin: 220,
   hide: 48,
-  minSize: 80,
+  minSize: 180,
   maxSize: 640,
   defaultSize: 280,
 };

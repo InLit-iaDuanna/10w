@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import { useId, useState } from 'react';
 import type { EditorHostProps } from '../contracts.ts';
 import { useShellTools } from './ToolRuntime.ts';
 import './tool-picker.css';

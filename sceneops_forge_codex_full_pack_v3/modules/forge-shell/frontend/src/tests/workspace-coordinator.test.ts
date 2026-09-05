@@ -277,6 +277,24 @@ test('drawer state and size synchronize into versioned workspace history', async
   assert.equal(coordinator.snapshot().drawers.left.size, 280);
 });
 
+for (const edge of ['left', 'right', 'top', 'bottom'] as const) {
+  test(`${edge} collapsed tab strip preserves last open size`, () => {
+    const { coordinator } = setup();
+    coordinator.syncDrawer({ edge, mode: 'pinned', size: 280, lastOpenSize: 280, tabs: [], activeInstanceId: null });
+    const group = { groupId: `edge-${edge}`, location: 'edge' as const, edge, tabs: [], activeInstanceId: null,
+      headerPosition: 'top' as const, collapsed: true, peeking: false, autoHide: true,
+      bounds: { left: 0, top: 0, width: 32, height: 32 } };
+    coordinator.syncDockviewLayout({}, { groups: [group], activeInstanceId: null, maximizedInstanceId: null });
+    assert.equal(coordinator.snapshot().drawers[edge].mode, 'hidden');
+    assert.equal(coordinator.snapshot().drawers[edge].lastOpenSize, 280);
+    coordinator.syncDockviewLayout({}, { groups: [{ ...group, peeking: true, expandedSize: 240 }], activeInstanceId: null, maximizedInstanceId: null });
+    assert.equal(coordinator.snapshot().drawers[edge].size, 240, 'native expanded size wins over peek tab-strip bounds');
+    coordinator.syncDockviewLayout({}, { groups: [{ ...group, peeking: true,
+      bounds: { left: 0, top: 0, width: 190, height: 190 } }], activeInstanceId: null, maximizedInstanceId: null });
+    assert.equal(coordinator.snapshot().drawers[edge].size, 190);
+  });
+}
+
 test('lazy-load failure, context pinning, and locked close produce visible typed state', async () => {
   const { coordinator, events } = setup();
   const loadFailures: string[] = [];

@@ -62,3 +62,14 @@ test('modifier, double-click, keyboard, menu, and Escape alternatives are availa
   assert.equal(coordinator.pointerTargetSize(false), 28);
   assert.equal(coordinator.pointerTargetSize(true), 36);
 });
+
+test('short revealed drawers retain enough space for the function toolbar and choices', () => {
+  const coordinator = new EdgeDrawerCoordinator(createDefaultDrawers(), new WorkbenchEventBus());
+  for (const edge of ['left', 'right', 'top', 'bottom'] as const) {
+    coordinator.begin(edge);
+    coordinator.move(80);
+    coordinator.end();
+    assert.equal(coordinator.get(edge).mode, 'peek');
+    assert.equal(coordinator.get(edge).size, 180);
+  }
+});

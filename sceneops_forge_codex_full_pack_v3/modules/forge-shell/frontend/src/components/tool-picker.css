@@ -10,6 +10,31 @@
     linear-gradient(135deg, rgb(255 255 255 / 2%), transparent 36%);
 }
 
+/* A pulled-out area is a selector, not a landing page. Keep the first choices
+   immediately below one toolbar, with only the choices scrolling. */
+.picker-tool-library {
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  overflow: hidden;
+}
+.picker-toolbar { display: flex; flex: 0 0 auto; min-width: 0; gap: 8px; }
+.picker-toolbar .picker-search-control { flex: 1; min-width: 0; min-height: 32px; padding: 0 8px; }
+.picker-toolbar .picker-search-control input { padding: 5px 0; font-size: 12px; }
+.picker-toolbar > select { width: 105px; min-width: 0; padding: 4px 6px; font-size: 11px; border-radius: 6px; }
+.picker-options { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1px 2px 4px 1px; }
+.picker-options .picker-tool-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 165px), 1fr)); align-content: start; }
+.picker-options .picker-tool-item { min-height: 45px; padding: 6px 8px; }
+.picker-tool-library .picker-feedback { flex: 0 0 auto; margin: 0; }
+
+@container (max-height: 220px) {
+  .picker-options .picker-tool-item { min-height: 32px; padding: 4px 8px; }
+  .picker-options .picker-tool-copy small { display: none; }
+  .picker-options .picker-tool-icon { width: 21px; height: 21px; }
+}
+
 .picker-header {
   display: flex;
   align-items: flex-start;
@@ -142,7 +167,7 @@
 .picker-command-results button:hover svg { stroke: var(--accent-blue, #8aafff); }
 
 @container (max-width: 360px) {
-  .shell-tool-content { padding: 13px; }
+  .shell-tool-content:not(.picker-tool-library) { padding: 13px; }
   .picker-header { gap: 9px; margin-bottom: 14px; }
   .picker-header p { font-size: 11px; }
   .picker-mode { padding: 4px 6px; font-size: 9px; }

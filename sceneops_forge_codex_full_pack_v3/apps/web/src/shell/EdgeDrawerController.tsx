@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { Edge, EdgeDrawerCoordinator } from '@sceneops/forge-shell';
+import { EdgePointerGesture } from './EdgePointerGesture';
 
 export interface EdgeDrawerControllerProps {
   coordinator: EdgeDrawerCoordinator;
@@ -25,7 +26,7 @@ function EdgeHandle({
   onFloatingRequest,
   onChanged,
 }: EdgeDrawerControllerProps & { edge: Edge }): React.ReactElement {
-  const pointerStart = useRef<number | null>(null);
+  const gesture = useMemo(() => new EdgePointerGesture(edge, coordinator), [edge, coordinator]);
   const [previewSize, setPreviewSize] = useState(0);
   const drawer = coordinator.get(edge);
   const vertical = edge === 'left' || edge === 'right';
@@ -48,31 +49,26 @@ function EdgeHandle({
         onChanged(edge);
       }}
       onPointerDown={(event) => {
-        pointerStart.current = vertical ? event.clientX : event.clientY;
-        coordinator.begin(edge, { shiftKey: event.shiftKey, altKey: event.altKey });
+        if (!gesture.begin(event)) return;
         event.currentTarget.setPointerCapture(event.pointerId);
       }}
       onPointerMove={(event) => {
-        if (pointerStart.current === null) return;
-        const preview = coordinator.move(openDistance(
-          edge,
-          pointerStart.current,
-          vertical ? event.clientX : event.clientY,
-        ));
-        if (preview.kind === 'none') setPreviewSize(preview.previewSize);
+        const preview = gesture.move(event);
+        if (preview?.kind === 'none') setPreviewSize(preview.previewSize);
       }}
-      onPointerUp={() => {
-        if (pointerStart.current === null) return;
-        const result = coordinator.end();
-        pointerStart.current = null;
+      onPointerUp={(event) => {
+        const result = gesture.end(event);
+        if (!result) return;
         setPreviewSize(0);
+        event.currentTarget.releasePointerCapture(event.pointerId);
         if (result.kind === 'floating-request') onFloatingRequest(edge);
         onChanged(edge);
       }}
-      onPointerCancel={() => {
-        coordinator.cancel();
-        pointerStart.current = null;
-        setPreviewSize(0);
+      onPointerCancel={(event) => {
+        if (gesture.cancel(event.pointerId)) setPreviewSize(0);
+      }}
+      onLostPointerCapture={(event) => {
+        if (gesture.cancel(event.pointerId)) setPreviewSize(0);
       }}
     >
       <span className="forge-edge-handle-label">{judgeMode ? EDGE_LABELS[edge] : '⋮'}</span>
@@ -85,10 +81,6 @@ function EdgeHandle({
       ) : null}
     </button>
   );
-}
-
-function openDistance(edge: Edge, start: number, current: number): number {
-  return edge === 'right' || edge === 'bottom' ? start - current : current - start;
 }
 
 const EDGES: Edge[] = ['left', 'right', 'top', 'bottom'];

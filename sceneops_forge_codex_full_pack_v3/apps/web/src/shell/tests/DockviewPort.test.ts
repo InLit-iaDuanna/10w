@@ -23,6 +23,8 @@ type FakeGroup = {
   size?: { width?: number; height?: number };
   autoHide: boolean;
   collapsed: boolean;
+  peeking: boolean;
+  calls: string[];
   api: {
     id: string;
     location: { type: 'grid' | 'edge'; position?: string };
@@ -32,6 +34,9 @@ type FakeGroup = {
     setAutoHide: (value: boolean) => void;
     collapse: () => void;
     expand: () => void;
+    isCollapsed: () => boolean;
+    isAutoHide: () => boolean;
+    isPeeking: () => boolean;
   };
 };
 type FakePanel = {
@@ -39,6 +44,7 @@ type FakePanel = {
   title: string;
   group: FakeGroup;
   api: {
+    readonly isActive: boolean;
     close: () => void;
     moveTo: (options: { group: FakeGroup }) => void;
     setTitle: () => void;
@@ -58,15 +64,18 @@ function fakeApi() {
   const edges = new Map<string, FakeGroup>();
   function createGroup(id: string, edge?: string): FakeGroup {
     const group: FakeGroup = {
-      id, panels: [], autoHide: false, collapsed: false,
+      id, panels: [], autoHide: false, collapsed: false, peeking: false, calls: [],
       api: {
         id, location: edge ? { type: 'edge', position: edge } : { type: 'grid' },
         moveTo: () => undefined,
         setHeaderPosition: () => undefined,
-        setSize: (size) => { group.size = size; },
-        setAutoHide: (value) => { group.autoHide = value; },
-        collapse: () => { group.collapsed = true; },
-        expand: () => { group.collapsed = false; },
+        setSize: (size) => { group.calls.push('size'); group.size = size; },
+        setAutoHide: (value) => { group.calls.push('autohide'); group.autoHide = value; },
+        collapse: () => { group.calls.push('collapse'); group.collapsed = true; },
+        expand: () => { group.calls.push('expand'); group.collapsed = false; },
+        isCollapsed: () => group.collapsed,
+        isAutoHide: () => group.autoHide,
+        isPeeking: () => group.peeking,
       },
     };
     groups.push(group);
@@ -76,7 +85,9 @@ function fakeApi() {
     groups,
     activePanel: undefined as FakePanel | undefined,
     popoutRestorationPromise: Promise.resolve(),
-    toJSON: () => ({ grid: { root: { type: 'branch' } } }),
+    toJSON: () => ({ grid: { root: { type: 'branch' } }, edgeGroups: Object.fromEntries(
+      [...edges].map(([edge, group]) => [edge, { size: group.size?.width ?? group.size?.height }]),
+    ) }),
     clear: () => { clears.push(1); panels.clear(); groups.length = 0; edges.clear(); api.activePanel = undefined; },
     fromJSON: () => undefined,
     getPanel: (id: string) => panels.get(id),
@@ -100,6 +111,7 @@ function fakeApi() {
       const created: FakePanel = {
         id: options.id, title: options.title, group,
         api: {
+          get isActive() { return api.activePanel === created; },
           close: () => {
             closed.push(created.id);
             created.group.panels.splice(created.group.panels.indexOf(created), 1);
@@ -113,7 +125,7 @@ function fakeApi() {
           setTitle: () => undefined,
           updateParameters: () => undefined,
           maximize: () => undefined,
-          setActive: () => { api.activePanel = created; },
+          setActive: () => { created.group.calls.push('active'); api.activePanel = created; },
         },
       };
       group.panels.push(created);
@@ -124,7 +136,10 @@ function fakeApi() {
     },
     addPopoutGroup: async (_panel?: unknown, _options?: unknown) => true,
     addFloatingGroup: () => undefined,
-    peekEdgeGroup: (edge: string, peek: boolean) => { peekCalls.push({ edge, peek }); },
+    peekEdgeGroup: (edge: string, peek: boolean) => {
+      peekCalls.push({ edge, peek });
+      edges.get(edge)!.peeking = peek;
+    },
     exitMaximizedGroup: () => undefined,
   };
   api.addPanel({ id: 'original', title: 'original' });
@@ -194,6 +209,29 @@ test('Peek mode invokes Dockview explicit edge-group peek API', async () => {
   assert.equal(edges.get('left')?.autoHide, true);
   assert.deepEqual(edges.get('left')?.size, { width: 280 });
 });
+
+for (const edge of ['left', 'right', 'top', 'bottom'] as const) {
+  test(`${edge} drawer transitions are idempotent and preserve the requested size`, async () => {
+    const { api, edges, peekCalls } = fakeApi();
+    const port = new DockviewPort(api as never);
+    await port.open(instance('tool'), { mode: 'drawer', edge });
+    const group = edges.get(edge)!;
+    const drawer = { edge, mode: 'peek' as const, size: 320, lastOpenSize: 320, tabs: ['tool'], activeInstanceId: 'tool' };
+    for (const mode of ['peek', 'pinned', 'hidden', 'peek'] as const) {
+      port.syncDrawer({ ...drawer, mode });
+      const calls = [...group.calls];
+      const peeks = [...peekCalls];
+      port.syncDrawer({ ...drawer, mode });
+      assert.deepEqual(group.calls, calls);
+      assert.deepEqual(peekCalls, peeks);
+      assert.equal(group.collapsed, mode !== 'pinned');
+      assert.equal(group.peeking, mode === 'peek');
+      assert.deepEqual(group.size, edge === 'left' || edge === 'right' ? { width: 320 } : { height: 320 });
+    }
+    port.syncDrawer({ ...drawer, size: 400 });
+    assert.deepEqual(peekCalls.slice(-2), [{ edge, peek: false }, { edge, peek: true }]);
+  });
+}
 
 test('drawer replacement and moves preserve its native group, size and pin state', async () => {
   const { api, panels, edges, closed } = fakeApi();

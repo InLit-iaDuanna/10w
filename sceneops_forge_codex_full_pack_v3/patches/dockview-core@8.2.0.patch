@@ -1,0 +1,72 @@
+diff --git a/dist/dockview-core.js b/dist/dockview-core.js
+index 5043b157bee6343f6b674f47870baa9d6cd2ea99..092171e27566c87707d68063e759ced0f2df33dd 100644
+--- a/dist/dockview-core.js
++++ b/dist/dockview-core.js
+@@ -14442,6 +14442,13 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 				group.element.classList.add("dv-edge-collapsed");
+ 			}
+ 			this._observeTabStrip();
++			this._tabSizeDisposables.addDisposables(group.api.onDidSizeChange((event) => {
++				const size = this._orientation === "horizontal" ? event.width : event.height;
++				if (typeof size !== "number" || !Number.isFinite(size)) return;
++				const minimum = (this._baseMinimumSize !== void 0 ? this._baseMinimumSize : this._effectiveBaseCollapsed + 50) + this._gapAdd;
++				this._lastExpandedSize = Math.max(minimum, Math.min(this._expandedMaximumSize, size));
++				if (!this._isCollapsed) this._onDidChange.fire({ size: this._lastExpandedSize });
++			}));
+ 		}
+ 		/**
+ 		* Watch the group's tab strip so the collapsed size follows the live tab
+diff --git a/dist/dockview-core.noStyle.js b/dist/dockview-core.noStyle.js
+index 85d748735094da26d1ca22f5db7d91485323d856..6297bc2e11825ae732420129dbee2bf8a1c89a83 100644
+--- a/dist/dockview-core.noStyle.js
++++ b/dist/dockview-core.noStyle.js
+@@ -14434,6 +14434,13 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 				group.element.classList.add("dv-edge-collapsed");
+ 			}
+ 			this._observeTabStrip();
++			this._tabSizeDisposables.addDisposables(group.api.onDidSizeChange((event) => {
++				const size = this._orientation === "horizontal" ? event.width : event.height;
++				if (typeof size !== "number" || !Number.isFinite(size)) return;
++				const minimum = (this._baseMinimumSize !== void 0 ? this._baseMinimumSize : this._effectiveBaseCollapsed + 50) + this._gapAdd;
++				this._lastExpandedSize = Math.max(minimum, Math.min(this._expandedMaximumSize, size));
++				if (!this._isCollapsed) this._onDidChange.fire({ size: this._lastExpandedSize });
++			}));
+ 		}
+ 		/**
+ 		* Watch the group's tab strip so the collapsed size follows the live tab
+diff --git a/dist/package/main.cjs.js b/dist/package/main.cjs.js
+index 3d3f2c8a49b845c0630f1692f2f6fa3fa3d6e87f..4b5908cc92b34a7ec85596b453de2ea9e1fdc69f 100644
+--- a/dist/package/main.cjs.js
++++ b/dist/package/main.cjs.js
+@@ -14429,6 +14429,13 @@ var EdgeGroupView = class {
+ 			group.element.classList.add("dv-edge-collapsed");
+ 		}
+ 		this._observeTabStrip();
++		this._tabSizeDisposables.addDisposables(group.api.onDidSizeChange((event) => {
++			const size = this._orientation === "horizontal" ? event.width : event.height;
++			if (typeof size !== "number" || !Number.isFinite(size)) return;
++			const minimum = (this._baseMinimumSize !== void 0 ? this._baseMinimumSize : this._effectiveBaseCollapsed + 50) + this._gapAdd;
++			this._lastExpandedSize = Math.max(minimum, Math.min(this._expandedMaximumSize, size));
++			if (!this._isCollapsed) this._onDidChange.fire({ size: this._lastExpandedSize });
++		}));
+ 	}
+ 	/**
+ 	* Watch the group's tab strip so the collapsed size follows the live tab
+diff --git a/dist/package/main.esm.mjs b/dist/package/main.esm.mjs
+index 6e8fd8c1dd781d0f24b1aa5d911edf6e5a0aeda2..350e02aca5d5154537ff2303e840f7cb05227fec 100644
+--- a/dist/package/main.esm.mjs
++++ b/dist/package/main.esm.mjs
+@@ -14427,6 +14427,13 @@ var EdgeGroupView = class {
+ 			group.element.classList.add("dv-edge-collapsed");
+ 		}
+ 		this._observeTabStrip();
++		this._tabSizeDisposables.addDisposables(group.api.onDidSizeChange((event) => {
++			const size = this._orientation === "horizontal" ? event.width : event.height;
++			if (typeof size !== "number" || !Number.isFinite(size)) return;
++			const minimum = (this._baseMinimumSize !== void 0 ? this._baseMinimumSize : this._effectiveBaseCollapsed + 50) + this._gapAdd;
++			this._lastExpandedSize = Math.max(minimum, Math.min(this._expandedMaximumSize, size));
++			if (!this._isCollapsed) this._onDidChange.fire({ size: this._lastExpandedSize });
++		}));
+ 	}
+ 	/**
+ 	* Watch the group's tab strip so the collapsed size follows the live tab

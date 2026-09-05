@@ -855,12 +855,14 @@ export class WorkspaceCoordinator {
       : group.collapsed
         ? 'hidden'
         : 'pinned';
-    const size = group.bounds
+    const size = group.expandedSize ?? (group.bounds
       ? group.edge === 'left' || group.edge === 'right'
         ? group.bounds.width
         : group.bounds.height
-      : undefined;
-    if (size && size > 0) {
+      : undefined);
+    // A collapsed group's bounds describe its tab strip, not its remembered
+    // open size. Only an expanded or peeking group can report content size.
+    if (size && size > 0 && (group.expandedSize !== undefined || !group.collapsed || group.peeking)) {
       drawer.size = size;
       drawer.lastOpenSize = size;
     }

@@ -2,6 +2,8 @@
 
 ## 统一应用接口（本轮）
 
+最新 UI 使用紧凑底部输入：Enter 提交、Shift+Enter 换行，IME composing 不提交；输入自适应高度，失败保留草稿，取消/重试仍由原 API 实现。浏览器失败与取消仅用 Mock 网络响应测试，不实际请求模型。旧 Node 测试 40/42，通过与运行器限制见根 `UI_FUNCTIONAL_VERIFICATION.md`。
+
 `UnifiedConversation({context, onDirtyChange?})` 与 `AIAdvicePanel({context,moduleId,onDirtyChange?})`
 由宿主的同一个 QueryClient 和编辑器注册系统承载。统一应用默认 CodeBuddy `cli-default`，
 无自动 Mock、推理、工具执行或案例载入。旧编辑器及 transport 保留给独立 lab，以下旧默认 MOCK

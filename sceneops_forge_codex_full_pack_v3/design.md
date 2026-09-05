@@ -6,6 +6,11 @@ Visual direction: **compact graphite workbench, readable conversation, blue inte
 
 ## Current V5 UI refresh (2026-09-05)
 
+Latest interaction refinement: the tool picker starts immediately with its toolbar and choices,
+not an introductory section. Only choices scroll; short drawers compact descriptions and open at
+least 180px. Chat uses a compact growing input with Enter to submit, Shift+Enter for newline and
+IME protection. See `UI_FUNCTIONAL_VERIFICATION.md`; this supersedes earlier picker-placement copy.
+
 The user explicitly relaxed the earlier visual constraints while retaining interaction logic. This
 section supersedes conflicting appearance rules below; older feature lists remain design targets,
 not evidence that those capabilities have shipped.

@@ -210,6 +210,8 @@ export interface WorkspacePreset {
 export type DockingLocation = 'grid' | 'floating' | 'popout' | 'edge';
 
 export interface DockingGroupTopology {
+  /** Native edge's remembered expanded dimension; collapsed bounds are only its tab strip. */
+  expandedSize?: number;
   groupId: string;
   location: DockingLocation;
   edge?: Edge;
@@ -290,7 +292,7 @@ export interface ShellEventMap {
 export type ShellEventName = keyof ShellEventMap;
 
 export interface AreaHeaderContract {
-  height: 32;
+  height: 36;
   title: string;
   contextSummary: string;
   mode: ExecutionMode;

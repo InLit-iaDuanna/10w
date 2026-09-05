@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import type { ZodType } from 'zod';
+import type { ZodType } from 'zod/v4';
 import type { paths } from './generated/api';
 
 export type ExecutionMode = 'live' | 'cached' | 'mock' | 'planned' | 'blocked';

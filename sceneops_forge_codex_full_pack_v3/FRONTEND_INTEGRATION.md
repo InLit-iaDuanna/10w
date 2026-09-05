@@ -488,6 +488,8 @@ Update in the same commit when relevant:
 
 ## 独立 Shell 组合（2026-09-05）
 
+功能回归补充：`DockingGroupTopology.expandedSize` 可选字段表示原生边缘展开尺寸；不以折叠标签栏的 bounding box 覆盖展开记忆。区域 header 高度为 36。Dockview 8.2.0 的公开 setSize 事件缺口通过受控 pnpm patch 修复，应用不直接摆放面板 DOM。短功能选择器只滚动列表，默认当前区域；隐藏面板不参与键盘交互。
+
 V5 视觉更新：应用根 `workbench.css` 提供语义色彩和全局外壳；`forge-shell.css` 提供区域栏/边缘控件；工具库与命令搜索共用模块内 `tool-picker.css`；对话与提供方使用模块内 `unified-ai.css`。标题选择器仍调用原命令，当前区域打开保留 `instanceId`；不新增网络协议、依赖或布局持久化字段。
 
 真实入口：`pnpm lab shell`；初装见 `apps/labs/shell/README.md`。UI 类型统一为 `@sceneops/core-ui` 的 `EditorDefinition`/`EditorHostProps`，Forge Shell 继续转导。ModuleContribution/manifest 来自 module-runtime，manifest 统一使用生成的 snake_case 字段。conversation-home 的默认 placement 为 `{ mode: 'tab' }`，Home preset 决定它独占画布。

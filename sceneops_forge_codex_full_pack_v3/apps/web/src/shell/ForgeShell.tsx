@@ -87,7 +87,7 @@ export function ForgeShell(props: ForgeShellProps): React.ReactElement {
   const handleEdgeChanged = useCallback((edge: Edge) => {
     const drawer = props.edgeDrawers.get(edge);
     props.runtime.syncDrawer(drawer);
-    port?.syncDrawer(drawer);
+    if (drawer.tabs.length > 0) port?.syncDrawer(drawer);
     props.onEdgeChanged(edge, drawer);
   }, [port, props.edgeDrawers, props.onEdgeChanged, props.runtime]);
   const onReady = useCallback((event: DockviewReadyEvent) => {
@@ -238,17 +238,14 @@ function ForgeEditorHost({
 
   if (!instance) return <EditorStateNotice state="disconnected" message="编辑器实例已断开。" />;
   if (!definition) return <EditorStateNotice state="failed" message="编辑器定义不可用。" />;
-  if (availability && availability.status !== 'available') {
-    return <EditorStateNotice state={availability.status} message={availability.message ?? '编辑器暂不可用。'} />;
-  }
-  if (loadError) {
-    return <EditorStateNotice state="failed" message={loadError} retry={() => setLoadAttempt((value) => value + 1)} />;
-  }
-  if (!LoadedEditor) return <EditorStateNotice state="loading" message="正在加载编辑器…" />;
   const context = runtime.resolveContext(instance.instanceId);
   const header = createAreaHeaderContract(instance, context, visible, compact);
+  const contentVisible = visible && !EDGES.some(edge => {
+    const drawer = runtime.getDrawer(edge);
+    return drawer.mode === 'hidden' && drawer.tabs.includes(instance.instanceId);
+  });
   return (
-    <div className="forge-editor-layout">
+    <div className="forge-editor-layout" inert={!contentVisible} aria-hidden={!contentVisible}>
       <AreaHeader
         contract={header}
         onAction={(action) => {
@@ -259,7 +256,13 @@ function ForgeEditorHost({
           runtime.onAreaAction(instance.instanceId, action);
         }}
       />
-      <div className="forge-editor-body"><LoadedEditor
+      <div className="forge-editor-body">{availability && availability.status !== 'available' ? (
+        <EditorStateNotice state={availability.status} message={availability.message ?? '编辑器暂不可用。'} />
+      ) : loadError ? (
+        <EditorStateNotice state="failed" message={loadError} retry={() => setLoadAttempt((value) => value + 1)} />
+      ) : !LoadedEditor ? (
+        <EditorStateNotice state="loading" message="正在加载编辑器…" />
+      ) : <LoadedEditor
         instanceId={instance.instanceId}
         context={context}
         contextBinding={instance.contextBinding}
@@ -269,8 +272,8 @@ function ForgeEditorHost({
         updateLocalState={(patch) => runtime.updateLocalState(instance.instanceId, patch)}
         close={() => { void requestClose(runtime, instance.instanceId); }}
         setTitle={(title) => runtime.setTitle(instance.instanceId, title)}
-        suspended={!visible && definition.renderPolicy === 'suspend-when-hidden'}
-      /></div>
+        suspended={!contentVisible && definition.renderPolicy === 'suspend-when-hidden'}
+      />}</div>
     </div>
   );
 }

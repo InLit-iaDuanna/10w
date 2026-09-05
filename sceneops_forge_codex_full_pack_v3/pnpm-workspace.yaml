@@ -14,3 +14,5 @@ overrides:
   typescript: 6.0.3
 allowBuilds:
   esbuild: false
+patchedDependencies:
+  dockview-core@8.2.0: patches/dockview-core@8.2.0.patch

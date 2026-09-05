@@ -13,6 +13,9 @@ overrides:
   vite: 8.0.0
   typescript: 6.0.3
 
+patchedDependencies:
+  dockview-core@8.2.0: 01961eadea807ba5f7582d21dc9c299f9b354818140d446dbcbe0abd0d87fbf2
+
 importers:
 
   .:
@@ -2166,7 +2169,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  dockview-core@8.2.0: {}
+  dockview-core@8.2.0(patch_hash=01961eadea807ba5f7582d21dc9c299f9b354818140d446dbcbe0abd0d87fbf2): {}
 
   dockview-enterprise@8.2.0:
     dependencies:
@@ -2180,7 +2183,7 @@ snapshots:
 
   dockview@8.2.0:
     dependencies:
-      dockview-core: 8.2.0
+      dockview-core: 8.2.0(patch_hash=01961eadea807ba5f7582d21dc9c299f9b354818140d446dbcbe0abd0d87fbf2)
 
   dom-accessibility-api@0.5.16: {}
 

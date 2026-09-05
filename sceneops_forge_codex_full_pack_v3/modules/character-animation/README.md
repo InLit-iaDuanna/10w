@@ -1,5 +1,7 @@
 # Character and Animation
 
+统一 UI 功能回归修复：命令与类型显式导入 `zod/v4`，避免与其他模块 Zod 3 的 Vite 预打包名称冲突。11 项前端回归及统一空态动态导入通过；没有运行角色生产、预览或 Unity 操作。
+
 独立工作台入口现位于 [`apps/labs/character-animation`](../../apps/labs/character-animation/README.md)，Web `127.0.0.1:4313`、API `127.0.0.1:8313`。包含六个编辑器、动画元数据草稿、本地检查、版本差异和待审批 Unity 映射提案。当前启动请使用该入口的 pnpm 安装说明；下方 npm 测试命令属于原模块独立开发说明，本轮未执行。
 
 Character and Animation 为 SceneOps Forge 提供可检查的角色、Rig、Skin、动画片段、重定向、Animator 状态、预览证据与 Unity 映射流程。主路径接受导入资产；角色生成和自动绑定始终是可选能力。
