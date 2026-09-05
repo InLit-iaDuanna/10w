@@ -113,6 +113,13 @@ export class WorkspaceCoordinator {
     if (availability.status !== 'available') return { status: 'unavailable', availability };
     const existing = definition.singleton ? this.#findEditor(request.editorId) : undefined;
     if (existing) {
+      if (request.placement?.mode === 'replace' && request.placement.relativeToInstanceId
+          && request.placement.relativeToInstanceId !== existing.instanceId) {
+        const moved = await this.moveEditor(existing.instanceId, request.placement, {
+          source: request.source, confirmed: request.confirmed, forceReplaceDirty: request.forceReplaceDirty,
+        });
+        if (moved.status !== 'completed') return moved;
+      }
       await this.#engine.focus(existing.instanceId);
       return { status: 'focused', instance: clone(existing) };
     }
@@ -276,6 +283,11 @@ export class WorkspaceCoordinator {
     const availability = this.#editors.availability(editorId, this.#environment);
     if (availability.status !== 'available') return { status: 'unavailable', availability };
     const definition = this.#editors.get(editorId);
+    const existing = definition.singleton ? this.#findEditor(editorId) : undefined;
+    if (existing && existing.instanceId !== instanceId) {
+      return this.openEditor({ editorId, placement: { mode: 'replace', relativeToInstanceId: instanceId },
+        source: authorization.source, confirmed: authorization.confirmed });
+    }
     const next: EditorInstance = {
       ...current,
       editorId,

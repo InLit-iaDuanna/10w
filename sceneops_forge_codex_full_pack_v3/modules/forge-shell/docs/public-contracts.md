@@ -44,6 +44,10 @@ Events use the shared workbench envelope at the application boundary. This modul
 
 ## Edge interaction
 
+An empty opened edge hosts its own Tool Library. The user's requested drawer mode/size is carried through native group creation, rather than reread from transient empty/collapsed layout feedback. New panels attach through Dockview's native `position.referenceGroup`; no intermediate central panel or simulated drag is required.
+
+Tool selection defaults to `workbench.switch_editor` on the selector's explicit `instanceId`, preserving the container and panel identity. Explicit split/tab placements are relative to that same instance. Selecting an already-open singleton transfers its existing instance into the requested container via the normal guarded replace/move path. Dirty targets still require confirmation, locked targets remain rejected; `OpenEditorResult.rejected` can report `unknown-editor` or `invalid-docking-mutation` for invalid relocation targets.
+
 The default thresholds are 12px reveal, 80px Peek, 220px Pin, and below 48px reverse-hide. Shift opens pinned, Alt requests a floating Tool Library, double-click toggles the last open size, Escape dismisses Peek globally, and menu/keyboard commands explicitly select hidden, Peek, or pinned. The pointer zones span all four full edges at 12px; Judge Mode keeps them visibly labelled at 36px. Drawers are Dockview edge groups, so a panel retains its identity and render host when dragged between an edge and the main dock.
 
 ## Persistence and recovery

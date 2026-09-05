@@ -8,12 +8,12 @@ export interface AreaHeaderProps {
 
 export function AreaHeader({ contract, onAction }: AreaHeaderProps): React.ReactElement {
   const visibleActions = contract.compact
-    ? contract.actions.filter((action) => ['more', 'close'].includes(action))
+    ? contract.actions.filter((action) => ['editor-menu', 'more', 'close'].includes(action))
     : contract.actions;
   return (
-    <header className={contract.active ? 'forge-area-header is-active' : 'forge-area-header'}>
+    <header className={`forge-area-header${contract.active ? ' is-active' : ''}${contract.compact ? ' is-compact' : ''}`}>
       <div className="forge-area-heading">
-        <strong>{contract.title}</strong>
+        <strong title={contract.title}>{contract.title}</strong>
         <span>{contract.contextSummary}</span>
         <span aria-label={`界面模式 ${contract.mode}`} title="界面状态；任务是否执行以面板内的运行记录为准。">{contract.mode === 'live' ? '本地界面' : contract.mode.toUpperCase()}</span>
       </div>
@@ -33,10 +33,10 @@ export function AreaHeader({ contract, onAction }: AreaHeaderProps): React.React
 }
 
 const ACTION_LABELS: Record<AreaHeaderContract['actions'][number], string> = {
-  'editor-menu': '编辑器',
+  'editor-menu': '选择功能',
   'follow-pin': '跟随/固定',
-  add: '添加',
-  split: '拆分',
+  add: '添加标签',
+  split: '拆分区域',
   float: '浮动',
   'maximize-restore': '最大化/恢复',
   more: '更多',

@@ -69,6 +69,51 @@ test('tab, replace, and four split placements update metadata and delegate geome
   assert.equal(engine.calls.filter((call) => call.operation === 'open').length, 6);
 });
 
+test('selecting an existing singleton replaces the picker in its drawer without losing state', async () => {
+  const { coordinator, engine } = setup();
+  const existing = await coordinator.openEditor({ editorId: 'fixture.singleton', source: 'button' });
+  const picker = await coordinator.openEditor({ editorId: 'fixture.two', placement: { mode: 'drawer', edge: 'left' }, source: 'button' });
+  assert.equal(existing.status, 'opened');
+  assert.equal(picker.status, 'opened');
+  if (existing.status !== 'opened' || picker.status !== 'opened') return;
+  coordinator.setDirty(existing.instance.instanceId, true);
+  const result = await coordinator.switchEditor(picker.instance.instanceId, 'fixture.singleton');
+  assert.equal(result.status, 'focused');
+  const document = coordinator.snapshot();
+  assert.deepEqual(document.drawers.left.tabs, [existing.instance.instanceId]);
+  assert.equal(document.instances[existing.instance.instanceId]?.dirty, true);
+  assert.equal(document.instances[picker.instance.instanceId], undefined);
+  assert.equal(Object.values(document.instances).filter(item => item.editorId === 'fixture.singleton').length, 1);
+  assert.ok(engine.calls.some(call => call.operation === 'move'));
+});
+
+test('in-place selection reuses the drawer panel identity and size', async () => {
+  const { coordinator, engine } = setup();
+  const picker = await coordinator.openEditor({ editorId: 'fixture.two', placement: { mode: 'drawer', edge: 'left' }, source: 'button' });
+  if (picker.status !== 'opened') throw new Error('Fixture did not open');
+  coordinator.syncDrawer({ ...coordinator.getDrawer('left'), mode: 'pinned', size: 360, lastOpenSize: 360 });
+  const before = coordinator.getDrawer('left');
+  const result = await coordinator.switchEditor(picker.instance.instanceId, 'fixture.three');
+  assert.equal(result.status, 'opened');
+  assert.deepEqual(coordinator.getDrawer('left'), before);
+  assert.equal(coordinator.getInstance(picker.instance.instanceId)?.editorId, 'fixture.three');
+  assert.ok(engine.calls.some(call => call.operation === 'switch'));
+});
+
+test('in-place singleton selection still requires confirmation before replacing dirty content', async () => {
+  const { coordinator, engine } = setup();
+  await coordinator.openEditor({ editorId: 'fixture.singleton', source: 'button' });
+  const target = await coordinator.openEditor({ editorId: 'fixture.two', source: 'button', placement: { mode: 'drawer', edge: 'right' } });
+  if (target.status !== 'opened') throw new Error('Fixture did not open');
+  coordinator.setDirty(target.instance.instanceId, true);
+  const before = coordinator.snapshot();
+  const result = await coordinator.openEditor({ editorId: 'fixture.singleton', source: 'button',
+    placement: { mode: 'replace', relativeToInstanceId: target.instance.instanceId } });
+  assert.deepEqual(result, { status: 'confirmation-required', reason: 'unsaved-editor' });
+  assert.deepEqual(coordinator.snapshot(), before);
+  assert.ok(!engine.calls.some(call => call.operation === 'move'));
+});
+
 test('move to drawer/dock, join, float, popout, maximize, switch, close, and reopen work', async () => {
   const { coordinator, engine } = setup();
   const first = await coordinator.openEditor({ editorId: 'fixture.two', placement: { mode: 'split', direction: 'right' }, source: 'menu' });

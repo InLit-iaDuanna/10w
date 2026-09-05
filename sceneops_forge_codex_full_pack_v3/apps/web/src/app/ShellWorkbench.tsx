@@ -5,7 +5,7 @@ import {
   WorkspaceCoordinator, VisibilityCoordinator, EdgeDrawerCoordinator,
   LayoutRepository, createWorkspaceFromPreset, HOME_PRESET, EMPTY_WORKBENCH_CONTEXT,
   createShellCommandDefinitions, ShellToolRuntimeContext,
-  type EditorHostProps, type EditorPlacement, type CommandExecutionContext, type Edge, type JsonValue, type WorkbenchContext,
+  type EditorHostProps, type EditorPlacement, type CommandExecutionContext, type DrawerState, type Edge, type JsonValue, type WorkbenchContext,
 } from '@sceneops/forge-shell';
 import {
   assistantConversationEditor, ConversationController, ConversationRepository,
@@ -142,7 +142,9 @@ function createWorkbench(unified: boolean) {
           const instance = coordinator.getInstance(instanceId)!;
           if (instance.dirty && !window.confirm('更改上下文绑定可能丢弃未保存修改，继续？')) return;
           coordinator.setContextBinding(instanceId, instance.contextBinding.mode === 'pinned' ? { mode: 'follow-global' } : { mode: 'pinned', context: context.workbench });
-        } else await open('shell.tool-library', { mode: 'split', direction: 'right', relativeToInstanceId: instanceId });
+        } else if (action === 'add') await open('shell.tool-library', { mode: 'tab', relativeToInstanceId: instanceId });
+        else if (action === 'split') await open('shell.tool-library', { mode: 'split', direction: 'right', relativeToInstanceId: instanceId });
+        else await execute('workbench.switch_editor', { instanceId, editorId: 'shell.tool-library' });
         changed();
       };
       void operation().catch(report);
@@ -151,9 +153,14 @@ function createWorkbench(unified: boolean) {
   return { initial, coordinator, engine, edges, runtime, changed, report, queryClient, actions, getError: () => error,
     subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
     tools: { editors: editors.list(), open, execute, save },
-    async edgeChanged(edge: Edge) {
+    async edgeChanged(edge: Edge, requested: DrawerState) {
       const drawer = coordinator.getDrawer(edge);
-      if (drawer.mode !== 'hidden' && drawer.tabs.length === 0) await open(edge === 'top' ? 'shell.command-search' : 'shell.tool-library', { mode: 'drawer', edge });
+      if (requested.mode !== 'hidden' && drawer.tabs.length === 0) await open('shell.tool-library', { mode: 'drawer', edge });
+      // Creating an empty native edge can emit a collapsed layout before its
+      // editor is attached. Finish the user's requested state, retaining new tabs.
+      coordinator.syncDrawer({ ...coordinator.getDrawer(edge), mode: requested.mode,
+        size: requested.size, lastOpenSize: requested.lastOpenSize });
+      edges.sync(coordinator.getDrawer(edge));
       changed();
     },
   };
@@ -177,7 +184,7 @@ export function ShellWorkbench({ unified = false }: {unified?: boolean}) {
       <ForgeShell document={document} runtime={app.runtime} edgeDrawers={app.edges} judgeMode={false}
         onDockviewReady={port => { app.engine.bind(port); setReady(true); }}
         onDockviewLayoutChanged={() => app.changed()}
-        onEdgeChanged={edge => void app.edgeChanged(edge).catch(app.report)}
+        onEdgeChanged={(edge, requested) => void app.edgeChanged(edge, requested).catch(app.report)}
         onFloatingToolLibrary={() => void app.tools.open('shell.tool-library', { mode: 'floating' }).catch(app.report)} />
     </ShellToolRuntimeContext.Provider></QueryClientProvider>
     {unified && <button className="workspace-project-button" onClick={app.actions.openProjects}>本地项目</button>}

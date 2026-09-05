@@ -28,6 +28,11 @@
   box-shadow: inset 0 -2px var(--home-amber, #eca85b), 0 1px 0 rgb(255 255 255 / 2%);
 }
 
+.forge-editor-body { container-type: inline-size; }
+.forge-area-header.is-compact .forge-area-heading > span { display: none; }
+.forge-area-heading strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.forge-area-header nav { flex-shrink: 0; }
+
 .forge-area-heading,
 .forge-area-header nav {
   display: flex;

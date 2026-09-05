@@ -723,3 +723,6 @@ At narrow widths:
 - [ ] Live/Mock/Cached status is visible.
 - [ ] Judge Mode is discoverable and resettable.
 - [ ] Visual style remains professional, warm, precise, and non-template-like.
+# 拉出区域交互补充（2026-09-05）
+
+区域是功能容器，不是只负责打开其他窗口的启动栏。四边拉出空区域时，直接在其中选择功能；选中后同一面板原位承载，保留尺寸和位置。标题栏提供「选择功能」，需要其他布局时才显式选择添加标签、拆分或浮动。响应式布局以面板宽度而非整页宽度判断，窄抽屉中的搜索和功能内容必须可读可操作。

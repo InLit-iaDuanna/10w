@@ -18,7 +18,7 @@ export type OpenEditorResult =
   | { status: 'opened'; instance: EditorInstance }
   | { status: 'focused'; instance: EditorInstance }
   | { status: 'confirmation-required'; reason: 'assistant-layout-change' | 'unsaved-editor' }
-  | { status: 'rejected'; reason: 'locked-editor' }
+  | { status: 'rejected'; reason: 'locked-editor' | 'unknown-editor' | 'invalid-docking-mutation' }
   | { status: 'unavailable'; availability?: EditorAvailability; code?: 'POPOUT_BLOCKED' };
 
 export type CloseEditorResult =

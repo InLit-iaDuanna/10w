@@ -146,12 +146,10 @@ export class DockviewPort implements DockingEnginePort {
       title: instance.title,
       params: { instanceId: instance.instanceId, editorId: instance.editorId },
       renderer: 'always',
-      ...addPanelPlacement(placement, this.#api.activePanel?.id),
+      ...(placement.mode === 'drawer'
+        ? { position: { referenceGroup: this.#ensureEdgeGroup(placement.edge).id } }
+        : addPanelPlacement(placement, this.#api.activePanel?.id)),
     });
-    if (placement.mode === 'drawer') {
-      this.#moveToEdge(panel, placement.edge);
-      return true;
-    }
     if (placement.mode === 'replace') closeReplacement(this.#api, panel, replacementId);
     if (placement.mode !== 'popout') return true;
     const opened = await this.#api.addPopoutGroup(panel, popoutOptions(placement.bounds));
@@ -214,61 +212,51 @@ export class DockviewPort implements DockingEnginePort {
   }
 
   syncDrawer(drawer: DrawerState): void {
-    let edgeGroup = this.#edgeGroup(drawer.edge);
-    if (!edgeGroup && drawer.mode !== 'hidden') {
-      this.#api.addEdgeGroup(drawer.edge, {
-        id: `forge-edge-${drawer.edge}`,
-        initialSize: drawer.size,
-        minimumSize: 80,
-        maximumSize: 640,
-        collapsedSize: 12,
-        collapsed: drawer.mode !== 'pinned',
-        autoHide: drawer.mode !== 'pinned',
-      });
-      edgeGroup = this.#edgeGroup(drawer.edge);
+    let edgeGroup = this.#api.getEdgeGroup(drawer.edge);
+    if (!edgeGroup && (drawer.mode !== 'hidden' || drawer.tabs.length > 0)) {
+      edgeGroup = this.#ensureEdgeGroup(drawer.edge, drawer.size);
     }
     for (const instanceId of drawer.tabs) {
       const panel = this.#api.getPanel(instanceId);
       if (!panel) continue;
-      if (!edgeGroup) {
-        this.#moveToEdge(panel, drawer.edge);
-        edgeGroup = this.#edgeGroup(drawer.edge);
-      } else if (panel.group.id !== edgeGroup.id) {
-        panel.api.moveTo({ group: edgeGroup });
-      }
+      if (edgeGroup && panel.group.id !== edgeGroup.id) this.#moveToEdge(panel, drawer.edge);
     }
     if (!edgeGroup) return;
     const active = drawer.activeInstanceId ? this.#api.getPanel(drawer.activeInstanceId) : undefined;
-    edgeGroup.api.setSize(
+    edgeGroup.setSize(
       drawer.edge === 'left' || drawer.edge === 'right'
         ? { width: drawer.size }
         : { height: drawer.size },
     );
     if (drawer.mode === 'pinned') {
       this.#api.peekEdgeGroup(drawer.edge, false);
-      edgeGroup.api.setAutoHide(false);
-      edgeGroup.api.expand();
+      edgeGroup.setAutoHide(false);
+      edgeGroup.expand();
       active?.api.setActive();
       return;
     }
-    edgeGroup.api.setAutoHide(true);
-    edgeGroup.api.collapse();
+    edgeGroup.setAutoHide(true);
+    edgeGroup.collapse();
     if (drawer.mode === 'peek') active?.api.setActive();
     this.#api.peekEdgeGroup(drawer.edge, drawer.mode === 'peek');
   }
 
   #moveToEdge(panel: IDockviewPanel, edge: DrawerState['edge']): void {
-    this.#api.revealEdgeGroupWithData(
-      edge,
-      { groupId: panel.group.id, panelId: panel.id },
-      { autoHide: true },
-    );
+    const edgeGroup = this.#ensureEdgeGroup(edge);
+    if (panel.group.id !== edgeGroup.id) {
+      panel.api.moveTo({ group: this.#api.getGroup(edgeGroup.id)! });
+    }
   }
 
-  #edgeGroup(edge: DrawerState['edge']) {
-    return this.#api.groups.find((group) => {
-      const location = group.api.location;
-      return location.type === 'edge' && location.position === edge;
+  #ensureEdgeGroup(edge: DrawerState['edge'], size?: number) {
+    return this.#api.getEdgeGroup(edge) ?? this.#api.addEdgeGroup(edge, {
+      id: `forge-edge-${edge}`,
+      initialSize: size,
+      minimumSize: 80,
+      maximumSize: 640,
+      collapsedSize: 12,
+      collapsed: true,
+      autoHide: true,
     });
   }
 

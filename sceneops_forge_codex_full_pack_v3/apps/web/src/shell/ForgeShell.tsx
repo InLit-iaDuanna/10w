@@ -71,7 +71,7 @@ export interface ForgeShellProps {
   judgeMode: boolean;
   onDockviewReady(port: DockviewPort, api: DockviewApi): void;
   onDockviewLayoutChanged(layout: JsonValue): void;
-  onEdgeChanged(edge: Edge): void;
+  onEdgeChanged(edge: Edge, requested: DrawerState): void;
   onFloatingToolLibrary(edge: Edge): void;
 }
 
@@ -88,7 +88,7 @@ export function ForgeShell(props: ForgeShellProps): React.ReactElement {
     const drawer = props.edgeDrawers.get(edge);
     props.runtime.syncDrawer(drawer);
     port?.syncDrawer(drawer);
-    props.onEdgeChanged(edge);
+    props.onEdgeChanged(edge, drawer);
   }, [port, props.edgeDrawers, props.onEdgeChanged, props.runtime]);
   const onReady = useCallback((event: DockviewReadyEvent) => {
     const readyPort = new DockviewPort(event.api);

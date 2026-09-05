@@ -6,6 +6,8 @@ Forge Shell provides the chat-first SceneOps workbench contract: four edge drawe
 
 新项目首先显示全屏对话编辑器和四条轻量边缘拉手。用户可以通过拖拽、键盘、命令搜索或菜单打开工具。抽屉支持隐藏、临时展开和固定；编辑器支持标签、替换、四向拆分、浮动、弹出、最大化、关闭与恢复。
 
+四边空区域拉出后均原位显示功能选择器。选择器默认「当前区域」，选中功能后替换选择器，继续由该区域承载；其他拆分/标签/浮动位置仅在用户主动选择时使用。区域标题栏「选择功能」可原位切换，未保存内容仍需确认。显式原位选择已打开的单例功能会移动既有实例，保留其草稿/上下文，不复制也不跳回另一块区域。
+
 ## Public frontend API
 
 Only `frontend/src/index.ts` is public. It exports:

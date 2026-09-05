@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import type { EditorHostProps } from '../contracts.ts';
 import { useShellTools } from './ToolRuntime.ts';
-export default function CommandSearchEditor() {
+export default function CommandSearchEditor({ instanceId }: EditorHostProps) {
   const runtime = useShellTools();
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const actions = [
-    ...runtime.editors.map(e => ({ title: `打开${e.title}`, run: () => runtime.open(e.id, { mode: 'split', direction: 'right' }) })),
+    ...runtime.editors.map(e => ({ title: `打开${e.title}`, run: () => runtime.execute('workbench.switch_editor', { instanceId, editorId: e.id }) })),
     { title: '撤销布局操作', run: () => runtime.execute('workspace.undo_layout', {}) },
     { title: '重新打开已关闭工具', run: () => runtime.execute('workbench.reopen_editor', {}) },
     { title: '保存当前布局', run: async () => { runtime.save(); } },
