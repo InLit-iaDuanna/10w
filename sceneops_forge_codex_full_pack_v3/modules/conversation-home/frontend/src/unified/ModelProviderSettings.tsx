@@ -7,7 +7,7 @@ type ProviderSettings = AISettings;
 type ProviderUpdate = AISettingsUpdate;
 
 /** A write-only provider configuration surface. Secret input is never sent to TanStack MutationCache. */
-export function ModelProviderSettings({ settings, disabled = false }: { settings: AISettings; disabled?: boolean }) {
+export function ModelProviderSettings({ settings, disabled = false, compact = false }: { settings: AISettings; disabled?: boolean; compact?: boolean }) {
   const cache = useQueryClient();
   const current: ProviderSettings = settings;
   const [open, setOpen] = useState(false);
@@ -53,7 +53,7 @@ export function ModelProviderSettings({ settings, disabled = false }: { settings
     } finally { setSaving(false); }
   }
   return <>
-    <button className="unified-ai-provider-button" type="button" disabled={disabled} onClick={() => setOpen(true)}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 2.2a1.4 1.4 0 0 1 1.3.9l.2.5c.3.1.6.3.9.5l.6-.1a1.4 1.4 0 0 1 1.5.7l.5.8a1.4 1.4 0 0 1-.2 1.6l-.4.4v1l.4.4a1.4 1.4 0 0 1 .2 1.6l-.5.8a1.4 1.4 0 0 1-1.5.7l-.6-.1-.9.5-.2.5a1.4 1.4 0 0 1-1.3.9h-1a1.4 1.4 0 0 1-1.3-.9l-.2-.5-.9-.5-.6.1a1.4 1.4 0 0 1-1.5-.7l-.5-.8a1.4 1.4 0 0 1 .2-1.6l.4-.4v-1l-.4-.4A1.4 1.4 0 0 1 2 5.5l.5-.8A1.4 1.4 0 0 1 4 4l.6.1.9-.5.2-.5A1.4 1.4 0 0 1 7 2.2h1Z"/><circle cx="7.5" cy="8" r="1.8"/></svg>提供方</button>
+    <button className={`unified-ai-provider-button${compact ? ' is-icon' : ''}`} aria-label="模型与提供方设置" title="模型与提供方设置" type="button" disabled={disabled} onClick={() => setOpen(true)}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 2.2a1.4 1.4 0 0 1 1.3.9l.2.5c.3.1.6.3.9.5l.6-.1a1.4 1.4 0 0 1 1.5.7l.5.8a1.4 1.4 0 0 1-.2 1.6l-.4.4v1l.4.4a1.4 1.4 0 0 1 .2 1.6l-.5.8a1.4 1.4 0 0 1-1.5.7l-.6-.1-.9.5-.2.5a1.4 1.4 0 0 1-1.3.9h-1a1.4 1.4 0 0 1-1.3-.9l-.2-.5-.9-.5-.6.1a1.4 1.4 0 0 1-1.5-.7l-.5-.8a1.4 1.4 0 0 1 .2-1.6l.4-.4v-1l-.4-.4A1.4 1.4 0 0 1 2 5.5l.5-.8A1.4 1.4 0 0 1 4 4l.6.1.9-.5.2-.5A1.4 1.4 0 0 1 7 2.2h1Z"/><circle cx="7.5" cy="8" r="1.8"/></svg>{!compact && '提供方'}</button>
     {open && <dialog ref={dialog} className="unified-ai-provider-dialog" aria-label="AI 提供方设置" onCancel={event=>{event.preventDefault();if(!saving){setApiKey('');setOpen(false);}}}>
       <header><div><span className="tool-kicker">AI 连接</span><h2>模型与提供方</h2><p>配置只在保存后生效，不会在这里探测网络或验证密钥。</p></div><button type="button" aria-label="关闭设置" onClick={() => { setApiKey(''); setOpen(false); }}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg></button></header>
       <div className="unified-ai-provider-note"><i aria-hidden="true" /><span>当前配置</span><strong>{current.provider === 'openai-compatible' ? 'OpenAI 兼容服务' : 'CodeBuddy CLI'}</strong><small>{current.model}</small></div>

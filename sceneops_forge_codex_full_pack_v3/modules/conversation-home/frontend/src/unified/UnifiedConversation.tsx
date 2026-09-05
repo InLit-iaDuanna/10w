@@ -69,41 +69,42 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline }: Convers
   }, [draft, send.isPending]);
   return <section className="unified-ai-conversation" aria-label="统一 AI 对话">
     <header className="unified-ai-topline">
-      <span className="unified-ai-project"><i aria-hidden="true" />{context.projectId ? `当前项目 · ${context.projectId}` : '未选择项目 · 本地对话'}</span>
-      <span className="unified-ai-mode"><i aria-hidden="true" />规划后执行 · 需人工确认</span>
+      <span className="unified-ai-project" title={context.projectId ?? '本地对话'}>{history.data?.messages.length ? '对话' : '新对话'}</span>
+      {onOpenPipeline && <details className="unified-ai-thread-menu" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }} onKeyDown={event => { if (event.key === 'Escape') event.currentTarget.open = false; }}>
+        <summary aria-label="对话选项" title="对话选项">···</summary>
+        <div><button type="button" onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); onOpenPipeline(); }}>打开生产计划 <span aria-hidden="true">↗</span></button></div>
+      </details>}
     </header>
     <div ref={transcript} className="unified-ai-transcript" aria-live="polite">
       {history.isPending && <p role="status">正在读取本地对话…</p>}
       {history.error && <p role="alert">{history.error.message} <button onClick={() => void history.refetch()}>重试读取</button></p>}
-      {history.data?.messages.length === 0 && <div className="unified-ai-welcome"><h1>今天要把什么做成可玩的版本？</h1>
-        <p>描述目标或问题。生产助手会先整理计划，再由你确认下一步。</p>
-        <div className="unified-ai-suggestions" aria-label="对话建议">
-          <button type="button" onClick={() => setDraft('为现有项目梳理一个可验证的玩法目标。')}>梳理玩法目标</button>
-          <button type="button" onClick={() => setDraft('把这个需求拆成可审批的制作步骤。')}>拆分制作步骤</button>
-          <button type="button" onClick={() => setDraft('检查当前问题需要哪些证据与验收条件。')}>定义验收条件</button>
-        </div>
-        <small>不会自动运行工具、导入案例或改动项目</small></div>}
       {history.data?.messages.map((message) => <article key={message.id} data-role={message.role}>
-        <div className="unified-ai-message-meta"><strong>{message.role === 'user' ? '你' : '生产助手'}</strong><span>{message.role === 'user' ? '已发送' : `${providerLabels[message.provider] ?? message.provider} · ${message.model}`}</span><em data-mode={message.mode} title={message.mode}>{message.role === 'user' ? '请求' : modeLabels[message.mode] ?? message.mode}</em></div>
+        <div className="unified-ai-message-meta"><strong>{message.role === 'user' ? '你' : 'SceneOps'}</strong>{message.role !== 'user' && <span title={`${providerLabels[message.provider] ?? message.provider} · ${message.model}`}>{message.model}</span>}<em data-mode={message.mode} title={message.mode}>{message.role === 'user' ? '请求' : modeLabels[message.mode] ?? message.mode}</em></div>
         <p>{message.text}</p></article>)}
       {send.isPending && <p className="unified-ai-waiting" role="status"><i aria-hidden="true" />正在等待当前 AI 服务回复…</p>}
     </div>
-    <form className="unified-ai-composer" onSubmit={(event) => { event.preventDefault(); if (draft.trim() && ready && documentReady && !send.isPending) send.mutate(draft.trim()); }}>
-      {onOpenPipeline && <div className="unified-ai-composer-head"><button className="unified-ai-pipeline-cta" type="button" onClick={onOpenPipeline}>查看生产计划 <span aria-hidden="true">↗</span></button></div>}
+    <form className="unified-ai-composer" onSubmit={(event) => { event.preventDefault(); if (draft.trim() && ready && history.data && documentReady && !send.isPending) send.mutate(draft.trim()); }}>
       <label className="unified-ai-input-label"><span>需求或问题</span><textarea aria-label="需求或问题" value={draft} maxLength={16000} rows={2}
         disabled={send.isPending} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
           if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           event.currentTarget.form?.requestSubmit();
-        }} placeholder="描述目标、制作需求，或粘贴遇到的问题…" /></label>
+        }} placeholder="询问任何内容，或描述你想完成的工作…" /></label>
       <div className="unified-ai-composer-footer">
         <div className="unified-ai-composer-tools">
-          <UnifiedModelPicker disabled={send.isPending} />
-          <ConversationDocumentPicker projectId={context.projectId} selected={selectedModule} onChange={setSelectedModule}
-            disabled={send.isPending} document={moduleDocument.data} error={moduleDocument.error}
-            loading={moduleDocument.isFetching} retry={() => void moduleDocument.refetch()} />
+          <details className="unified-ai-context-menu" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }} onKeyDown={event => { if (event.key === 'Escape') event.currentTarget.open = false; }}>
+            <summary aria-label="添加上下文" title="添加上下文">+</summary>
+            <div className="unified-ai-context-popover"><strong>对话上下文</strong><p>只附带你明确选择的已保存内容，不读取项目文件。</p>
+              {context.projectId ? <ConversationDocumentPicker projectId={context.projectId} selected={selectedModule} onChange={setSelectedModule}
+                disabled={send.isPending} document={moduleDocument.data} error={moduleDocument.error}
+                loading={moduleDocument.isFetching} retry={() => void moduleDocument.refetch()} />
+                : <p>先在「本地项目」中选择项目，再添加模块草稿。</p>}
+            </div>
+          </details>
+          <UnifiedModelPicker disabled={send.isPending} compact />
+          {selectedModule && <span className="unified-ai-context-chip" title="已明确选择的模块草稿">已附带草稿</span>}
         </div>
-        <div className="unified-ai-actions"><small title="仅发送历史记录与明确选择的已保存内容"><i aria-hidden="true" />仅历史/所选内容 · Enter 发送 · ⇧Enter 换行</small>
+        <div className="unified-ai-actions">
           {send.isPending ? <button className="unified-ai-cancel" type="button" aria-label="取消回复" title="取消回复" onClick={() => { setCancelled(true); controller.current?.abort(); }}><svg aria-hidden="true" viewBox="0 0 16 16"><rect x="5" y="5" width="6" height="6" rx="1" /></svg><span>取消</span></button>
             : <button className="unified-ai-send" type="submit" aria-label="发送消息" title="发送消息" disabled={!draft.trim() || !ready || !history.data || !documentReady}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 12.5v-9M4.5 7 8 3.5 11.5 7" /></svg><span>发送</span></button>}</div>
       </div>
@@ -111,5 +112,6 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline }: Convers
       {send.error && !cancelled && <p role="alert">{send.error.message} <button type="button"
         disabled={!draft.trim() || !ready || send.isPending || !documentReady} onClick={() => send.mutate(draft.trim())}>重试发送</button></p>}
     </form>
+    <div className="unified-ai-composer-note"><span>本地对话 · 操作需确认</span><span>Enter 发送 · Shift + Enter 换行</span></div>
   </section>;
 }

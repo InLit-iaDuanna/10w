@@ -2,6 +2,8 @@
 
 ## 统一应用接口（本轮）
 
+聊天视觉进一步简化：无欢迎卡片，中性灰消息区与单层圆角输入框；「＋」选择明确保存的上下文，模型和设置为紧凑工具栏，计划入口移至右上对话选项。`UnifiedModelPicker` / `ModelProviderSettings` 新增可选 `compact` 外观参数，默认仍保留独立使用样式；网络和密钥保存语义不变。键盘提交与按钮统一要求历史已读取。
+
 最新 UI 使用紧凑底部输入：Enter 提交、Shift+Enter 换行，IME composing 不提交；输入自适应高度，失败保留草稿，取消/重试仍由原 API 实现。浏览器失败与取消仅用 Mock 网络响应测试，不实际请求模型。旧 Node 测试 40/42，通过与运行器限制见根 `UI_FUNCTIONAL_VERIFICATION.md`。
 
 `UnifiedConversation({context, onDirtyChange?})` 与 `AIAdvicePanel({context,moduleId,onDirtyChange?})`

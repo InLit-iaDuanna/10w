@@ -4,7 +4,9 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  /* Dockview's portal layer can extend past the canvas. It must be clipped,
+     not become a scroll container when an editor control receives focus. */
+  overflow: clip;
   color: var(--text-primary, #f1ece3);
   background: var(--canvas);
 }

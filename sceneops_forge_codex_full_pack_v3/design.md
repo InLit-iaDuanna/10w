@@ -6,6 +6,13 @@ Visual direction: **compact graphite workbench, readable conversation, blue inte
 
 ## Current V5 UI refresh (2026-09-05)
 
+Current chat appearance supersedes the welcome/composer notes below: no marketing welcome or
+suggestion cards; a neutral charcoal conversation canvas, compact thread title, flat assistant
+messages, subtle user bubbles and one 20px-radius composer. Context is selected through the plus
+menu; model and provider settings share the bottom toolbar with send/cancel. The plan editor stays
+available in the thread options menu. Dockview's outer canvas uses overflow clip so focus cannot
+scroll the whole workbench; actual editors retain their own scroll containers.
+
 Latest interaction refinement: the tool picker starts immediately with its toolbar and choices,
 not an introductory section. Only choices scroll; short drawers compact descriptions and open at
 least 180px. Chat uses a compact growing input with Enter to submit, Shift+Enter for newline and
