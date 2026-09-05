@@ -5,5 +5,6 @@ build-backend = "hatchling.build"
 name = "sceneops-codebuddy-cli"
 version = "0.1.0"
 requires-python = ">=3.11"
+dependencies = ["jsonschema==4.26.0"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/sceneops_codebuddy"]

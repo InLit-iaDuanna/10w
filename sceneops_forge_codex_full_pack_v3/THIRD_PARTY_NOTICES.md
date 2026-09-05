@@ -25,3 +25,4 @@ Tests use the Python and Node.js standard libraries and add no test-framework de
 ## V5 AI Provider
 
 - HTTPX 0.28.1：BSD-3-Clause；用于异步 OpenAI-compatible Chat Completions HTTP 请求、超时和取消。许可声明依据安装包 METADATA，完整许可随依赖分发。关闭自动重定向及环境代理，不打包服务商凭据。
+- jsonschema 4.26.0：MIT；CLI 结构化回复的标准 Draft 2020-12 校验。固定版本，完整许可证随依赖分发；不使用自写 schema 近似算法。

@@ -44,4 +44,4 @@ CLI 调用仍使用 `--tools ''`、严格空 MCP、`--no-session-persistence`、
 登录、额度、模型权限及网络错误会归一化成有限的安全错误，不回传原 stdout/stderr。
 
 模型目录只是建议项，不能证明 CLI 登录或 compatible 服务的模型权限。真实能力在用户发送时验证。
-V5 组合应用已做启动与只读空态烟测；没有发送真实推理请求，没有执行提供方业务测试或生产构建。CLI 和 compatible 的实际登录、网络、模型权限与结构化输出兼容性待用户手动验证。
+初始 V5 组合应用只做启动与只读空态烟测；用户随后明确授权 CLI 模型验证，见根 `AI_LIVE_VERIFICATION.md`。CLI 结构化回复由共享适配器严格 JSON Schema 校验，保持无工具权限；OAI-compatible 的 schema 参数保持原实现。本轮未配置或请求真实 compatible 服务，不能据 CLI 通过推断 OAI 已验证。

@@ -1,6 +1,6 @@
 # 当前 AI 调用边界
 
-静态代码审查记录，不是实际模型调用统计。本轮没有发送真实 AI 请求。
+以下是调用边界，不是完整费用统计。初始交付没有模型请求；追加授权后已执行限定的 GLM/HY4 连通检查，成功与失败记录见 `AI_LIVE_VERIFICATION.md`。
 
 | 入口 | 模型行为 | 触发与预算 |
 | --- | --- | --- |
@@ -15,7 +15,7 @@
 
 ## Provider 与安全
 
-统一入口 `sceneops_ai_provider.ProviderService`。CLI 默认不传 `--model`，显式选择才传；禁用工具、严格空 MCP、空临时 cwd、不持久 CLI 会话，不使用 Bridge/bypass。兼容服务明确配置 URL/Key，关闭重定向与环境代理，返回内容不执行为代码。
+统一入口 `sceneops_ai_provider.ProviderService`。CLI 默认不传 `--model`，显式选择才传；禁用工具、严格空 MCP、空临时 cwd、不持久 CLI 会话，不使用 Bridge/bypass。CLI 使用专用系统提示；结构化输出是纯 JSON 与应用端标准 schema 校验，不使用挂起的 CLI `--json-schema`。兼容服务明确配置 URL/Key，关闭重定向与环境代理，返回内容不执行为代码。
 
 Key 按精确 endpoint 保存于 `0600` 文件，只写 API 不回显；更改 URL 不复用其他 endpoint Key；一次请求用同一配置快照。原始 CLI stderr/stdout 不作为公开错误返回。Key 不进入前端查询/MutationCache 或浏览器持久化。
 

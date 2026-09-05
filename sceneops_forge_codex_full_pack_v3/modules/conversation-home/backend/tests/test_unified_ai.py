@@ -69,7 +69,12 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
     async def test_default_model_omitted_and_tools_disabled(self):
         process = AsyncMock()
         process.returncode = 0
-        process.communicate.return_value = (b'{"type":"result","subtype":"success","result":"fixture text","is_error":false}', b'credential-like diagnostic')
+        process.communicate.return_value = (b'''[
+            {"type":"message","role":"user","content":"fixture prompt"},
+            {"type":"reasoning","content":"fixture reasoning"},
+            {"type":"message","role":"assistant","content":"fixture text"},
+            {"type":"result","subtype":"success","result":"fixture text","is_error":false}
+        ]''', b'credential-like diagnostic')
         with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
              patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process) as spawn:
             self.assertEqual(await complete('fixture prompt'), 'fixture text')
@@ -80,6 +85,15 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(args[args.index('--mcp-config') + 1], '{"mcpServers":{}}')
         self.assertNotIn('--dangerously-skip-permissions', args)
         process.communicate.assert_awaited_once_with(b'fixture prompt')
+
+    async def test_single_result_object_remains_compatible(self):
+        process = AsyncMock()
+        process.returncode = 0
+        process.communicate.return_value = (
+            b'{"type":"result","subtype":"success","result":"legacy fixture","is_error":false}', b'')
+        with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
+             patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process):
+            self.assertEqual(await complete('fixture prompt'), 'legacy fixture')
 
     async def test_failed_cli_is_categorized_without_stderr(self):
         process = AsyncMock()
@@ -121,5 +135,8 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(await service.complete('hello'), 'fixture reply')
         call = client.post.await_args
         self.assertEqual(call.args[0], 'https://provider.example/v1/chat/completions')
-        self.assertEqual(call.kwargs['json']['messages'], [{'role': 'user', 'content': 'hello'}])
+        messages = call.kwargs['json']['messages']
+        self.assertEqual([message['role'] for message in messages], ['system', 'user'])
+        self.assertTrue(messages[0]['content'])
+        self.assertEqual(messages[1], {'role': 'user', 'content': 'hello'})
         self.assertEqual(call.kwargs['headers']['Authorization'], 'Bearer fixture-key')

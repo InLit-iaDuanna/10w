@@ -11,14 +11,20 @@
 默认模型不传 `--model`，显式选择才传。请求用参数数组及 stdin，输出为 JSON；
 120 秒超时，取消或超时终止子进程组，3 秒未退出再强制停止。无自动重试或 Mock 降级。
 CLI 从临时空目录启动；禁用工具，启用严格空 MCP，禁止会话持久化；保持默认宿主权限，
-不使用 bypass、跳权限参数或 Bridge。结构化设计建议仅允许 JSON Schema 输出，仍无工具权限。
+不使用 bypass、跳权限参数或 Bridge。使用应用专用 `--system-prompt`，避免默认编码代理提示与纯建议/纯 JSON 回复冲突。
+
+CLI 2.144.0 的 JSON 输出实测为消息数组，读取其中唯一的末尾 `result`，不把 reasoning 或中间消息当作回复；同时保留单个结果对象兼容。
+
+结构化建议保持 `--tools ''`，系统提示规定纯 JSON 输出，后端 JSON Schema 作为应用输出合同附在任务末尾；严格解析单个 JSON 对象并用 `jsonschema` Draft 2020-12 校验后才返回公开 `structured_output`。模块继续使用 Pydantic 验证领域合同。不剥 Markdown 围栏、不修补 JSON、不静默重试或切换 Mock。
+
+当前不使用 CLI `--json-schema`：本机 2.144.0 实测出现结构化生命周期挂起，空工具和只允许 StructuredOutput 两种配置均未正常结束。改为应用拥有结构化校验，不修改本机 CLI，也不放开任何工具权限。
 原始 stderr、CLI envelope 和凭据不返回前端。已知登录、额度、模型权限、网络、进程退出和
 envelope 格式失败使用稳定错误类别；未知失败不猜测成功或回显原始内容。
 
-本轮未运行真实推理、CLI 业务请求或测试套件。模型读取仅检查可执行文件存在。
+初始 V5 交付仅做空态烟测；随后用户明确授权 `glm-5.3-flash` / `hy4-preview` 真实 AI 连通验证，结果见根 `AI_LIVE_VERIFICATION.md`。模型目录本身仍不是可用性证明。
 
 参数依据：[官方 CLI 参考](https://www.codebuddy.ai/docs/cli/cli-reference)。
 2026-09-05 只读核对官方文档索引：`--print`、`--output-format json`、`--model`、
 `--tools ""`、`--strict-mcp-config`、`--mcp-config`、`--no-session-persistence`、
-`--permission-mode default`、`--max-turns`、`--append-system-prompt` 与 `--json-schema`。
+`--permission-mode default`、`--max-turns`、`--system-prompt`；官方 `--json-schema` 行为与本机问题单独记录，不继续依赖该执行路径。
 网站正文直接打开超时，官方页面搜索索引可读；本机 2.144.0 的帮助输出由整合主代理核实。

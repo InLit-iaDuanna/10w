@@ -227,7 +227,7 @@ class ProviderService:
         if settings.provider == 'codebuddycli':
             try:
                 envelope = await cli_invoke_json(prompt, selected_model, schema=schema, timeout=int(self.timeout))
-                structured = envelope.get('structured_output')
+                structured = envelope.get('structured_output') if schema is not None else None
                 result = envelope.get('result')
                 if structured is not None:
                     if not isinstance(structured, dict):

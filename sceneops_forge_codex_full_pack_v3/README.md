@@ -85,4 +85,6 @@ API 和生成命令统一从 `services/api/requirements.txt` 中显式声明的�
 
 ## Limitations
 
-V5 本轮只做启动与空态烟测，没有发送真实 AI 请求，也没有运行测试套件、类型检查、生产构建、demo 案例、业务操作、Unity、Blender、渲染或 AI playtest。计划生成、保存、审批、执行、恢复及回滚仅完成代码实现，未作业务验证；13 项外部能力在 V5 目录中明确为 planned/blocked。Dockview 保留原有未授权水印。详见 [V5 烟测记录](V5_SMOKE.md) 和 [能力缺口](PROTOTYPE_GAP_MATRIX.md)；`INTEGRATION_SMOKE.md` 仅记录上一版，不是 V5 运行证据。
+V5 初始交付只做空态烟测。用户随后授权真实 AI 连通检查，GLM 已取得聊天、建议、结构化计划和单步专家分析的实际成功结果；同时记录了 JSON 校验拒绝和 HY4 超时，并非稳定性或内容质量验收。见 [AI 真实验证](AI_LIVE_VERIFICATION.md)。CLI 结构化输出由应用严格校验，不依赖本机存在挂起问题的 `--json-schema` 模式，仍禁用所有工具。
+
+未运行完整测试、类型检查、生产构建、游戏 demo、Unity、Blender、渲染或 AI playtest；恢复、审批与回滚没有实际业务验证，13 项外部能力仍 planned/blocked。OAI 接口保留但未真实验证。Dockview 保留原有评估水印。[初始烟测记录](V5_SMOKE.md)、[能力缺口](PROTOTYPE_GAP_MATRIX.md)；`INTEGRATION_SMOKE.md` 只记录上一版。
