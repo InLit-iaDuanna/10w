@@ -10,6 +10,8 @@ Forge Shell provides the chat-first SceneOps workbench contract: four edge drawe
 
 ## Public frontend API
 
+V5 UI 刷新：工具选择器使用中文分组、描述与全文关键词查找，位置选项收进折叠区。命令搜索共用 `tool-picker.css`，没有第二套命令执行逻辑。主应用区域栏改为标题选择器与图标菜单，原 Dockview 标签/边缘结构保留。
+
 Only `frontend/src/index.ts` is public. It exports:
 
 - shell contracts and the `moduleContribution` manifest;

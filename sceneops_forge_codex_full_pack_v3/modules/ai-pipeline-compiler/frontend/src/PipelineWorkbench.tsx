@@ -10,7 +10,14 @@ import './harness.css';
 
 export type PipelineWorkbenchProps = EditorHostProps & {onDirtyChange?:(dirty:boolean)=>void; onOpenProjects?:()=>void};
 export function PipelineWorkbench(props:PipelineWorkbenchProps) {
-  if(!props.context.projectId) return <section className="harness-empty"><span className="harness-kicker">AI PRODUCTION HARNESS / V5</span><h1>先选项目，再把目标变成计划。</h1><p>AI 会读取你明确选择的上下文，提出阶段、专家分工和验收条件。你审阅后，才会开始执行。</p><div className="harness-empty-flow"><span>描述目标</span><span>审阅计划</span><span>受控执行</span><span>观察与恢复</span></div><button onClick={props.onOpenProjects}>选择或创建本地项目</button><small>不自动导入案例，不自动调用 AI 或生产工具。</small></section>;
+  if(!props.context.projectId) return <section className="harness-empty">
+    <span className="harness-empty-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="4" y="4" width="9" height="7" rx="2"/><rect x="19" y="21" width="9" height="7" rx="2"/><path d="M8.5 11v10a3.5 3.5 0 0 0 3.5 3.5h7M13 7.5h7a3.5 3.5 0 0 1 3.5 3.5v10"/></svg></span>
+    <span className="harness-kicker">生产计划</span><h1>先选择一个项目</h1>
+    <p>把目标整理成可审阅的步骤。选择本地项目后，再明确 AI 可以参考的内容。</p>
+    <button onClick={props.onOpenProjects}>选择或创建本地项目 <span aria-hidden="true">→</span></button>
+    <div className="harness-empty-flow"><span><b>01</b>审阅计划</span><span><b>02</b>确认执行</span><span><b>03</b>观察结果</span></div>
+    <small>只有明确确认后，才会发起 AI 请求或执行步骤。</small>
+  </section>;
   return <ProjectHarness key={props.context.projectId} {...props}/>;
 }
 

@@ -180,14 +180,18 @@ export function ShellWorkbench({ unified = false }: {unified?: boolean}) {
   const document = ready ? app.coordinator.snapshot() : app.initial;
   const chatOnly = Object.values(document.instances).length === 1 && Object.values(document.instances)[0].editorId === 'assistant.conversation';
   return <div className={`workbench-root ${chatOnly ? 'is-chat-only' : ''}`}>
-    <QueryClientProvider client={app.queryClient}><ShellToolRuntimeContext.Provider value={app.tools}>
+    {unified && <header className="workbench-appbar">
+      <div className="workbench-brand"><span className="workbench-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><strong>SceneOps</strong><small>制作工作台</small></div>
+      <span className="workbench-appbar-hint">拖动四边，按需展开工具</span>
+      <div className="workbench-appbar-actions"><button className="workbench-project-trigger" onClick={app.actions.openProjects}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>本地项目</button><span className="workbench-local" title="项目和已保存内容存储在本机，不代表外部服务已连接。"><i aria-hidden="true"/>本地工作区</span></div>
+    </header>}
+    <div className="workbench-stage"><QueryClientProvider client={app.queryClient}><ShellToolRuntimeContext.Provider value={app.tools}>
       <ForgeShell document={document} runtime={app.runtime} edgeDrawers={app.edges} judgeMode={false}
         onDockviewReady={port => { app.engine.bind(port); setReady(true); }}
         onDockviewLayoutChanged={() => app.changed()}
         onEdgeChanged={(edge, requested) => void app.edgeChanged(edge, requested).catch(app.report)}
         onFloatingToolLibrary={() => void app.tools.open('shell.tool-library', { mode: 'floating' }).catch(app.report)} />
-    </ShellToolRuntimeContext.Provider></QueryClientProvider>
-    {unified && <button className="workspace-project-button" onClick={app.actions.openProjects}>本地项目</button>}
+    </ShellToolRuntimeContext.Provider></QueryClientProvider></div>
     {app.getError() && <aside className="workbench-error" role="alert">{app.getError()}</aside>}
   </div>;
 }

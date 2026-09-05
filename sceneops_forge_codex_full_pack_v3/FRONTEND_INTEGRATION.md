@@ -488,6 +488,8 @@ Update in the same commit when relevant:
 
 ## 独立 Shell 组合（2026-09-05）
 
+V5 视觉更新：应用根 `workbench.css` 提供语义色彩和全局外壳；`forge-shell.css` 提供区域栏/边缘控件；工具库与命令搜索共用模块内 `tool-picker.css`；对话与提供方使用模块内 `unified-ai.css`。标题选择器仍调用原命令，当前区域打开保留 `instanceId`；不新增网络协议、依赖或布局持久化字段。
+
 真实入口：`pnpm lab shell`；初装见 `apps/labs/shell/README.md`。UI 类型统一为 `@sceneops/core-ui` 的 `EditorDefinition`/`EditorHostProps`，Forge Shell 继续转导。ModuleContribution/manifest 来自 module-runtime，manifest 统一使用生成的 snake_case 字段。conversation-home 的默认 placement 为 `{ mode: 'tab' }`，Home preset 决定它独占画布。
 
 `@sceneops/web` 的 `ShellWorkbench` 组合生成目录、EditorRegistry、WorkspaceCoordinator、现有 DockviewPort 和真实对话 runtime。runtime-fixture 在此入口显式禁用。模型选择使用 CodeBuddy CLI API；按钮、搜索、确认后的对话动作都转交已有 WorkbenchCommandBus。代码生成/依赖安装不是完整测试授权。

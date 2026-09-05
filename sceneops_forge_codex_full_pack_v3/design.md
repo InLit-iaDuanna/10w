@@ -1,17 +1,35 @@
 # SceneOps Forge Design Specification
 
-Version: 2.0  
+Version: 3.0
 Direction: **Chat-First Pull-Out Spatial Workbench**  
-Visual mix: **60% engineering editor + 25% warm homecoming identity + 15% precision blueprint clarity**
+Visual direction: **compact graphite workbench, readable conversation, blue interaction accent**
 
-## V5 harness visual update
+## Current V5 UI refresh (2026-09-05)
+
+The user explicitly relaxed the earlier visual constraints while retaining interaction logic. This
+section supersedes conflicting appearance rules below; older feature lists remain design targets,
+not evidence that those capabilities have shipped.
+
+- A 48px application bar keeps the local-project entry available without adding a sidebar.
+- A compact welcome replaces the marketing-scale hero. Text input comes first; model, provider,
+  selected context and send/cancel controls share one composer beneath it.
+- Area headers are 36px: the title selects a function, quick actions use labelled icons, and the
+  remaining existing actions live in the More menu. Dockview retains native tabs and edge geometry.
+- Tool selection has search, Chinese production groups and short descriptions. It replaces its own
+  area by default; other placements require an explicit choice in location options.
+- Root tokens and application chrome live in `apps/web/src/app/workbench.css`; picker styles live
+  in the Forge Shell module's `tool-picker.css`; conversation/provider styles remain module-owned.
+- Existing layouts, context binding, dirty prompts, data and AI request boundaries are unchanged.
+- Visual smoke covers 1280×720 and 776×673, including a narrow split pane. See `UI_REFRESH_SMOKE.md`.
+
+## V5 harness visual principles
 
 V5 keeps the conversation-only first screen and four-edge workspace. Its visual language makes the
 production harness legible without turning the home screen into a dashboard:
 
-- graphite surfaces hold the work area; amber identifies deliberate human intent and selected context;
+- graphite surfaces hold the work area; blue identifies selection and deliberate interaction;
 - blue marks focus and spatial interaction; violet is reserved for AI/provider configuration;
-- the conversation hero describes the truthful sequence: goal, production plan, then human approval;
+- the compact conversation welcome describes the truthful sequence: goal, plan, then human approval;
 - no counters, simulated progress, or execution claims appear before an actual pipeline result exists;
 - provider configuration is compact by default. Advanced compatible-provider fields live in an explicit
   settings surface, and API keys are write-only UI values that are cleared after save.
@@ -304,9 +322,9 @@ Example:
 
 Rules:
 
-- height: 30–34px;
+- height: 36px;
 - compact, no large rounded cards;
-- active Area uses an amber underline, not a glowing border;
+- active Area uses a subtle blue underline, not a glowing border;
 - AI-controlled or AI-proposed state uses a small violet indicator;
 - status includes icon and text where space allows;
 - controls collapse into the More menu at small widths;
@@ -528,35 +546,37 @@ The composer supports:
 
 ```css
 :root {
-  --canvas: #0d0f11;
-  --surface-1: #15181c;
-  --surface-2: #1b1f24;
-  --surface-3: #242930;
-  --surface-hover: #2a3037;
+  --canvas: #101318;
+  --surface-1: #191e25;
+  --surface-2: #222932;
+  --surface-3: #2a333e;
+  --surface-hover: #2c3744;
 
-  --text-primary: #f1ece3;
-  --text-secondary: #a5adb6;
-  --text-muted: #717a84;
+  --text-primary: #eef2f6;
+  --text-secondary: #a8b3c2;
+  --text-muted: #7d899a;
 
-  --home-amber: #eca85b;
-  --spatial-cyan: #58c8c5;
-  --ai-violet: #a58bfa;
-  --success: #55c98b;
-  --warning: #f2c14e;
-  --critical: #f06d6d;
-  --info: #67aaf9;
+  --accent-blue: #8aafff;
+  --accent-violet: #b5a4ed;
+  --home-amber: var(--accent-blue); /* legacy selection token */
+  --spatial-cyan: #7fc8cf;
+  --ai-violet: var(--accent-violet);
+  --success: #84cda9;
+  --warning: #e2bc76;
+  --critical: #f398a5;
+  --info: var(--accent-blue);
 
-  --border-subtle: #252a30;
-  --border-default: #2f363e;
-  --border-strong: #414a55;
-  --focus-ring: #76d9d6;
-  --overlay: rgba(4, 6, 8, 0.68);
+  --border-subtle: #2a323d;
+  --border-default: #394554;
+  --border-strong: #526174;
+  --focus-ring: #8aafff;
+  --overlay: rgb(6 10 17 / 70%);
 }
 ```
 
 Semantic rules:
 
-- amber = human intent, selected approved candidate, homecoming identity;
+- blue = selection, focus and deliberate interaction; legacy `home-amber` aliases blue;
 - cyan = spatial or structural information;
 - violet = AI interpretation or proposed result;
 - green = validated;

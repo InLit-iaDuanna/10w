@@ -290,7 +290,8 @@ function ForgeEditorTab(props: IDockviewPanelHeaderProps<PanelParameters>): Reac
 function WindowMenu({ coordinator, onChanged }: { coordinator: EdgeDrawerCoordinator; onChanged(edge: Edge): void }) {
   return (
     <details className="forge-window-menu">
-      <summary>窗口</summary>
+      <summary>布局 ⌄</summary>
+      <div className="forge-window-options"><p>展开或收起工作区域</p>
       {(Object.keys(EDGE_LABELS) as Edge[]).map((edge) => (
         <fieldset key={edge}>
           <legend>{EDGE_LABELS[edge]}</legend>
@@ -298,7 +299,7 @@ function WindowMenu({ coordinator, onChanged }: { coordinator: EdgeDrawerCoordin
           <button type="button" onClick={() => { coordinator.setMode(edge, 'pinned'); onChanged(edge); }}>固定</button>
           <button type="button" onClick={() => { coordinator.setMode(edge, 'hidden'); onChanged(edge); }}>隐藏</button>
         </fieldset>
-      ))}
+      ))}</div>
     </details>
   );
 }
@@ -310,7 +311,7 @@ function createAreaHeaderContract(
   compact: boolean,
 ): AreaHeaderContract {
   return {
-    height: 32,
+    height: 36,
     title: instance.title,
     contextSummary: summarizeContext(instance.contextBinding.mode === 'pinned'
       ? instance.contextBinding.context

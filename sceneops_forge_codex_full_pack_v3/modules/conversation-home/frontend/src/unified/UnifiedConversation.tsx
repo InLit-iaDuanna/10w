@@ -13,6 +13,20 @@ type ConversationProps = {
   /** Opens the host-owned production-plan editor. The conversation never creates a plan itself. */
   onOpenPipeline?: () => void;
 };
+
+const providerLabels: Record<string, string> = {
+  codebuddycli: 'CodeBuddy CLI',
+  'openai-compatible': '兼容服务',
+};
+
+const modeLabels: Record<string, string> = {
+  live: '真实',
+  cached: '缓存',
+  mock: '模拟',
+  planned: '计划中',
+  blocked: '受阻',
+};
+
 export function UnifiedConversation({ context, onDirtyChange, onOpenPipeline }: ConversationProps) {
   // A project change disposes pending requests and cannot mix transcripts or composer state.
   return <ProjectConversation key={context.projectId ?? 'pre_project'} context={context} onDirtyChange={onDirtyChange} onOpenPipeline={onOpenPipeline} />;
@@ -50,36 +64,38 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline }: Convers
   }, [draft, send.isPending]);
   return <section className="unified-ai-conversation" aria-label="统一 AI 对话">
     <header className="unified-ai-topline">
-      <span className="unified-ai-project"><i aria-hidden="true" />{context.projectId ? `项目 ${context.projectId}` : '未选择项目 · 本地对话'}</span>
-      <span className="unified-ai-mode">计划优先 · 人工审批</span>
+      <span className="unified-ai-project"><i aria-hidden="true" />{context.projectId ? `当前项目 · ${context.projectId}` : '未选择项目 · 本地对话'}</span>
+      <span className="unified-ai-mode"><i aria-hidden="true" />规划后执行 · 需人工确认</span>
     </header>
     <div className="unified-ai-transcript" aria-live="polite">
       {history.isPending && <p role="status">正在读取本地对话…</p>}
       {history.error && <p role="alert">{history.error.message} <button onClick={() => void history.refetch()}>重试读取</button></p>}
-      {history.data?.messages.length === 0 && <div className="unified-ai-welcome"><span className="unified-ai-eyebrow">SCENEOPS · V5 PRODUCTION HARNESS</span><h1>从一个可玩的目标，<br />开始一条可审查的制作路径。</h1>
-        <p>描述玩法、变更或问题。先形成生产计划，再由你审批下一步。</p>
+      {history.data?.messages.length === 0 && <div className="unified-ai-welcome"><span className="unified-ai-eyebrow">SCENEOPS FORGE</span><h1>今天想把什么做成<br />可玩的版本？</h1>
+        <p>说清目标或问题，工作台会先帮你整理计划，再等你决定下一步。</p>
         <div className="unified-ai-suggestions" aria-label="对话建议">
           <button type="button" onClick={() => setDraft('为现有项目梳理一个可验证的玩法目标。')}>梳理玩法目标</button>
           <button type="button" onClick={() => setDraft('把这个需求拆成可审批的制作步骤。')}>拆分制作步骤</button>
           <button type="button" onClick={() => setDraft('检查当前问题需要哪些证据与验收条件。')}>定义验收条件</button>
         </div>
-        <small>AI 仅提供建议，不会自动运行工具、导入案例或改动项目。</small></div>}
+        <small>不会自动运行工具、导入案例或改动项目</small></div>}
       {history.data?.messages.map((message) => <article key={message.id} data-role={message.role}>
-        <small>{message.role === 'user' ? '你' : `${message.provider === 'openai-compatible' ? '兼容服务' : 'CodeBuddy'} · ${message.model}`} · {message.mode}</small>
+        <div className="unified-ai-message-meta"><strong>{message.role === 'user' ? '你' : '生产助手'}</strong><span>{message.role === 'user' ? '已发送' : `${providerLabels[message.provider] ?? message.provider} · ${message.model}`}</span><em data-mode={message.mode} title={message.mode}>{message.role === 'user' ? '请求' : modeLabels[message.mode] ?? message.mode}</em></div>
         <p>{message.text}</p></article>)}
-      {send.isPending && <p role="status">正在等待当前 AI 服务回复…</p>}
+      {send.isPending && <p className="unified-ai-waiting" role="status"><i aria-hidden="true" />正在等待当前 AI 服务回复…</p>}
     </div>
     <form onSubmit={(event) => { event.preventDefault(); if (draft.trim() && ready && documentReady && !send.isPending) send.mutate(draft.trim()); }}>
-      <div className="unified-ai-composer-head"><span>与生产助手对话</span>{onOpenPipeline && <button className="unified-ai-pipeline-cta" type="button" onClick={onOpenPipeline}>生产计划 <span aria-hidden="true">↗</span></button>}</div>
-      <UnifiedModelPicker disabled={send.isPending} />
-      <ConversationDocumentPicker projectId={context.projectId} selected={selectedModule} onChange={setSelectedModule}
-        disabled={send.isPending} document={moduleDocument.data} error={moduleDocument.error}
-        loading={moduleDocument.isFetching} retry={() => void moduleDocument.refetch()} />
+      <div className="unified-ai-composer-head"><span>给生产助手一项明确任务</span>{onOpenPipeline && <button className="unified-ai-pipeline-cta" type="button" onClick={onOpenPipeline}>查看生产计划 <span aria-hidden="true">↗</span></button>}</div>
       <label className="unified-ai-input-label"><span>需求或问题</span><textarea aria-label="需求或问题" value={draft} maxLength={16000}
-        disabled={send.isPending} onChange={(event) => setDraft(event.target.value)} placeholder="描述需求或提出问题…" /></label>
-      <div className="unified-ai-actions"><small>只附带已保存历史与明确选中的对象 ID。</small>
-        {send.isPending ? <button type="button" onClick={() => { setCancelled(true); controller.current?.abort(); }}>取消</button>
-          : <button type="submit" disabled={!draft.trim() || !ready || !history.data || !documentReady}>发送</button>}</div>
+        disabled={send.isPending} onChange={(event) => setDraft(event.target.value)} placeholder="描述玩法目标、制作需求，或贴出遇到的问题…" /></label>
+      <div className="unified-ai-composer-tools">
+        <UnifiedModelPicker disabled={send.isPending} />
+        <ConversationDocumentPicker projectId={context.projectId} selected={selectedModule} onChange={setSelectedModule}
+          disabled={send.isPending} document={moduleDocument.data} error={moduleDocument.error}
+          loading={moduleDocument.isFetching} retry={() => void moduleDocument.refetch()} />
+      </div>
+      <div className="unified-ai-actions"><small><i aria-hidden="true" />仅发送历史记录与明确选择的已保存内容</small>
+        {send.isPending ? <button className="unified-ai-cancel" type="button" onClick={() => { setCancelled(true); controller.current?.abort(); }}>取消回复</button>
+          : <button className="unified-ai-send" type="submit" disabled={!draft.trim() || !ready || !history.data || !documentReady}>发送 <span aria-hidden="true">↑</span></button>}</div>
       {cancelled && !send.isPending && <p role="status">已请求取消；取消前已经完成的回复仍会保留。</p>}
       {send.error && !cancelled && <p role="alert">{send.error.message} <button type="button"
         disabled={!ready || send.isPending || !documentReady} onClick={() => send.mutate(draft.trim())}>重试发送</button></p>}
