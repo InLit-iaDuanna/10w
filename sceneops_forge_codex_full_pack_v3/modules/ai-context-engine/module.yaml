@@ -1,0 +1,21 @@
+schema_version: 1
+id: ai-context-engine
+version: 0.5.0
+title: 项目上下文
+description: V5 项目上下文
+status: active
+feature_flag: ai_context_engine
+requires:
+  modules: ["core-kernel","module-runtime","project-intake"]
+  integrations: []
+  optional_integrations: []
+contributes:
+  editors: []
+  commands: []
+  events: []
+  jobs: []
+  workflows: []
+  policy_gates: []
+permissions: ["harness:read", "harness:plan"]
+entrypoints:
+  backend: sceneops_ai_context

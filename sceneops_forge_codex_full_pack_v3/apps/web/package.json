@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@sceneops/ai-pipeline-compiler": "workspace:*",
     "@sceneops/forge-shell": "workspace:*",
     "@sceneops/conversation-home": "workspace:*",
     "@sceneops/module-runtime": "workspace:*",

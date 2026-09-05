@@ -292,3 +292,13 @@ The product is complete only when:
 - live/mock/cached are honest;
 - Judge Mode resets in one action;
 - release-blocking tests pass.
+
+## 21. V5 runtime additions
+
+- Product-runtime experts are separate from Codex development subagents.
+- `sceneops_harness` owns canonical Pipeline/Capability/Run contracts and durable lifecycle semantics; `sceneops_ai_provider` owns model transport and write-only provider configuration.
+- A model proposes a plan, never its own permissions, approvals, mutation scope or budget policy. Plan generation and execution are separate explicit user actions.
+- User-selected `bounded_calls` may permit unknown provider usage only within persisted call/attempt/time limits. Unknown cost is never displayed as verified zero; default policy requires reported usage before additional metered calls.
+- Credentials are bound to an exact configured endpoint, never sent to another URL by default and never included in prompts, network responses, logs, artifacts or browser persistence.
+- Source V5 documents are reference architecture, not authority to run their test/build/Blender/Unity commands. Section 16.1 and current user authorization still govern execution.
+- Do not label the entire V5 architecture complete when only the planning/runtime/UI foundation is implemented. External Live chains require their own current authorized evidence.

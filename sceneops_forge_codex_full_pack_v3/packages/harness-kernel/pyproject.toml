@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sceneops-harness"
+version = "0.5.0"
+description = "Durable, bounded SceneOps production harness"
+requires-python = ">=3.12"
+dependencies = ["pydantic>=2.12,<3", "sceneops-core-contracts"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sceneops_harness"]

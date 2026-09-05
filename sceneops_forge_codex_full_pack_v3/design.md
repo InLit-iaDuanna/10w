@@ -4,6 +4,21 @@ Version: 2.0
 Direction: **Chat-First Pull-Out Spatial Workbench**  
 Visual mix: **60% engineering editor + 25% warm homecoming identity + 15% precision blueprint clarity**
 
+## V5 harness visual update
+
+V5 keeps the conversation-only first screen and four-edge workspace. Its visual language makes the
+production harness legible without turning the home screen into a dashboard:
+
+- graphite surfaces hold the work area; amber identifies deliberate human intent and selected context;
+- blue marks focus and spatial interaction; violet is reserved for AI/provider configuration;
+- the conversation hero describes the truthful sequence: goal, production plan, then human approval;
+- no counters, simulated progress, or execution claims appear before an actual pipeline result exists;
+- provider configuration is compact by default. Advanced compatible-provider fields live in an explicit
+  settings surface, and API keys are write-only UI values that are cleared after save.
+
+At 1280×720 the composer remains fully usable, hero suggestions wrap, and edge controls retain their
+hot zones. At 1920×1080 the conversation remains deliberately constrained to a readable central column.
+
 ---
 
 ## 1. Design intent

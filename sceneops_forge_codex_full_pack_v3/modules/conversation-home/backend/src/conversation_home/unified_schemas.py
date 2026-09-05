@@ -1,26 +1,31 @@
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
-from sceneops_codebuddy import MODEL_IDS
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, SecretStr
+
+ProviderId = Literal['codebuddycli', 'openai-compatible']
 
 class AIContract(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
 class AISettings(AIContract):
+    provider: ProviderId = 'codebuddycli'
     model: str = 'cli-default'
+    base_url: str | None = None
+    api_key_configured: bool = False
 
-    @field_validator('model')
-    @classmethod
-    def known_model(cls, value):
-        if value != 'cli-default' and value not in MODEL_IDS:
-            raise ValueError('Unknown CodeBuddy model')
-        return value
+class AISettingsUpdate(AIContract):
+    provider: ProviderId | None = None
+    model: str | None = Field(default=None, min_length=1, max_length=200)
+    base_url: str | None = Field(default=None, min_length=1, max_length=2048)
+    api_key: SecretStr | None = Field(default=None, min_length=1, max_length=8192,
+                                      json_schema_extra={'writeOnly': True})
 
 class AIModel(AIContract):
     id: str
     label: str
+    provider: ProviderId = 'codebuddycli'
 
 class AIModels(AIContract):
-    provider: Literal['codebuddycli'] = 'codebuddycli'
+    provider: ProviderId = 'codebuddycli'
     available: bool
     mode: Literal['planned', 'blocked']
     models: list[AIModel]
@@ -31,6 +36,7 @@ class AIMessage(AIContract):
     role: Literal['user', 'assistant']
     text: str
     model: str
+    provider: ProviderId = 'codebuddycli'
     mode: Literal['live', 'planned']
     created_at: str
 
@@ -52,7 +58,7 @@ class AIAdviceRequest(AIContract):
 class AIAdvice(AIContract):
     project_id: str | None
     module_id: str
-    provider: Literal['codebuddycli'] = 'codebuddycli'
+    provider: ProviderId = 'codebuddycli'
     mode: Literal['live'] = 'live'
     model: str
     text: str

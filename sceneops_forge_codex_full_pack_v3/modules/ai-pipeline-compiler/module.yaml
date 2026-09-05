@@ -1,0 +1,22 @@
+schema_version: 1
+id: ai-pipeline-compiler
+version: 0.5.0
+title: AI 生产计划
+description: V5 AI 生产计划
+status: active
+feature_flag: ai_pipeline_compiler
+requires:
+  modules: ["core-kernel","module-runtime","ai-intent-compiler","ai-context-engine","ai-agent-runtime","ai-model-router","ai-run-observer","ai-recovery-planner","ai-run-distiller"]
+  integrations: []
+  optional_integrations: []
+contributes:
+  editors: ["harness.pipeline"]
+  commands: []
+  events: []
+  jobs: []
+  workflows: []
+  policy_gates: []
+permissions: ["harness:read", "harness:plan"]
+entrypoints:
+  backend: sceneops_ai_pipeline
+  frontend: ./frontend/src/index.ts

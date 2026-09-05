@@ -1,6 +1,6 @@
 # CodeBuddy CLI 文本适配器
 
-`sceneops_codebuddy` 是对话、设计与概念模块共用的唯一 CLI 进程实现。
+`sceneops_codebuddy` 是统一 provider、设计与概念兼容适配器共用的唯一 CLI 进程实现。
 公开 `MODEL_IDS`、`available()`、`complete(prompt, model='cli-default')`、
 `invoke_json(prompt, model='cli-default', schema=None)` 与 `CodeBuddyFailure`。
 
@@ -12,7 +12,8 @@
 120 秒超时，取消或超时终止子进程组，3 秒未退出再强制停止。无自动重试或 Mock 降级。
 CLI 从临时空目录启动；禁用工具，启用严格空 MCP，禁止会话持久化；保持默认宿主权限，
 不使用 bypass、跳权限参数或 Bridge。结构化设计建议仅允许 JSON Schema 输出，仍无工具权限。
-原始 stderr、CLI envelope 和凭据不返回前端。失败提供安装、权限、模型或网络检查方向。
+原始 stderr、CLI envelope 和凭据不返回前端。已知登录、额度、模型权限、网络、进程退出和
+envelope 格式失败使用稳定错误类别；未知失败不猜测成功或回显原始内容。
 
 本轮未运行真实推理、CLI 业务请求或测试套件。模型读取仅检查可执行文件存在。
 

@@ -20,6 +20,24 @@ class CodeBuddyFailure(Exception):
 def available() -> bool:
     return shutil.which('codebuddy') is not None
 
+def _failure_from_output(stdout: bytes, stderr: bytes, returncode: int | None) -> CodeBuddyFailure:
+    """Classify known CLI failure families without exposing provider output or credentials."""
+    diagnostic = (stdout[-8192:] + b'\n' + stderr[-8192:]).decode('utf-8', errors='ignore').lower()
+    if any(token in diagnostic for token in ('not logged in', 'login required', 'unauthorized',
+                                               'authentication', 'invalid token', '401')):
+        return CodeBuddyFailure('CLI_AUTH_REQUIRED', 'CodeBuddy 登录已失效或未完成，请在终端登录后重试。')
+    if any(token in diagnostic for token in ('rate limit', 'quota', 'insufficient credit', '429')):
+        return CodeBuddyFailure('CLI_RATE_LIMITED', 'CodeBuddy 达到速率或额度限制，请稍后手动重试。')
+    if any(token in diagnostic for token in ('model not found', 'model access', 'unsupported model',
+                                               'permission denied for model')):
+        return CodeBuddyFailure('CLI_MODEL_UNAVAILABLE', '当前账户无法使用所选 CodeBuddy 模型，请更换模型或检查权限。')
+    if any(token in diagnostic for token in ('econnrefused', 'enotfound', 'network error',
+                                               'fetch failed', 'timed out')):
+        return CodeBuddyFailure('CLI_NETWORK_ERROR', 'CodeBuddy 无法连接服务，请检查网络后重试。')
+    if returncode:
+        return CodeBuddyFailure('CLI_FAILED', f'CodeBuddy 进程退出（代码 {returncode}）；请在终端检查安装和服务状态。')
+    return CodeBuddyFailure('CLI_RESPONSE_FAILED', 'CodeBuddy 返回失败结果，请在终端检查登录、模型权限和服务状态。')
+
 async def _stop(process):
     if process.returncode is not None:
         return
@@ -58,19 +76,27 @@ async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict |
         except OSError as error:
             raise CodeBuddyFailure('CLI_START_FAILED', '无法启动 CodeBuddy，请检查本机安装及执行权限。') from error
         try:
-            stdout, _stderr = await asyncio.wait_for(process.communicate(prompt.encode()), timeout)
+            stdout, stderr = await asyncio.wait_for(process.communicate(prompt.encode()), timeout)
         except asyncio.TimeoutError as error:
             raise CodeBuddyFailure('CLI_TIMEOUT', 'CodeBuddy 请求超时，请检查登录、网络与额度后手动重试。') from error
+        except asyncio.CancelledError:
+            raise
         finally:
             await _stop(process)
         if process.returncode:
-            raise CodeBuddyFailure('CLI_FAILED', f'CodeBuddy 退出码 {process.returncode}；请在终端检查登录、模型权限和网络。')
+            raise _failure_from_output(stdout, stderr, process.returncode)
     try:
-        result = json.loads(stdout)
+        result = json.loads(stdout.decode('utf-8-sig'))
     except (ValueError, UnicodeError) as error:
         raise CodeBuddyFailure('CLI_INVALID_RESPONSE', 'CodeBuddy 未返回有效 JSON。') from error
-    if not isinstance(result, dict) or result.get('is_error') or result.get('subtype') not in (None, 'success'):
-        raise CodeBuddyFailure('CLI_RESPONSE_FAILED', 'CodeBuddy 未成功完成请求，请在终端检查服务状态。')
+    if not isinstance(result, dict):
+        raise CodeBuddyFailure('CLI_INVALID_RESPONSE', 'CodeBuddy 返回的 JSON 不是结果对象。')
+    if result.get('type') not in (None, 'result'):
+        raise CodeBuddyFailure('CLI_INVALID_RESPONSE', 'CodeBuddy 返回了非结果 JSON 消息。')
+    if result.get('subtype') == 'error_max_turns':
+        raise CodeBuddyFailure('CLI_TURN_LIMIT', 'CodeBuddy 达到本次请求的回合上限，未返回完整结果。')
+    if result.get('is_error') is True or result.get('subtype') not in (None, 'success'):
+        raise _failure_from_output(stdout, stderr, None)
     return result
 
 async def complete(prompt: str, model: str = 'cli-default') -> str:

@@ -1,0 +1,10 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+[project]
+name = "sceneops-ai-pipeline-compiler"
+version = "0.5.0"
+requires-python = ">=3.12"
+dependencies = ["sceneops-harness==0.5.0","fastapi==0.128.8","sceneops-ai-intent-compiler==0.5.0","sceneops-ai-context-engine==0.5.0","sceneops-ai-agent-runtime==0.5.0","sceneops-ai-model-router==0.5.0","sceneops-ai-run-observer==0.5.0","sceneops-ai-recovery-planner==0.5.0","sceneops-ai-run-distiller==0.5.0","sceneops-ai-provider==0.1.0"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/sceneops_ai_pipeline"]

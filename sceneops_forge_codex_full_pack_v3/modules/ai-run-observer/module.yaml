@@ -1,0 +1,21 @@
+schema_version: 1
+id: ai-run-observer
+version: 0.5.0
+title: 运行观察
+description: V5 运行观察
+status: active
+feature_flag: ai_run_observer
+requires:
+  modules: ["core-kernel","module-runtime"]
+  integrations: []
+  optional_integrations: []
+contributes:
+  editors: []
+  commands: []
+  events: []
+  jobs: []
+  workflows: []
+  policy_gates: []
+permissions: ["harness:read", "harness:plan"]
+entrypoints:
+  backend: sceneops_ai_observer

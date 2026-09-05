@@ -339,6 +339,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@sceneops/ai-pipeline-compiler':
+        specifier: workspace:*
+        version: link:../../modules/ai-pipeline-compiler/frontend
       '@sceneops/conversation-home':
         specifier: workspace:*
         version: link:../../modules/conversation-home/frontend
@@ -372,6 +375,24 @@ importers:
       react-dom:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
+
+  modules/ai-pipeline-compiler/frontend:
+    dependencies:
+      '@sceneops/api-client':
+        specifier: workspace:*
+        version: link:../../../packages/api-client/frontend
+      '@sceneops/core-ui':
+        specifier: workspace:*
+        version: link:../../../packages/core-ui/frontend
+      '@sceneops/workspace-client':
+        specifier: workspace:*
+        version: link:../../../packages/workspace-client/frontend
+      '@tanstack/react-query':
+        specifier: 5.90.21
+        version: 5.90.21(react@19.2.8)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
 
   modules/ai-playtest/frontend:
     dependencies:
@@ -615,6 +636,9 @@ importers:
       '@sceneops/workbench-ui':
         specifier: workspace:*
         version: link:../../../packages/workbench-ui/frontend
+      openapi-fetch:
+        specifier: 0.17.0
+        version: 0.17.0
 
   modules/logic-studio/frontend:
     dependencies:

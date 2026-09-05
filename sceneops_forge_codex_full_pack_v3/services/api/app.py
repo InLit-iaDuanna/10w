@@ -16,6 +16,9 @@ from sceneops_design_ai import create_ai_router as create_design_ai_router
 from sceneops_production_planner import PlannerDomainError
 from concept_lab import ConceptLabError, concept_lab_error_handler
 from version_collaboration import VersionCollaborationError, version_collaboration_exception_handler
+from sceneops_ai_pipeline import PlanningService, create_router as create_harness_router
+from sceneops_ai_provider import ProviderFailure
+from sceneops_harness import HarnessError
 from .domains import compose_domains
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -32,7 +35,7 @@ def create_app() -> FastAPI:
     data_dir = Path(os.environ.get("SCENEOPS_DATA_DIR", str(ROOT / ".local"))).resolve()
     database = data_dir / "sceneops.sqlite3"
     repository = SqliteWorkspaceRepository(database)
-    app = FastAPI(title="SceneOps Forge API", version="0.2.0")
+    app = FastAPI(title="SceneOps Forge API", version="0.5.0")
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
     token = os.environ.get("SCENEOPS_LOCAL_TOKEN", "")
     web_port = os.environ.get("SCENEOPS_WEB_PORT", "4300")
@@ -69,6 +72,15 @@ def create_app() -> FastAPI:
     async def invalid_value(request, error):
         return JSONResponse(status_code=422, content={"code": "INVALID_VALUE", "message": str(error), "retryable": False})
 
+    @app.exception_handler(ProviderFailure)
+    async def provider_error(request, error):
+        return JSONResponse(status_code=error.status_code, content={"code": error.code, "message": str(error), "retryable": True})
+
+    @app.exception_handler(HarnessError)
+    async def harness_error(request, error):
+        status = 404 if error.code in {"RECORD_NOT_FOUND", "RUN_NOT_FOUND", "STEP_NOT_FOUND"} else 409
+        return JSONResponse(status_code=status, content={"code": error.code, "message": str(error), "retryable": False})
+
     @app.exception_handler(PlannerDomainError)
     async def planner_error(request, error):
         status = 503 if error.code.endswith("UNAVAILABLE") else 404 if error.code.endswith("NOT_FOUND") else 409
@@ -93,4 +105,11 @@ def create_app() -> FastAPI:
     app.include_router(create_design_ai_router())
     app.state.workspace_repository = repository
     app.state.project_domains = domains
+    if os.environ.get("SCENEOPS_HARNESS_ENABLED", "true").lower() != "false":
+        harness = PlanningService(database, repository)
+        app.include_router(create_harness_router(harness))
+        app.state.harness = harness
+        for project in repository.list_projects():
+            harness.runtime.recover_interrupted(project.project_id)
+        app.add_event_handler("shutdown", harness.close)
     return app

@@ -1,0 +1,6 @@
+{
+  "name": "@sceneops/ai-pipeline-compiler", "version": "0.5.0", "private": true,
+  "type": "module", "exports": {".": "./src/index.ts"},
+  "dependencies": {"@sceneops/api-client": "workspace:*", "@sceneops/core-ui": "workspace:*",
+    "@sceneops/workspace-client": "workspace:*", "@tanstack/react-query": "5.90.21", "react": "19.2.8"}
+}

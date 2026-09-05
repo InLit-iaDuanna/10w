@@ -387,3 +387,17 @@ Three execution modes:
 - deterministic mock path.
 
 Judge Mode uses cached evidence for long operations and runs at least one short live action when available. Every mode is visible.
+
+## 18. V5 implemented foundation (2026-09-05)
+
+The preceding sections describe the product target, not evidence that external paths work. V5 extends the same Web/API with a canonical `packages/harness-kernel` and eight bounded AI modules. `integrations/ai-provider` owns CLI/Chat Completions transport and endpoint-bound write-only secrets. Module APIs remain the composition boundary; Pydantic/OpenAPI owns network contracts.
+
+The implemented flow is: explicit project context → user-requested intent/plan generation → persisted proposal → validation and manual start → sequential registered capabilities → durable runs/events → observation and optional recovery proposal/template draft. Model output cannot choose authority or grant production permissions. Planning and recovery requests are separate from Run accounting and disclosed as such.
+
+Only project reading, draft reading and structured expert assessment have V5 handlers. Thirteen external capability declarations have no handler and remain planned/blocked. Advanced graph/cached execution, automatic graph repair, multi-party compensation and second-project template replay are not implemented. Unknown provider usage remains unknown; bounded-calls is explicit, durable and distinct from verified monetary budgeting.
+
+Workspace SQLite also holds provider metadata, model tiers, proposals and derived records. The kernel owns its run/event/lock tables. Secrets live in an owner-only file adjacent to the database. Startup creates empty schema and marks interrupted dead-process runs; it never launches work or imports demo records. Dock layout remains browser-local.
+
+API startup and schema generation use `scripts/python-workspace.mjs` to load only the checked-in local sources declared by requirements, avoiding editable-install `.pth` behavior. This is development package resolution, not runtime plugin discovery.
+
+See `V5_HANDOFF.md`, `V5_SMOKE.md`, `CURRENT_CAPABILITY_CATALOG.md` and `PROTOTYPE_GAP_MATRIX.md` for the delivered scope and unverified behavior.

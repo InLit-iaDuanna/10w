@@ -3,14 +3,15 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
+import { pythonEnvironment } from './python-workspace.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const python = process.env.SCENEOPS_PYTHON ?? path.join(root, '.venv/bin/python');
 if (!existsSync(python) || !existsSync(path.join(root, 'node_modules/.bin/vite'))) {
   console.error('启动依赖尚未准备。请先按 README 的安装说明准备 pnpm 依赖与 Python .venv；启动器不会自动安装。');
   process.exit(1);
 }
-const env = {...process.env, SCENEOPS_LOCAL_TOKEN: randomBytes(32).toString('base64url'),
-  SCENEOPS_WEB_PORT: process.env.SCENEOPS_WEB_PORT ?? '4300', SCENEOPS_API_PORT: process.env.SCENEOPS_API_PORT ?? '8300'};
+const env = pythonEnvironment({...process.env, SCENEOPS_LOCAL_TOKEN: randomBytes(32).toString('base64url'),
+  SCENEOPS_WEB_PORT: process.env.SCENEOPS_WEB_PORT ?? '4300', SCENEOPS_API_PORT: process.env.SCENEOPS_API_PORT ?? '8300'});
 const children = [];
 let stopping = false;
 function stop(code = 0) {

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "SceneOps Forge API",
-    "version": "0.2.0"
+    "version": "0.5.0"
   },
   "paths": {
     "/api/health": {
@@ -1266,7 +1266,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GameplayGraph"
+                  "$ref": "#/components/schemas/GameplayGraph-Output"
                 }
               }
             }
@@ -1295,7 +1295,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GameplayGraph"
+                "$ref": "#/components/schemas/GameplayGraph-Input"
               }
             }
           },
@@ -4857,7 +4857,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AISettings"
+                "$ref": "#/components/schemas/AISettingsUpdate"
               }
             }
           },
@@ -4875,11 +4875,21 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
                 }
               }
             }
@@ -4964,8 +4974,8 @@
               }
             }
           },
-          "503": {
-            "description": "Service Unavailable",
+          "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
@@ -4974,12 +4984,12 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/AdapterError"
                 }
               }
             }
@@ -5015,8 +5025,8 @@
               }
             }
           },
-          "503": {
-            "description": "Service Unavailable",
+          "422": {
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
@@ -5025,12 +5035,12 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/AdapterError"
                 }
               }
             }
@@ -5171,6 +5181,1278 @@
           }
         }
       }
+    },
+    "/api/harness/catalog": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Catalog",
+        "operationId": "catalog_api_harness_catalog_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessCatalog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/model-profiles/{tier}": {
+      "put": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Profile",
+        "operationId": "profile_api_harness_model_profiles__tier__put",
+        "parameters": [
+          {
+            "name": "tier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "fast",
+                "standard",
+                "reasoning",
+                "vision",
+                "player"
+              ],
+              "type": "string",
+              "title": "Tier"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelProfileUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/proposals": {
+      "post": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Propose",
+        "operationId": "propose_api_harness_proposals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineProposal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/proposals": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Proposals",
+        "operationId": "proposals_api_harness_projects__project_id__proposals_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PipelineProposal"
+                  },
+                  "title": "Response Proposals Api Harness Projects  Project Id  Proposals Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/proposals/{proposal_id}": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Proposal",
+        "operationId": "proposal_api_harness_projects__project_id__proposals__proposal_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Proposal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineProposal"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/proposals/{proposal_id}/runs": {
+      "post": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Start",
+        "operationId": "start_api_harness_projects__project_id__proposals__proposal_id__runs_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Proposal Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sceneops_harness__run_contracts__PipelineRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Runs",
+        "operationId": "runs_api_harness_projects__project_id__runs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/sceneops_harness__run_contracts__PipelineRun"
+                  },
+                  "title": "Response Runs Api Harness Projects  Project Id  Runs Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs/{run_id}": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Run",
+        "operationId": "run_api_harness_projects__project_id__runs__run_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sceneops_harness__run_contracts__PipelineRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs/{run_id}/events": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Events",
+        "operationId": "events_api_harness_projects__project_id__runs__run_id__events_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HarnessEvent"
+                  },
+                  "title": "Response Events Api Harness Projects  Project Id  Runs  Run Id  Events Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs/{run_id}/actions": {
+      "post": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Action",
+        "operationId": "action_api_harness_projects__project_id__runs__run_id__actions_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunAction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sceneops_harness__run_contracts__PipelineRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs/{run_id}/observation": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Observation",
+        "operationId": "observation_api_harness_projects__project_id__runs__run_id__observation_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunObservation"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs/{run_id}/recovery": {
+      "post": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Recovery",
+        "operationId": "recovery_api_harness_projects__project_id__runs__run_id__recovery_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/runs/{run_id}/distill": {
+      "post": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Distill",
+        "operationId": "distill_api_harness_projects__project_id__runs__run_id__distill_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TitleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistilledWorkflow"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/harness/projects/{project_id}/templates": {
+      "get": {
+        "tags": [
+          "ai-harness"
+        ],
+        "summary": "Templates",
+        "operationId": "templates_api_harness_projects__project_id__templates_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DistilledWorkflow"
+                  },
+                  "title": "Response Templates Api Harness Projects  Project Id  Templates Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarnessAPIError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5194,7 +6476,10 @@
           },
           "provider": {
             "type": "string",
-            "const": "codebuddycli",
+            "enum": [
+              "codebuddycli",
+              "openai-compatible"
+            ],
             "title": "Provider",
             "default": "codebuddycli"
           },
@@ -5349,6 +6634,15 @@
             "type": "string",
             "title": "Model"
           },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "openai-compatible"
+            ],
+            "title": "Provider",
+            "default": "codebuddycli"
+          },
           "mode": {
             "type": "string",
             "enum": [
@@ -5383,6 +6677,15 @@
           "label": {
             "type": "string",
             "title": "Label"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "openai-compatible"
+            ],
+            "title": "Provider",
+            "default": "codebuddycli"
           }
         },
         "additionalProperties": false,
@@ -5397,7 +6700,10 @@
         "properties": {
           "provider": {
             "type": "string",
-            "const": "codebuddycli",
+            "enum": [
+              "codebuddycli",
+              "openai-compatible"
+            ],
             "title": "Provider",
             "default": "codebuddycli"
           },
@@ -5519,17 +6825,106 @@
       },
       "AISettings": {
         "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "openai-compatible"
+            ],
+            "title": "Provider",
+            "default": "codebuddycli"
+          },
           "model": {
             "type": "string",
             "title": "Model",
             "default": "cli-default"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "api_key_configured": {
+            "type": "boolean",
+            "title": "Api Key Configured",
+            "default": false
           }
         },
         "additionalProperties": false,
         "type": "object",
         "title": "AISettings"
       },
-      "AcceptanceCriterion": {
+      "AISettingsUpdate": {
+        "properties": {
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "codebuddycli",
+                  "openai-compatible"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192,
+                "minLength": 1,
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AISettingsUpdate"
+      },
+      "AcceptanceCriterion-Input": {
         "properties": {
           "criterion_id": {
             "type": "string",
@@ -5637,6 +7032,37 @@
           "expected_evidence"
         ],
         "title": "AcceptanceLink"
+      },
+      "AcceptanceResult": {
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "title": "Criterion Id"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Refs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "passed",
+          "reason"
+        ],
+        "title": "AcceptanceResult"
       },
       "AcquireLockRequest": {
         "properties": {
@@ -5919,6 +7345,120 @@
           "anchor"
         ],
         "title": "AddCommentRequest"
+      },
+      "AgentResult": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "agent_role": {
+            "type": "string",
+            "title": "Agent Role"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Outputs"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Refs"
+          },
+          "proposed_capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Proposed Capabilities"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "routing_decision": {
+            "$ref": "#/components/schemas/ModelRoutingDecision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "agent_role",
+          "summary",
+          "execution_mode",
+          "routing_decision"
+        ],
+        "title": "AgentResult"
+      },
+      "AgentTask": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "agent_role": {
+            "type": "string",
+            "title": "Agent Role"
+          },
+          "objective": {
+            "type": "string",
+            "title": "Objective"
+          },
+          "context_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Context Refs"
+          },
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "expected_outputs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Expected Outputs"
+          },
+          "acceptance_criteria": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__AcceptanceCriterion"
+            },
+            "type": "array",
+            "title": "Acceptance Criteria"
+          },
+          "allowed_capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Capabilities"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agent_role",
+          "objective"
+        ],
+        "title": "AgentTask"
       },
       "AiGenerationMetadata": {
         "properties": {
@@ -7818,6 +9358,88 @@
         ],
         "title": "AssignmentRequest"
       },
+      "AttemptRecord": {
+        "properties": {
+          "invocation": {
+            "$ref": "#/components/schemas/CapabilityInvocation"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "ready",
+              "assigned",
+              "running",
+              "evaluating",
+              "succeeded",
+              "failed",
+              "waiting_approval",
+              "blocked",
+              "skipped",
+              "cancelled",
+              "rolled_back"
+            ],
+            "title": "State",
+            "default": "running"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilityResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "invocation",
+          "started_at"
+        ],
+        "title": "AttemptRecord"
+      },
       "AudioAnalysis": {
         "properties": {
           "metadata": {
@@ -7888,6 +9510,50 @@
           "duration_seconds"
         ],
         "title": "AudioMetadata"
+      },
+      "Authority": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id"
+          },
+          "actor_type": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent",
+              "service",
+              "system"
+            ],
+            "title": "Actor Type",
+            "default": "user"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Permissions"
+          },
+          "allowed_capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Capabilities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "actor_id"
+        ],
+        "title": "Authority"
       },
       "AuthorizationState": {
         "type": "string",
@@ -8922,6 +10588,338 @@
         ],
         "title": "CandidateStatus"
       },
+      "CapabilityDefinition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "provider_module_id": {
+            "type": "string",
+            "title": "Provider Module Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose",
+            "default": ""
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "default": "1"
+          },
+          "input_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Input Schema"
+          },
+          "output_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Output Schema"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "read",
+              "plan",
+              "mutate",
+              "validate",
+              "build",
+              "test"
+            ],
+            "title": "Mode",
+            "default": "read"
+          },
+          "risk": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "title": "Risk",
+            "default": "low"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          },
+          "availability_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Reason"
+          },
+          "required_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Context"
+          },
+          "required_integrations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Integrations"
+          },
+          "required_permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Permissions"
+          },
+          "preconditions": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__Condition"
+            },
+            "type": "array",
+            "title": "Preconditions"
+          },
+          "postconditions": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__Condition"
+            },
+            "type": "array",
+            "title": "Postconditions"
+          },
+          "evidence_produced": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Produced"
+          },
+          "supports_dry_run": {
+            "type": "boolean",
+            "title": "Supports Dry Run",
+            "default": false
+          },
+          "supports_rollback": {
+            "type": "boolean",
+            "title": "Supports Rollback",
+            "default": false
+          },
+          "cross_system": {
+            "type": "boolean",
+            "title": "Cross System",
+            "default": false
+          },
+          "timeout_seconds": {
+            "type": "number",
+            "maximum": 3600.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Timeout Seconds",
+            "default": 60
+          },
+          "retry_policy": {
+            "$ref": "#/components/schemas/sceneops_harness__contracts__RetryPolicy"
+          },
+          "estimated_duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Duration Seconds"
+          },
+          "estimated_cost_usd": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost Usd"
+          },
+          "estimated_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Estimated Tokens",
+            "default": 0
+          },
+          "metered": {
+            "type": "boolean",
+            "title": "Metered",
+            "default": true
+          },
+          "allowed_agent_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Agent Roles"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "provider_module_id",
+          "title"
+        ],
+        "title": "CapabilityDefinition"
+      },
+      "CapabilityInvocation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "step_run_id": {
+            "type": "string",
+            "title": "Step Run Id"
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Attempt"
+          },
+          "capability_id": {
+            "type": "string",
+            "title": "Capability Id"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Inputs"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "metered": {
+            "type": "boolean",
+            "title": "Metered",
+            "default": true
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          },
+          "change_set_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Set Id"
+          },
+          "change_set": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/sceneops_core_contracts__models__ChangeSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snapshot_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Ref"
+          },
+          "agent_task": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentTask"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_routing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelRoutingDecision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "authority": {
+            "$ref": "#/components/schemas/Authority"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          },
+          "dependency_outputs": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Dependency Outputs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "run_id",
+          "step_id",
+          "step_run_id",
+          "attempt",
+          "capability_id",
+          "inputs",
+          "execution_mode",
+          "authority",
+          "budget"
+        ],
+        "title": "CapabilityInvocation"
+      },
       "CapabilityReport": {
         "properties": {
           "integration_id": {
@@ -8997,6 +10995,137 @@
           "execution_modes"
         ],
         "title": "CapabilityReport"
+      },
+      "CapabilityResult": {
+        "properties": {
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Outputs"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Refs"
+          },
+          "evidence_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Types"
+          },
+          "artifact_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Artifact Refs"
+          },
+          "logs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Logs"
+          },
+          "rollback_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rollback Ref"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "tokens": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens"
+          },
+          "evaluation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StepEvaluation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "agent_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "execution_mode"
+        ],
+        "title": "CapabilityResult"
+      },
+      "CauseCandidate": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Refs"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "CauseCandidate"
       },
       "ChangePreview": {
         "properties": {
@@ -10606,7 +12735,7 @@
         ],
         "title": "ConceptVariant"
       },
-      "Condition": {
+      "Condition-Input": {
         "properties": {
           "condition_id": {
             "type": "string",
@@ -10670,6 +12799,126 @@
           "unknown"
         ],
         "title": "ConnectionState"
+      },
+      "ConnectorDefinition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "offline",
+              "planned",
+              "blocked"
+            ],
+            "title": "Status",
+            "default": "planned"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "ConnectorDefinition"
+      },
+      "ContextBundle": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "intent_id": {
+            "type": "string",
+            "title": "Intent Id"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ContextItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "missing_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Requirements"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "intent_id"
+        ],
+        "title": "ContextBundle"
+      },
+      "ContextItem": {
+        "properties": {
+          "ref": {
+            "$ref": "#/components/schemas/ResourceRef"
+          },
+          "content": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "inclusion_reason": {
+            "type": "string",
+            "title": "Inclusion Reason"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ref",
+          "content",
+          "inclusion_reason"
+        ],
+        "title": "ContextItem"
       },
       "CoordinateSystem": {
         "properties": {
@@ -11316,7 +13565,7 @@
         ],
         "title": "DiagnosticBundleRequest"
       },
-      "DialogueChoice": {
+      "DialogueChoice-Input": {
         "properties": {
           "choice_id": {
             "type": "string",
@@ -11335,7 +13584,7 @@
           },
           "conditions": {
             "items": {
-              "$ref": "#/components/schemas/Condition"
+              "$ref": "#/components/schemas/Condition-Input"
             },
             "type": "array",
             "title": "Conditions"
@@ -11350,7 +13599,41 @@
         ],
         "title": "DialogueChoice"
       },
-      "DialogueNodeConfig": {
+      "DialogueChoice-Output": {
+        "properties": {
+          "choice_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Choice Id"
+          },
+          "text_key": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text Key"
+          },
+          "target_node_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Target Node Id"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/logic_studio__models__Condition"
+            },
+            "type": "array",
+            "title": "Conditions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "choice_id",
+          "text_key",
+          "target_node_id"
+        ],
+        "title": "DialogueChoice"
+      },
+      "DialogueNodeConfig-Input": {
         "properties": {
           "dialogue_id": {
             "type": "string",
@@ -11369,7 +13652,41 @@
           },
           "choices": {
             "items": {
-              "$ref": "#/components/schemas/DialogueChoice"
+              "$ref": "#/components/schemas/DialogueChoice-Input"
+            },
+            "type": "array",
+            "title": "Choices"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dialogue_id",
+          "speaker_sceneops_id",
+          "line_key"
+        ],
+        "title": "DialogueNodeConfig"
+      },
+      "DialogueNodeConfig-Output": {
+        "properties": {
+          "dialogue_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Dialogue Id"
+          },
+          "speaker_sceneops_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Speaker Sceneops Id"
+          },
+          "line_key": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Line Key"
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/DialogueChoice-Output"
             },
             "type": "array",
             "title": "Choices"
@@ -11463,6 +13780,87 @@
           "depth"
         ],
         "title": "DimensionsMeters"
+      },
+      "DistilledWorkflow": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "source_run_id": {
+            "type": "string",
+            "title": "Source Run Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "pipeline_template": {
+            "$ref": "#/components/schemas/PipelineDefinition"
+          },
+          "skill": {
+            "type": "string",
+            "title": "Skill"
+          },
+          "agent_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Agent Roles"
+          },
+          "required_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Context"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Parameters"
+          },
+          "approval_policy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approval Policy"
+          },
+          "recovery_strategy": {
+            "type": "string",
+            "title": "Recovery Strategy"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "source_run_id",
+          "title",
+          "pipeline_template",
+          "skill",
+          "recovery_strategy",
+          "execution_mode"
+        ],
+        "title": "DistilledWorkflow"
       },
       "DocumentSave": {
         "properties": {
@@ -11854,6 +14252,62 @@
         ],
         "title": "ExecutionMode"
       },
+      "FailureAnalysis": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "deterministic_facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deterministic Facts"
+          },
+          "cause_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CauseCandidate"
+            },
+            "type": "array",
+            "title": "Cause Candidates"
+          },
+          "interpretation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interpretation"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Refs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "step_id",
+          "deterministic_facts"
+        ],
+        "title": "FailureAnalysis"
+      },
       "FeatureAcceptanceCriterion": {
         "properties": {
           "criterion_id": {
@@ -12237,7 +14691,7 @@
         ],
         "title": "FourLayerDiff"
       },
-      "GameplayEdge": {
+      "GameplayEdge-Input": {
         "properties": {
           "edge_id": {
             "type": "string",
@@ -12267,7 +14721,66 @@
           },
           "conditions": {
             "items": {
-              "$ref": "#/components/schemas/Condition"
+              "$ref": "#/components/schemas/Condition-Input"
+            },
+            "type": "array",
+            "title": "Conditions"
+          },
+          "effects": {
+            "items": {
+              "$ref": "#/components/schemas/Effect"
+            },
+            "type": "array",
+            "title": "Effects"
+          },
+          "emitted_event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Emitted Event Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "edge_id",
+          "source_node_id",
+          "target_node_id"
+        ],
+        "title": "GameplayEdge"
+      },
+      "GameplayEdge-Output": {
+        "properties": {
+          "edge_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Edge Id"
+          },
+          "source_node_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Node Id"
+          },
+          "target_node_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Target Node Id"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/logic_studio__models__Condition"
             },
             "type": "array",
             "title": "Conditions"
@@ -12317,7 +14830,7 @@
         ],
         "title": "GameplayEvent"
       },
-      "GameplayGraph": {
+      "GameplayGraph-Input": {
         "properties": {
           "schema_version": {
             "type": "integer",
@@ -12370,7 +14883,7 @@
           },
           "nodes": {
             "items": {
-              "$ref": "#/components/schemas/GameplayNode"
+              "$ref": "#/components/schemas/GameplayNode-Input"
             },
             "type": "array",
             "minItems": 1,
@@ -12378,7 +14891,7 @@
           },
           "edges": {
             "items": {
-              "$ref": "#/components/schemas/GameplayEdge"
+              "$ref": "#/components/schemas/GameplayEdge-Input"
             },
             "type": "array",
             "title": "Edges"
@@ -12392,7 +14905,108 @@
           },
           "acceptance_criteria": {
             "items": {
-              "$ref": "#/components/schemas/AcceptanceCriterion"
+              "$ref": "#/components/schemas/AcceptanceCriterion-Input"
+            },
+            "type": "array",
+            "title": "Acceptance Criteria"
+          },
+          "generated_tests": {
+            "items": {
+              "$ref": "#/components/schemas/GeneratedTestReference"
+            },
+            "type": "array",
+            "title": "Generated Tests"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema_version",
+          "graph_id",
+          "project_id",
+          "feature_spec_id",
+          "version",
+          "mode",
+          "nodes"
+        ],
+        "title": "GameplayGraph"
+      },
+      "GameplayGraph-Output": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version"
+          },
+          "graph_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Graph Id"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          },
+          "feature_spec_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Feature Spec Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "state_variables": {
+            "items": {
+              "$ref": "#/components/schemas/StateVariable"
+            },
+            "type": "array",
+            "title": "State Variables"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/GameplayEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "scene_objects": {
+            "items": {
+              "$ref": "#/components/schemas/SceneObjectRef"
+            },
+            "type": "array",
+            "title": "Scene Objects"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GameplayNode-Output"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GameplayEdge-Output"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/InteractionRelationship"
+            },
+            "type": "array",
+            "title": "Relationships"
+          },
+          "acceptance_criteria": {
+            "items": {
+              "$ref": "#/components/schemas/logic_studio__models__AcceptanceCriterion"
             },
             "type": "array",
             "title": "Acceptance Criteria"
@@ -12450,7 +15064,7 @@
         ],
         "title": "GameplayGraphDiff"
       },
-      "GameplayNode": {
+      "GameplayNode-Input": {
         "properties": {
           "node_id": {
             "type": "string",
@@ -12474,7 +15088,7 @@
           },
           "conditions": {
             "items": {
-              "$ref": "#/components/schemas/Condition"
+              "$ref": "#/components/schemas/Condition-Input"
             },
             "type": "array",
             "title": "Conditions"
@@ -12513,7 +15127,87 @@
           "dialogue": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/DialogueNodeConfig"
+                "$ref": "#/components/schemas/DialogueNodeConfig-Input"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "node_id",
+          "kind",
+          "label"
+        ],
+        "title": "GameplayNode"
+      },
+      "GameplayNode-Output": {
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Node Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/NodeKind"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Label"
+          },
+          "sceneops_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sceneops Ids"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/logic_studio__models__Condition"
+            },
+            "type": "array",
+            "title": "Conditions"
+          },
+          "effects": {
+            "items": {
+              "$ref": "#/components/schemas/Effect"
+            },
+            "type": "array",
+            "title": "Effects"
+          },
+          "emitted_event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Emitted Event Ids"
+          },
+          "acceptance_criterion_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Acceptance Criterion Ids"
+          },
+          "quest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestNodeConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dialogue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DialogueNodeConfig-Output"
               },
               {
                 "type": "null"
@@ -13456,7 +16150,7 @@
       "GraphProposalRequest": {
         "properties": {
           "graph": {
-            "$ref": "#/components/schemas/GameplayGraph"
+            "$ref": "#/components/schemas/GameplayGraph-Input"
           },
           "rationale": {
             "type": "string",
@@ -13543,6 +16237,150 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HarnessAPIError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "HarnessAPIError"
+      },
+      "HarnessCatalog": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "5.0",
+            "title": "Version",
+            "default": "5.0"
+          },
+          "capabilities": {
+            "items": {
+              "$ref": "#/components/schemas/CapabilityDefinition"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          },
+          "connectors": {
+            "items": {
+              "$ref": "#/components/schemas/ConnectorDefinition"
+            },
+            "type": "array",
+            "title": "Connectors"
+          },
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionAgentDefinition"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "model_profiles": {
+            "items": {
+              "$ref": "#/components/schemas/ModelProfile"
+            },
+            "type": "array",
+            "title": "Model Profiles"
+          },
+          "model_provider": {
+            "type": "string",
+            "title": "Model Provider"
+          },
+          "default_model": {
+            "type": "string",
+            "title": "Default Model"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice",
+            "default": "目录表示可调用合同，不代表已验证生产能力。外部工具尚未接入 V5 执行。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "capabilities",
+          "connectors",
+          "agents",
+          "model_provider",
+          "default_model"
+        ],
+        "title": "HarnessCatalog"
+      },
+      "HarnessEvent": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Id"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sequence",
+          "project_id",
+          "run_id",
+          "event_type",
+          "occurred_at"
+        ],
+        "title": "HarnessEvent"
       },
       "Health": {
         "properties": {
@@ -14588,7 +17426,7 @@
           },
           "runs": {
             "items": {
-              "$ref": "#/components/schemas/PipelineRun"
+              "$ref": "#/components/schemas/asset_factory__schemas__PipelineRun"
             },
             "type": "array",
             "title": "Runs"
@@ -15205,6 +18043,128 @@
         ],
         "title": "ModelOption"
       },
+      "ModelProfile": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "openai-compatible"
+            ],
+            "title": "Provider"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "standard",
+              "reasoning",
+              "vision",
+              "player"
+            ],
+            "title": "Tier"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "tier"
+        ],
+        "title": "ModelProfile"
+      },
+      "ModelProfileUpdate": {
+        "properties": {
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelProfileUpdate"
+      },
+      "ModelRoutingDecision": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "agent_role": {
+            "type": "string",
+            "title": "Agent Role"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "standard",
+              "reasoning",
+              "vision",
+              "player"
+            ],
+            "title": "Tier",
+            "default": "standard"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "escalation_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Escalation Count",
+            "default": 0
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "agent_role",
+          "provider",
+          "reason"
+        ],
+        "title": "ModelRoutingDecision"
+      },
       "ModuleDocument": {
         "properties": {
           "project_id": {
@@ -15502,6 +18462,156 @@
         ],
         "title": "PermissionStatus"
       },
+      "PipelineDefinition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "schema_version": {
+            "type": "integer",
+            "const": 5,
+            "title": "Schema Version",
+            "default": 5
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "intent_id": {
+            "type": "string",
+            "title": "Intent Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": "制作流水线"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineStage"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Stages"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Inputs"
+          },
+          "context_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Context Refs"
+          },
+          "policies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Policies"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          },
+          "rollback_strategy": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "none"
+            ],
+            "title": "Rollback Strategy",
+            "default": "manual"
+          },
+          "template_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Source"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "intent_id",
+          "stages"
+        ],
+        "title": "PipelineDefinition"
+      },
+      "PipelineProposal": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "intent": {
+            "$ref": "#/components/schemas/ProductionIntent"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ContextBundle"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PipelineDefinition"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationReport"
+          },
+          "routing": {
+            "items": {
+              "$ref": "#/components/schemas/ModelRoutingDecision"
+            },
+            "type": "array",
+            "title": "Routing"
+          },
+          "missing_facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Facts"
+          },
+          "execution_mode": {
+            "type": "string",
+            "const": "planned",
+            "title": "Execution Mode",
+            "default": "planned"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "intent",
+          "context",
+          "definition",
+          "validation"
+        ],
+        "title": "PipelineProposal"
+      },
       "PipelineRequest": {
         "properties": {
           "schema_version": {
@@ -15586,7 +18696,7 @@
             "default": 120
           },
           "retry_policy": {
-            "$ref": "#/components/schemas/RetryPolicy"
+            "$ref": "#/components/schemas/asset_factory__schemas__RetryPolicy"
           },
           "creator": {
             "type": "string",
@@ -15611,174 +18721,33 @@
         ],
         "title": "PipelineRequest"
       },
-      "PipelineRun": {
+      "PipelineStage": {
         "properties": {
-          "schema_version": {
-            "type": "integer",
-            "const": 1,
-            "title": "Schema Version",
-            "default": 1
-          },
-          "pipeline_run_id": {
+          "id": {
             "type": "string",
-            "title": "Pipeline Run Id"
+            "title": "Id"
           },
-          "idempotency_key": {
+          "title": {
             "type": "string",
-            "title": "Idempotency Key"
-          },
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id"
-          },
-          "asset_version_id": {
-            "type": "string",
-            "title": "Asset Version Id"
-          },
-          "requested_mode": {
-            "$ref": "#/components/schemas/ExecutionMode"
-          },
-          "execution_mode": {
-            "$ref": "#/components/schemas/ExecutionMode"
-          },
-          "state": {
-            "$ref": "#/components/schemas/PipelineState"
-          },
-          "change_set_id": {
-            "type": "string",
-            "title": "Change Set Id"
-          },
-          "creator": {
-            "type": "string",
-            "title": "Creator"
+            "title": "Title"
           },
           "steps": {
             "items": {
-              "$ref": "#/components/schemas/ProcessingStep"
+              "$ref": "#/components/schemas/PipelineStep"
             },
             "type": "array",
+            "minItems": 1,
             "title": "Steps"
-          },
-          "quality_gates": {
-            "items": {
-              "$ref": "#/components/schemas/QualityGate"
-            },
-            "type": "array",
-            "title": "Quality Gates"
-          },
-          "candidate_version": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/AssetVersion"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "published_version": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/AssetVersion"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "rollback_snapshot_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rollback Snapshot Path"
-          },
-          "working_copy_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Working Copy Path"
-          },
-          "started_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Started At"
-          },
-          "finished_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Finished At"
-          },
-          "error_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Code"
-          },
-          "error_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Message"
-          },
-          "retry_of_run_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Retry Of Run Id"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
-          "pipeline_run_id",
-          "idempotency_key",
-          "project_id",
-          "asset_id",
-          "asset_version_id",
-          "requested_mode",
-          "execution_mode",
-          "state",
-          "change_set_id",
-          "creator",
-          "steps",
-          "started_at"
+          "id",
+          "title",
+          "steps"
         ],
-        "title": "PipelineRun"
+        "title": "PipelineStage"
       },
       "PipelineState": {
         "type": "string",
@@ -15796,6 +18765,162 @@
           "blocked"
         ],
         "title": "PipelineState"
+      },
+      "PipelineStep": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "tool",
+              "approval",
+              "policy_gate",
+              "evaluator",
+              "fan_out",
+              "fan_in",
+              "sub_pipeline",
+              "retry",
+              "rollback"
+            ],
+            "title": "Kind",
+            "default": "tool"
+          },
+          "capability_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capability Id"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Inputs"
+          },
+          "depends_on": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Depends On"
+          },
+          "input_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Input Schema"
+          },
+          "output_schema": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Output Schema"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__Condition"
+            },
+            "type": "array",
+            "title": "Conditions"
+          },
+          "acceptance_criteria": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__AcceptanceCriterion"
+            },
+            "type": "array",
+            "title": "Acceptance Criteria"
+          },
+          "failure_strategy": {
+            "type": "string",
+            "enum": [
+              "stop",
+              "ask_human"
+            ],
+            "title": "Failure Strategy",
+            "default": "stop"
+          },
+          "evidence_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Requirements"
+          },
+          "checkpoint": {
+            "type": "boolean",
+            "title": "Checkpoint",
+            "default": true
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          },
+          "change_set": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/sceneops_core_contracts__models__ChangeSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snapshot_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Ref"
+          },
+          "agent_task": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentTask"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_routing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelRoutingDecision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "PipelineStep"
       },
       "PlanStatus": {
         "type": "string",
@@ -15873,6 +18998,64 @@
           "payload"
         ],
         "title": "PlannerEventPayload"
+      },
+      "PlanningRequest": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 16000,
+            "minLength": 1,
+            "title": "Goal"
+          },
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Constraints"
+          },
+          "module_ids": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "project-planning",
+                "concept-assets",
+                "character-animation",
+                "world-logic",
+                "ui-audio-vfx",
+                "render-ops",
+                "unity-build",
+                "version-review",
+                "ai-playtest",
+                "integration-ops"
+              ]
+            },
+            "type": "array",
+            "title": "Module Ids"
+          },
+          "selection": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Selection"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "goal"
+        ],
+        "title": "PlanningRequest"
       },
       "PlatformBudget": {
         "properties": {
@@ -16343,7 +19526,7 @@
       "PreviewRequest": {
         "properties": {
           "graph": {
-            "$ref": "#/components/schemas/GameplayGraph"
+            "$ref": "#/components/schemas/GameplayGraph-Input"
           },
           "steps": {
             "items": {
@@ -16586,6 +19769,68 @@
         ],
         "title": "ProcessingStepKind"
       },
+      "ProductionAgentDefinition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "allowed_capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Capabilities"
+          },
+          "model_tier": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "standard",
+              "reasoning",
+              "vision",
+              "player"
+            ],
+            "title": "Model Tier",
+            "default": "standard"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "context_policy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Context Policy"
+          },
+          "maximum_handoffs": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Maximum Handoffs",
+            "default": 1
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "title",
+          "prompt"
+        ],
+        "title": "ProductionAgentDefinition"
+      },
       "ProductionGraphView": {
         "properties": {
           "plan_id": {
@@ -16639,6 +19884,92 @@
           "milestone_readiness"
         ],
         "title": "ProductionGraphView"
+      },
+      "ProductionIntent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 16000,
+            "minLength": 1,
+            "title": "Goal"
+          },
+          "desired_outcome": {
+            "type": "string",
+            "title": "Desired Outcome",
+            "default": ""
+          },
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Constraints"
+          },
+          "protected_baseline": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceRef"
+            },
+            "type": "array",
+            "title": "Protected Baseline"
+          },
+          "acceptance_criteria": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__AcceptanceCriterion"
+            },
+            "type": "array",
+            "title": "Acceptance Criteria"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          },
+          "allowed_mutation_scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Mutation Scopes"
+          },
+          "forbidden_mutation_scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forbidden Mutation Scopes"
+          },
+          "requested_artifacts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requested Artifacts"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "goal"
+        ],
+        "title": "ProductionIntent"
       },
       "ProductionPlan": {
         "properties": {
@@ -17721,6 +21052,114 @@
         ],
         "title": "RecommendedAction"
       },
+      "RecoveryPlan": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "cause_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CauseCandidate"
+            },
+            "type": "array",
+            "title": "Cause Candidates"
+          },
+          "selected_action": {
+            "type": "string",
+            "enum": [
+              "retry",
+              "retry_adjusted",
+              "add_context",
+              "upgrade_model",
+              "switch_capability",
+              "split_step",
+              "rollback",
+              "ask_human",
+              "abort"
+            ],
+            "title": "Selected Action"
+          },
+          "proposed_changes": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Proposed Changes"
+          },
+          "new_budget_impact": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "New Budget Impact",
+            "default": 0
+          },
+          "requires_approval": {
+            "type": "boolean",
+            "title": "Requires Approval",
+            "default": true
+          },
+          "maximum_additional_attempts": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Maximum Additional Attempts",
+            "default": 0
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "approved",
+              "applied",
+              "rejected"
+            ],
+            "title": "Status",
+            "default": "proposed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "run_id",
+          "step_id",
+          "selected_action",
+          "reason"
+        ],
+        "title": "RecoveryPlan"
+      },
+      "RecoveryResponse": {
+        "properties": {
+          "proposal": {
+            "$ref": "#/components/schemas/RecoveryPlan"
+          },
+          "executable": {
+            "type": "boolean",
+            "title": "Executable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "proposal",
+          "executable"
+        ],
+        "title": "RecoveryResponse"
+      },
       "ReferenceKind": {
         "type": "string",
         "enum": [
@@ -18656,6 +22095,41 @@
         ],
         "title": "ResolutionProfile"
       },
+      "ResourceRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Version"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "kind"
+        ],
+        "title": "ResourceRef"
+      },
       "RetargetBoneMapping": {
         "properties": {
           "source_bone_id": {
@@ -18882,26 +22356,6 @@
           "provenance"
         ],
         "title": "RetargetProfile"
-      },
-      "RetryPolicy": {
-        "properties": {
-          "max_attempts": {
-            "type": "integer",
-            "maximum": 5.0,
-            "minimum": 1.0,
-            "title": "Max Attempts",
-            "default": 3
-          },
-          "backoff_seconds": {
-            "type": "number",
-            "maximum": 30.0,
-            "minimum": 0.0,
-            "title": "Backoff Seconds",
-            "default": 0
-          }
-        },
-        "type": "object",
-        "title": "RetryPolicy"
       },
       "RetrySafety": {
         "type": "string",
@@ -19444,6 +22898,72 @@
         ],
         "title": "RiskLevel"
       },
+      "RollbackAttempt": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "uncertain"
+            ],
+            "title": "State",
+            "default": "running"
+          },
+          "approved_by": {
+            "type": "string",
+            "title": "Approved By"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilityResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "approved_by"
+        ],
+        "title": "RollbackAttempt"
+      },
       "RollbackExecution": {
         "properties": {
           "execution_id": {
@@ -19738,6 +23258,68 @@
         ],
         "title": "RootMotionSample"
       },
+      "RunAction": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "cancel",
+              "retry",
+              "approve",
+              "approve_rollback",
+              "rollback"
+            ],
+            "title": "Action"
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Id"
+          },
+          "inspection_confirmed": {
+            "type": "boolean",
+            "title": "Inspection Confirmed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "RunAction"
+      },
+      "RunObservation": {
+        "properties": {
+          "evaluations": {
+            "items": {
+              "$ref": "#/components/schemas/StepEvaluation"
+            },
+            "type": "array",
+            "title": "Evaluations"
+          },
+          "failures": {
+            "items": {
+              "$ref": "#/components/schemas/FailureAnalysis"
+            },
+            "type": "array",
+            "title": "Failures"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evaluations",
+          "failures"
+        ],
+        "title": "RunObservation"
+      },
       "RunStatus": {
         "type": "string",
         "enum": [
@@ -19749,6 +23331,62 @@
           "blocked"
         ],
         "title": "RunStatus"
+      },
+      "RuntimeBudget": {
+        "properties": {
+          "max_steps": {
+            "type": "integer",
+            "maximum": 256.0,
+            "minimum": 1.0,
+            "title": "Max Steps",
+            "default": 32
+          },
+          "max_attempts_per_step": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Attempts Per Step",
+            "default": 2
+          },
+          "max_duration_seconds": {
+            "type": "number",
+            "maximum": 86400.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Max Duration Seconds",
+            "default": 300
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Max Tokens",
+            "default": 32000
+          },
+          "max_cost_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Max Cost Usd",
+            "default": 1
+          },
+          "usage_policy": {
+            "type": "string",
+            "enum": [
+              "require_reported",
+              "bounded_calls"
+            ],
+            "title": "Usage Policy",
+            "default": "require_reported"
+          },
+          "max_metered_calls": {
+            "type": "integer",
+            "maximum": 16.0,
+            "minimum": 0.0,
+            "title": "Max Metered Calls",
+            "default": 4
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuntimeBudget"
       },
       "SafeArea": {
         "properties": {
@@ -20309,6 +23947,22 @@
         ],
         "title": "SourceAsset"
       },
+      "StartRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Request Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id"
+        ],
+        "title": "StartRequest"
+      },
       "StateVariable": {
         "properties": {
           "variable_id": {
@@ -20337,6 +23991,215 @@
           "initial_value"
         ],
         "title": "StateVariable"
+      },
+      "StepEvaluation": {
+        "properties": {
+          "step_run_id": {
+            "type": "string",
+            "title": "Step Run Id"
+          },
+          "deterministic_facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deterministic Facts"
+          },
+          "ai_interpretation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Interpretation"
+          },
+          "acceptance_results": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceResult"
+            },
+            "type": "array",
+            "title": "Acceptance Results"
+          },
+          "deviations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deviations"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Refs"
+          },
+          "next_disposition": {
+            "type": "string",
+            "enum": [
+              "continue",
+              "recover",
+              "await_human",
+              "abort"
+            ],
+            "title": "Next Disposition",
+            "default": "continue"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "step_run_id"
+        ],
+        "title": "StepEvaluation"
+      },
+      "StepRun": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "stage_id": {
+            "type": "string",
+            "title": "Stage Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "ready",
+              "assigned",
+              "running",
+              "evaluating",
+              "succeeded",
+              "failed",
+              "waiting_approval",
+              "blocked",
+              "skipped",
+              "cancelled",
+              "rolled_back"
+            ],
+            "title": "State",
+            "default": "pending"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          },
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/AttemptRecord"
+            },
+            "type": "array",
+            "title": "Attempts"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilityResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "approved_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approved By"
+          },
+          "rollback_approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rollback Approved By"
+          },
+          "checkpoint_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoint At"
+          },
+          "rollback_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilityResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rollback_state": {
+            "type": "string",
+            "enum": [
+              "not_started",
+              "running",
+              "succeeded",
+              "uncertain"
+            ],
+            "title": "Rollback State",
+            "default": "not_started"
+          },
+          "rollback_attempts": {
+            "items": {
+              "$ref": "#/components/schemas/RollbackAttempt"
+            },
+            "type": "array",
+            "title": "Rollback Attempts"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "step_id",
+          "stage_id"
+        ],
+        "title": "StepRun"
       },
       "StepState": {
         "type": "string",
@@ -20820,6 +24683,22 @@
           "cancelled"
         ],
         "title": "TaskStatus"
+      },
+      "TitleRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "TitleRequest"
       },
       "UiElement": {
         "properties": {
@@ -21323,6 +25202,41 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "ValidationReport": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/sceneops_harness__contracts__ValidationIssue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "execution_order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Execution Order"
+          },
+          "approval_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approval Steps"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "valid"
+        ],
+        "title": "ValidationReport"
       },
       "ValueType": {
         "type": "string",
@@ -22746,6 +26660,195 @@
         ],
         "title": "WritebackTarget"
       },
+      "asset_factory__schemas__PipelineRun": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version",
+            "default": 1
+          },
+          "pipeline_run_id": {
+            "type": "string",
+            "title": "Pipeline Run Id"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "title": "Idempotency Key"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "title": "Asset Version Id"
+          },
+          "requested_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PipelineState"
+          },
+          "change_set_id": {
+            "type": "string",
+            "title": "Change Set Id"
+          },
+          "creator": {
+            "type": "string",
+            "title": "Creator"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessingStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "quality_gates": {
+            "items": {
+              "$ref": "#/components/schemas/QualityGate"
+            },
+            "type": "array",
+            "title": "Quality Gates"
+          },
+          "candidate_version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published_version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rollback_snapshot_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rollback Snapshot Path"
+          },
+          "working_copy_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Working Copy Path"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "retry_of_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Of Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pipeline_run_id",
+          "idempotency_key",
+          "project_id",
+          "asset_id",
+          "asset_version_id",
+          "requested_mode",
+          "execution_mode",
+          "state",
+          "change_set_id",
+          "creator",
+          "steps",
+          "started_at"
+        ],
+        "title": "PipelineRun"
+      },
+      "asset_factory__schemas__RetryPolicy": {
+        "properties": {
+          "max_attempts": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Max Attempts",
+            "default": 3
+          },
+          "backoff_seconds": {
+            "type": "number",
+            "maximum": 30.0,
+            "minimum": 0.0,
+            "title": "Backoff Seconds",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "RetryPolicy"
+      },
       "asset_factory__schemas__RiskLevel": {
         "type": "string",
         "enum": [
@@ -23275,6 +27378,27 @@
         ],
         "title": "ChangeSet"
       },
+      "logic_studio__models__AcceptanceCriterion": {
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Criterion Id"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "description"
+        ],
+        "title": "AcceptanceCriterion"
+      },
       "logic_studio__models__ApprovalRecord": {
         "properties": {
           "approver_id": {
@@ -23329,6 +27453,35 @@
           "rolled_back"
         ],
         "title": "ChangeSetStatus"
+      },
+      "logic_studio__models__Condition": {
+        "properties": {
+          "condition_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Condition Id"
+          },
+          "variable_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Variable Id"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/ConditionOperator"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "condition_id",
+          "variable_id",
+          "operator",
+          "value"
+        ],
+        "title": "Condition"
       },
       "logic_studio__models__RiskLevel": {
         "type": "string",
@@ -24035,6 +28188,283 @@
           "message"
         ],
         "title": "ModelCatalog"
+      },
+      "sceneops_harness__contracts__AcceptanceCriterion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "evidence_required": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Required"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "description"
+        ],
+        "title": "AcceptanceCriterion"
+      },
+      "sceneops_harness__contracts__Condition": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "inputs",
+              "outputs"
+            ],
+            "title": "Source",
+            "default": "inputs"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "equals",
+              "exists"
+            ],
+            "title": "Operator",
+            "default": "equals"
+          },
+          "value": {
+            "$ref": "#/components/schemas/JsonValue"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field"
+        ],
+        "title": "Condition",
+        "description": "Only literal, top-level input/output predicates; never executable expressions."
+      },
+      "sceneops_harness__contracts__RetryPolicy": {
+        "properties": {
+          "max_attempts": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Attempts",
+            "default": 1
+          },
+          "retryable_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Retryable Codes"
+          },
+          "side_effect_retry_safe": {
+            "type": "boolean",
+            "title": "Side Effect Retry Safe",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RetryPolicy"
+      },
+      "sceneops_harness__contracts__ValidationIssue": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ValidationIssue"
+      },
+      "sceneops_harness__run_contracts__PipelineRun": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PipelineDefinition"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "compiling",
+              "awaiting_approval",
+              "queued",
+              "running",
+              "observing",
+              "recovering",
+              "verifying",
+              "completed",
+              "blocked",
+              "failed",
+              "cancelled",
+              "rolled_back"
+            ],
+            "title": "State",
+            "default": "queued"
+          },
+          "execution_mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "planned"
+          },
+          "step_runs": {
+            "items": {
+              "$ref": "#/components/schemas/StepRun"
+            },
+            "type": "array",
+            "title": "Step Runs"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "cancel_requested": {
+            "type": "boolean",
+            "title": "Cancel Requested",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "duration_seconds": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "default": 0
+          },
+          "tokens_used": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Tokens Used",
+            "default": 0
+          },
+          "cost_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Cost Usd",
+            "default": 0
+          },
+          "budget_accounting_complete": {
+            "type": "boolean",
+            "title": "Budget Accounting Complete",
+            "default": true
+          },
+          "metered_calls_used": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Metered Calls Used",
+            "default": 0
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "default": 0
+          },
+          "owner_pid": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Pid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "request_id",
+          "definition",
+          "submitted_by",
+          "step_runs"
+        ],
+        "title": "PipelineRun"
       },
       "sceneops_production_planner__models__ApprovalRequirement": {
         "type": "string",

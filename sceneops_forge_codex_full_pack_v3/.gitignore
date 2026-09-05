@@ -3,6 +3,9 @@ node_modules/
 __pycache__/
 *.pyc
 *.egg-info/
+modules/*/backend/build/
+integrations/*/build/
+packages/*/build/
 *.tsbuildinfo
 dist/
 .playwright-cli/

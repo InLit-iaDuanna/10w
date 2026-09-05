@@ -3,6 +3,7 @@ import type { WorkbenchContext } from '@sceneops/core-ui';
 import type { components } from '../generated/unified-ai-api.ts';
 
 export type AISettings = components['schemas']['AISettings'];
+export type AISettingsUpdate = components['schemas']['AISettingsUpdate'];
 export type AIModels = components['schemas']['AIModels'];
 export type AIConversation = components['schemas']['AIConversation'];
 export type AIAdvice = components['schemas']['AIAdvice'];
@@ -15,7 +16,7 @@ export const aiKeys = {
 
 export const readModels = (signal?: AbortSignal) => requestJson<AIModels>('/api/ai/models', { signal });
 export const readSettings = (signal?: AbortSignal) => requestJson<AISettings>('/api/ai/settings', { signal });
-export const saveSettings = (body: AISettings) => requestJson<AISettings>('/api/ai/settings', { method: 'PUT', body });
+export const saveSettings = (body: AISettingsUpdate) => requestJson<AISettings>('/api/ai/settings', { method: 'PUT', body });
 export const readConversation = (projectId: string | null, signal?: AbortSignal) =>
   requestJson<AIConversation>(`/api/ai/conversation${projectId ? `?project_id=${encodeURIComponent(projectId)}` : ''}`, { signal });
 

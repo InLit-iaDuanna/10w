@@ -81,7 +81,7 @@ function createWorkbench(unified: boolean) {
         editors.register({ ...assistantConversationEditor, async load() {
           if (unified) return {default: function ConversationHost(props: EditorHostProps) {
             const dirty = useCallback((value: boolean) => actions.setDirty(props.instanceId, 'chat', value), [props.instanceId]);
-            return <UnifiedConversation context={props.context} onDirtyChange={dirty} />;
+            return <UnifiedConversation context={props.context} onDirtyChange={dirty} onOpenPipeline={() => void open('harness.pipeline', {mode:'split',direction:'right'}).catch(report)} />;
           }};
           const { default: Conversation } = await assistantConversationEditor.load();
           return { default: (props: EditorHostProps) => <Conversation {...props} localState={assistantConversationEditor.restoreState(props.localState)} runtime={conversation} modelTransport={transport} /> };
@@ -93,6 +93,13 @@ function createWorkbench(unified: boolean) {
     const defaults = {icon:'panel',category:'工作台',defaultPlacement:{mode:'split',direction:'right'} as const,
       singleton:true, renderPolicy:'suspend-when-hidden' as const, initialState:()=>({}), serializeState:()=>({}), restoreState:()=>({})};
     editors.register({...defaults,id:'workspace.projects',title:'本地项目',async load(){return {default:(props:EditorHostProps)=><WorkspaceProjects projectId={props.context.projectId} onSelect={actions.selectProject}/>};}});
+    editors.register({...defaults,id:'harness.pipeline',title:'AI 生产计划',category:'AI 制作',async load(){
+      const {PipelineWorkbench} = await import('@sceneops/ai-pipeline-compiler');
+      return {default:function PipelineHost(props:EditorHostProps){
+        const dirty = useCallback((value:boolean)=>actions.setDirty(props.instanceId,'pipeline',value),[props.instanceId]);
+        return <PipelineWorkbench {...props} onDirtyChange={dirty} onOpenProjects={actions.openProjects}/>;
+      }};
+    }});
     for (const group of integratedWorkbenches) {
       const Component = createIntegratedModuleHost(group.id, group.title, group.load, actions);
       editors.register({...defaults,id:`workbench.${group.id}`,title:group.title,async load(){await group.load(); return {default:Component};}});

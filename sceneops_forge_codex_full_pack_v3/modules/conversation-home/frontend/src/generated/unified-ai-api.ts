@@ -103,9 +103,9 @@ export interface components {
             /**
              * Provider
              * @default codebuddycli
-             * @constant
+             * @enum {string}
              */
-            provider: "codebuddycli";
+            provider: "codebuddycli" | "openai-compatible";
             /**
              * Mode
              * @default live
@@ -162,6 +162,12 @@ export interface components {
             /** Model */
             model: string;
             /**
+             * Provider
+             * @default codebuddycli
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "openai-compatible";
+            /**
              * Mode
              * @enum {string}
              */
@@ -175,15 +181,21 @@ export interface components {
             id: string;
             /** Label */
             label: string;
+            /**
+             * Provider
+             * @default codebuddycli
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "openai-compatible";
         };
         /** AIModels */
         AIModels: {
             /**
              * Provider
              * @default codebuddycli
-             * @constant
+             * @enum {string}
              */
-            provider: "codebuddycli";
+            provider: "codebuddycli" | "openai-compatible";
             /** Available */
             available: boolean;
             /**
@@ -199,10 +211,34 @@ export interface components {
         /** AISettings */
         AISettings: {
             /**
+             * Provider
+             * @default codebuddycli
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "openai-compatible";
+            /**
              * Model
              * @default cli-default
              */
             model: string;
+            /** Base Url */
+            base_url?: string | null;
+            /**
+             * Api Key Configured
+             * @default false
+             */
+            api_key_configured: boolean;
+        };
+        /** AISettingsUpdate */
+        AISettingsUpdate: {
+            /** Provider */
+            provider?: ("codebuddycli" | "openai-compatible") | null;
+            /** Model */
+            model?: string | null;
+            /** Base Url */
+            base_url?: string | null;
+            /** Api Key */
+            api_key?: string | null;
         };
         /** AdapterError */
         AdapterError: {
@@ -299,7 +335,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AISettings"];
+                "application/json": components["schemas"]["AISettingsUpdate"];
             };
         };
         responses: {
@@ -312,13 +348,22 @@ export interface operations {
                     "application/json": components["schemas"]["AISettings"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
                 };
             };
         };
@@ -376,13 +421,13 @@ export interface operations {
                     "application/json": components["schemas"]["AIConversation"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["AdapterError"];
                 };
             };
             /** @description Service Unavailable */
@@ -418,13 +463,13 @@ export interface operations {
                     "application/json": components["schemas"]["AIAdvice"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["AdapterError"];
                 };
             };
             /** @description Service Unavailable */

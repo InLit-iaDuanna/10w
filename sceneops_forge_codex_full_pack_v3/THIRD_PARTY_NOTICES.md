@@ -21,3 +21,7 @@ Tests use the Python and Node.js standard libraries and add no test-framework de
 - Dockview Enterprise 8.2.0：商业许可，当前仅官方允许的本地无 key 评估，保留水印；无生产许可声明。https://dockview.dev/docs/overview/enterprise-setup/
 - FastAPI 0.128.8 / Pydantic 2.13.2：MIT；uvicorn 0.39.0：BSD-3-Clause；本地 CodeBuddy adapter API。
 - CodeBuddy CLI：使用宿主已有 2.144.0 可执行文件，不将 CLI 或凭据打包进仓库。
+
+## V5 AI Provider
+
+- HTTPX 0.28.1：BSD-3-Clause；用于异步 OpenAI-compatible Chat Completions HTTP 请求、超时和取消。许可声明依据安装包 METADATA，完整许可随依赖分发。关闭自动重定向及环境代理，不打包服务商凭据。

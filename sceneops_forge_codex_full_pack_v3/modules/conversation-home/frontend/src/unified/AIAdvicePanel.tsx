@@ -23,7 +23,7 @@ function AdviceForm({ context, moduleId, moduleDocument, onDirtyChange }: Advice
   useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => { onDirtyChange?.(!!prompt.trim() || advice.isPending); }, [prompt, advice.isPending, onDirtyChange]);
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
-  return <details className="unified-ai-advice"><summary>AI 模块建议 · CodeBuddy</summary>
+  return <details className="unified-ai-advice"><summary>AI 模块建议 · 当前提供方</summary>
     <UnifiedModelPicker disabled={advice.isPending} />
     <p>发送所选项目及对象 ID 和你的问题；勾选后才附带草稿。建议不会自动应用、审批或执行。</p>
     <label><input type="checkbox" checked={includeDocument} disabled={!moduleDocument || advice.isPending}

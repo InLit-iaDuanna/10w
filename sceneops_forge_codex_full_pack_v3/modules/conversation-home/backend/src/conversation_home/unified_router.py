@@ -4,11 +4,11 @@ from pathlib import Path
 from collections.abc import Callable
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
-from sceneops_codebuddy import MODEL_IDS, CodeBuddyFailure, available, complete
+from sceneops_ai_provider import ProviderFailure, ProviderService
 from .ai_repository import AIRepository
 from .schemas import AdapterError
 from .unified_schemas import (AIAdvice, AIAdviceRequest, AIChatRequest, AIConversation,
-    AIModel, AIModels, AISettings)
+    AIModel, AIModels, AISettings, AISettingsUpdate)
 
 ADVICE_PROMPTS = {
     'concept-lab': '你是游戏概念设计顾问。只提供人工评审的文字建议，不生成图片或批准资产。检查轮廓、尺寸、预算、材质及禁止元素。',
@@ -34,15 +34,17 @@ async def while_connected(request: Request, operation):
                 raise asyncio.CancelledError()
             await asyncio.wait({task}, timeout=0.2)
         return await task
-    except CodeBuddyFailure as error:
-        return JSONResponse(status_code=503,
+    except ProviderFailure as error:
+        return JSONResponse(status_code=error.status_code,
             content=AdapterError(code=error.code, message=str(error)).model_dump())
     finally:
         if not task.done():
             task.cancel()
         await asyncio.gather(task, return_exceptions=True)
 
-def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str], bool] | None = None):
+def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str], bool] | None = None,
+                     secrets_path: str | Path | None = None):
+    provider_service = ProviderService(database_path, secrets_path)
     repository = AIRepository(database_path)
     router = APIRouter(prefix='/api/ai', tags=['unified-ai'])
     busy_scopes: set[str] = set()
@@ -53,27 +55,45 @@ def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str
 
     @router.get('/models', response_model=AIModels)
     def models():
-        installed = available()
-        return AIModels(available=installed, mode='planned' if installed else 'blocked',
-            models=[AIModel(id='cli-default', label='CLI 默认模型')]
-                + [AIModel(id=model, label=model) for model in MODEL_IDS],
-            message='CLI 已安装；登录、模型权限和额度将在发送时检查。' if installed
-                else '找不到 codebuddy；请安装并在终端登录后重试。')
+        settings = provider_service.settings()
+        available = provider_service.provider_available()
+        if settings.provider == 'codebuddycli':
+            message = ('CLI 已安装；登录、模型权限和额度将在发送时检查。' if available else
+                       '找不到 codebuddy；请安装并在终端登录后重试。')
+        else:
+            message = ('兼容服务设置已保存；连接和模型权限将在发送时检查。' if available else
+                       '请配置兼容服务地址和 API Key。')
+        return AIModels(provider=settings.provider, available=available,
+            mode='planned' if available else 'blocked',
+            models=[AIModel(id=item.id, label=item.label, provider=item.provider)
+                    for item in provider_service.models()], message=message)
 
     @router.get('/settings', response_model=AISettings)
     def settings():
-        return repository.settings()
+        return AISettings(**provider_service.settings().__dict__)
 
-    @router.put('/settings', response_model=AISettings)
-    def save_settings(body: AISettings):
-        return repository.save_settings(body)
+    @router.put('/settings', response_model=AISettings,
+                responses={422: {'model': AdapterError}, 503: {'model': AdapterError}})
+    def save_settings(body: AISettingsUpdate):
+        try:
+            updated = provider_service.update_settings(
+                provider=body.provider,
+                model=body.model,
+                base_url=body.base_url,
+                api_key=body.api_key.get_secret_value() if body.api_key is not None else None,
+            )
+        except ProviderFailure as error:
+            return JSONResponse(status_code=error.status_code,
+                content=AdapterError(code=error.code, message=str(error)).model_dump())
+        return AISettings(**updated.__dict__)
 
     @router.get('/conversation', response_model=AIConversation)
     def conversation(project_id: str | None = None):
         validate_project(project_id)
         return repository.conversation(project_id)
 
-    @router.post('/chat', response_model=AIConversation, responses={503: {'model': AdapterError}})
+    @router.post('/chat', response_model=AIConversation,
+                 responses={422: {'model': AdapterError}, 503: {'model': AdapterError}})
     async def chat(body: AIChatRequest, request: Request):
         validate_project(body.project_id)
         scope = repository.scope(body.project_id)
@@ -81,26 +101,28 @@ def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str
             raise HTTPException(409, '此项目有回复正在生成，请等待或取消后再发送。')
         busy_scopes.add(scope)
         async def generate():
-            model = repository.settings().model
             history = repository.conversation(body.project_id).messages
             payload = {'project_id': body.project_id, 'context': body.context,
                 'history': [{'role': item.role, 'text': item.text} for item in history], 'message': body.message}
-            text = await complete(json.dumps(payload, ensure_ascii=False), model)
-            repository.append_exchange(body.project_id, body.message, text, model)
+            result = await provider_service.generate(json.dumps(payload, ensure_ascii=False))
+            repository.append_exchange(body.project_id, body.message, result.text,
+                                       result.model, result.provider)
             return repository.conversation(body.project_id)
         try:
             return await while_connected(request, generate())
         finally:
             busy_scopes.discard(scope)
 
-    @router.post('/advice', response_model=AIAdvice, responses={503: {'model': AdapterError}})
+    @router.post('/advice', response_model=AIAdvice,
+                 responses={422: {'model': AdapterError}, 503: {'model': AdapterError}})
     async def advice(body: AIAdviceRequest, request: Request):
         validate_project(body.project_id)
         async def generate():
-            model = repository.settings().model
             prompt = ADVICE_PROMPTS.get(body.module_id, '请围绕当前模块提供可供人工采用的建议，不执行建议。')
-            text = await complete(prompt + '\n' + body.model_dump_json(), model)
-            return AIAdvice(project_id=body.project_id, module_id=body.module_id, model=model, text=text)
+            result = await provider_service.generate(prompt + '\n' + body.model_dump_json(),
+                                                     purpose='advice')
+            return AIAdvice(project_id=body.project_id, module_id=body.module_id,
+                            provider=result.provider, model=result.model, text=result.text)
         return await while_connected(request, generate())
 
     return router

@@ -1,0 +1,19 @@
+{
+  "id": "pipeline_fixture_inspection",
+  "schema_version": 5,
+  "project_id": "project_fixture",
+  "intent_id": "intent_fixture_inspection",
+  "title": "显式 Mock 检查流水线",
+  "execution_mode": "mock",
+  "stages": [{
+    "id": "inspect",
+    "title": "检查",
+    "steps": [{
+      "id": "inspect_source",
+      "title": "读取固定测试输入",
+      "kind": "tool",
+      "capability_id": "fixture.inspect",
+      "inputs": {"name": "fixture-source"}
+    }]
+  }]
+}

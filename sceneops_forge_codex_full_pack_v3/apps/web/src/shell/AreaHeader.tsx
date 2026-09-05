@@ -15,7 +15,7 @@ export function AreaHeader({ contract, onAction }: AreaHeaderProps): React.React
       <div className="forge-area-heading">
         <strong>{contract.title}</strong>
         <span>{contract.contextSummary}</span>
-        <span aria-label={`执行模式 ${contract.mode}`}>{contract.mode.toUpperCase()}</span>
+        <span aria-label={`界面模式 ${contract.mode}`} title="界面状态；任务是否执行以面板内的运行记录为准。">{contract.mode === 'live' ? '本地界面' : contract.mode.toUpperCase()}</span>
       </div>
       <nav aria-label="区域操作">
         {visibleActions.map((action) => action === 'more' ? (

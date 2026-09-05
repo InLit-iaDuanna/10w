@@ -1,0 +1,21 @@
+schema_version: 1
+id: ai-model-router
+version: 0.5.0
+title: 运行模型路由
+description: V5 运行模型路由
+status: active
+feature_flag: ai_model_router
+requires:
+  modules: ["core-kernel","module-runtime"]
+  integrations: []
+  optional_integrations: []
+contributes:
+  editors: []
+  commands: []
+  events: []
+  jobs: []
+  workflows: []
+  policy_gates: []
+permissions: ["harness:read", "harness:plan"]
+entrypoints:
+  backend: sceneops_ai_routing

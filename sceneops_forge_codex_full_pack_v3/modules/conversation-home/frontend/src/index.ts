@@ -128,4 +128,5 @@ export { CodeBuddyConversationTransport, getCodeBuddyModels } from './conversati
 export type { CodeBuddyModel, CodeBuddyModelCatalog } from './conversation/CodeBuddyConversationTransport.ts';
 export { UnifiedConversation } from './unified/UnifiedConversation.tsx';
 export { AIAdvicePanel } from './unified/AIAdvicePanel.tsx';
+export { ModelProviderSettings } from './unified/ModelProviderSettings.tsx';
 export { aiKeys } from './unified/aiClient.ts';

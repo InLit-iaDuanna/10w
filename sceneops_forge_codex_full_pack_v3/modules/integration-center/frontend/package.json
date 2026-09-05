@@ -13,6 +13,7 @@
     "node": ">=22.6.0"
   },
   "dependencies": {
+    "openapi-fetch": "0.17.0",
     "@sceneops/workbench-ui": "workspace:*",
     "@sceneops/core-ui": "workspace:*",
     "@sceneops/api-client": "workspace:*"
