@@ -4,7 +4,7 @@
 
 ## 快速启动
 
-准备 Node.js >= 22.12、pnpm 11.13.0、Python 3.12 和 uv。以下命令适用于 macOS / Linux；私有仓库需要对应 GitHub 访问权限。
+准备 Node.js >= 22.12、pnpm 11.13.0、Python 3.12 和 uv。以下命令适用于 macOS / Linux。
 
 ```sh
 git clone https://github.com/InLit-iaDuanna/10w.git
