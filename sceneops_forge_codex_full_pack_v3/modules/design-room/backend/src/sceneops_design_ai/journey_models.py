@@ -111,6 +111,36 @@ class CardModelingSession(JourneyModel):
     mode: Literal['planned'] = 'planned'
 
 
+class ArchitectureRecommendation(JourneyModel):
+    code_architecture: Literal['object-component', 'ecs']
+    rationale: str = Field(min_length=1, max_length=1200)
+    tradeoffs: list[str] = Field(min_length=1, max_length=4)
+
+
+class GameProjectScaffold(JourneyModel):
+    root_path: str
+    initialization_status: Literal['generated', 'existing']
+    package_manager: Literal['pnpm'] | None = None
+    entry_file: str | None = None
+    generated_files: list[str] = Field(default_factory=list, max_length=30)
+    check_command: str | None = None
+    build_command: str | None = None
+    preview_command: str | None = None
+
+
+class GameTechnicalPlan(JourneyModel):
+    target_platform: Literal['web'] = 'web'
+    engine: Literal['threejs'] = 'threejs'
+    code_architecture: Literal['object-component', 'ecs']
+    architecture_label: str
+    selection_method: Literal['manual', 'ai']
+    rationale: str = Field(min_length=1, max_length=1200)
+    tradeoffs: list[str] = Field(min_length=1, max_length=4)
+    ecs_library: Literal['miniplex'] | None = None
+    scaffold: GameProjectScaffold
+    selected_at: str
+
+
 class JourneyVersion(JourneyModel):
     number: int
     confirmed_at: str
@@ -160,6 +190,8 @@ class PlanningJourney(JourneyModel):
     outline: Outline | None = None
     versions: list[JourneyVersion] = Field(default_factory=list)
     stack: Literal['threejs'] | None = None
+    technical_plan: GameTechnicalPlan | None = None
+    architecture_recommendation: ArchitectureRecommendation | None = None
     cards: list[ProductionCard] = Field(default_factory=list)
     composer_draft: str = ''
     model_calls: int = 0
@@ -176,7 +208,8 @@ class JourneyCommand(JourneyModel):
     request_id: str = Field(pattern=r'^[a-zA-Z0-9_-]{1,100}$')
     expected_revision: int = Field(ge=0)
     operation: Literal['message', 'save_draft', 'start_grill', 'generate_outline', 'save_outline',
-        'confirm_version', 'confirm_stack', 'generate_cards', 'save_cards',
+        'confirm_version', 'confirm_stack', 'recommend_architecture', 'confirm_technical_plan',
+        'generate_cards', 'save_cards',
         'accept_change', 'reject_change', 'select_card', 'clear_card', 'enable_git',
         'choose_model_source', 'new_modeling', 'open_modeling', 'close_modeling']
     text: str = Field(default='', max_length=16000)
@@ -190,6 +223,8 @@ class JourneyCommand(JourneyModel):
     model_source: Literal['import', 'create'] | None = None
     modeling_id: str | None = None
     context_draft: str | None = Field(default=None, max_length=16000)
+    code_architecture: Literal['object-component', 'ecs'] | None = None
+    selection_method: Literal['manual', 'ai'] | None = None
 
 
 class JourneyStreamEvent(JourneyModel):

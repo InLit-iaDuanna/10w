@@ -91,6 +91,7 @@ def modeling_prompt(state, session, policy, answered):
         '不能宣称某个版本已经生成成功，实际状态和 Three.js 预览以右侧面板为准。'
         '不要要求用户填写技术路径、端口或 Blender 参数。'
         f'{turn}只返回schema JSON。\n'
-        f'项目技术路线：{state.stack or "待确认"}。'
+        f'项目引擎／渲染：{state.stack or "待确认"}。'
+        f'游戏代码架构：{state.technical_plan.model_dump_json() if state.technical_plan else "待用户明确选择，不能由 Three.js 推断"}。'
         f'项目大纲：{state.outline.model_dump_json() if state.outline else "尚未生成"}\n'
         f'卡片：{card.model_dump_json()}\n建模记录：{session.model_dump_json()}')

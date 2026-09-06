@@ -28,6 +28,9 @@ class FixtureProvider:
                 'options':[{'label':'探索', 'description':'寻找出口'}, {'label':'战斗', 'description':'击败敌人'}], 'recommended_index':0}})
         elif schema and schema['title'] == 'AlignmentSummaryReply':
             text = json.dumps({'text': '已按当前详细程度完成对齐，可以生成下一步方案。'})
+        elif schema and schema['title'] == 'ArchitectureRecommendation':
+            text = json.dumps({'code_architecture':'ecs','rationale':'实体较多，规则适合按系统组合。',
+                'tradeoffs':['批量更新清楚','需要理解实体与系统']})
         elif schema and schema['title'] == 'RevisionReply':
             text = json.dumps({'text':'已提出地图修改，等待确认。', 'revised_outline':None,
                 'revised_cards':[{'id':'map','title':'森林地图','description':'森林空间','dependencies':[], 'acceptance':'存在出口','status':'planned'}], 'rationale':'按用户要求改为森林。'})
@@ -136,7 +139,13 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
             await act('confirm_version')
             snapshot = Path(folder.root_path)/'.sceneops/design/snapshots/v1.json'
             self.assertEqual(json.loads(snapshot.read_text())['number'], 1)
-            await act('confirm_stack')
+            await act('recommend_architecture')
+            self.assertEqual(state.architecture_recommendation.code_architecture, 'ecs')
+            await act('confirm_technical_plan', code_architecture='ecs', selection_method='ai')
+            self.assertEqual(state.technical_plan.ecs_library, 'miniplex')
+            game_root = Path(state.technical_plan.scaffold.root_path)
+            self.assertTrue((game_root/'src/game/systems/movementSystem.ts').is_file())
+            self.assertEqual(json.loads((game_root/'package.json').read_text())['dependencies']['miniplex'], '2.0.0')
             await act('generate_cards')
             self.assertEqual(state.cards[0].status, 'planned')
             await act('message', text='地图改成森林')
@@ -150,6 +159,9 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
             branch = state.card_branches[0]
             self.assertTrue(Path(branch.worktree_path).is_dir())
             self.assertEqual(branch.branch, 'codex/card-map')
+            self.assertTrue((Path(branch.worktree_path)/'src/game/systems/movementSystem.ts').is_file())
+            brief = json.loads((Path(branch.worktree_path)/'.sceneops/card-brief.json').read_text())
+            self.assertEqual(brief['card']['technical_plan']['code_architecture'], 'ecs')
             await act('select_card', card_id='map')
             self.assertEqual(len(state.card_branches), 1)
             restored = PlanningJourneyService(root/'state.sqlite3', folders, provider).get(folder.project_id)
@@ -158,6 +170,73 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
                 await service.command(folder.project_id, JourneyCommand(request_id='stale', expected_revision=0, operation='confirm_version'))
             with self.assertRaises(ValueError):
                 folders.create_design_snapshot(folder.project_id, {'changed': True}, 1)
+
+    async def test_manual_object_component_project_and_legacy_state_are_safe(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            folder = folders.create_folder_project(root, 'project')
+            service = PlanningJourneyService(root/'state.sqlite3', folders, FixtureProvider())
+            state = service.get(folder.project_id)
+            state.stage = 'stack'
+            state.outline = Outline(title='收集游戏', experience='移动收集', core_loop='移动—收集—计分',
+                scope='一个场景', acceptance='可以移动并得到三分')
+            state.versions = [JourneyVersion(number=1, confirmed_at='2026-09-06T00:00:00Z', outline=state.outline)]
+            with service.connection() as db:
+                db.execute('INSERT INTO design_journeys VALUES (?,?)', (folder.project_id, state.model_dump_json()))
+            selected = await service.command(folder.project_id, JourneyCommand(request_id='architecture',
+                expected_revision=0, operation='confirm_technical_plan',
+                code_architecture='object-component', selection_method='manual'))
+            project_root = Path(folder.root_path)
+            self.assertTrue((project_root/'src/game/objects/Player.ts').is_file())
+            self.assertFalse((project_root/'src/game/systems/movementSystem.ts').exists())
+            self.assertNotIn('miniplex', json.loads((project_root/'package.json').read_text())['dependencies'])
+            restored = PlanningJourneyService(root/'state.sqlite3', folders, FixtureProvider()).get(folder.project_id)
+            self.assertEqual(restored.technical_plan, selected.technical_plan)
+
+            legacy = restored.model_dump(mode='json', exclude={'technical_plan','architecture_recommendation'})
+            legacy['stage'] = 'cards'
+            legacy['stack'] = 'threejs'
+            with service.connection() as db:
+                db.execute('UPDATE design_journeys SET payload=? WHERE project_id=?',
+                    (json.dumps(legacy, ensure_ascii=False), folder.project_id))
+            before = (project_root/'src/game/objects/Player.ts').read_text()
+            reopened = service.get(folder.project_id)
+            self.assertIsNone(reopened.technical_plan)
+            self.assertEqual((project_root/'src/game/objects/Player.ts').read_text(), before)
+
+    async def test_existing_project_is_copied_to_card_without_rewriting_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            folder = folders.create_folder_project(root, 'existing-game')
+            project_root = Path(folder.root_path)
+            source = project_root/'src/main.ts'
+            source.parent.mkdir(parents=True)
+            source.write_text('export const existingGame = true;\n')
+            package = project_root/'package.json'
+            package.write_text('{"scripts":{"check":"custom"}}\n')
+            (project_root/'.env').write_text('PRIVATE_FIXTURE=1\n')
+            dependencies = project_root/'node_modules/example'
+            dependencies.mkdir(parents=True)
+            (dependencies/'index.js').write_text('ignored\n')
+            selection = {'target_platform':'web', 'engine':'threejs',
+                'code_architecture':'object-component', 'architecture_label':'对象／组件式',
+                'selection_method':'manual', 'rationale':'沿用已有对象代码。',
+                'tradeoffs':['继续整理对象依赖'], 'ecs_library':None}
+            scaffold = folders.initialize_game_project(folder.project_id, selection)
+            self.assertEqual(scaffold['initialization_status'], 'existing')
+            self.assertEqual(source.read_text(), 'export const existingGame = true;\n')
+            plan = {**selection, 'selected_at':'2026-09-06T00:00:00Z', 'scaffold':scaffold}
+            folders.commit_design_version(folder.project_id, 1, {'title':'existing'})
+            card = folders.open_card_worktree(folder.project_id, 'continue', '继续开发',
+                card={'technical_plan':plan})
+            card_root = Path(card['worktree_path'])
+            self.assertEqual((card_root/'src/main.ts').read_text(), source.read_text())
+            self.assertEqual((card_root/'package.json').read_text(), package.read_text())
+            self.assertFalse((card_root/'.env').exists())
+            self.assertFalse((card_root/'node_modules').exists())
+            self.assertEqual(source.read_text(), 'export const existingGame = true;\n')
 
     async def test_interrupted_snapshot_export_reconciles_without_new_model_call(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -23,11 +23,15 @@ class CardGitWriteSmoke(unittest.IsolatedAsyncioTestCase):
                 settings=lambda: SimpleNamespace(provider='codebuddycli', model='fixture'),
                 generate=AsyncMock(side_effect=AssertionError('No real model call')))
             service = AgentTaskService(data/'state.sqlite3', repository, data, provider=provider,
-                card_context=lambda project_id, card_id: {'card':{'title':'最新地图草稿'},'notice':'fixture'})
+                card_context=lambda project_id, card_id: {'card':{'title':'最新地图草稿'},
+                    'technical_plan':{'code_architecture':'object-component'},'notice':'fixture'})
             try:
                 task = service.prepare(PrepareAgentTask(project_id=project.project_id, card_id='map',
                     task_profile='card-development', goal='创建源码，不运行'))
                 self.assertEqual(task.observations['card_context']['card']['title'], '最新地图草稿')
+                self.assertEqual(task.observations['card_context']['technical_plan']['code_architecture'], 'object-component')
+                self.assertEqual(task.observations['development_workspace']['workspace_root'], branch['worktree_path'])
+                self.assertIn('增量修改', task.observations['development_workspace']['instruction'])
                 source = Path(branch['worktree_path'])/'main.ts'
                 self.assertFalse(source.exists())
                 service.authorize(task.id, AuthorizeAgentTask(authorization_card_id=task.authorization_card.id,

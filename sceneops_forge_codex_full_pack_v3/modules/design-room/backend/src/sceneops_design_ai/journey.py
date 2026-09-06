@@ -10,9 +10,10 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sceneops_ai_provider import ProviderFailure
 from sceneops_ai_provider import ProviderService
+from sceneops_project_workspace import GameProjectError
 from .journey_models import (PlanningJourney, JourneyCommand, JourneyMessage, JourneyVersion,
     Outline, CardProposal, CompactCardProposal, GrillReply, AlignmentSummaryReply, JourneyStreamEvent, RevisionReply,
-    GitVersion, CardBranch)
+    GitVersion, CardBranch, ArchitectureRecommendation, GameTechnicalPlan, GameProjectScaffold)
 from .journey_changes import propose_change, resolve_change
 from .card_modeling import active_modeling, modeling_block_for_turn, modeling_command, modeling_prompt
 
@@ -22,6 +23,19 @@ ALIGNMENT_POLICIES = {
     'concise': {'label': '精简', 'limit': 2, 'focus': '只确认会阻塞制作的核心目标或硬约束'},
     'standard': {'label': '标准', 'limit': 4, 'focus': '确认目标、范围、风格与关键约束'},
     'deep': {'label': '深入', 'limit': 8, 'focus': '继续确认边界、细节与验收偏好'},
+}
+
+ARCHITECTURE_DEFAULTS = {
+    'object-component': {
+        'label': '对象／组件式',
+        'rationale': '以玩家、可收集物等对象组织代码，职责直观，适合快速迭代和逐对象扩展。',
+        'tradeoffs': ['上手和调试直接', '规模变大后需要持续整理对象间依赖'],
+    },
+    'ecs': {
+        'label': 'ECS（Miniplex）',
+        'rationale': '把数据组件与更新系统分开，适合大量同类实体和可组合玩法。',
+        'tradeoffs': ['批量更新和组合能力清楚', '需要理解实体、组件和系统的分工'],
+    },
 }
 
 
@@ -55,16 +69,21 @@ class PlanningJourneyService:
     def connection(self):
         return sqlite3.connect(self.database, timeout=10)
 
-    def development_context(self, project_id, card_id):
-        state = self.get(project_id)
+    def _development_context(self, state, card_id):
         card = next((item for item in state.cards if item.id == card_id), None)
         if card is None or not state.versions:
             raise HTTPException(409, '开发卡片已移除或缺少已确认策划版本，请重新选择。')
         return {'card': card.model_dump(mode='json'), 'stack': state.stack,
+                'technical_plan': state.technical_plan.model_dump(mode='json') if state.technical_plan else None,
+                'architecture_constraint': ('继续使用已选代码架构，先读取当前工程再修改；不得重新生成或替换整个工程。'
+                    if state.technical_plan else '旧项目尚未选择游戏代码架构；不得从 Three.js 字段推断。'),
                 'outline': state.outline.model_dump(mode='json') if state.outline else None,
                 'planning_revision': state.revision, 'formal_version': state.versions[-1].number,
                 'modeling_briefs': [item.model_dump(mode='json') for item in state.modeling_sessions if item.card_id == card_id],
                 'notice': '任务准备时的策划草稿快照；上下文不是新增权限。'}
+
+    def development_context(self, project_id, card_id):
+        return self._development_context(self.get(project_id), card_id)
 
     def get(self, project_id):
         folder = self.folders.get_folder_project(project_id)
@@ -95,7 +114,8 @@ class PlanningJourneyService:
                     state.git_versions.append(GitVersion(number=version.number, **metadata))
             if operation == 'select_card':
                 card = next(card for card in state.cards if card.id == state.active_card_id)
-                metadata = self.folders.open_card_worktree(project_id, card.id, card.title, card=card.model_dump(mode='json'))
+                metadata = self.folders.open_card_worktree(project_id, card.id, card.title,
+                    card=self._development_context(state, card.id))
                 state.card_branches = [item for item in state.card_branches if item.card_id != card.id]
                 state.card_branches.append(CardBranch(card_id=card.id, **metadata))
         with self.connection() as db:
@@ -268,11 +288,13 @@ class PlanningJourneyService:
             if state.outline:
                 propose_change(state, generated, state.cards, '根据讨论重新整理大纲，等待确认。')
             else: state.outline = generated
+            if not state.technical_plan: state.architecture_recommendation = None
             state.stage = 'outline'
         elif op == 'save_outline':
             if state.stage not in ('outline', 'stack', 'cards') or command.outline is None:
                 raise HTTPException(409, '没有可编辑的大纲。')
             state.outline = command.outline
+            if not state.technical_plan: state.architecture_recommendation = None
         elif op == 'confirm_version':
             if not state.outline or state.stage not in ('outline', 'stack', 'cards'):
                 raise HTTPException(409, '请先生成并审阅大纲。')
@@ -281,13 +303,59 @@ class PlanningJourneyService:
             version = JourneyVersion(number=len(state.versions) + 1, confirmed_at=timestamp(),
                 outline=state.outline.model_copy(deep=True), stack=state.stack, cards=state.cards)
             state.versions.append(version)
+            if not state.technical_plan: state.architecture_recommendation = None
             if state.stack is None: state.stage = 'stack'
         elif op == 'confirm_stack':
             if state.stage != 'stack' or not state.versions: raise HTTPException(409, '先确认策划 v1。')
+            # Historical clients may still confirm the renderer separately. This never infers a code architecture.
+            state.stack = 'threejs'
+        elif op == 'recommend_architecture':
+            if state.stage not in ('stack', 'cards') or not state.versions:
+                raise HTTPException(409, '先确认策划版本，再推荐游戏代码架构。')
+            result = await self.generate(state,
+                '根据当前已确认策划，在 object-component 与 ecs 两种代码架构中推荐一个。'
+                '目标平台固定为 Web，引擎/渲染固定为 Three.js；ecs 固定使用 Miniplex。'
+                '用非专业用户也能理解的中文说明推荐理由，并给出1至4条真实取舍。'
+                '只返回 schema JSON，不生成代码，不声称用户已选择。', ArchitectureRecommendation,
+                context={'outline': state.outline.model_dump(mode='json') if state.outline else None,
+                         'cards': [card.model_dump(mode='json') for card in state.cards]})
+            state.architecture_recommendation = ArchitectureRecommendation.model_validate_json(result.text)
+        elif op == 'confirm_technical_plan':
+            if state.stage not in ('stack', 'cards') or not state.versions:
+                raise HTTPException(409, '先确认策划版本，再选择游戏代码架构。')
+            if command.code_architecture is None or command.selection_method is None:
+                raise HTTPException(422, '请选择一种游戏代码架构。')
+            if state.technical_plan and state.technical_plan.code_architecture != command.code_architecture:
+                raise HTTPException(409, '游戏工程已有代码架构；更换架构需要建立明确迁移任务。')
+            recommendation = state.architecture_recommendation
+            if command.selection_method == 'ai':
+                if recommendation is None or recommendation.code_architecture != command.code_architecture:
+                    raise HTTPException(409, 'AI 推荐已变化或尚未完成，请重新查看；也可以手动选择。')
+                rationale, tradeoffs = recommendation.rationale, recommendation.tradeoffs
+            else:
+                defaults = ARCHITECTURE_DEFAULTS[command.code_architecture]
+                rationale, tradeoffs = defaults['rationale'], defaults['tradeoffs']
+            selection = {'target_platform': 'web', 'engine': 'threejs',
+                'code_architecture': command.code_architecture,
+                'architecture_label': ARCHITECTURE_DEFAULTS[command.code_architecture]['label'],
+                'selection_method': command.selection_method, 'rationale': rationale,
+                'tradeoffs': tradeoffs, 'ecs_library': 'miniplex' if command.code_architecture == 'ecs' else None}
+            try:
+                scaffold = self.folders.initialize_game_project(state.project_id, selection)
+            except GameProjectError as error:
+                raise HTTPException(409, str(error)) from error
+            state.technical_plan = GameTechnicalPlan(**selection,
+                scaffold=GameProjectScaffold.model_validate(scaffold), selected_at=timestamp())
             state.stack, state.stage = 'threejs', 'cards'
         elif op == 'generate_cards':
-            if state.stage != 'cards' or state.stack != 'threejs': raise HTTPException(409, '请先确认 Three.js 技术路线。')
-            result = await self.generate(state, '根据已确认策划版本和 Three.js 路线生成且只生成四张高层制作卡。'
+            if state.stage != 'cards' or not state.technical_plan:
+                raise HTTPException(409, '请先选择并创建游戏代码架构。')
+            plan = state.technical_plan
+            result = await self.generate(state,
+                f'根据已确认策划和技术方案生成且只生成四张高层制作卡。目标平台 Web，渲染 Three.js，'
+                f'代码架构 {plan.architecture_label}（{plan.code_architecture}）'
+                + (f'，ECS 库 {plan.ecs_library}' if plan.ecs_library else '') + '。'
+                '卡片的实现描述和验收必须遵守该架构，后续开发先读取已创建工程，不重新生成工程。'
                 '四张卡必须使用固定 ID：world-3d、core-gameplay、growth-feedback、demo-delivery。'
                 'world-3d 卡必须合并地图、环境、角色与怪物外观、模型导入/新建/归一化、相机、空间点位和场景搭建；'
                 'core-gameplay 卡合并控制、战斗、怪物逻辑、武器、波次、掉落与经验；'
@@ -304,11 +372,14 @@ class PlanningJourneyService:
             cards = CardProposal(cards=command.cards).cards
             if state.cards != cards:
                 state.cards = cards
+                if not state.technical_plan: state.architecture_recommendation = None
                 if state.active_card_id not in {card.id for card in cards}:
                     state.active_card_id = None
                     state.active_modeling_id = None
         elif op in ('accept_change', 'reject_change'):
             resolve_change(state, command.change_id, op == 'accept_change')
+            if op == 'accept_change' and not state.technical_plan:
+                state.architecture_recommendation = None
         elif op == 'select_card':
             if not state.versions or not any(card.id == command.card_id for card in state.cards):
                 raise HTTPException(409, '先确认策划版本，并选择有效的制作卡片。')
@@ -356,7 +427,9 @@ class PlanningJourneyService:
         schema = AlignmentSummaryReply if answered >= policy['limit'] else GrillReply
         result = await self.generate(state, modeling_prompt(state, session, policy, answered), schema,
             context={'outline': state.outline.model_dump(mode='json') if state.outline else None,
-                     'stack': state.stack, 'scope': 'modeling-brief-only'}, provider_settings=settings)
+                     'stack': state.stack,
+                     'technical_plan': state.technical_plan.model_dump(mode='json') if state.technical_plan else None,
+                     'scope': 'modeling-brief-only'}, provider_settings=settings)
         if schema == AlignmentSummaryReply:
             reply = AlignmentSummaryReply.model_validate_json(result.text)
             session.messages.append(JourneyMessage(id=uuid4().hex, role='assistant', text=reply.text,

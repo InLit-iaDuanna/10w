@@ -8,6 +8,13 @@ import { PlanningQuestionCard } from './PlanningQuestionCard';
 import { JourneyChangeReview } from './JourneyChangeReview';
 import { CardModelingEntry } from './CardModelingEntry';
 
+const architectureOptions = [
+  {id:'object-component' as const,title:'对象／组件式',plain:'玩家、道具和场景对象各自管理行为，像搭积木一样逐步扩展。',
+    tradeoff:'适合快速开始和直观调试；项目变大后要持续整理对象之间的关系。'},
+  {id:'ecs' as const,title:'ECS · Miniplex',plain:'数据放在组件里，移动、收集、计分等规则由独立系统批量更新。',
+    tradeoff:'适合大量同类实体和组合玩法；需要理解实体、组件和系统的分工。'},
+];
+
 export type JourneySurfaceRequest = { surface: 'modeling' | 'environment'; hosted: boolean; revision: number;
   action?: {id:string;type:'new-asset';source:'import'|'create'} };
 
@@ -94,7 +101,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
       const body: JourneyCommand = { request_id: crypto.randomUUID(), expected_revision:
         ['save_outline', 'save_cards'].includes(input.operation) ? editBase.current ?? query.data.revision : query.data.revision,
         text: '', accept_assumptions: false, ...input };
-      if (['message', 'start_grill', 'generate_outline', 'generate_cards'].includes(input.operation)) {
+      if (['message', 'start_grill', 'generate_outline', 'recommend_architecture', 'generate_cards'].includes(input.operation)) {
         setLiveText(''); setLiveReasoning(''); setLiveStatus('正在连接…');
         return journeyClient.stream(projectId, body, event => {
           if (event.type === 'text_delta') { setLiveText(text => text + event.text); setLiveStatus('正在回复'); }
@@ -122,7 +129,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const environmentAvailable = !!environment;
   const draftScope = useRef<string | null>(null);
   const busy = mutation.isPending || prepareDevelopment.isPending || environmentBuild.isPending;
-  const replying = environmentBuild.isPending || (mutation.isPending && ['message', 'start_grill', 'generate_outline', 'generate_cards'].includes(mutation.variables?.operation ?? ''));
+  const replying = environmentBuild.isPending || (mutation.isPending && ['message', 'start_grill', 'generate_outline', 'recommend_architecture', 'generate_cards'].includes(mutation.variables?.operation ?? ''));
   useEffect(() => {
     if (!state) return;
     const scope = environmentOpen ? 'environment' : modeling?.id ?? 'main';
@@ -209,6 +216,8 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const versions = state.versions ?? [];
   const activeCard = cards.find(card => card.id === state.active_card_id);
   const activeBranch = state.card_branches?.find(branch => branch.card_id === state.active_card_id);
+  const technicalPlan = state.technical_plan;
+  const recommendation = state.architecture_recommendation;
   const workspaceDescription = activeCard?.id === 'world-3d'
     ? '场景、资产库、模型新建与导入、归一化、空间点位和摆放都在这个工作区完成。'
     : activeCard?.id === 'core-gameplay'
@@ -273,6 +282,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         </nav>
       </section>}
       {activeCard && !environmentOpen && <CardModelingEntry state={state} busy={busy || !!editing} onCommand={act} onOpenEnvironment={openEnvironment} />}
+      {activeCard && !technicalPlan && <p role="status" className="journey-architecture-missing">这个旧项目还没有明确游戏代码架构。返回制作卡片后选择架构，已有代码不会被重建或覆盖。</p>}
       {environmentOpen && !messages.length && !outgoing && <div className="journey-empty journey-workspace-empty"><h2>继续构建 3D 世界</h2><p>可以在这里聊场景和资产，也可以直接在右侧新建、导入、编辑和摆放模型。</p></div>}
       {!messages.length && !outgoing && !modeling && !environmentOpen && !activeCard && <div className="journey-empty"><h2>你想做一个什么样的游戏？</h2><p>先聊 idea，等你说完，我们再一起对齐细节。</p></div>}
       {messages.map(message => <article key={message.id} className={`journey-message ${message.role}`}>
@@ -299,9 +309,26 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         <div className="journey-actions"><button disabled={busy || editing !== 'outline'} onClick={() => act('save_outline', { outline })}>保存大纲修改</button>
           <button disabled={busy || !!editing || (!!outline.assumptions?.length && !accepted)} onClick={() => act('confirm_version', { accept_assumptions: accepted })}>确认正式版本 v{versions.length + 1}</button></div>
       </details>}
-      {state.stage === 'stack' && <section className="journey-next"><p>策划已确认。下一步采用 Three.js，在浏览器里制作和试玩 3D demo。</p><button disabled={busy} onClick={() => act('confirm_stack')}>确认 Three.js 路线</button></section>}
+      {!technicalPlan && (state.stage === 'stack' || state.stage === 'cards') && <section className="journey-next journey-architecture">
+        <header><div><strong>选择游戏工程的代码架构</strong><p>不用先懂专业名词。两种方案都会创建可运行的 Three.js 工程，后续 Agent 会沿用你的选择。</p></div>
+          <button disabled={busy} onClick={() => act('recommend_architecture')}>让 AI 根据策划推荐</button></header>
+        <dl className="journey-tech-targets"><div><dt>目标平台</dt><dd>浏览器 Web</dd></div><div><dt>引擎／渲染</dt><dd>Three.js</dd></div><div><dt>代码架构</dt><dd>由你选择</dd></div></dl>
+        {recommendation && <section className="journey-architecture-recommendation"><small>AI 推荐</small><strong>{architectureOptions.find(item => item.id === recommendation.code_architecture)?.title}</strong>
+          <p>{recommendation.rationale}</p><ul>{recommendation.tradeoffs.map(item => <li key={item}>{item}</li>)}</ul>
+          <button disabled={busy} onClick={() => act('confirm_technical_plan', {code_architecture:recommendation.code_architecture,selection_method:'ai'})}>采用推荐并创建工程</button></section>}
+        <div className="journey-architecture-options">{architectureOptions.map(option => <article key={option.id}>
+          <strong>{option.title}</strong><p>{option.plain}</p><small>{option.tradeoff}</small>
+          <button disabled={busy} onClick={() => act('confirm_technical_plan', {code_architecture:option.id,selection_method:'manual'})}>选择并创建工程</button>
+        </article>)}</div>
+      </section>}
+      {technicalPlan && !activeCard && <details className="journey-attachment journey-technical-plan" open={!cards.length}>
+        <summary>游戏技术方案 · {technicalPlan.architecture_label} <small>{technicalPlan.selection_method === 'ai' ? 'AI 推荐后选择' : '手动选择'} · 已创建</small></summary>
+        <dl className="journey-tech-targets"><div><dt>目标平台</dt><dd>浏览器 Web</dd></div><div><dt>引擎／渲染</dt><dd>Three.js</dd></div><div><dt>代码架构</dt><dd>{technicalPlan.architecture_label}</dd></div></dl>
+        <p>{technicalPlan.rationale}</p><p><small>工程：{technicalPlan.scaffold.root_path}</small></p>
+        {technicalPlan.scaffold.initialization_status === 'generated' ? <p><code>{technicalPlan.scaffold.preview_command}</code> · <code>{technicalPlan.scaffold.build_command}</code></p> : <p>检测到已有源码，仅保存架构选择，没有重建或覆盖工程。</p>}
+      </details>}
       {state.stage === 'cards' && <section className="journey-next">
-        {!cards.length && <button disabled={busy} onClick={() => act('generate_cards')}>根据策划生成制作卡片</button>}
+        {!cards.length && <button disabled={busy || !technicalPlan} onClick={() => act('generate_cards')}>根据技术方案生成制作卡片</button>}
         {!!cards.length && <><p className="journey-card-summary">四条主制作线；具体实现留在对应工作流里，不再平铺成十几张卡。</p><section className="journey-production-cards" aria-label="制作卡片">
           {cards.map((card, index) => <article className="journey-plan-item" key={card.id} data-selected={state.active_card_id === card.id}>
             <button type="button" className="journey-card-select" aria-pressed={state.active_card_id === card.id} disabled={busy || !!editing}
@@ -333,7 +360,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     <form className="unified-ai-composer journey-composer" onSubmit={event => { event.preventDefault(); send(); }}>
       <textarea ref={input} aria-label={environmentOpen ? '3D 世界对话' : modeling ? '模型生成对话' : activeCard ? `${activeCard.title}对话` : '策划对话'} disabled={!environmentOpen && modeling?.source === 'import'} placeholder={environmentOpen ? '描述要构建的世界、场景或资产；右侧可以直接新建、导入和摆放…' : modeling ? modeling.source === 'create' ? '描述模型、风格、尺寸和用途；也可以在上方加参考图…' : '请在右侧选择 GLB 或 FBX 文件' : activeCard ? workMode === 'develop' ? `让 Agent 实现「${activeCard.title}」的什么内容？` : `继续讨论「${activeCard.title}」…` : state.stage === 'idea' ? '聊聊你的 idea…' : '补充想法，或告诉我大纲和卡片要怎么改…'} value={draft} rows={1} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
       <div className="journey-composer-tools">{modelPicker(replying || prepareDevelopment.isPending)}
-        {activeCard && !modeling && !environmentOpen && <select className="journey-work-mode" aria-label="分支协作方式" value={workMode} disabled={busy} onChange={event => setWorkMode(event.target.value as 'discuss' | 'develop')}><option value="discuss">卡片协作</option><option value="develop">高级 · 代码开发授权</option></select>}
+        {activeCard && !modeling && !environmentOpen && <select className="journey-work-mode" aria-label="分支协作方式" value={workMode} disabled={busy || !technicalPlan} onChange={event => setWorkMode(event.target.value as 'discuss' | 'develop')}><option value="discuss">卡片协作</option><option value="develop">高级 · 代码开发授权</option></select>}
         <span className="journey-draft-status">{prepareDevelopment.isPending ? '准备授权…' : !replying && (dirty ? '保存中' : '')}</span>
         {replying ? <button className="journey-submit" type="button" aria-label="停止回复" title="停止回复" onClick={() => controller.current?.abort()}>■</button> : <button className="journey-submit" type="submit" aria-label={activeCard && workMode === 'develop' ? '准备开发授权' : '发送'} title={activeCard && workMode === 'develop' ? '准备开发授权，不立即执行' : '发送'} disabled={busy || !draft.trim()}>↑</button>}</div>
     </form><small className="journey-cost" title={state.cost_notice}>{environmentOpen ? '3D 世界 · 场景与资产共用当前上下文' : modeling ? modeling.source === 'create' ? '模型生成 · 每轮保留版本' : '模型导入 · 原件保留' : activeCard && workMode === 'develop' ? '确认后写入当前工作流分支 · 不自动合并' : activeCard ? `${activeCard.title} · 独立工作流` : '单人协作 · 仅策划'} · 费用未知</small>

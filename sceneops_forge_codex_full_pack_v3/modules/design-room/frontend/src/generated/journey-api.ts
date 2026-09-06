@@ -59,6 +59,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ArchitectureRecommendation */
+        ArchitectureRecommendation: {
+            /**
+             * Code Architecture
+             * @enum {string}
+             */
+            code_architecture: "object-component" | "ecs";
+            /** Rationale */
+            rationale: string;
+            /** Tradeoffs */
+            tradeoffs: string[];
+        };
         /** CardBranch */
         CardBranch: {
             /** Card Id */
@@ -102,6 +114,64 @@ export interface components {
              * @constant
              */
             mode: "planned";
+        };
+        /** GameProjectScaffold */
+        GameProjectScaffold: {
+            /** Root Path */
+            root_path: string;
+            /**
+             * Initialization Status
+             * @enum {string}
+             */
+            initialization_status: "generated" | "existing";
+            /** Package Manager */
+            package_manager?: "pnpm" | null;
+            /** Entry File */
+            entry_file?: string | null;
+            /** Generated Files */
+            generated_files?: string[];
+            /** Check Command */
+            check_command?: string | null;
+            /** Build Command */
+            build_command?: string | null;
+            /** Preview Command */
+            preview_command?: string | null;
+        };
+        /** GameTechnicalPlan */
+        GameTechnicalPlan: {
+            /**
+             * Target Platform
+             * @default web
+             * @constant
+             */
+            target_platform: "web";
+            /**
+             * Engine
+             * @default threejs
+             * @constant
+             */
+            engine: "threejs";
+            /**
+             * Code Architecture
+             * @enum {string}
+             */
+            code_architecture: "object-component" | "ecs";
+            /** Architecture Label */
+            architecture_label: string;
+            /**
+             * Selection Method
+             * @enum {string}
+             */
+            selection_method: "manual" | "ai";
+            /** Rationale */
+            rationale: string;
+            /** Tradeoffs */
+            tradeoffs: string[];
+            /** Ecs Library */
+            ecs_library?: "miniplex" | null;
+            scaffold: components["schemas"]["GameProjectScaffold"];
+            /** Selected At */
+            selected_at: string;
         };
         /** GitVersion */
         GitVersion: {
@@ -148,7 +218,7 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "message" | "save_draft" | "start_grill" | "generate_outline" | "save_outline" | "confirm_version" | "confirm_stack" | "generate_cards" | "save_cards" | "accept_change" | "reject_change" | "select_card" | "clear_card" | "enable_git" | "choose_model_source" | "new_modeling" | "open_modeling" | "close_modeling";
+            operation: "message" | "save_draft" | "start_grill" | "generate_outline" | "save_outline" | "confirm_version" | "confirm_stack" | "recommend_architecture" | "confirm_technical_plan" | "generate_cards" | "save_cards" | "accept_change" | "reject_change" | "select_card" | "clear_card" | "enable_git" | "choose_model_source" | "new_modeling" | "open_modeling" | "close_modeling";
             /**
              * Text
              * @default
@@ -176,6 +246,10 @@ export interface components {
             modeling_id?: string | null;
             /** Context Draft */
             context_draft?: string | null;
+            /** Code Architecture */
+            code_architecture?: ("object-component" | "ecs") | null;
+            /** Selection Method */
+            selection_method?: ("manual" | "ai") | null;
         };
         /** JourneyMessage */
         JourneyMessage: {
@@ -277,6 +351,8 @@ export interface components {
             versions?: components["schemas"]["JourneyVersion"][];
             /** Stack */
             stack?: "threejs" | null;
+            technical_plan?: components["schemas"]["GameTechnicalPlan"] | null;
+            architecture_recommendation?: components["schemas"]["ArchitectureRecommendation"] | null;
             /** Cards */
             cards?: components["schemas"]["ProductionCard"][];
             /**

@@ -154,6 +154,41 @@
   },
   "components": {
     "schemas": {
+      "ArchitectureRecommendation": {
+        "properties": {
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "tradeoffs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Tradeoffs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code_architecture",
+          "rationale",
+          "tradeoffs"
+        ],
+        "title": "ArchitectureRecommendation"
+      },
       "CardBranch": {
         "properties": {
           "card_id": {
@@ -238,6 +273,175 @@
         ],
         "title": "CardModelingSession",
         "description": "A card-owned design conversation, never evidence of a produced model."
+      },
+      "GameProjectScaffold": {
+        "properties": {
+          "root_path": {
+            "type": "string",
+            "title": "Root Path"
+          },
+          "initialization_status": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "existing"
+            ],
+            "title": "Initialization Status"
+          },
+          "package_manager": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "pnpm"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Manager"
+          },
+          "entry_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry File"
+          },
+          "generated_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Generated Files"
+          },
+          "check_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Command"
+          },
+          "build_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Command"
+          },
+          "preview_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Command"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "root_path",
+          "initialization_status"
+        ],
+        "title": "GameProjectScaffold"
+      },
+      "GameTechnicalPlan": {
+        "properties": {
+          "target_platform": {
+            "type": "string",
+            "const": "web",
+            "title": "Target Platform",
+            "default": "web"
+          },
+          "engine": {
+            "type": "string",
+            "const": "threejs",
+            "title": "Engine",
+            "default": "threejs"
+          },
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "architecture_label": {
+            "type": "string",
+            "title": "Architecture Label"
+          },
+          "selection_method": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "ai"
+            ],
+            "title": "Selection Method"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "tradeoffs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Tradeoffs"
+          },
+          "ecs_library": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "miniplex"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ecs Library"
+          },
+          "scaffold": {
+            "$ref": "#/components/schemas/GameProjectScaffold"
+          },
+          "selected_at": {
+            "type": "string",
+            "title": "Selected At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code_architecture",
+          "architecture_label",
+          "selection_method",
+          "rationale",
+          "tradeoffs",
+          "scaffold",
+          "selected_at"
+        ],
+        "title": "GameTechnicalPlan"
       },
       "GitVersion": {
         "properties": {
@@ -370,6 +574,8 @@
               "save_outline",
               "confirm_version",
               "confirm_stack",
+              "recommend_architecture",
+              "confirm_technical_plan",
               "generate_cards",
               "save_cards",
               "accept_change",
@@ -503,6 +709,36 @@
               }
             ],
             "title": "Context Draft"
+          },
+          "code_architecture": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object-component",
+                  "ecs"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Architecture"
+          },
+          "selection_method": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "manual",
+                  "ai"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Method"
           }
         },
         "additionalProperties": false,
@@ -810,6 +1046,26 @@
               }
             ],
             "title": "Stack"
+          },
+          "technical_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameTechnicalPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "architecture_recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArchitectureRecommendation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "cards": {
             "items": {

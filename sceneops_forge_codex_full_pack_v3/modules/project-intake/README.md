@@ -1,5 +1,11 @@
 # Project Intake
 
+## 游戏工程初始化
+
+公开 `initialize_game_project` 根据 Design Room 已确认的技术方案创建真实 Web + Three.js 工程。对象／组件式和 ECS · Miniplex 使用不同源码组织和更新循环，均包含启动入口、最小移动—收集—计分交互、类型检查、构建和预览命令。架构记录写入 `.sceneops/game-architecture.json`；重复同方案为幂等操作，改选架构要求明确迁移任务。
+
+检测到已有 `package.json`、`index.html` 或 `src` 时只记录选择，不覆盖代码。打开卡片 worktree 时复制尚未被 Git 纳入的普通项目文件，排除元数据、隐藏文件、依赖和构建目录，且不覆盖 worktree 现有文件。详细行为和限制见根目录 `GAME_CODE_ARCHITECTURE_MILESTONE.md`。
+
 ## Git 文件夹项目
 
 新增公开 `ensure_project_git`、`commit_design_version`、`open_card_worktree`，仅操作应用绑定的根目录。新建目录初始化独立 Git；旧根需明确动作启用。正式版本不夹带用户暂存文件；卡片是实际 Git 分支和独立 worktree。全部 Git 调用禁用 hooks、签名和配置的 checkout filters，不修改全局配置、不自动联网。Git 失败保留已有目录、绑定及历史。详细范围见根 `GIT_CARD_BRANCHES.md`。

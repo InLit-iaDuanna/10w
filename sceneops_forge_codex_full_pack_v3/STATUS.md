@@ -1,5 +1,9 @@
 # 当前状态：单主对话生产状态底座已接入，全流程改造仍在进行
 
+## 2026-09-06：游戏代码架构选择与真实工程
+
+第一次生成代码前可手动选择对象／组件式或 ECS · Miniplex，也可由当前 AI 提供方根据策划推荐；确认后创建真实 Vite + TypeScript + Three.js 工程。技术方案进入制作卡、Git worktree 和 Agent 任务上下文，旧项目不从 Three.js 猜架构、不覆盖源码。两类样例的类型检查、构建和浏览器输入通过；真实 `gpt-5.6-sol` Agent 在 ECS worktree 内只修改输入系统增加 Shift 冲刺，随后构建通过。见 [里程碑交付](GAME_CODE_ARCHITECTURE_MILESTONE.md)。
+
 ## 2026-09-06：分支内受控源码开发
 
 选中卡片后，主对话可准备开发授权；CodeBuddy/Codex/OAI通过原Harness读写已登记worktree源码，展示差异并回读。7项相关烟测通过，未调用真实模型、执行源码或改变用户项目。任务完成只表示源码写入，不表示编译/游戏验收。见 [卡片源码开发](CARD_CODE_DEVELOPMENT.md)。

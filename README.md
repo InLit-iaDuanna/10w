@@ -32,6 +32,8 @@ pnpm dev
 
 ## 文档导航
 
+- [Agent-first 产品理解与下一步](sceneops_forge_codex_full_pack_v3/AGENT_FIRST_UNDERSTANDING.md)
+- [游戏代码架构选择与真实工程里程碑](sceneops_forge_codex_full_pack_v3/GAME_CODE_ARCHITECTURE_MILESTONE.md)
 - [当前状态与历史验证](sceneops_forge_codex_full_pack_v3/STATUS.md)
 - [单人协作策划流程](sceneops_forge_codex_full_pack_v3/PLANNING_JOURNEY_STAGE1.md)
 - [制作卡片模型流程](sceneops_forge_codex_full_pack_v3/CARD_ASSET_WORKFLOW_SMOKE.md)

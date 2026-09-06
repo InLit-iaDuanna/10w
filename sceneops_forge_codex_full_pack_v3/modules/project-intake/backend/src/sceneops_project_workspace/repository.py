@@ -8,6 +8,7 @@ from typing import Protocol
 from uuid import uuid4
 from pydantic import JsonValue
 from .git_projects import GitProjects
+from .game_projects import GameProjects
 
 from .models import (FolderEntry, FolderListing, FolderProject, ModuleDocument,
     ModuleId, Project, SampleId, StructuredDesignArtifact)
@@ -43,6 +44,7 @@ class WorkspaceRepository(Protocol):
     def commit_design_version(self, project_id: str, version: int, payload: dict) -> dict: ...
     def open_card_worktree(self, project_id: str, card_id: str, title: str, card: dict | None = None) -> dict: ...
     def get_card_worktree(self, project_id: str, card_id: str) -> dict: ...
+    def initialize_game_project(self, project_id: str, selection: dict) -> dict: ...
 
 
 class SqliteWorkspaceRepository:
@@ -191,10 +193,16 @@ class SqliteWorkspaceRepository:
         return GitProjects(self).commit_version(project_id, version, payload)
 
     def open_card_worktree(self, project_id, card_id, title, card=None):
-        return GitProjects(self).open_card(project_id, card_id, title, card)
+        result = GitProjects(self).open_card(project_id, card_id, title, card)
+        GameProjects(self).materialize_card(project_id, Path(result["worktree_path"]),
+                                            (card or {}).get("technical_plan"))
+        return result
 
     def get_card_worktree(self, project_id, card_id):
         return GitProjects(self).get_card(project_id, card_id)
+
+    def initialize_game_project(self, project_id, selection):
+        return GameProjects(self).initialize(project_id, selection)
 
     def list_folder_projects(self):
         with self.connect() as connection:

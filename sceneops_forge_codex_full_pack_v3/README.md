@@ -1,5 +1,7 @@
 # SceneOps Forge V5 · AI 生产工作台
 
+最新：第一次生成游戏工程代码前，用户可手动选择对象／组件式或 ECS · Miniplex，也可让当前 AI 提供方推荐。确认后会创建真实、可构建和预览的 Three.js 工程，制作卡与卡片 Agent 持续读取同一技术方案。[实现、操作与真实 Agent 验证](GAME_CODE_ARCHITECTURE_MILESTONE.md)。
+
 制作卡片现在可选择“导入已有模型”或“新建模型”。导入 GLB/FBX 后由真实 Blender 检查并生成 `.blend`、预览 GLB、Unity 交换 FBX；新建在唯一主对话中逐块对齐，每条新回答都会追加一个真实 Blender/GLB 草稿版本。确认的版本可存入项目资产库，再进入 Three.js 环境场景人工摆放，或继续由同一个主对话让 AI 使用库内资产搭建。两条模型路径都写入卡片 Git 工作树且不自动提交/合并，归一化另存版本。验证范围见 [卡片模型烟测](CARD_ASSET_WORKFLOW_SMOKE.md)。
 
 最新：同一 Agent 输入框通过权限区分讨论和执行，不再分两个页面；工作台默认 Agent 输入，手动表单放入高级设置。模型设置可切换 CodeBuddy CLI、Codex CLI 与 OAI 兼容服务。Codex 完全权限须单独确认，`gpt-5.6-sol / low` 已真实完成独立文件创建/读回烟测；其他生产环节未因此自动验收。[本次说明](CODEX_PROVIDER_HANDOFF.md)。
@@ -104,4 +106,4 @@ V5 初始交付只做空态烟测。用户随后授权真实 AI 连通检查，G
 最新授权范围内已运行基础资产的真实 Blender/Unity 闭环及相关定向测试。未运行完整测试套件、生产构建、游戏 demo、渲染或 AI playtest；其他外部生产能力仍保持原 planned/blocked 状态。类型检查仍有历史诊断，不能宣称全项目通过。OAI 接口保留但未真实验证。Dockview 保留原有评估水印。[初始烟测记录](V5_SMOKE.md)、[能力缺口](PROTOTYPE_GAP_MATRIX.md)；旧验收文档仅反映对应日期，不覆盖本次结果。
 # 新旅程：单人协作策划
 
-从「本地项目」创建文件夹项目，进入 idea → grill-me 对齐 → 大纲 v1 → Three.js → 制作卡片。操作、烟测和未接入范围见 [阶段一说明](PLANNING_JOURNEY_STAGE1.md)。旧项目和原有生产路径保留。
+从「本地项目」创建文件夹项目，进入 idea → grill-me 对齐 → 大纲 v1 → 游戏技术方案 → 制作卡片。操作、烟测和未接入范围见 [阶段一说明](PLANNING_JOURNEY_STAGE1.md)及[架构里程碑](GAME_CODE_ARCHITECTURE_MILESTONE.md)。旧项目和原有生产路径保留。

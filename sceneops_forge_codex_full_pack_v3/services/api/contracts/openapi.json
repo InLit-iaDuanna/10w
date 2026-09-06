@@ -4009,6 +4009,82 @@
         }
       }
     },
+    "/api/version-collaboration/tree/branches/preview": {
+      "post": {
+        "summary": "Preview Branch",
+        "operationId": "preview_branch_api_version_collaboration_tree_branches_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchChangeSet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/version-collaboration/tree/branches/apply": {
+      "post": {
+        "summary": "Apply Branch",
+        "operationId": "apply_branch_api_version_collaboration_tree_branches_apply_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyBranchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchOperationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/integration-ops/snapshot": {
       "get": {
         "tags": [
@@ -11135,6 +11211,24 @@
         ],
         "title": "ApiError"
       },
+      "ApplyBranchRequest": {
+        "properties": {
+          "change_set": {
+            "$ref": "#/components/schemas/BranchChangeSet"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change_set",
+          "confirmed"
+        ],
+        "title": "ApplyBranchRequest"
+      },
       "Approval": {
         "properties": {
           "approval_id": {
@@ -11371,6 +11465,41 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ApprovalRecord"
+      },
+      "ArchitectureRecommendation": {
+        "properties": {
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "tradeoffs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Tradeoffs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code_architecture",
+          "rationale",
+          "tradeoffs"
+        ],
+        "title": "ArchitectureRecommendation"
       },
       "ArtifactApprovalState": {
         "type": "string",
@@ -13098,6 +13227,131 @@
           "name"
         ],
         "title": "BoneSpec"
+      },
+      "BranchChangeSet": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "create",
+              "switch"
+            ],
+            "title": "Operation"
+          },
+          "branch_name": {
+            "type": "string",
+            "title": "Branch Name"
+          },
+          "expected_head": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{7,64}$",
+            "title": "Expected Head"
+          },
+          "source_commit": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{7,64}$",
+            "title": "Source Commit"
+          },
+          "current_branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Branch"
+          },
+          "blocked_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocked Reasons"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "live"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "branch_name",
+          "expected_head",
+          "source_commit",
+          "current_branch",
+          "blocked_reasons"
+        ],
+        "title": "BranchChangeSet"
+      },
+      "BranchOperationResult": {
+        "properties": {
+          "current_branch": {
+            "type": "string",
+            "title": "Current Branch"
+          },
+          "head_commit": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{7,64}$",
+            "title": "Head Commit"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "live"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_branch",
+          "head_commit"
+        ],
+        "title": "BranchOperationResult"
+      },
+      "BranchPreviewRequest": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "create",
+              "switch"
+            ],
+            "title": "Operation"
+          },
+          "branch_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Branch Name"
+          },
+          "source_commit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{7,64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Commit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "branch_name"
+        ],
+        "title": "BranchPreviewRequest"
       },
       "BudgetWarning": {
         "properties": {
@@ -18690,6 +18944,175 @@
         ],
         "title": "FourLayerDiff"
       },
+      "GameProjectScaffold": {
+        "properties": {
+          "root_path": {
+            "type": "string",
+            "title": "Root Path"
+          },
+          "initialization_status": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "existing"
+            ],
+            "title": "Initialization Status"
+          },
+          "package_manager": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "pnpm"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Manager"
+          },
+          "entry_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry File"
+          },
+          "generated_files": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Generated Files"
+          },
+          "check_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Command"
+          },
+          "build_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Command"
+          },
+          "preview_command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Command"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "root_path",
+          "initialization_status"
+        ],
+        "title": "GameProjectScaffold"
+      },
+      "GameTechnicalPlan": {
+        "properties": {
+          "target_platform": {
+            "type": "string",
+            "const": "web",
+            "title": "Target Platform",
+            "default": "web"
+          },
+          "engine": {
+            "type": "string",
+            "const": "threejs",
+            "title": "Engine",
+            "default": "threejs"
+          },
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "architecture_label": {
+            "type": "string",
+            "title": "Architecture Label"
+          },
+          "selection_method": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "ai"
+            ],
+            "title": "Selection Method"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "tradeoffs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Tradeoffs"
+          },
+          "ecs_library": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "miniplex"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ecs Library"
+          },
+          "scaffold": {
+            "$ref": "#/components/schemas/GameProjectScaffold"
+          },
+          "selected_at": {
+            "type": "string",
+            "title": "Selected At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code_architecture",
+          "architecture_label",
+          "selection_method",
+          "rationale",
+          "tradeoffs",
+          "scaffold",
+          "selected_at"
+        ],
+        "title": "GameTechnicalPlan"
+      },
       "GameplayEdge-Input": {
         "properties": {
           "edge_id": {
@@ -20991,6 +21414,8 @@
               "save_outline",
               "confirm_version",
               "confirm_stack",
+              "recommend_architecture",
+              "confirm_technical_plan",
               "generate_cards",
               "save_cards",
               "accept_change",
@@ -21124,6 +21549,36 @@
               }
             ],
             "title": "Context Draft"
+          },
+          "code_architecture": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object-component",
+                  "ecs"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Architecture"
+          },
+          "selection_method": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "manual",
+                  "ai"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Method"
           }
         },
         "additionalProperties": false,
@@ -23764,6 +24219,26 @@
               }
             ],
             "title": "Stack"
+          },
+          "technical_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameTechnicalPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "architecture_recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArchitectureRecommendation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "cards": {
             "items": {
@@ -30601,6 +31076,13 @@
             },
             "type": "object",
             "title": "Milestones"
+          },
+          "branch_labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Branch Labels"
           }
         },
         "additionalProperties": false,
@@ -30610,7 +31092,8 @@
           "confirmed_versions",
           "planned_cards",
           "card_branches",
-          "milestones"
+          "milestones",
+          "branch_labels"
         ],
         "title": "TreeProgress"
       },
