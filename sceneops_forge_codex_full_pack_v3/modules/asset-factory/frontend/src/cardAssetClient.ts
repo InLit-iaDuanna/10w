@@ -52,3 +52,10 @@ export const cardAssetClient = {
   saveToLibrary: (assetId: string, version: number) => requestJson<SaveProjectAssetResult>(
     `/api/card-assets/${encodeURIComponent(assetId)}/library`, {body:{version}}),
 };
+
+export async function importProjectAssetFile(projectId: string, cardId: string, file: File,
+    signal?: AbortSignal): Promise<ProjectAssetEntry> {
+  const asset = await cardAssetClient.import(projectId, cardId, `scene-drop-${crypto.randomUUID()}`, file, signal);
+  const saved = await cardAssetClient.saveToLibrary(asset.id, asset.current_version);
+  return saved.entry;
+}

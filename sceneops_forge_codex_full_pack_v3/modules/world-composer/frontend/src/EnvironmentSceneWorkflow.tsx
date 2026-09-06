@@ -29,13 +29,15 @@ function currentVersion(asset: ProjectAssetEntry, selected: number | undefined) 
     ?? asset.versions.at(-1)!;
 }
 
-export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset}: {
+export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset}: {
   projectId: string; aiBusy?: boolean; onCreateAsset?: (source: AssetSource) => void;
+  onImportAsset?: (file: File) => Promise<ProjectAssetEntry>;
 }) {
   const cache = useQueryClient();
   const splitRoot = useRef<HTMLElement>(null);
   const assetPane = useRef<HTMLElement>(null);
   const draggingSplit = useRef(false);
+  const dragDepth = useRef(0);
   const sceneKey = environmentSceneKey(projectId);
   const assetsKey = environmentAssetsKey(projectId);
   const sceneQuery = useQuery({queryKey:sceneKey, queryFn:({signal}) => environmentSceneClient.get(projectId, signal), retry:false});
@@ -47,6 +49,8 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
   const [assetName, setAssetName] = useState('');
   const [addingAsset, setAddingAsset] = useState(false);
   const [error, setError] = useState('');
+  const [dropActive, setDropActive] = useState(false);
+  const [dropNotice, setDropNotice] = useState('');
   const [draft, setDraft] = useState<TransformDraft>({x:'0',y:'0',z:'0',rotation:'0',scale:'1'});
   const scene = sceneQuery.data;
   const objects = scene?.objects ?? [];
@@ -72,6 +76,25 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     setSelectedAssetId(null);
     setError('');
   }, onError:error => setError(error.message)});
+  const dropped = useMutation({mutationFn:async (files:File[]) => {
+    if (!onImportAsset) throw new Error('当前宿主没有连接模型导入服务。');
+    const unsupported = files.find(file => !/\.(glb|fbx)$/i.test(file.name));
+    if (unsupported) throw new Error(`不支持 ${unsupported.name}；请拖入 GLB 或 FBX 文件。`);
+    let nextScene = await environmentSceneClient.get(projectId);
+    for (const file of files) {
+      const entry = await onImportAsset(file);
+      cache.setQueryData<ProjectAssetEntry[]>(assetsKey, current => [entry, ...(current ?? []).filter(item => item.id !== entry.id)]);
+      const version = currentVersion(entry, undefined);
+      nextScene = await environmentSceneClient.place(projectId, {expected_version:nextScene.version,
+        asset_id:entry.id,asset_version:version.source_version});
+    }
+    return {scene:nextScene,count:files.length};
+  }, onSuccess:result => {
+    updateScene(result.scene);
+    setSelectedAssetId(null);
+    setDropNotice(`已导入 ${result.count} 个模型并加入场景。`);
+    setError('');
+  }, onError:error => {setDropNotice('');setError(error.message);}});
   const transformed = useMutation({mutationFn:() => {
     if (!scene || !selectedSceneObject) throw new Error('请先选择一个场景对象。');
     const values = [draft.x,draft.y,draft.z,draft.rotation,draft.scale].map(Number);
@@ -103,6 +126,11 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     setSelectedSceneId(objects[0]?.id ?? null);
   }, [scene, objects, selectedSceneId]);
   useEffect(() => {
+    setDropActive(false);
+    setDropNotice('');
+    dragDepth.current = 0;
+  }, [projectId]);
+  useEffect(() => {
     if (!selectedSceneObject) return;
     setDraft({x:String(selectedSceneObject.transform.position_m[0]),y:String(selectedSceneObject.transform.position_m[1]),
       z:String(selectedSceneObject.transform.position_m[2]),rotation:String(selectedSceneObject.transform.rotation_y_deg),
@@ -117,7 +145,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
 
   if (sceneQuery.isPending || assetsQuery.isPending) return <p role="status" className="environment-loading">读取项目资产库与场景…</p>;
   if (sceneQuery.error || assetsQuery.error || !scene) return <p role="alert" className="environment-error">{(sceneQuery.error ?? assetsQuery.error)?.message ?? '场景读取失败'} <button onClick={() => {void sceneQuery.refetch();void assetsQuery.refetch();}}>重试</button></p>;
-  const busy = placed.isPending || transformed.isPending || removed.isPending || renamed.isPending || aiBusy;
+  const busy = placed.isPending || dropped.isPending || transformed.isPending || removed.isPending || renamed.isPending || aiBusy;
   const profile = scene.scale_profile ?? {unit:'meter' as const,up_axis:'Y' as const,handedness:'right' as const,
     grid_step_m:1,reference_human_height_m:1.8,default_object_spacing_m:3};
   const beginAsset = (source: AssetSource) => {
@@ -134,7 +162,15 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
   return <section ref={splitRoot} className="environment-workflow" aria-label="环境场景搭建" style={splitStyle}>
     <section className="environment-scene-card" aria-label="世界场景预览">
       <div className="environment-status"><span>场景 v{scene.version}</span><strong>{objects.length} 个对象</strong><small>{aiBusy ? 'AI 搭建中 · ' : ''}米 · Y↑ · {profile.grid_step_m}m 网格</small></div>
-      <EnvironmentScenePreview objects={objects} selectedId={selectedSceneId} onSelect={onSceneSelect}/>
+      <div className={`environment-scene-dropzone${dropActive ? ' is-dragging' : ''}${dropped.isPending ? ' is-importing' : ''}`}
+        onDragEnter={event => {if (!onImportAsset || !Array.from(event.dataTransfer.types).includes('Files')) return;event.preventDefault();if (!busy) {dragDepth.current += 1;setDropActive(true);}}}
+        onDragOver={event => {if (!onImportAsset || !Array.from(event.dataTransfer.types).includes('Files')) return;event.preventDefault();event.dataTransfer.dropEffect = busy ? 'none' : 'copy';}}
+        onDragLeave={() => {dragDepth.current = Math.max(0, dragDepth.current - 1);if (!dragDepth.current) setDropActive(false);}}
+        onDrop={event => {if (!onImportAsset) return;event.preventDefault();dragDepth.current = 0;setDropActive(false);setDropNotice('');if (busy) {setError('当前场景正在处理，请完成后再导入。');return;}const files=Array.from(event.dataTransfer.files);if (files.length) dropped.mutate(files);}}>
+        <EnvironmentScenePreview objects={objects} selectedId={selectedSceneId} onSelect={onSceneSelect}/>
+        {onImportAsset && <div className="environment-drop-hint" aria-live="polite">{dropped.isPending ? '正在导入、检查并加入场景…' : dropActive ? '松开以导入并加入场景' : '拖入 GLB / FBX 直接导入'}</div>}
+      </div>
+      {dropNotice && <p role="status" className="environment-import-notice">{dropNotice}</p>}
       {selectedSceneObject && <section className="environment-inspector"><header><div><strong>{selectedSceneAsset?.title ?? selectedSceneObject.title}</strong><small>场景实例 · {selectedSceneObject.id}</small></div><button disabled={busy} onClick={() => removed.mutate(selectedSceneObject)}>移出场景</button></header>
         <div className="environment-transform-grid">
           {([['x','X'],['y','Y'],['z','Z'],['rotation','旋转 Y°'],['scale','缩放']] as const).map(([key,label]) => <label key={key}>{label}<input type="number" step={key === 'rotation' ? 5 : .1} value={draft[key]} disabled={busy} onChange={event => setDraft(current => ({...current,[key]:event.target.value}))}/></label>)}

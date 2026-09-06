@@ -25,7 +25,7 @@ import { conversationCommandBridge } from './conversationBridge';
 import './workbench.css';
 import { DebugPanel, installUiDiagnostics, recordUiError, recordUiEvent } from '../debug';
 import { AgentTaskActivity, AgentTaskTimeline, agentTasks, productionKeys, ProductionModuleView, ProductionNodeStatus } from '@sceneops/ai-agent-runtime';
-import { CardAssetWorkflow } from '@sceneops/asset-factory';
+import { CardAssetWorkflow, importProjectAssetFile } from '@sceneops/asset-factory';
 import { EnvironmentSceneWorkflow, environmentSceneClient, environmentSceneKey } from '../../../../modules/world-composer/frontend/src/index';
 
 const CURRENT_TOOL_CATALOG = {
@@ -174,7 +174,8 @@ function createWorkbench(unified: boolean) {
                 void (async () => { for (const instanceId of ids) await execute('workbench.close_editor', {instanceId}); })().catch(report);
               }}
               assets={{render: input => <CardAssetWorkflow {...input} />}}
-              environment={{render: input => <EnvironmentSceneWorkflow {...input} />, read: async projectId => {
+              environment={{render: input => <EnvironmentSceneWorkflow {...input}
+                onImportAsset={file => importProjectAssetFile(input.projectId, 'world-3d', file)} />, read: async projectId => {
                 const scene = await environmentSceneClient.get(projectId);
                 return {messages:(scene.history ?? []).map(message => ({...message,
                   created_at:message.created_at ?? '1970-01-01T00:00:00.000Z',mode:'live' as const}))};
@@ -252,7 +253,8 @@ function createWorkbench(unified: boolean) {
           .then(() => journeySurface.request('modeling', {type:'new-asset',source}))
           .catch(report);
       };
-      return <EnvironmentSceneWorkflow projectId={props.context.projectId} onCreateAsset={createAsset}/>;
+      return <EnvironmentSceneWorkflow projectId={props.context.projectId} onCreateAsset={createAsset}
+        onImportAsset={file => importProjectAssetFile(props.context.projectId!, 'world-3d', file)}/>;
     }}}});
   }
   workspaces.register(HOME_PRESET);

@@ -11,6 +11,7 @@ is reused by the Find My Way Home key and Warehouse Escape obstacle fixtures.
 制作卡片现在有两条接入当前 Git 卡片工作树的真实路径：
 
 - **导入**：选择 GLB 或 FBX，点击“导入并检查”后由 Blender 5.1 读取；原文件保留，另存 `.blend`、可交互预览 GLB、Unity 交换 FBX 和 manifest。
+- **场景投放导入**：把一个或多个 GLB / FBX 直接拖入 3D 世界预览，会复用同一导入检查，成功版本自动存入项目资产库并加入当前场景。
 - **新建**：复用卡片的唯一建模对话。每条新用户回答请求一份结构化修改方案，并由固定 Blender 工作器用允许的 cube、sphere、cylinder、cone 更新真实草稿；右侧 Three.js 面板随成功结果刷新。第一次生成 v1，后续回答在同一会话资产上追加版本，旧版本保留。
 - **归一化**：填写目标最大边（米）后另存新版本，统一缩放、水平居中并落到 Z=0；不覆盖原文件或旧版本。
 
@@ -64,7 +65,7 @@ in server-owned operation storage outside project content.
   request-ledger/finalized-candidate ports and in-memory adapters, jobs, and
   `create_router`.
 - TypeScript: `frontend/src/index.ts` exports the lazy Asset Factory/Validation
-  contributions and visible run-state builder.
+  contributions, visible run-state builder, and `importProjectAssetFile` for host-owned scene drop flows.
 - Blender: only the public `sceneops_blender` typed adapter is accepted.
 - Asset catalog: only public `asset_library` models/service are used.
 
