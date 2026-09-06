@@ -364,8 +364,7 @@ export function ShellWorkbench({ unified = false }: {unified?: boolean}) {
   const chatOnly = Object.values(document.instances).length === 1 && Object.values(document.instances)[0].editorId === 'assistant.conversation';
   return <div className={`workbench-root ${chatOnly ? 'is-chat-only' : ''}`}>
     {unified && <header className="workbench-appbar">
-      <div className="workbench-brand"><span className="workbench-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><strong>SceneOps</strong><small>制作工作台</small></div>
-      <span className="workbench-appbar-hint">拖动四边，按需展开工具</span>
+      <div className="workbench-brand"><span className="workbench-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><strong>SceneOps</strong></div>
       <div className="workbench-appbar-actions"><button className="workbench-debug-trigger" onClick={() => setDebugVisible(true)} title="本机 UI 诊断日志">诊断</button><button className="workbench-project-trigger" onClick={app.actions.openProjects}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>本地项目</button><span className="workbench-local" title="项目和已保存内容存储在本机，不代表外部服务已连接。"><i aria-hidden="true"/>本地工作区</span></div>
     </header>}
     <div className="workbench-stage"><QueryClientProvider client={app.queryClient}><ShellToolRuntimeContext.Provider value={app.tools}>

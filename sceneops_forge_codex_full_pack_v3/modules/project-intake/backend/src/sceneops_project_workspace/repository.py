@@ -42,12 +42,15 @@ class WorkspaceRepository(Protocol):
     def recover_folder_project(self, path: str | Path, resolution: str) -> FolderProject: ...
     def list_folder_projects(self) -> list[FolderProject]: ...
     def get_folder_project(self, project_id: str) -> FolderProject: ...
+    def read_design_draft(self, project_id: str) -> dict[str, JsonValue] | None: ...
     def write_design_draft(self, project_id: str,
         payload: dict[str, JsonValue]) -> StructuredDesignArtifact: ...
     def create_design_snapshot(self, project_id: str, payload: dict[str, JsonValue],
         version: int) -> StructuredDesignArtifact: ...
     def ensure_project_git(self, project_id: str) -> dict: ...
     def commit_design_version(self, project_id: str, version: int, payload: dict) -> dict: ...
+    def restore_design_git_state(self, project_id: str, versions: list[dict],
+        card_branches: list[dict], baseline: dict | None = None) -> None: ...
     def open_card_worktree(self, project_id: str, card_id: str, title: str, card: dict | None = None) -> dict: ...
     def get_card_worktree(self, project_id: str, card_id: str) -> dict: ...
     def initialize_game_project(self, project_id: str, selection: dict, design_version: int) -> dict: ...
@@ -333,6 +336,9 @@ class SqliteWorkspaceRepository:
     def commit_design_version(self, project_id, version, payload):
         return GitProjects(self).commit_version(project_id, version, payload)
 
+    def restore_design_git_state(self, project_id, versions, card_branches, baseline=None):
+        GitProjects(self).restore_design_state(project_id, versions, card_branches, baseline)
+
     def open_card_worktree(self, project_id, card_id, title, card=None):
         return GitProjects(self).open_card(project_id, card_id, title, card)
 
@@ -385,6 +391,21 @@ class SqliteWorkspaceRepository:
             if temporary.exists() and not temporary.is_symlink():
                 temporary.unlink()
         return StructuredDesignArtifact(project_id=project_id, kind="draft", path=str(target))
+
+    def read_design_draft(self, project_id):
+        root = self._safe_existing_directory(Path(self.get_folder_project(project_id).root_path))
+        target = root / ".sceneops" / "design" / "draft.json"
+        if not target.exists() and not target.is_symlink():
+            return None
+        if target.is_symlink() or not target.is_file():
+            raise InvalidFolderPath("项目内策划草稿路径不安全。")
+        try:
+            payload = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise InvalidFolderPath("项目内策划草稿无效，无法恢复。") from error
+        if not isinstance(payload, dict):
+            raise InvalidFolderPath("项目内策划草稿无效，无法恢复。")
+        return payload
 
     def create_design_snapshot(self, project_id, payload, version):
         if version < 1:

@@ -60,6 +60,7 @@ class FolderProjectSmokeTests(unittest.TestCase):
             self.assertEqual(set(identity), {"schema_version", "project_id", "name", "created_at"})
             self.assertNotIn(str(parent), json.dumps(identity))
             repository.write_design_draft(project.project_id, fixture["draft"])
+            self.assertEqual(repository.read_design_draft(project.project_id), fixture["draft"])
             first = repository.create_design_snapshot(
                 project.project_id, fixture["draft"], fixture["snapshot_version"])
             retried = repository.create_design_snapshot(

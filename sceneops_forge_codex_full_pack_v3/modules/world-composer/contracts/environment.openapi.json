@@ -932,9 +932,36 @@
             "enum": [
               "import",
               "generate",
-              "normalize"
+              "normalize",
+              "calibrate"
             ],
             "title": "Operation"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Model Rotation Quaternion Xyzw",
+            "default": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
           },
           "saved_at": {
             "type": "string",

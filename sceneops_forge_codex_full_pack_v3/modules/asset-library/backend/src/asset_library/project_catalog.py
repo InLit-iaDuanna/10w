@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sqlite3
+import math
 import re
 import unicodedata
 from datetime import datetime, timezone
@@ -11,11 +12,26 @@ from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+ModelRotationQuaternion = tuple[float, float, float, float]
+MODEL_ROTATION_IDENTITY: ModelRotationQuaternion = (0.0, 0.0, 0.0, 1.0)
+
+
+def _validate_model_rotation(value: ModelRotationQuaternion) -> ModelRotationQuaternion:
+    if any(not math.isfinite(item) for item in value):
+        raise ValueError("model rotation must contain finite values")
+    length = math.sqrt(sum(item * item for item in value))
+    if length < 1e-8:
+        raise ValueError("model rotation quaternion cannot be zero")
+    if abs(length - 1.0) > 1e-3:
+        raise ValueError("model rotation quaternion must be normalized")
+    return tuple(item / length for item in value)
 
 
 _NAME_PREFIXES = (
@@ -66,8 +82,14 @@ class ProjectAssetVersion(ProjectAssetModel):
     blend_path: str = Field(min_length=1)
     preview_path: str = Field(min_length=1)
     fbx_path: str = Field(min_length=1)
-    operation: Literal["import", "generate", "normalize"]
+    operation: Literal["import", "generate", "normalize", "calibrate"]
+    model_rotation_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY
     saved_at: str = Field(default_factory=_now)
+
+    @field_validator("model_rotation_quaternion_xyzw")
+    @classmethod
+    def validate_rotation(cls, value: ModelRotationQuaternion) -> ModelRotationQuaternion:
+        return _validate_model_rotation(value)
 
 
 class ProjectAssetEntry(ProjectAssetModel):

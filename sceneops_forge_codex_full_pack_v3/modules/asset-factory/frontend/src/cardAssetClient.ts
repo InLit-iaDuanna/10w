@@ -49,8 +49,10 @@ export const cardAssetClient = {
     `/api/card-assets/${encodeURIComponent(assetId)}/normalize`, {body:{target_extent_m:target}}),
   library: (projectId: string, signal?: AbortSignal) => requestJson<ProjectAssetEntry[]>(
     `/api/project-assets?project_id=${encodeURIComponent(projectId)}`, {signal}),
-  saveToLibrary: (assetId: string, version: number) => requestJson<SaveProjectAssetResult>(
-    `/api/card-assets/${encodeURIComponent(assetId)}/library`, {body:{version}}),
+  saveToLibrary: (assetId: string, version: number,
+    modelRotation?: NonNullable<LiveModelUpdateRequest['model_rotation_quaternion_xyzw']>) => requestJson<SaveProjectAssetResult>(
+    `/api/card-assets/${encodeURIComponent(assetId)}/library`, {body:{version,
+      ...(modelRotation ? {model_rotation_quaternion_xyzw:modelRotation} : {})}}),
 };
 
 export async function importProjectAssetFile(projectId: string, cardId: string, file: File,

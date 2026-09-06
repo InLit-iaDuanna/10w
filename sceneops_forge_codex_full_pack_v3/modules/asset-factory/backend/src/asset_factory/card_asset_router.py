@@ -104,7 +104,8 @@ def create_card_asset_router(service) -> APIRouter:
                  operation_id="saveCardAssetToLibrary")
     async def save_to_library(asset_id: str, request: SaveToLibraryRequest):
         from asyncio import to_thread
-        return await to_thread(service.save_to_library, asset_id, request.version)
+        return await to_thread(service.save_to_library, asset_id, request.version,
+                               request.model_rotation_quaternion_xyzw)
 
     @router.get("/{asset_id}/files/{kind}", operation_id="readCardAssetFile")
     def file(asset_id: str, kind: str, version: int | None = Query(default=None, ge=1)):

@@ -282,9 +282,7 @@ export function ForgeShell(props: ForgeShellProps): React.ReactElement {
           </div>
         ) : null}
         {regionError && <div className="forge-restore-notice" role="alert">{regionError}</div>}
-        {props.onRegionSplit ? <details className="forge-window-menu"><summary>布局 ⌄</summary><div className="forge-window-options"><p>拆分当前活动区域</p>
-          {EDGES.map(edge => <button key={edge} onClick={() => { const id = port?.describe().activeInstanceId; if (id) void splitRegion(id, edge); }}>{EDGE_LABELS[edge]}</button>)}
-        </div></details> : <><EdgeDrawerController
+        {!props.onRegionSplit && <><EdgeDrawerController
           coordinator={props.edgeDrawers}
           judgeMode={props.judgeMode}
           onFloatingRequest={props.onFloatingToolLibrary}

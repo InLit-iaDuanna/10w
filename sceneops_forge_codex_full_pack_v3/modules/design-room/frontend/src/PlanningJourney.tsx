@@ -22,14 +22,14 @@ type ModelBuildInput = { projectId:string;cardId:string;sessionId:string;trigger
 type ModelBuildResult = {version:number;reused:boolean};
 export type WorldCreationMode = 'model' | 'environment' | null;
 
-export function WorldCreationActions({mode, busy, memoryLabel, onNewModel, onEnvironment}: {
-  mode: WorldCreationMode; busy: boolean; memoryLabel: string;
+export function WorldCreationActions({mode, busy, onNewModel, onEnvironment}: {
+  mode: WorldCreationMode; busy: boolean;
   onNewModel: () => void; onEnvironment: () => void;
 }) {
   return <section className="journey-creation-shortcuts"><nav className="journey-conversation-modes" aria-label="3D 世界制作方式">
     <button type="button" aria-pressed={mode === 'model'} disabled={busy} onClick={onNewModel}>＋ 新建模型</button>
     <button type="button" aria-pressed={mode === 'environment'} disabled={busy} onClick={onEnvironment}>搭建世界</button>
-  </nav><small className="journey-shared-memory">公共上下文 · {memoryLabel}</small></section>;
+  </nav></section>;
 }
 
 export type JourneySurfaceRequest = { surface: 'modeling' | 'environment'; hosted: boolean; revision: number;
@@ -143,6 +143,9 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const controller = useRef<AbortController | null>(null);
   const editBase = useRef<number | null>(null);
   const transcript = useRef<HTMLDivElement>(null);
+  const mainTranscriptScrollTop = useRef<number | null>(null);
+  const cardSelectionCapturingScroll = useRef(false);
+  const cardReturnPending = useRef(false);
   const handledSurfaceAction = useRef<string | null>(null);
   const mutation = useMutation({
     mutationFn: (input: Pick<JourneyCommand, 'operation'> & Partial<JourneyCommand>) => {
@@ -164,12 +167,23 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     onSuccess: (state, input) => {
       cache.setQueryData(journeyKey(projectId), state);
       setLiveText(''); setLiveStatus('');
+      if (input.operation === 'select_card') {
+        cardReturnPending.current ||= cardSelectionCapturingScroll.current;
+        cardSelectionCapturingScroll.current = false;
+      }
       if (input.operation === 'message') { setOutgoing(''); setDraft(current => current === input.text ? '' : current); }
       if (['save_outline', 'save_cards', 'generate_outline', 'generate_cards'].includes(input.operation)) { setEditing(null); editBase.current = null; }
       if (input.operation === 'select_card' && input.card_id === 'world-3d') onOpenSurface?.('environment');
       if (input.operation === 'clear_card' || (input.operation === 'select_card' && input.card_id !== 'world-3d')) onCloseSurfaces?.();
     },
-    onError: (error, input) => { setNotice(error.name === 'AbortError' ? '已停止。未完成的内容没有作为正式回复保存。' : error.message); setLiveStatus(''); if (input.operation === 'message') { setOutgoing(''); setDraft(current => current || input.text || ''); } },
+    onError: (error, input) => {
+      if (input.operation === 'select_card' && cardSelectionCapturingScroll.current) {
+        mainTranscriptScrollTop.current = null;
+        cardSelectionCapturingScroll.current = false;
+        cardReturnPending.current = false;
+      }
+      setNotice(error.name === 'AbortError' ? '已停止。未完成的内容没有作为正式回复保存。' : error.message); setLiveStatus(''); if (input.operation === 'message') { setOutgoing(''); setDraft(current => current || input.text || ''); }
+    },
     onSettled: () => { controller.current = null; void cache.invalidateQueries({ queryKey: journeyKey(projectId) }); },
   });
   const state = query.data;
@@ -257,10 +271,24 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     const frame = requestAnimationFrame(() => { node.scrollTop = node.scrollHeight; });
     return () => cancelAnimationFrame(frame);
   }, [modeling?.id, environmentOpen]);
+  useEffect(() => {
+    if (activeCardId || !cardReturnPending.current || mainTranscriptScrollTop.current === null) return;
+    const scrollTop = mainTranscriptScrollTop.current;
+    const frame = requestAnimationFrame(() => {
+      transcript.current?.scrollTo({top:scrollTop,behavior:'auto'});
+      mainTranscriptScrollTop.current = null;
+      cardReturnPending.current = false;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeCardId, state?.revision]);
   useEffect(() => { if (input.current) { input.current.style.height = '0px'; input.current.style.height = `${Math.min(144, Math.max(40, input.current.scrollHeight))}px`; } }, [draft]);
   if (query.isPending) return <p role="status">恢复策划进度…</p>;
   if (query.error || !state) return <p role="alert">{query.error?.message ?? '策划不存在'} <button onClick={() => void query.refetch()}>重新读取</button></p>;
   const act = (operation: JourneyCommand['operation'], extra: Partial<JourneyCommand> = {}) => {
+    if (operation === 'select_card' && !state.active_card_id && mainTranscriptScrollTop.current === null) {
+      mainTranscriptScrollTop.current = transcript.current?.scrollTop ?? 0;
+      cardSelectionCapturingScroll.current = true;
+    }
     setNotice(''); mutation.mutate({ operation, ...extra,
       ...(['select_card', 'clear_card', 'choose_model_source', 'new_modeling', 'open_modeling', 'close_modeling'].includes(operation) ? { context_draft: draft } : {}) });
   };
@@ -276,7 +304,6 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     ? builtModel.version : null;
   const versions = state.versions ?? [];
   const activeCard = cards.find(card => card.id === state.active_card_id);
-  const activeBranch = state.card_branches?.find(branch => branch.card_id === state.active_card_id);
   const technicalPlan = state.technical_plan;
   const recommendation = state.architecture_recommendation;
   const sharedMemory: SharedProjectMemory = {
@@ -285,18 +312,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     technical_plan:technicalPlan ? `${technicalPlan.engine} · ${technicalPlan.architecture_label} · ${technicalPlan.rationale}` : '',
     active_card:activeCard ? `${activeCard.title}：${activeCard.description}` : '',
   };
-  const sharedMemoryLabel = [versions.length ? `策划 v${versions.at(-1)?.number}` : outline?.title,
-    technicalPlan?.architecture_label, activeCard?.title].filter(Boolean).join(' · ');
   const creationMode: WorldCreationMode = environmentOpen ? 'environment' : modeling?.source === 'create' ? 'model' : null;
-  const workspaceDescription = activeCard?.id === 'world-3d'
-    ? '场景、资产库、模型新建与导入、归一化、空间点位和摆放都在这个工作区完成。'
-    : activeCard?.id === 'core-gameplay'
-      ? '在同一个上下文继续讨论并实现控制、战斗、怪物、武器、波次和经验循环。'
-      : activeCard?.id === 'growth-feedback'
-        ? '在同一个上下文继续完成成长选择、HUD、视觉反馈、音效和特效。'
-        : activeCard?.id === 'demo-delivery'
-          ? '在同一个上下文串联单局、性能检查、构建与交付，试玩仍由你发起。'
-          : '';
   const beginEdit = (kind: 'outline' | 'cards') => { if (!editing) editBase.current = state.revision; setEditing(kind); };
   const latestQuestion = [...messages].reverse().find(message => message.question && !messages.some(answer => answer.reply_to === message.id));
   const send = () => {
@@ -356,17 +372,8 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const environmentPreview = environmentOpen && !onOpenSurface && !environmentHostedExternally && environment?.render({projectId,aiBusy:environmentBuild.isPending,onCreateAsset:createAsset});
   const sidePreview = environmentPreview || assetPreview;
   return <section className={`planning-journey${activeCard ? ' has-card-workspace' : ''}${activeCard?.id === 'world-3d' ? ' world-3d-workspace' : ''}${sidePreview && previewOpen ? ' has-model-preview' : ''}`} aria-label={activeCard ? `${activeCard.title}工作流` : '单人策划工作流'}>
-    <header><div><strong>{activeCard?.title ?? '协作'}</strong><small>{activeCard ? '独立工作流' : `${stages.find(([id]) => id === state.stage)?.[1]}${versions.length ? ` · v${versions.length}` : ''}`}</small></div><button onClick={onOpenProjects}>文件夹</button></header>
+    <header><div><strong>{activeCard?.title ?? '协作'}</strong><small>{activeCard ? '独立工作流' : `${stages.find(([id]) => id === state.stage)?.[1]}${versions.length ? ` · v${versions.length}` : ''}`}</small></div>{activeCard ? <button type="button" className="journey-header-back" disabled={busy} onClick={() => act('clear_card')} aria-label="返回制作卡片" title="返回制作卡片"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button> : <button type="button" onClick={onOpenProjects}>文件夹</button>}</header>
     <div className="journey-scroll" ref={transcript}>
-      {activeCard && <section className="journey-card-workspace-header">
-        <button type="button" disabled={busy} onClick={() => act('clear_card')}>← 制作卡片</button>
-        <div><strong>{activeCard.title}</strong><span>{workspaceDescription}</span></div>
-        <nav aria-label="工作流操作">
-          {activeCard.id === 'world-3d' && onOpenSurface && !surfaceRequest?.hosted && <button type="button" onClick={() => onOpenSurface('environment')}>打开工作区</button>}
-          {activeBranch && <details><summary>Git 分支</summary><p>{activeBranch.branch}</p><p>{activeBranch.worktree_path}</p>
-            <small>不会自动提交或合并。</small></details>}
-        </nav>
-      </section>}
       {activeCard && activeCard.id !== 'world-3d' && !environmentOpen && <CardModelingEntry state={state} busy={busy || !!editing} onCommand={act} onOpenEnvironment={openEnvironment} />}
       {activeCard && !technicalPlan && <p role="status" className="journey-architecture-missing">这个旧项目还没有明确游戏代码架构。返回制作卡片后选择架构，已有代码不会被重建或覆盖。</p>}
       {!messages.length && !outgoing && !modeling && !environmentOpen && !activeCard && <div className="journey-empty"><h2>你想做一个什么样的游戏？</h2><p>先聊 idea，等你说完，我们再一起对齐细节。</p></div>}
@@ -455,7 +462,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
       <small>发送后仍会先展示具体授权卡；取消运行权限时保留原有的仅源码修改流程。</small>
     </section>}
     {activeCard?.id === 'world-3d' && <WorldCreationActions mode={creationMode} busy={busy}
-      memoryLabel={sharedMemoryLabel || '当前项目'} onNewModel={beginNewModel} onEnvironment={openEnvironment} />}
+      onNewModel={beginNewModel} onEnvironment={openEnvironment} />}
     <form className="unified-ai-composer journey-composer" onSubmit={event => { event.preventDefault(); send(); }}>
       <textarea ref={input} aria-label={environmentOpen ? '3D 世界对话' : modeling ? '模型生成对话' : activeCard ? `${activeCard.title}对话` : '策划对话'} disabled={!environmentOpen && modeling?.source === 'import'} placeholder={environmentOpen ? '描述要构建的世界、场景或资产；右侧可以直接新建、导入和摆放…' : modeling ? modeling.source === 'create' ? '描述模型、风格、尺寸和用途；也可以在上方加参考图…' : '请在右侧选择 GLB 或 FBX 文件' : activeCard ? workMode === 'develop' ? `让 Agent 实现「${activeCard.title}」的什么内容？` : `继续讨论「${activeCard.title}」…` : state.stage === 'idea' ? '聊聊你的 idea…' : '补充想法，或告诉我大纲和卡片要怎么改…'} value={draft} rows={1} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
       <div className="journey-composer-tools">{modelPicker(replying || prepareDevelopment.isPending || modelBuild.isPending)}
@@ -463,6 +470,6 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         {latestModelUser && assets?.build && <button className="journey-confirm-model" type="button" disabled={busy || builtCurrentVersion !== null} onClick={confirmAndBuildModel}>{modelBuild.isPending ? '正在建模…' : builtCurrentVersion !== null ? `已生成 v${builtCurrentVersion}` : '确认并建模'}</button>}
         <span className="journey-draft-status">{modelBuild.isPending ? 'AI 生成方案，Blender 输出模型…' : prepareDevelopment.isPending ? '准备授权…' : !replying && (dirty ? '保存中' : '')}</span>
         {replying ? <button className="journey-submit" type="button" aria-label="停止回复" title="停止回复" onClick={() => controller.current?.abort()}>■</button> : <button className="journey-submit" type="submit" aria-label={activeCard && workMode === 'develop' ? '准备开发授权' : '发送'} title={activeCard && workMode === 'develop' ? '准备开发授权，不立即执行' : '发送'} disabled={busy || !draft.trim()}>↑</button>}</div>
-    </form><small className="journey-cost" title={state.cost_notice}>{environmentOpen ? '3D 世界 · 场景与资产共用当前上下文' : modeling ? modeling.source === 'create' ? '模型生成 · 每轮保留版本' : '模型导入 · 原件保留' : activeCard && workMode === 'develop' ? '确认后写入当前工作流分支 · 不自动合并' : activeCard ? `${activeCard.title} · 独立工作流` : '单人协作 · 仅策划'} · 费用未知</small>
+    </form>
   </section>;
 }

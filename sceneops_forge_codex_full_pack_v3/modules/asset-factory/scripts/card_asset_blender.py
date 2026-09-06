@@ -29,6 +29,40 @@ def _hex_color(value):
     return tuple(int(value[index:index + 2], 16) / 255 for index in (1, 3, 5)) + (1.0,)
 
 
+def _quaternion(bpy, payload, key):
+    from mathutils import Matrix, Quaternion
+    values = payload.get(key, [0.0, 0.0, 0.0, 1.0])
+    if len(values) != 4 or any(not math.isfinite(value) for value in values):
+        raise ValueError("model rotation quaternion is invalid")
+    # Requests use the canonical exported frame (right-handed, Y-up). Blender
+    # evaluates transforms in its right-handed, Z-up frame, so change basis at
+    # this boundary before applying the same spatial rotation.
+    exported_to_blender = Matrix(((1.0, 0.0, 0.0), (0.0, 0.0, -1.0), (0.0, 1.0, 0.0)))
+    exported_rotation = Quaternion((values[3], values[0], values[1], values[2]))
+    quaternion = (exported_to_blender @ exported_rotation.to_matrix() @ exported_to_blender.transposed()).to_quaternion()
+    if quaternion.magnitude < 1e-8:
+        raise ValueError("model rotation quaternion cannot be zero")
+    if abs(quaternion.magnitude - 1.0) > 1e-3:
+        raise ValueError("model rotation quaternion must be normalized")
+    quaternion.normalize()
+    return quaternion
+
+
+def _apply_model_rotation(bpy, payload, objects):
+    """Apply the requested world-axis calibration to every model root before export."""
+    rotation = _quaternion(bpy, payload, "rotation_apply_quaternion_xyzw")
+    rotation_matrix = rotation.to_matrix().to_4x4()
+    object_names = {item.name for item in objects}
+    roots = [item for item in objects if item.parent is None or item.parent.name not in object_names]
+    for item in roots:
+        item.matrix_world = rotation_matrix @ item.matrix_world
+    desired = payload.get("model_rotation_quaternion_xyzw", [0.0, 0.0, 0.0, 1.0])
+    bpy.context.scene["sceneops_model_rotation_quaternion_xyzw"] = list(desired)
+    for item in objects:
+        item["sceneops_model_rotation_quaternion_xyzw"] = list(desired)
+    bpy.context.view_layer.update()
+
+
 def _create(bpy, payload):
     _clear(bpy)
     created = []
@@ -58,6 +92,7 @@ def _create(bpy, payload):
         item.data.materials.append(material)
         created.append(item)
     bpy.context.view_layer.update()
+    _apply_model_rotation(bpy, payload, created)
     return created
 
 
@@ -82,6 +117,7 @@ def _import(bpy, payload):
         item["sceneops_id"] = payload["object_ids"][index]
         item["sceneops_asset_id"] = payload["asset_id"]
     bpy.context.view_layer.update()
+    _apply_model_rotation(bpy, payload, objects)
     return objects
 
 
@@ -121,6 +157,15 @@ def _normalize(bpy, payload):
     pivot.location.z += -minimum[2]
     bpy.context.view_layer.update()
     return [item for item in bpy.context.scene.objects if item.type in {"MESH", "ARMATURE", "EMPTY"}]
+
+
+def _calibrate(bpy, payload):
+    bpy.ops.wm.open_mainfile(filepath=payload["input_path"], load_ui=False)
+    objects = [item for item in bpy.context.scene.objects if item.type in {"MESH", "ARMATURE", "EMPTY"}]
+    if not any(item.type == "MESH" for item in objects):
+        raise ValueError("asset contains no mesh objects")
+    _apply_model_rotation(bpy, payload, objects)
+    return objects
 
 
 def _select_and_export(bpy, objects, payload):
@@ -165,6 +210,8 @@ def main():
         objects = _create(bpy, payload)
     elif payload["operation"] == "normalize":
         objects = _normalize(bpy, payload)
+    elif payload["operation"] == "calibrate":
+        objects = _calibrate(bpy, payload)
     else:
         raise ValueError("unsupported operation")
     _select_and_export(bpy, objects, payload)

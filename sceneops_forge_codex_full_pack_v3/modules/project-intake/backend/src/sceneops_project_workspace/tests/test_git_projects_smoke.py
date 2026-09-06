@@ -51,6 +51,29 @@ class GitProjectsSmokeTests(unittest.TestCase):
         assert (worktree / ".sceneops" / "card-brief.json").is_file()
         assert (root / "existing.txt").read_text() == "user staged content"
 
+    def test_recovered_database_re_registers_verified_versions_baseline_and_legacy_worktree(self):
+        original = SqliteWorkspaceRepository(self.tmp_path / "old-data" / "workspace.sqlite")
+        project = original.create_folder_project(self.tmp_path, "game")
+        payload = {"title": "Recovered design", "version": 1}
+        version = original.commit_design_version(project.project_id, 1, payload)
+        scaffold = original.initialize_game_project(project.project_id, SELECTION, 1)
+        opened = original.open_card_worktree(project.project_id, "card_one", "First card",
+                                             {"goal": "Recover me"})
+
+        recovered = SqliteWorkspaceRepository(self.tmp_path / "new-data" / "workspace.sqlite")
+        recovered.recover_folder_project(project.root_path, "restore")
+        recovered.restore_design_git_state(project.project_id,
+            [{"number": 1, "commit": version["commit"], "tag": "v1", "payload": payload}],
+            [{"card_id": "card_one", **opened}],
+            {"architecture_version": 1, "design_version": 1,
+             "commit": scaffold["baseline_commit"]})
+
+        self.assertEqual(recovered.commit_design_version(project.project_id, 1, payload), version)
+        self.assertEqual(recovered.get_card_worktree(project.project_id, "card_one")["worktree_path"],
+                         opened["worktree_path"])
+        created = recovered.open_card_worktree(project.project_id, "card_two", "Second card")
+        self.assertIn("new-data/card-worktrees", created["worktree_path"])
+
 
     def test_unconfirmed_and_unknown_card_worktrees_are_refused(self):
         tmp_path = self.tmp_path

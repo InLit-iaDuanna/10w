@@ -38,6 +38,8 @@ not evidence that those capabilities have shipped.
   remaining existing actions live in the More menu. Dockview retains native tabs and edge geometry.
 - Tool selection has search, Chinese production groups and short descriptions. It replaces its own
   area by default; other placements require an explicit choice in location options.
+- The unified host does not show a global “布局” menu; users split the current area with its
+  four edge pull handles.
 - Root tokens and application chrome live in `apps/web/src/app/workbench.css`; picker styles live
   in the Forge Shell module's `tool-picker.css`; conversation/provider styles remain module-owned.
 - Existing layouts, context binding, dirty prompts, data and AI request boundaries are unchanged.

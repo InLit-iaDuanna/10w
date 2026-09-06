@@ -300,6 +300,142 @@ class GitProjects:
         if not matches:
             raise GitProjectError("此 Git 版本标签已存在且内容不同，不能覆盖。")
 
+    def restore_design_state(self, project_id, versions, card_branches, baseline=None):
+        """Re-register project-owned Git state only after its repository proves every claim."""
+        root = self._root(project_id)
+        with self.repository.connect() as connection:
+            registered_versions = {row["version"]: row for row in connection.execute(
+                "SELECT * FROM workspace_git_versions WHERE project_id=?", (project_id,))}
+            registered_branches = {row["card_id"]: row for row in connection.execute(
+                "SELECT * FROM workspace_card_worktrees WHERE project_id=?", (project_id,))}
+            registered_baseline = connection.execute(
+                "SELECT * FROM workspace_game_baselines WHERE project_id=?", (project_id,)).fetchone()
+        versions_ready = all(item.get("number") in registered_versions and
+            registered_versions[item["number"]]["commit_id"] == item.get("commit") and
+            registered_versions[item["number"]]["index_synced"] for item in versions)
+        branches_ready = all(item.get("card_id") in registered_branches and
+            all(registered_branches[item["card_id"]][key] == item.get(key)
+                for key in ("branch", "worktree_path", "base_commit")) for item in card_branches)
+        baseline_ready = baseline is None or (registered_baseline is not None and
+            registered_baseline["architecture_version"] == baseline.get("architecture_version") and
+            registered_baseline["design_version"] == baseline.get("design_version") and
+            registered_baseline["commit_id"] == baseline.get("commit") and
+            registered_baseline["index_synced"])
+        if versions_ready and branches_ready and baseline_ready:
+            return
+        self._verify_root(root)
+        head = self._git(root, "rev-parse", "--verify", "HEAD", optional=True)
+        verified_versions = {}
+        for item in versions:
+            version, commit, tag = item.get("number"), item.get("commit"), item.get("tag")
+            if (isinstance(version, bool) or not isinstance(version, int) or version < 1 or
+                    tag != f"v{version}" or not isinstance(commit, str)):
+                raise GitProjectError("项目内版本登记格式无效，不能恢复。")
+            tagged = self._git(root, "rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}", optional=True)
+            if tagged != commit or not head or self._git(root, "merge-base", "--is-ancestor",
+                    commit, head, optional=True) is None:
+                raise GitProjectError(f"项目内版本 {tag} 与当前 Git 历史不一致，不能恢复。")
+            relative = f".sceneops/design/snapshots/{tag}.json"
+            self._verify_snapshot(root, commit, relative, item.get("payload"))
+            verified_versions[version] = commit
+
+        baseline_row = None
+        if baseline is not None:
+            architecture_version = baseline.get("architecture_version")
+            design_version = baseline.get("design_version")
+            commit = baseline.get("commit")
+            if (isinstance(architecture_version, bool) or not isinstance(architecture_version, int) or
+                    isinstance(design_version, bool) or not isinstance(design_version, int) or
+                    not isinstance(commit, str) or design_version not in verified_versions):
+                raise GitProjectError("项目内工程基线登记格式无效，不能恢复。")
+            resolved = self._git(root, "rev-parse", "--verify", commit + "^{commit}", optional=True)
+            design_commit = verified_versions[design_version]
+            if (resolved != commit or self._git(root, "merge-base", "--is-ancestor",
+                    design_commit, commit, optional=True) is None or self._git(root, "merge-base",
+                    "--is-ancestor", commit, head, optional=True) is None):
+                raise GitProjectError("项目内工程基线与当前 Git 历史不一致，不能恢复。")
+            architecture = self._git(root, "show", f"{commit}:.sceneops/game-architecture.json", optional=True)
+            try:
+                marker = json.loads(architecture) if architecture is not None else None
+            except json.JSONDecodeError:
+                marker = None
+            if not isinstance(marker, dict) or marker.get("architecture_version") != architecture_version or marker.get("design_version") != design_version:
+                raise GitProjectError("项目内工程基线与架构记录不一致，不能恢复。")
+            baseline_row = (project_id, architecture_version, design_version, commit, 1,
+                            baseline.get("created_at") or datetime.now(timezone.utc).isoformat())
+
+        branch_rows = []
+        for item in card_branches:
+            card_id, branch = item.get("card_id"), item.get("branch")
+            base_commit, raw_path = item.get("base_commit"), item.get("worktree_path")
+            if (not isinstance(card_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", card_id)
+                    or branch != f"codex/card-{card_id}" or not isinstance(base_commit, str)
+                    or not isinstance(raw_path, str)):
+                raise GitProjectError("项目内卡片分支登记格式无效，不能恢复。")
+            target = Path(raw_path)
+            self._verify_restored_worktree_path(root, target, project_id, card_id, branch)
+            branch_head = self._git(root, "rev-parse", "--verify", f"refs/heads/{branch}^{{commit}}", optional=True)
+            base = self._git(root, "rev-parse", "--verify", base_commit + "^{commit}", optional=True)
+            latest_version = verified_versions[max(verified_versions)] if verified_versions else None
+            required_base = baseline_row[3] if baseline_row else latest_version
+            if (base != base_commit or not branch_head or self._git(root, "merge-base", "--is-ancestor",
+                    base_commit, branch_head, optional=True) is None or (required_base and self._git(root,
+                    "merge-base", "--is-ancestor", required_base, base_commit, optional=True) is None)):
+                raise GitProjectError(f"卡片 {card_id} 的分支历史不一致，不能恢复。")
+            brief = self._read_card_brief(target)
+            if (brief.get("project_id") != project_id or brief.get("card_id") != card_id or
+                    brief.get("base_commit") != base_commit):
+                raise GitProjectError(f"卡片 {card_id} 的说明与工作区不一致，不能恢复。")
+            branch_rows.append((project_id, card_id, branch, str(target), base_commit))
+
+        with self.repository.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            for item in versions:
+                existing = connection.execute("SELECT commit_id FROM workspace_git_versions WHERE project_id=? AND version=?",
+                                              (project_id, item["number"])).fetchone()
+                if existing and existing["commit_id"] != item["commit"]:
+                    raise GitProjectError("本机已有不同的设计版本登记，不能覆盖。")
+                connection.execute("""INSERT INTO workspace_git_versions
+                    (project_id,version,commit_id,index_synced) VALUES (?,?,?,1)
+                    ON CONFLICT(project_id,version) DO UPDATE SET
+                    commit_id=excluded.commit_id,index_synced=1
+                    WHERE workspace_git_versions.commit_id=excluded.commit_id""",
+                    (project_id, item["number"], item["commit"]))
+            if baseline_row:
+                existing = connection.execute("SELECT * FROM workspace_game_baselines WHERE project_id=?",
+                                              (project_id,)).fetchone()
+                if existing and (existing["architecture_version"], existing["design_version"], existing["commit_id"]) != baseline_row[1:4]:
+                    raise GitProjectError("本机已有不同的工程基线登记，不能覆盖。")
+                connection.execute("INSERT OR IGNORE INTO workspace_game_baselines VALUES (?,?,?,?,?,?)", baseline_row)
+            for row in branch_rows:
+                existing = connection.execute("SELECT * FROM workspace_card_worktrees WHERE project_id=? AND card_id=?",
+                                              row[:2]).fetchone()
+                if existing and tuple(existing[key] for key in ("project_id", "card_id", "branch", "worktree_path", "base_commit")) != row:
+                    raise GitProjectError("本机已有不同的卡片工作区登记，不能覆盖。")
+                connection.execute("INSERT OR IGNORE INTO workspace_card_worktrees VALUES (?,?,?,?,?)", row)
+
+    def _verify_restored_worktree_path(self, root, target, project_id, card_id, branch):
+        if (target.name != card_id or target.parent.name != project_id or
+                target.parent.parent.name != "card-worktrees" or target.resolve().is_relative_to(root.resolve())):
+            raise GitProjectError("项目内卡片工作区路径无效，不能恢复。")
+        self._verify_worktree(root, target, branch)
+
+    def _read_card_brief(self, target):
+        brief = target / ".sceneops" / "card-brief.json"
+        try:
+            descriptor = os.open(brief, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            with os.fdopen(descriptor, "rb") as stream:
+                info = os.fstat(stream.fileno())
+                raw = stream.read(65537)
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or len(raw) > 65536:
+                raise GitProjectError("卡片说明必须为有界普通文件。")
+            context = json.loads(raw.decode("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise GitProjectError("卡片说明不可读取，不能恢复工作区。") from error
+        if not isinstance(context, dict):
+            raise GitProjectError("卡片说明格式无效，不能恢复工作区。")
+        return context
+
     def open_card(self, project_id, card_id, title, card=None):
         if not all(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", value)
                    for value in (project_id, card_id)):
@@ -334,10 +470,12 @@ class GitProjects:
             self._require_clean_project_sources(root)
         branch = f"codex/card-{card_id}"
         base = self.repository.path.absolute().parent / "card-worktrees"
-        base.mkdir(mode=0o700, exist_ok=True)
-        self.repository._safe_existing_directory(base)
-        parent = self.repository._real_directory(base / project_id, create=True)
-        target = parent / card_id
+        target = Path(registered["worktree_path"]) if registered is not None else base / project_id / card_id
+        if registered is None:
+            base.mkdir(mode=0o700, exist_ok=True)
+            self.repository._safe_existing_directory(base)
+            parent = self.repository._real_directory(base / project_id, create=True)
+            target = parent / card_id
         if target.resolve().is_relative_to(root.resolve()):
             raise GitProjectError("卡片工作区必须位于项目根目录之外。")
         with self.repository.connect() as connection:
@@ -405,25 +543,12 @@ class GitProjects:
                                      (project_id, card_id)).fetchone()
         if row is None:
             raise GitProjectError("卡片工作区尚未登记，请先打开该卡片分支。")
-        expected = self.repository.path.absolute().parent / "card-worktrees" / project_id / card_id
-        if row["worktree_path"] != str(expected) or row["branch"] != f"codex/card-{card_id}":
+        expected = Path(row["worktree_path"])
+        if row["branch"] != f"codex/card-{card_id}":
             raise GitProjectError("卡片工作区登记与实际目录不一致。")
-        self._verify_worktree(root, expected, row["branch"])
-        metadata = expected / '.sceneops'
-        self.repository._safe_existing_directory(metadata)
-        brief = metadata / 'card-brief.json'
-        try:
-            descriptor = os.open(brief, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
-            with os.fdopen(descriptor, 'rb') as stream:
-                info = os.fstat(stream.fileno())
-                if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 65536:
-                    raise GitProjectError('卡片说明必须为有界普通文件。')
-                raw = stream.read(65537)
-                if len(raw) > 65536:
-                    raise GitProjectError('卡片说明超过读取限制。')
-                context = json.loads(raw.decode('utf-8'))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise GitProjectError('已登记卡片说明不可读取，请检查卡片工作区。') from error
+        self._verify_restored_worktree_path(root, expected, project_id, card_id, row["branch"])
+        self.repository._safe_existing_directory(expected / '.sceneops')
+        context = self._read_card_brief(expected)
         if not isinstance(context, dict) or context.get('project_id') != project_id or context.get('card_id') != card_id:
             raise GitProjectError('已登记卡片说明与当前项目或卡片不一致。')
         return {**dict(row), 'card_brief': context}

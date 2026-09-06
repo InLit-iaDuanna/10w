@@ -207,6 +207,21 @@ export interface components {
             /** Model */
             model: string;
             /**
+             * Model Rotation Quaternion Xyzw
+             * @default [
+             *       0,
+             *       0,
+             *       0,
+             *       1
+             *     ]
+             */
+            model_rotation_quaternion_xyzw: [
+                number,
+                number,
+                number,
+                number
+            ];
+            /**
              * Status
              * @default planned
              * @enum {string}
@@ -319,7 +334,22 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "import" | "generate" | "normalize";
+            operation: "import" | "generate" | "normalize" | "calibrate";
+            /**
+             * Model Rotation Quaternion Xyzw
+             * @default [
+             *       0,
+             *       0,
+             *       0,
+             *       1
+             *     ]
+             */
+            model_rotation_quaternion_xyzw: [
+                number,
+                number,
+                number,
+                number
+            ];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -336,6 +366,13 @@ export interface components {
             }[];
             /** Reference Id */
             reference_id?: string | null;
+            /** Model Rotation Quaternion Xyzw */
+            model_rotation_quaternion_xyzw?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
             /** Trigger Message Id */
             trigger_message_id: string;
             /** Modeling Block */
@@ -365,6 +402,13 @@ export interface components {
             }[];
             /** Reference Id */
             reference_id?: string | null;
+            /** Model Rotation Quaternion Xyzw */
+            model_rotation_quaternion_xyzw?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
         };
         /** NormalizeRequest */
         NormalizeRequest: {
@@ -468,7 +512,22 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "import" | "generate" | "normalize";
+            operation: "import" | "generate" | "normalize" | "calibrate";
+            /**
+             * Model Rotation Quaternion Xyzw
+             * @default [
+             *       0,
+             *       0,
+             *       0,
+             *       1
+             *     ]
+             */
+            model_rotation_quaternion_xyzw: [
+                number,
+                number,
+                number,
+                number
+            ];
             /** Saved At */
             saved_at?: string;
         };
@@ -482,6 +541,13 @@ export interface components {
         SaveToLibraryRequest: {
             /** Version */
             version: number;
+            /** Model Rotation Quaternion Xyzw */
+            model_rotation_quaternion_xyzw?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
         };
         /** ValidationError */
         ValidationError: {

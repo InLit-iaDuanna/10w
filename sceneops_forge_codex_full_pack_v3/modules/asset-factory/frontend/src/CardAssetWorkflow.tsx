@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CardModelPreview, type CardModelPreviewHandle } from './CardModelPreview.tsx';
+import { CardModelPreview, MODEL_ROTATION_IDENTITY, type CardModelPreviewHandle, type ModelRotationQuaternion } from './CardModelPreview.tsx';
 import { cardAssetClient, cardAssetFileUrl, cardAssetKey, projectAssetLibraryKey, type CardAssetList, type CardAssetRecord } from './cardAssetClient.ts';
 import './card-asset-workflow.css';
 
 type Message = { id: string; role: string; text: string; replyTo?: string; modelingBlock?: string };
 type LiveUpdateJob = { triggerMessageId: string; modelingBlock: string;
-  transcript: {role:string;text:string}[]; retryFailed?: boolean };
+  transcript: {role:string;text:string}[]; retryFailed?: boolean; modelRotation?: ModelRotationQuaternion };
 
 const MODELING_BLOCKS = [
   {id:'shape', label:'轮廓', detail:'用途与整体造型'},
@@ -14,6 +14,16 @@ const MODELING_BLOCKS = [
   {id:'surface', label:'表面', detail:'材质与配色'},
   {id:'interaction', label:'交互', detail:'摆放与使用约束'},
 ] as const;
+
+function versionRotation(version: {model_rotation_quaternion_xyzw?: readonly [number, number, number, number] | null} | undefined): ModelRotationQuaternion {
+  const value = version?.model_rotation_quaternion_xyzw;
+  return value ? [value[0], value[1], value[2], value[3]] : MODEL_ROTATION_IDENTITY;
+}
+
+function sameRotation(left: ModelRotationQuaternion, right: ModelRotationQuaternion) {
+  const dot = left.reduce((total, value, index) => total + value * right[index], 0);
+  return Math.abs(dot) >= 1 - 1e-6;
+}
 
 export type CardAssetWorkflowProps = { projectId: string; cardId: string; source: 'import'|'create';
   sessionId: string; messages: Message[]; onCreateAnother?: () => void; onOpenEnvironment?: () => void;
@@ -31,6 +41,7 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
   const [referenceId, setReferenceId] = useState<string|null>(null);
   const [targets, setTargets] = useState<Record<string,string>>({});
   const [selectedVersions, setSelectedVersions] = useState<Record<string,number>>({});
+  const [modelRotations, setModelRotations] = useState<Record<string,ModelRotationQuaternion>>({});
   const [notice, setNotice] = useState<{text:string;kind:'success'|'error'}|null>(null);
   const [queue, setQueue] = useState<LiveUpdateJob[]>([]);
   const [failedJob, setFailedJob] = useState<LiveUpdateJob|null>(null);
@@ -39,8 +50,20 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     Number(localStorage.getItem('sceneops.environment.scene-share.v1')) || 62)));
   const observed = useRef<{sessionId:string;messageIds:Set<string>}|null>(null);
   const preview = useRef<CardModelPreviewHandle>(null);
+  const previewHandles = useRef<Record<string,CardModelPreviewHandle|null>>({});
   const sceneRoot = useRef<HTMLElement>(null);
   const resizingScene = useRef(false);
+  const allAssets = query.data?.assets ?? [];
+  const assets = source === 'create'
+    ? allAssets.filter(asset => asset.source_type === 'generated' && asset.session_id === sessionId)
+    : allAssets.filter(asset => asset.source_type === 'import');
+  const hasSessionDraft = source === 'create' && assets.length > 0;
+  const activeAsset = source === 'create'
+    ? assets.find(asset => asset.source_type === 'generated' && asset.session_id === sessionId)
+    : assets[0];
+  const inheritedModelRotation = activeAsset
+    ? modelRotations[activeAsset.id] ?? versionRotation(activeAsset.versions?.at(-1))
+    : MODEL_ROTATION_IDENTITY;
   const refresh = async () => { await cache.invalidateQueries({queryKey:key}); };
 
   const imported = useMutation({mutationFn: async () => {
@@ -61,9 +84,10 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
       modeling_block:job.modelingBlock,
       transcript:job.transcript,
       retry_failed:!!job.retryFailed,
+      model_rotation_quaternion_xyzw:job.modelRotation ?? inheritedModelRotation,
       ...(reference_id ? {reference_id} : {}),
     });
-  }, onSuccess: async result => {
+  }, onSuccess: async (result, job) => {
     cache.setQueryData<CardAssetList>(key, current => current ? {
       ...current,
       assets:[result.asset, ...current.assets.filter(item => item.id !== result.asset.id)],
@@ -72,6 +96,11 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     setReferenceFile(null);
     setFailedJob(null);
     setQueue(current => current.filter(item => item.triggerMessageId !== result.proposal.trigger_message_id));
+    const createdVersion = (result.asset.versions ?? []).find(item => item.number === result.asset.current_version);
+    setModelRotations(current => current[result.asset.id] ? current : {
+      ...current,
+      [result.asset.id]:job.modelRotation ?? versionRotation(createdVersion),
+    });
     setNotice({text:result.reused ? `本轮已生成过，已恢复 v${result.asset.current_version}。` : `草稿 v${result.asset.current_version} 已更新。`,kind:'success'});
     await refresh();
   }, onError: async (error, job) => {
@@ -86,18 +115,19 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
       setSelectedVersions(current => ({...current,[result.id]:result.current_version}));
       setNotice({text:'已追加归一化版本；之前的草稿仍可切换查看。',kind:'success'}); await refresh();
     }, onError:async error => { setNotice({text:error.message,kind:'error'}); await refresh(); }});
-  const savedToLibrary = useMutation({mutationFn:({assetId,version}:{assetId:string;version:number}) =>
-    cardAssetClient.saveToLibrary(assetId, version), onSuccess:async result => {
+  const savedToLibrary = useMutation({mutationFn:({assetId,version,modelRotation}:{assetId:string;version:number;modelRotation:ModelRotationQuaternion}) =>
+    cardAssetClient.saveToLibrary(assetId, version, modelRotation), onSuccess:async (result, variables) => {
       cache.setQueryData(libraryKey, (current:typeof library.data) => current
         ? [result.entry, ...current.filter(item => item.id !== result.entry.id)] : [result.entry]);
-      setNotice({text:result.version_created ? '这个版本已存入项目资产库。' : '这个版本已经在项目资产库中。',kind:'success'});
+      setSelectedVersions(current => ({...current,[variables.assetId]:result.entry.current_version}));
+      setModelRotations(current => current[variables.assetId] ? current : {
+        ...current,
+        [variables.assetId]:versionRotation(result.entry.versions.find(item => item.source_version === result.entry.current_version)),
+      });
+      setNotice({text:result.version_created ? '已按当前模型轴向校准并存入项目资产库。' : '这个版本已经按当前轴向校准存入资产库。',kind:'success'});
+      await refresh();
       await cache.invalidateQueries({queryKey:libraryKey});
     }, onError:error => setNotice({text:error.message,kind:'error'})});
-  const allAssets = query.data?.assets ?? [];
-  const assets = source === 'create'
-    ? allAssets.filter(asset => asset.source_type === 'generated' && asset.session_id === sessionId)
-    : allAssets.filter(asset => asset.source_type === 'import');
-  const hasSessionDraft = source === 'create' && assets.length > 0;
 
   useEffect(() => {
     if (!observeConversation) {
@@ -157,9 +187,13 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
   const sceneVersions = sceneAsset?.versions ?? [];
   const sceneVersionNumber = sceneAsset ? selectedVersions[sceneAsset.id] ?? sceneAsset.current_version : undefined;
   const sceneVersion = sceneVersions.find(item => item.number === sceneVersionNumber) ?? sceneVersions.at(-1);
+  const sceneModelRotation = sceneAsset ? modelRotations[sceneAsset.id] ?? versionRotation(sceneVersion) : MODEL_ROTATION_IDENTITY;
   const sceneGenerationPending = liveUpdated.isPending || sceneAsset?.status === 'processing';
-  const sceneVersionSaved = !!sceneAsset && !!sceneVersion && !!library.data?.find(item => item.source_asset_id === sceneAsset.id)
-    ?.versions.some(item => item.source_version === sceneVersion.number);
+  const sceneLibraryVersion = sceneAsset && sceneVersion
+    ? library.data?.find(item => item.source_asset_id === sceneAsset.id)?.versions.find(item => item.source_version === sceneVersion.number)
+    : undefined;
+  const sceneVersionSaved = !!sceneLibraryVersion && sameRotation(
+    versionRotation(sceneLibraryVersion), sceneModelRotation);
   if (presentation === 'scene') return <section ref={sceneRoot} className="card-model-scene-workflow"
     style={{'--card-model-scene-share':`${sceneShare}%`} as CSSProperties} aria-label="当前模型场景">
     <section className="card-model-scene-card" aria-label="当前模型预览">
@@ -172,7 +206,9 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
             aria-pressed={item.number === sceneVersion?.number} onClick={() => setSelectedVersions(current => ({...current,[sceneAsset!.id]:item.number}))}>v{item.number}</button>)}</div>}
         </div></div>
       {sceneAsset && sceneVersion ? <CardModelPreview ref={preview} label={`${sceneAsset.title} v${sceneVersion.number}`}
-        url={cardAssetFileUrl(sceneAsset.id,'preview',sceneVersion.number)}/>
+        url={cardAssetFileUrl(sceneAsset.id,'preview',sceneVersion.number)}
+        modelRotation={sceneModelRotation} baseModelRotation={versionRotation(sceneVersion)}
+        onModelRotationChange={rotation => setModelRotations(current => ({...current,[sceneAsset.id]:[...rotation] as ModelRotationQuaternion}))}/>
         : <div className="card-model-scene-empty"><strong>{source === 'import' ? '等待导入模型' : '当前需求还没有模型版本'}</strong>
           <span>{source === 'import' ? '在下方选择 GLB 或 FBX。' : '在左侧对话确认需求，然后点击“确认并建模”。'}</span></div>}
     </section>
@@ -202,14 +238,15 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
         {[15,30,45,90].map(value => <option key={value} value={value}>{value}°</option>)}</select></label>
         <button type="button" onClick={() => preview.current?.reset()}>复位视角</button></div>
         <section className="card-model-axis-panel" aria-label="模型三轴旋转">
-          <header><strong>模型旋转 90°</strong><small>旋转模型本体</small></header>
+          <header><strong>模型旋转 90°</strong><small>校准后续版本与项目资产轴向</small></header>
           <div><button type="button" onClick={() => preview.current?.rotateModel('x',90)}>X 轴 +90°</button>
             <button type="button" onClick={() => preview.current?.rotateModel('y',90)}>Y 轴 +90°</button>
             <button type="button" onClick={() => preview.current?.rotateModel('z',90)}>Z 轴 +90°</button>
             <button type="button" onClick={() => preview.current?.resetModel()}>复位模型</button></div>
+          <small>当前校准会随之后的模型版本继承；存入资产库时会写入 GLB、FBX 和 .blend。</small>
         </section>
         <div className="card-model-scene-actions"><button type="button" disabled={busy || sceneVersionSaved}
-          onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:sceneAsset.id,version:sceneVersion.number});}}>{sceneVersionSaved ? '已存资产库' : '存入资产库'}</button>
+          onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:sceneAsset.id,version:sceneVersion.number,modelRotation:sceneModelRotation});}}>{sceneVersionSaved ? '已存资产库' : '存入资产库'}</button>
           {onCreateAnother && <button type="button" disabled={busy} onClick={onCreateAnother}>新建另一个</button>}
           {onOpenEnvironment && <button type="button" disabled={busy} onClick={onOpenEnvironment}>返回世界</button>}</div></>}
       {!sceneVersion && source === 'create' && <p className="card-asset-empty">首版由左侧“确认并建模”启动；之后继续对话会更新同一个模型。</p>}
@@ -237,18 +274,30 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
       const versions = asset.versions ?? [];
       const selectedNumber = selectedVersions[asset.id] ?? asset.current_version;
       const version = versions.find(item => item.number === selectedNumber) ?? versions.at(-1);
+      const modelRotation = modelRotations[asset.id] ?? versionRotation(version);
       const target = targets[asset.id] ?? (version ? String(Math.max(...version.dimensions_m)) : '1');
       const libraryEntry = library.data?.find(item => item.source_asset_id === asset.id);
-      const versionSaved = !!version && !!libraryEntry?.versions.some(item => item.source_version === version.number);
+      const libraryVersion = version && libraryEntry?.versions.find(item => item.source_version === version.number);
+      const versionSaved = !!libraryVersion && sameRotation(versionRotation(libraryVersion), modelRotation);
       return <article key={asset.id} className="card-asset-result" data-status={asset.status}>
         <div className="card-asset-result-heading"><div><small>{asset.source_type === 'import' ? '已导入' : '实时草稿'}</small><h3>{asset.title}</h3></div><span>v{version?.number ?? asset.current_version}</span></div>
-        {version && <><CardModelPreview label={`${asset.title} v${version.number}`} url={cardAssetFileUrl(asset.id,'preview',version.number)}/>
+        {version && <><CardModelPreview label={`${asset.title} v${version.number}`} url={cardAssetFileUrl(asset.id,'preview',version.number)}
+          ref={handle => { previewHandles.current[asset.id] = handle; }}
+          modelRotation={modelRotation} baseModelRotation={versionRotation(version)}
+          onModelRotationChange={rotation => setModelRotations(current => ({...current,[asset.id]:[...rotation] as ModelRotationQuaternion}))}/>
           <div className="card-version-strip" aria-label="模型版本">{versions.map(item => <button key={item.number} type="button"
             aria-pressed={item.number === version.number} onClick={() => setSelectedVersions(current => ({...current,[asset.id]:item.number}))}>v{item.number}</button>)}</div>
           <dl className="card-asset-metrics"><div><dt>尺寸</dt><dd>{size(version.dimensions_m)}</dd></div><div><dt>网格</dt><dd>{version.vertex_count} 顶点 · {version.triangle_count} 面</dd></div></dl>
+          <section className="card-model-axis-panel" aria-label={`${asset.title} 模型三轴旋转`}>
+            <header><strong>模型旋转 90°</strong><small>后续版本与入库资产会继承</small></header>
+            <div><button type="button" onClick={() => previewHandles.current[asset.id]?.rotateModel('x',90)}>X 轴 +90°</button>
+              <button type="button" onClick={() => previewHandles.current[asset.id]?.rotateModel('y',90)}>Y 轴 +90°</button>
+              <button type="button" onClick={() => previewHandles.current[asset.id]?.rotateModel('z',90)}>Z 轴 +90°</button>
+              <button type="button" onClick={() => previewHandles.current[asset.id]?.resetModel()}>复位模型</button></div>
+          </section>
           <div className="card-asset-next-actions">
             <button type="button" className="primary" disabled={busy || versionSaved}
-              onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:asset.id,version:version.number});}}>{versionSaved ? '已存资产库' : '存入资产库'}</button>
+              onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:asset.id,version:version.number,modelRotation});}}>{versionSaved ? '已存资产库' : '存入资产库'}</button>
             {versionSaved && source === 'create' && onCreateAnother && <button type="button" disabled={busy} onClick={onCreateAnother}>继续新建</button>}
             {versionSaved && onOpenEnvironment && <button type="button" disabled={busy} onClick={onOpenEnvironment}>搭建环境 →</button>}
           </div>

@@ -6,7 +6,7 @@ import { environmentAssetUrl, type EnvironmentObject } from './environment-clien
 
 
 export function EnvironmentScenePreview({objects, selectedId, onSelect}: {
-  objects: EnvironmentObject[]; selectedId: string | null; onSelect: (id: string) => void;
+  objects: EnvironmentObject[]; selectedId: string | null; onSelect: (id: string | null) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const groupsRef = useRef(new Map<string, THREE.Group>());
@@ -106,7 +106,7 @@ export function EnvironmentScenePreview({objects, selectedId, onSelect}: {
       const hit = raycaster.intersectObjects([...groups.values()], true)[0]?.object;
       let current: THREE.Object3D | null | undefined = hit;
       while (current && !current.userData.sceneObjectId) current = current.parent;
-      if (current?.userData.sceneObjectId) onSelect(String(current.userData.sceneObjectId));
+      onSelect(current?.userData.sceneObjectId ? String(current.userData.sceneObjectId) : null);
     };
     renderer.domElement.addEventListener('pointerup', click);
     const resize = new ResizeObserver(draw); resize.observe(element);

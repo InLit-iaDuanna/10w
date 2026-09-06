@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import math
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -9,6 +10,46 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+ModelRotationQuaternion = tuple[float, float, float, float]
+MODEL_ROTATION_IDENTITY: ModelRotationQuaternion = (0.0, 0.0, 0.0, 1.0)
+
+
+def validate_model_rotation(value: ModelRotationQuaternion | None) -> ModelRotationQuaternion | None:
+    if value is None:
+        return None
+    if any(not math.isfinite(item) for item in value):
+        raise ValueError("模型旋转必须是有限数值。")
+    length = math.sqrt(sum(item * item for item in value))
+    if length < 1e-8:
+        raise ValueError("模型旋转四元数不能是零值。")
+    if abs(length - 1.0) > 1e-3:
+        raise ValueError("模型旋转四元数必须归一化。")
+    return tuple(item / length for item in value)
+
+
+def quaternion_multiply(left: ModelRotationQuaternion,
+                        right: ModelRotationQuaternion) -> ModelRotationQuaternion:
+    lx, ly, lz, lw = left
+    rx, ry, rz, rw = right
+    return (
+        lw * rx + lx * rw + ly * rz - lz * ry,
+        lw * ry - lx * rz + ly * rw + lz * rx,
+        lw * rz + lx * ry - ly * rx + lz * rw,
+        lw * rw - lx * rx - ly * ry - lz * rz,
+    )
+
+
+def quaternion_inverse(value: ModelRotationQuaternion) -> ModelRotationQuaternion:
+    x, y, z, w = value
+    return (-x, -y, -z, w)
+
+
+def quaternions_equal(left: ModelRotationQuaternion,
+                      right: ModelRotationQuaternion, tolerance: float = 1e-6) -> bool:
+    # q and -q represent the same spatial rotation.
+    return abs(sum(a * b for a, b in zip(left, right))) >= 1.0 - tolerance
 
 
 class PrimitivePart(BaseModel):
@@ -56,9 +97,15 @@ class CardAssetProposal(ModelPlanContent):
     reference_id: str | None = None
     provider: str
     model: str
+    model_rotation_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY
     status: Literal["planned", "generated", "failed"] = "planned"
     created_at: str = Field(default_factory=utc_now)
     error: str | None = None
+
+    @field_validator("model_rotation_quaternion_xyzw")
+    @classmethod
+    def validate_rotation(cls, value: ModelRotationQuaternion) -> ModelRotationQuaternion:
+        return validate_model_rotation(value) or MODEL_ROTATION_IDENTITY
 
 
 class CardAssetVersion(BaseModel):
@@ -73,7 +120,13 @@ class CardAssetVersion(BaseModel):
     fbx_path: str
     manifest_path: str
     created_at: str = Field(default_factory=utc_now)
-    operation: Literal["import", "generate", "normalize"]
+    operation: Literal["import", "generate", "normalize", "calibrate"]
+    model_rotation_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY
+
+    @field_validator("model_rotation_quaternion_xyzw")
+    @classmethod
+    def validate_rotation(cls, value: ModelRotationQuaternion) -> ModelRotationQuaternion:
+        return validate_model_rotation(value) or MODEL_ROTATION_IDENTITY
 
 
 class CardAssetRecord(BaseModel):
@@ -113,7 +166,7 @@ class CardAssetChange(BaseModel):
     project_id: str
     card_id: str
     asset_id: str | None = None
-    operation: Literal["import", "generate", "normalize", "reference"]
+    operation: Literal["import", "generate", "normalize", "calibrate", "reference"]
     status: Literal["approved", "executed", "failed"] = "approved"
     rationale: str
     writes: list[str]
@@ -137,6 +190,12 @@ class ModelPlanRequest(BaseModel):
     session_id: str = Field(min_length=1, max_length=160)
     transcript: list[dict[str, str]] = Field(min_length=1, max_length=120)
     reference_id: str | None = None
+    model_rotation_quaternion_xyzw: ModelRotationQuaternion | None = None
+
+    @field_validator("model_rotation_quaternion_xyzw")
+    @classmethod
+    def validate_rotation(cls, value: ModelRotationQuaternion | None) -> ModelRotationQuaternion | None:
+        return validate_model_rotation(value)
 
 
 class LiveModelUpdateRequest(ModelPlanRequest):
@@ -162,6 +221,12 @@ class SaveToLibraryRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     version: int = Field(ge=1)
+    model_rotation_quaternion_xyzw: ModelRotationQuaternion | None = None
+
+    @field_validator("model_rotation_quaternion_xyzw")
+    @classmethod
+    def validate_rotation(cls, value: ModelRotationQuaternion | None) -> ModelRotationQuaternion | None:
+        return validate_model_rotation(value)
 
 
 class CardAssetError(Exception):

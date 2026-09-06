@@ -633,6 +633,32 @@
             "type": "string",
             "title": "Model"
           },
+          "model_rotation_quaternion_xyzw": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Model Rotation Quaternion Xyzw",
+            "default": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -951,9 +977,36 @@
             "enum": [
               "import",
               "generate",
-              "normalize"
+              "normalize",
+              "calibrate"
             ],
             "title": "Operation"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Model Rotation Quaternion Xyzw",
+            "default": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
           }
         },
         "type": "object",
@@ -1015,6 +1068,33 @@
               }
             ],
             "title": "Reference Id"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Rotation Quaternion Xyzw"
           },
           "trigger_message_id": {
             "type": "string",
@@ -1100,6 +1180,33 @@
               }
             ],
             "title": "Reference Id"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Rotation Quaternion Xyzw"
           }
         },
         "additionalProperties": false,
@@ -1365,9 +1472,36 @@
             "enum": [
               "import",
               "generate",
-              "normalize"
+              "normalize",
+              "calibrate"
             ],
             "title": "Operation"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Model Rotation Quaternion Xyzw",
+            "default": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
           },
           "saved_at": {
             "type": "string",
@@ -1412,6 +1546,33 @@
             "type": "integer",
             "minimum": 1.0,
             "title": "Version"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Rotation Quaternion Xyzw"
           }
         },
         "additionalProperties": false,

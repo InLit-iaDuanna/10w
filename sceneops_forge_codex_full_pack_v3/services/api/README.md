@@ -20,6 +20,10 @@ AI 的 `/api/ai/*` 由 conversation-home 唯一实现，旧 `/v1/design-ai/*` �
 
 `SCENEOPS_DATA_DIR` 默认应用根 `.local`。主 `sceneops.sqlite3` 保存项目目录、显式草稿、制作计划、角色版本及聊天/模型设置（后两类表由 conversation-home 拥有）。评审沿用模块原 SQLite repository，构建提案沿用原 CAS repository，位于 `.local/projects/<project_id>/reviews.sqlite3` 与 `build-proposals.sqlite3`，防止旧表的无项目主键混用。OpenAPI 模板只使用临时目录，不建立虚构项目。
 
+文件夹项目的策划旅程同时原子写入项目内 `.sceneops/design/draft.json`。当本机 SQLite 索引丢失后通过同一 Project ID 恢复登记，第一次读取会校验并重新导入这份完整策划状态；不会跨 Project ID 复制对话。
+
+导入后的读取还会恢复缺失的设计版本、工程基线和卡片 worktree 本机登记，但前提是草稿记录与仓库中的快照、标签、提交祖先关系、分支、worktree 和卡片说明逐项一致。
+
 没有自动迁移旧 demo 数据。已保存的草稿不是审批、构建或测试证据。概念/渲染/UI/audio/VFX 的交互会话仍是模块原内存服务；用户显式保存的编辑器草稿可重启恢复，但运行时缓存/临时提案不作为持久生产记录。渲染集成初始 `jobs:[]`，仅显示静态 brief/配方，不自动 `plan` 或 `load_fixture`。评审/构建的手动样例来自明确标记 Mock 的记录，不是当前执行的证明。
 
 ## 验证

@@ -23,9 +23,14 @@ from .card_asset_models import (
     CardAssetReference,
     CardAssetVersion,
     LiveModelUpdateRequest,
+    MODEL_ROTATION_IDENTITY,
+    ModelRotationQuaternion,
     LiveModelUpdateResult,
     ModelPlanContent,
     ModelPlanRequest,
+    quaternion_inverse,
+    quaternion_multiply,
+    quaternions_equal,
     utc_now,
 )
 
@@ -253,6 +258,7 @@ class CardAssetService:
         proposal = CardAssetProposal(id="proposal_" + uuid4().hex, asset_id="asset_" + uuid4().hex,
             project_id=project_id, card_id=card_id, session_id=request.session_id,
             reference_id=request.reference_id, provider=settings.provider, model=settings.model,
+            model_rotation_quaternion_xyzw=request.model_rotation_quaternion_xyzw or MODEL_ROTATION_IDENTITY,
             **content.model_dump())
         self._save("card_asset_proposals", proposal)
         return proposal
@@ -313,6 +319,7 @@ class CardAssetService:
                 project_id=project_id, card_id=card_id, session_id=request.session_id,
                 trigger_message_id=request.trigger_message_id, modeling_block=request.modeling_block,
                 reference_id=request.reference_id, provider=settings.provider, model=settings.model,
+                model_rotation_quaternion_xyzw=request.model_rotation_quaternion_xyzw or MODEL_ROTATION_IDENTITY,
                 **content.model_dump())
             self._save("card_asset_proposals", proposal)
             record = (current.model_copy(update={"title": proposal.title, "status": "processing",
@@ -327,7 +334,9 @@ class CardAssetService:
                 [f"assets/models/{card_id}/{asset_id}/versions/v{number}/"], asset_id)
             try:
                 updated = self._execute_version(root, record, "generate", proposal=proposal, change=change,
-                                                version_number=number)
+                                                version_number=number,
+                                                model_rotation_quaternion_xyzw=proposal.model_rotation_quaternion_xyzw,
+                                                rotation_apply_quaternion_xyzw=proposal.model_rotation_quaternion_xyzw)
                 self._save("card_asset_proposals", proposal.model_copy(update={"status": "generated"}))
                 return proposal.model_copy(update={"status": "generated"}), updated
             except Exception as error:
@@ -398,7 +407,9 @@ class CardAssetService:
             change = self._change(proposal.project_id, proposal.card_id, "generate", "用户审阅方案后点击“确认生成模型”。",
                                   [self._relative(root, directory / "versions/v1") + "/"], proposal.asset_id)
             try:
-                updated = self._execute_version(root, record, "generate", proposal=proposal, change=change)
+                updated = self._execute_version(root, record, "generate", proposal=proposal, change=change,
+                                                model_rotation_quaternion_xyzw=proposal.model_rotation_quaternion_xyzw,
+                                                rotation_apply_quaternion_xyzw=proposal.model_rotation_quaternion_xyzw)
                 self._save("card_asset_proposals", proposal.model_copy(update={"status": "generated"}))
                 return updated
             except Exception as error:
@@ -426,7 +437,8 @@ class CardAssetService:
             try:
                 return self._execute_version(root, record, "normalize", input_path=source,
                                              target_extent_m=target_extent_m, change=change,
-                                             version_number=next_version)
+                                             version_number=next_version,
+                                             model_rotation_quaternion_xyzw=current.model_rotation_quaternion_xyzw)
             except Exception as error:
                 # A failed normalization does not invalidate the last verified version.
                 preserved = record.model_copy(update={"status": "ready", "updated_at": utc_now(), "error": str(error),
@@ -435,43 +447,79 @@ class CardAssetService:
                 self._complete_change(change, str(error))
                 raise
 
-    def save_to_library(self, asset_id: str, version_number: int):
+    def save_to_library(self, asset_id: str, version_number: int,
+                        model_rotation_quaternion_xyzw: ModelRotationQuaternion | None = None):
         if self.catalog is None:
             raise CardAssetError("ASSET_LIBRARY_UNAVAILABLE", "项目资产库尚未连接。", status_code=503)
         record = self._load("card_asset_records", asset_id, CardAssetRecord)
-        if record.status != "ready":
-            raise CardAssetError("ASSET_NOT_READY", "模型尚未成功生成，不能存入资产库。")
-        version = next((item for item in record.versions if item.number == version_number), None)
-        if version is None:
-            raise CardAssetError("ASSET_VERSION_NOT_FOUND", "模型版本不存在。", status_code=404)
-        _, root = self._binding(record.project_id, record.card_id)
-        for relative in (version.blend_path, version.preview_path, version.fbx_path):
-            path = (root / relative).resolve(strict=True)
-            if not path.is_relative_to(root) or path.is_symlink() or not path.is_file():
-                raise CardAssetError("ASSET_FILE_INVALID", "模型版本文件不可读取，未存入资产库。", status_code=422)
-        return self.catalog.register_version(ProjectAssetRegistration(
-            project_id=record.project_id,
-            card_id=record.card_id,
-            source_asset_id=record.id,
-            title=record.title,
-            source_type=record.source_type,
-            modeling_session_id=record.session_id,
-            version=ProjectAssetVersion(
-                source_version=version.number,
-                dimensions_m=version.dimensions_m,
-                vertex_count=version.vertex_count,
-                triangle_count=version.triangle_count,
-                blend_path=version.blend_path,
-                preview_path=version.preview_path,
-                fbx_path=version.fbx_path,
-                operation=version.operation,
-            ),
-        ))
+        with self._lock(record.project_id, record.card_id):
+            # Reload inside the card lock so a concurrent version cannot change the
+            # source selected for calibration while it is being exported.
+            record = self._load("card_asset_records", asset_id, CardAssetRecord)
+            if record.status != "ready":
+                raise CardAssetError("ASSET_NOT_READY", "模型尚未成功生成，不能存入资产库。")
+            version = next((item for item in record.versions if item.number == version_number), None)
+            if version is None:
+                raise CardAssetError("ASSET_VERSION_NOT_FOUND", "模型版本不存在。", status_code=404)
+            desired_rotation = model_rotation_quaternion_xyzw or version.model_rotation_quaternion_xyzw
+            if not quaternions_equal(desired_rotation, version.model_rotation_quaternion_xyzw):
+                _, root = self._binding(record.project_id, record.card_id)
+                source = (root / version.blend_path).resolve(strict=True)
+                if not source.is_relative_to(root) or source.is_symlink():
+                    raise CardAssetError("ASSET_PATH_INVALID", "当前模型版本路径无效。", status_code=422)
+                next_version = self._next_version(root, record)
+                change = self._change(record.project_id, record.card_id, "calibrate",
+                                      "用户在模型预览中校准了模型轴向并保存到项目资产库。",
+                                      [f"assets/models/{record.card_id}/{record.id}/versions/v{next_version}/"], record.id)
+                delta = quaternion_multiply(desired_rotation,
+                                            quaternion_inverse(version.model_rotation_quaternion_xyzw))
+                try:
+                    record = self._execute_version(
+                        root, record, "calibrate", input_path=source, change=change,
+                        version_number=next_version,
+                        model_rotation_quaternion_xyzw=desired_rotation,
+                        rotation_apply_quaternion_xyzw=delta,
+                    )
+                    version = record.versions[-1]
+                except Exception as error:
+                    preserved = record.model_copy(update={
+                        "status": "ready", "updated_at": utc_now(), "error": str(error),
+                        "log_path": f"card-asset-runs/{change.id}/blender.log",
+                    })
+                    self._save("card_asset_records", preserved)
+                    self._complete_change(change, str(error))
+                    raise
+            _, root = self._binding(record.project_id, record.card_id)
+            for relative in (version.blend_path, version.preview_path, version.fbx_path):
+                path = (root / relative).resolve(strict=True)
+                if not path.is_relative_to(root) or path.is_symlink() or not path.is_file():
+                    raise CardAssetError("ASSET_FILE_INVALID", "模型版本文件不可读取，未存入资产库。", status_code=422)
+            return self.catalog.register_version(ProjectAssetRegistration(
+                project_id=record.project_id,
+                card_id=record.card_id,
+                source_asset_id=record.id,
+                title=record.title,
+                source_type=record.source_type,
+                modeling_session_id=record.session_id,
+                version=ProjectAssetVersion(
+                    source_version=version.number,
+                    dimensions_m=version.dimensions_m,
+                    vertex_count=version.vertex_count,
+                    triangle_count=version.triangle_count,
+                    blend_path=version.blend_path,
+                    preview_path=version.preview_path,
+                    fbx_path=version.fbx_path,
+                    operation=version.operation,
+                    model_rotation_quaternion_xyzw=version.model_rotation_quaternion_xyzw,
+                ),
+            ))
 
     def _execute_version(self, root: Path, record: CardAssetRecord, operation: str, *,
                          input_path: Path | None = None, proposal: CardAssetProposal | None = None,
                          target_extent_m: float | None = None, change: CardAssetChange,
-                         version_number: int | None = None) -> CardAssetRecord:
+                         version_number: int | None = None,
+                         model_rotation_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY,
+                         rotation_apply_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY) -> CardAssetRecord:
         number = version_number or self._next_version(root, record)
         relative_dir = Path("assets/models") / record.card_id / record.id / "versions" / f"v{number}"
         output_dir = self._safe_directory(root, relative_dir)
@@ -483,7 +531,9 @@ class CardAssetService:
         object_count = len(proposal.parts) if proposal else 256
         blender_operation = "create" if operation == "generate" else operation
         payload = {"operation": blender_operation, "asset_id": record.id, "output": output,
-                   "object_ids": ["sop_" + uuid4().hex for _ in range(object_count)]}
+                   "object_ids": ["sop_" + uuid4().hex for _ in range(object_count)],
+                   "model_rotation_quaternion_xyzw": list(model_rotation_quaternion_xyzw),
+                   "rotation_apply_quaternion_xyzw": list(rotation_apply_quaternion_xyzw)}
         if input_path is not None:
             payload["input_path"] = str(input_path)
         if proposal is not None:
@@ -497,7 +547,8 @@ class CardAssetService:
                 object_ids=result["object_ids"], blender_version=result["blender_version"],
                 blend_path=self._relative(root, Path(output["blend"])), preview_path=self._relative(root, Path(output["preview"])),
                 fbx_path=self._relative(root, Path(output["fbx"])), manifest_path=self._relative(root, output_dir / "manifest.json"),
-                operation=operation)
+                operation=operation,
+                model_rotation_quaternion_xyzw=model_rotation_quaternion_xyzw)
             manifest = output_dir / "manifest.json"
             flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
             if hasattr(os, "O_NOFOLLOW"):

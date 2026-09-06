@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
+export type ModelRotationQuaternion = [number, number, number, number];
+export const MODEL_ROTATION_IDENTITY: ModelRotationQuaternion = [0, 0, 0, 1];
+
 export type CardModelPreviewHandle = {
   zoom(factor:number): void;
   rotate(degrees:number): void;
@@ -13,12 +16,42 @@ export type CardModelPreviewHandle = {
 };
 
 type PreviewRuntime = {camera:THREE.PerspectiveCamera;controls:OrbitControls;center:THREE.Vector3;
-  radius:number;homeOffset:THREE.Vector3;model:THREE.Object3D;homeQuaternion:THREE.Quaternion;draw:()=>void};
+  radius:number;homeOffset:THREE.Vector3;model:THREE.Object3D;fileQuaternion:THREE.Quaternion;draw:()=>void};
 
-export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;label:string}>(function CardModelPreview({ url, label }, ref) {
+type CardModelPreviewProps = {url:string;label:string;modelRotation?:ModelRotationQuaternion;
+  baseModelRotation?:ModelRotationQuaternion;
+  onModelRotationChange?:(rotation:ModelRotationQuaternion)=>void};
+
+function quaternionFromArray(value:ModelRotationQuaternion) {
+  return new THREE.Quaternion(value[0], value[1], value[2], value[3]).normalize();
+}
+
+function quaternionToArray(value:THREE.Quaternion):ModelRotationQuaternion {
+  return [value.x, value.y, value.z, value.w];
+}
+
+export const CardModelPreview = forwardRef<CardModelPreviewHandle, CardModelPreviewProps>(function CardModelPreview({
+  url, label, modelRotation = MODEL_ROTATION_IDENTITY, baseModelRotation = MODEL_ROTATION_IDENTITY,
+  onModelRotationChange,
+}, ref) {
   const host = useRef<HTMLDivElement>(null);
   const runtime = useRef<PreviewRuntime|null>(null);
+  const modelRotationRef = useRef<ModelRotationQuaternion>(modelRotation);
+  const baseModelRotationRef = useRef<ModelRotationQuaternion>(baseModelRotation);
+  const onModelRotationChangeRef = useRef(onModelRotationChange);
   const [failure, setFailure] = useState('');
+  modelRotationRef.current = modelRotation;
+  baseModelRotationRef.current = baseModelRotation;
+  onModelRotationChangeRef.current = onModelRotationChange;
+
+  const applyModelRotation = (current:PreviewRuntime, desired:ModelRotationQuaternion) => {
+    const target = quaternionFromArray(desired);
+    const base = quaternionFromArray(baseModelRotationRef.current);
+    const delta = target.multiply(base.invert());
+    current.model.quaternion.copy(delta.multiply(current.fileQuaternion));
+    current.model.updateMatrixWorld(true);
+  };
+
   useImperativeHandle(ref, () => ({
     zoom(factor) {
       const current = runtime.current;
@@ -40,7 +73,12 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
       const current = runtime.current;
       if (!current) return;
       const axes = {x:new THREE.Vector3(1,0,0),y:new THREE.Vector3(0,1,0),z:new THREE.Vector3(0,0,1)};
-      current.model.rotateOnWorldAxis(axes[axis], THREE.MathUtils.degToRad(degrees));
+      const next = quaternionFromArray(modelRotationRef.current);
+      next.premultiply(new THREE.Quaternion().setFromAxisAngle(axes[axis], THREE.MathUtils.degToRad(degrees))).normalize();
+      const rotation = quaternionToArray(next);
+      modelRotationRef.current = rotation;
+      applyModelRotation(current, rotation);
+      onModelRotationChangeRef.current?.(rotation);
       current.draw();
     },
     view(direction) {
@@ -56,8 +94,11 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
     resetModel() {
       const current = runtime.current;
       if (!current) return;
-      current.model.quaternion.copy(current.homeQuaternion);
-      current.model.updateMatrixWorld(true); current.draw();
+      const rotation = MODEL_ROTATION_IDENTITY;
+      modelRotationRef.current = rotation;
+      applyModelRotation(current, rotation);
+      onModelRotationChangeRef.current?.(rotation);
+      current.draw();
     },
     reset() {
       const current = runtime.current;
@@ -107,7 +148,8 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
       camera.position.copy(center).add(homeOffset);
       camera.near = Math.max(radius / 1000, .001); camera.far = Math.max(radius * 100, 100);
       camera.updateProjectionMatrix(); controls.update();
-      runtime.current = {camera,controls,center,radius,homeOffset,model,homeQuaternion:model.quaternion.clone(),draw}; draw();
+      runtime.current = {camera,controls,center,radius,homeOffset,model,fileQuaternion:model.quaternion.clone(),draw};
+      applyModelRotation(runtime.current, modelRotationRef.current); draw();
     }, undefined, () => setFailure('GLB 预览读取失败；请查看资产错误或下载文件检查。'));
     const resize = new ResizeObserver(draw); resize.observe(element);
     const intersection = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; draw(); });
@@ -127,5 +169,13 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
       grid.geometry.dispose(); (grid.material as THREE.Material).dispose(); renderer.dispose(); renderer.domElement.remove();
     };
   }, [url]);
+  const modelRotationKey = modelRotation.join(',');
+  const baseModelRotationKey = baseModelRotation.join(',');
+  useEffect(() => {
+    const current = runtime.current;
+    if (!current) return;
+    applyModelRotation(current, modelRotationRef.current);
+    current.draw();
+  }, [modelRotationKey, baseModelRotationKey]);
   return <div className="card-model-preview" ref={host} aria-label={`${label} 3D 预览`}>{failure && <p role="alert">{failure}</p>}</div>;
 });

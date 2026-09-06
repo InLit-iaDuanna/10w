@@ -52,6 +52,54 @@ class FixtureProvider:
 
 
 class JourneySmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_recovered_project_imports_its_saved_conversation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            original_database = root / 'original.sqlite3'
+            folders = SqliteWorkspaceRepository(original_database)
+            project = folders.create_folder_project(root, 'project')
+            service = PlanningJourneyService(original_database, folders, FixtureProvider())
+            saved = await service.command(project.project_id, JourneyCommand(
+                request_id='idea', expected_revision=0, operation='message', text='做一个探索游戏'))
+
+            recovered_database = root / 'recovered.sqlite3'
+            recovered_folders = SqliteWorkspaceRepository(recovered_database)
+            recovered_folders.recover_folder_project(project.root_path, 'restore')
+            recovered_service = PlanningJourneyService(
+                recovered_database, recovered_folders, FixtureProvider())
+            restored = recovered_service.get(project.project_id)
+
+            self.assertEqual(restored.messages, saved.messages)
+            self.assertEqual(restored.revision, saved.revision)
+            self.assertEqual(restored.model_calls, saved.model_calls)
+            with recovered_service.connection() as database:
+                self.assertEqual(database.execute(
+                    'SELECT COUNT(*) FROM design_journeys WHERE project_id=?',
+                    (project.project_id,)).fetchone()[0], 1)
+            self.assertEqual(
+                PlanningJourneyService(recovered_database, recovered_folders, FixtureProvider())
+                .get(project.project_id).messages,
+                saved.messages)
+
+    async def test_recovered_project_rejects_another_projects_conversation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            original_database = root / 'original.sqlite3'
+            folders = SqliteWorkspaceRepository(original_database)
+            project = folders.create_folder_project(root, 'project')
+            state = PlanningJourneyService(original_database, folders, FixtureProvider()).get(project.project_id)
+            folders.write_design_draft(project.project_id,
+                state.model_copy(update={'project_id': 'prj_another'}).model_dump(mode='json'))
+
+            recovered_database = root / 'recovered.sqlite3'
+            recovered_folders = SqliteWorkspaceRepository(recovered_database)
+            recovered_folders.recover_folder_project(project.root_path, 'restore')
+            recovered_service = PlanningJourneyService(
+                recovered_database, recovered_folders, FixtureProvider())
+
+            with self.assertRaisesRegex(HTTPException, '属于另一个项目'):
+                recovered_service.get(project.project_id)
+
     async def test_structured_failure_retries_once_with_feedback(self):
         class FailOnceProvider(FixtureProvider):
             def __init__(self):

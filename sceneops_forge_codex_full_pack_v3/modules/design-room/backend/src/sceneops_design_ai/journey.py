@@ -90,9 +90,44 @@ class PlanningJourneyService:
         with self.connection() as db:
             row = db.execute('SELECT payload FROM design_journeys WHERE project_id=?', (project_id,)).fetchone()
             calls = db.execute('SELECT COUNT(*) FROM design_journey_model_calls WHERE project_id=?', (project_id,)).fetchone()[0]
-        state = PlanningJourney.model_validate_json(row[0]) if row else PlanningJourney(project_id=project_id, root_path=str(folder.root_path))
-        state.model_calls = calls
+        if row:
+            state = PlanningJourney.model_validate_json(row[0])
+        else:
+            try:
+                saved = self.folders.read_design_draft(project_id)
+                state = (PlanningJourney.model_validate(saved).model_copy(
+                    update={'root_path': str(folder.root_path)}) if saved is not None else
+                    PlanningJourney(project_id=project_id, root_path=str(folder.root_path)))
+            except ValueError as error:
+                raise HTTPException(409, '项目内策划记录无效，无法恢复。请检查项目身份与策划草稿。') from error
+            if state.project_id != project_id:
+                raise HTTPException(409, '项目内策划记录属于另一个项目，不能同步到当前项目。')
+            if saved is not None:
+                with self.connection() as db:
+                    db.execute('INSERT OR IGNORE INTO design_journeys VALUES (?,?)',
+                               (project_id, state.model_dump_json()))
+                    restored = db.execute('SELECT payload FROM design_journeys WHERE project_id=?',
+                                          (project_id,)).fetchone()
+                state = PlanningJourney.model_validate_json(restored[0])
+        state.model_calls = max(state.model_calls, calls)
         state.cost_notice = COST_NOTICE
+        try:
+            versions = []
+            payloads = {item.number: item.model_dump(mode='json') for item in state.versions}
+            for item in state.git_versions:
+                if item.number not in payloads:
+                    raise GitProjectError('项目内 Git 版本缺少对应的策划快照。')
+                versions.append({**item.model_dump(mode='json'), 'payload': payloads[item.number]})
+            scaffold = state.technical_plan.scaffold if state.technical_plan else None
+            baseline = ({'architecture_version': scaffold.architecture_version,
+                'design_version': scaffold.design_version, 'commit': scaffold.baseline_commit,
+                'created_at': state.technical_plan.selected_at}
+                if scaffold and scaffold.baseline_commit else None)
+            if versions or state.card_branches or baseline:
+                self.folders.restore_design_git_state(project_id, versions,
+                    [item.model_dump(mode='json') for item in state.card_branches], baseline)
+        except GitProjectError as error:
+            raise HTTPException(409, f'项目 Git 记录无法验证：{error}') from error
         return state
 
     def reconcile_export(self, project_id):

@@ -41,8 +41,10 @@ class FixtureProvider:
 class FixtureBlender:
     def __init__(self, data_root: Path):
         self.data_root = data_root
+        self.payloads = []
 
     def run(self, change_id, _asset_root, payload):
+        self.payloads.append(payload)
         for key, value in payload["output"].items():
             path = Path(value)
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -52,6 +54,14 @@ class FixtureBlender:
         log.write_text("fixture", encoding="utf-8")
         return ({"dimensions_m": [2.0, 2.0, 6.0], "vertex_count": 48, "triangle_count": 80,
                  "object_ids": payload["object_ids"], "blender_version": "fixture"}, log)
+
+
+class FixtureCardWorkspace:
+    def __init__(self, root: Path):
+        self.root = root
+
+    def get_card_worktree(self, project_id, card_id):
+        return {"worktree_path": str(self.root), "branch": f"card/{card_id}"}
 
 
 def git(root: Path, *arguments: str) -> str:
@@ -95,6 +105,37 @@ class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
             worktree = Path(binding["worktree_path"])
             self.assertTrue((worktree / second.asset.versions[0].preview_path).is_file())
             self.assertTrue((worktree / second.asset.versions[1].preview_path).is_file())
+
+    async def test_model_rotation_inherits_and_save_bakes_a_new_calibration_version(self):
+        with tempfile.TemporaryDirectory(prefix="sceneops-card-asset-rotation-") as directory:
+            root = Path(directory).resolve()
+            database = root / "data" / "sceneops.sqlite3"
+            database.parent.mkdir()
+            blender = FixtureBlender(root / "data")
+            catalog = ProjectAssetCatalogService(SqliteProjectAssetRepository(database))
+            service = CardAssetService(database, root / "data", FixtureCardWorkspace(root), FixtureProvider(),
+                                       blender=blender, catalog=catalog)
+            quarter_turn_x = (0.7071067811865476, 0.0, 0.0, 0.7071067811865476)
+            quarter_turn_y = (0.0, 0.7071067811865476, 0.0, 0.7071067811865476)
+            first = await service.live_update("project", "map", LiveModelUpdateRequest(
+                session_id="rotation", trigger_message_id="message_1", modeling_block="shape",
+                transcript=[{"role": "user", "text": "一个模型"}],
+                model_rotation_quaternion_xyzw=quarter_turn_x))
+            second = await service.live_update("project", "map", LiveModelUpdateRequest(
+                session_id="rotation", trigger_message_id="message_2", modeling_block="scale",
+                transcript=[{"role": "user", "text": "一个模型"}, {"role": "user", "text": "继续修改"}],
+                model_rotation_quaternion_xyzw=quarter_turn_x))
+
+            self.assertEqual([item.model_rotation_quaternion_xyzw for item in second.asset.versions],
+                             [quarter_turn_x, quarter_turn_x])
+            saved = service.save_to_library(second.asset.id, 2, quarter_turn_y)
+            self.assertEqual(saved.entry.current_version, 3)
+            self.assertEqual(saved.entry.versions[0].operation, "calibrate")
+            record = service._load("card_asset_records", second.asset.id, type(second.asset))
+            self.assertEqual([item.number for item in record.versions], [1, 2, 3])
+            self.assertEqual(record.versions[-1].model_rotation_quaternion_xyzw, quarter_turn_y)
+            self.assertEqual(blender.payloads[-1]["operation"], "calibrate")
+            self.assertEqual(blender.payloads[-1]["model_rotation_quaternion_xyzw"], list(quarter_turn_y))
 
     async def test_plan_is_saved_without_running_blender(self):
         with tempfile.TemporaryDirectory(prefix="sceneops-card-asset-plan-") as directory:

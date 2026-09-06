@@ -57,19 +57,18 @@ test('model source entry uses explicit choices without another composer or fake 
   } finally { await act(async () => root.unmount()); }
 });
 
-test('3D world actions sit outside the composer and keep shared project memory', async () => {
+test('3D world actions sit outside the composer without extra status copy', async () => {
   const host = document.createElement('div');
   const root = createRoot(host);
   const selected: string[] = [];
   try {
     await act(async () => root.render(<WorldCreationActions mode="environment" busy={false}
-      memoryLabel="策划 v1 · ECS · 3D 世界"
       onNewModel={() => selected.push('model')}
       onEnvironment={() => selected.push('environment')} />));
     expect(host.textContent).toContain('＋ 新建模型');
     expect(host.textContent).toContain('搭建世界');
     expect(host.textContent).not.toContain('讨论');
-    expect(host.textContent).toContain('公共上下文 · 策划 v1 · ECS · 3D 世界');
+    expect(host.textContent).not.toContain('公共上下文');
     const buttons = host.querySelectorAll('button');
     expect(buttons[1].getAttribute('aria-pressed')).toBe('true');
     await act(async () => buttons[0].click());

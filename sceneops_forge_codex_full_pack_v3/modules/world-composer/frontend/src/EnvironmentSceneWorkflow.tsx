@@ -64,7 +64,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     cache.setQueryData(sceneKey, value);
     const nextObjects = value.objects ?? [];
     if (selectedSceneId && !nextObjects.some(item => item.id === selectedSceneId)) {
-      setSelectedSceneId(nextObjects.at(-1)?.id ?? null);
+      setSelectedSceneId(null);
     }
   };
   const placed = useMutation({mutationFn:({assetId,version}:{assetId:string;version:number}) => {
@@ -72,7 +72,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     return environmentSceneClient.place(projectId, {expected_version:scene.version,asset_id:assetId,asset_version:version});
   }, onSuccess:value => {
     updateScene(value);
-    setSelectedSceneId((value.objects ?? []).at(-1)?.id ?? null);
+    setSelectedSceneId(null);
     setSelectedAssetId(null);
     setError('');
   }, onError:error => setError(error.message)});
@@ -115,16 +115,17 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     setAssetName(value.title);
     setError('');
   }, onError:error => setError(error.message)});
-  const onSceneSelect = useCallback((id:string) => {
+  const onSceneSelect = useCallback((id:string|null) => {
     setSelectedAssetId(null);
+    setAddingAsset(false);
     setSelectedSceneId(id);
   }, []);
 
   useEffect(() => {
-    if (!scene) return;
-    if (selectedSceneId && objects.some(item => item.id === selectedSceneId)) return;
-    setSelectedSceneId(objects[0]?.id ?? null);
-  }, [scene, objects, selectedSceneId]);
+    setSelectedSceneId(null);
+    setSelectedAssetId(null);
+    setAddingAsset(false);
+  }, [projectId]);
   useEffect(() => {
     setDropActive(false);
     setDropNotice('');
@@ -140,7 +141,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
   useEffect(() => {
     if (selectedAssetId && !assets.some(item => item.id === selectedAssetId)) setSelectedAssetId(null);
   }, [assets, selectedAssetId]);
-  useEffect(() => { assetPane.current?.scrollTo({top:0,behavior:'auto'}); }, [selectedAssetId, addingAsset]);
+  useEffect(() => { assetPane.current?.scrollTo({top:0,behavior:'auto'}); }, [selectedSceneId, selectedAssetId, addingAsset]);
   useEffect(() => { localStorage.setItem(SCENE_SHARE_KEY, String(sceneShare)); }, [sceneShare]);
 
   if (sceneQuery.isPending || assetsQuery.isPending) return <p role="status" className="environment-loading">读取项目资产库与场景…</p>;
@@ -171,10 +172,6 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
         {onImportAsset && <div className="environment-drop-hint" aria-live="polite">{dropped.isPending ? '正在导入、检查并加入场景…' : dropActive ? '松开以导入并加入场景' : '拖入 GLB / FBX 直接导入'}</div>}
       </div>
       {dropNotice && <p role="status" className="environment-import-notice">{dropNotice}</p>}
-      {selectedSceneObject && <section className="environment-inspector"><header><div><strong>{selectedSceneAsset?.title ?? selectedSceneObject.title}</strong><small>场景实例 · {selectedSceneObject.id}</small></div><button disabled={busy} onClick={() => removed.mutate(selectedSceneObject)}>移出场景</button></header>
-        <div className="environment-transform-grid">
-          {([['x','X'],['y','Y'],['z','Z'],['rotation','旋转 Y°'],['scale','缩放']] as const).map(([key,label]) => <label key={key}>{label}<input type="number" step={key === 'rotation' ? 5 : .1} value={draft[key]} disabled={busy} onChange={event => setDraft(current => ({...current,[key]:event.target.value}))}/></label>)}
-        </div><button className="primary" disabled={busy} onClick={() => transformed.mutate()}>应用变换</button></section>}
     </section>
     <div className="environment-splitter" role="separator" aria-label="调整场景与项目资产高度" aria-orientation="horizontal"
       aria-valuemin={28} aria-valuemax={76} aria-valuenow={Math.round(sceneShare)} tabIndex={0}
@@ -183,10 +180,15 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
       onPointerUp={event => {draggingSplit.current = false;event.currentTarget.releasePointerCapture(event.pointerId);}}
       onPointerCancel={() => {draggingSplit.current = false;}}
       onKeyDown={event => {if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;event.preventDefault();setSceneShare(value => clampSceneShare(value + (event.key === 'ArrowUp' ? -4 : 4)));}}><span/></div>
-    <section ref={assetPane} className="environment-assets-card" aria-label="项目资产">
+    <section ref={assetPane} className="environment-assets-card" aria-label={selectedSceneObject ? '已选模型信息' : '项目资产'}>
       {error && <p role="alert" className="environment-error">{error}</p>}
       {addingAsset && onCreateAsset && <section className="environment-new-asset" aria-label="添加资产方式"><div><strong>添加一个资产</strong><small>只带入项目背景和世界尺度，不带入上一个资产的对话。</small></div><div><button onClick={() => beginAsset('import')}>导入 GLB / FBX</button><button className="primary" onClick={() => beginAsset('create')}>新建模型</button><button aria-label="取消添加资产" onClick={() => setAddingAsset(false)}>取消</button></div></section>}
-      {selectedAsset && assetVersion ? <section className="environment-asset-editor" aria-label={`${selectedAsset.title} 资产编辑`}>
+      {selectedSceneObject ? <section className="environment-inspector" aria-label={`${selectedSceneAsset?.title ?? selectedSceneObject.title} 场景模型信息`}>
+        <header><div><button type="button" className="scene-back" onClick={() => setSelectedSceneId(null)}>← 项目资产</button><strong>{selectedSceneAsset?.title ?? selectedSceneObject.title}</strong><small>已选模型 · 场景实例 · {selectedSceneObject.id}</small></div><button disabled={busy} onClick={() => removed.mutate(selectedSceneObject)}>移出场景</button></header>
+        <div className="environment-transform-grid">
+          {([['x','X'],['y','Y'],['z','Z'],['rotation','旋转 Y°'],['scale','缩放']] as const).map(([key,label]) => <label key={key}>{label}<input type="number" step={key === 'rotation' ? 5 : .1} value={draft[key]} disabled={busy} onChange={event => setDraft(current => ({...current,[key]:event.target.value}))}/></label>)}
+        </div><button className="primary" disabled={busy} onClick={() => transformed.mutate()}>应用变换</button>
+      </section> : selectedAsset && assetVersion ? <section className="environment-asset-editor" aria-label={`${selectedAsset.title} 资产编辑`}>
         <header><button type="button" className="asset-back" onClick={() => setSelectedAssetId(null)}>← 资产库</button><span>v{assetVersion.source_version}</span></header>
         <div className="asset-editor-body">
           <form className="asset-name-editor" onSubmit={event => {event.preventDefault();renamed.mutate();}}>
@@ -205,7 +207,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
       </section> : <>
         <div className="environment-library-heading"><div><strong>项目资产</strong><small>{assets.length ? `${assets.length} 个资产 · 点击进入编辑` : '资产库为空'}</small></div>{onCreateAsset && <button onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button>}</div>
         <div className="environment-library" role="list" aria-label="项目资产库">
-          {assets.map(asset => { const version = currentVersion(asset, undefined); return <button type="button" role="listitem" className="environment-asset-card" key={asset.id} onClick={() => {setSelectedAssetId(asset.id);setAddingAsset(false);}}>
+          {assets.map(asset => { const version = currentVersion(asset, undefined); return <button type="button" role="listitem" className="environment-asset-card" key={asset.id} onClick={() => {setSelectedSceneId(null);setSelectedAssetId(asset.id);setAddingAsset(false);}}>
             <span className="asset-card-icon"><AssetGlyph/></span><strong>{asset.title}</strong><small>v{asset.current_version} · {Math.max(...version.dimensions_m).toFixed(1)}m</small>
           </button>;})}
           {!assets.length && <p>先添加一个资产，导入或新建都会开启独立流程。</p>}

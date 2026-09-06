@@ -69,6 +69,8 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 
 跨模块只使用公开 repository 方法：
 
+- `read_design_draft(project_id)`：安全读取绑定项目内的 `.sceneops/design/draft.json`，供本机索引恢复后重新同步策划状态；不存在时返回空，不接受符号链接或非 JSON 对象；
+- `restore_design_git_state(project_id, versions, card_branches, baseline)`：只在设计快照、标签提交、工程基线祖先关系、卡片分支、worktree 身份和卡片说明全部与项目草稿一致时，恢复本机 Git 登记；允许继续使用来自旧 SceneOps 数据目录的已验证卡片 worktree；
 - `write_design_draft(project_id, payload)` 原子写入绑定根目录中的 `.sceneops/design/draft.json`；
 - `create_design_snapshot(project_id, payload, version)` 排他创建 `.sceneops/design/snapshots/vN.json`。同版本、同结构化 JSON 的重试返回已有快照，不同内容会冲突且绝不覆盖。
 

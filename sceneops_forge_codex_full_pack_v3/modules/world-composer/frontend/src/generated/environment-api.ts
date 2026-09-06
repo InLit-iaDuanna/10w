@@ -302,7 +302,22 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "import" | "generate" | "normalize";
+            operation: "import" | "generate" | "normalize" | "calibrate";
+            /**
+             * Model Rotation Quaternion Xyzw
+             * @default [
+             *       0,
+             *       0,
+             *       0,
+             *       1
+             *     ]
+             */
+            model_rotation_quaternion_xyzw: [
+                number,
+                number,
+                number,
+                number
+            ];
             /** Saved At */
             saved_at?: string;
         };
