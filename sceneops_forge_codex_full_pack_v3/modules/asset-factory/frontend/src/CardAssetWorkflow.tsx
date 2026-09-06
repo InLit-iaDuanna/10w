@@ -196,6 +196,13 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
       </div><div className="card-model-angle-row"><label>旋转角度<select value={cameraAngle} onChange={event => setCameraAngle(Number(event.target.value))}>
         {[15,30,45,90].map(value => <option key={value} value={value}>{value}°</option>)}</select></label>
         <button type="button" onClick={() => preview.current?.reset()}>复位视角</button></div>
+        <section className="card-model-axis-panel" aria-label="模型三轴旋转">
+          <header><strong>模型旋转 90°</strong><small>旋转模型本体</small></header>
+          <div><button type="button" onClick={() => preview.current?.rotateModel('x',90)}>X 轴 +90°</button>
+            <button type="button" onClick={() => preview.current?.rotateModel('y',90)}>Y 轴 +90°</button>
+            <button type="button" onClick={() => preview.current?.rotateModel('z',90)}>Z 轴 +90°</button>
+            <button type="button" onClick={() => preview.current?.resetModel()}>复位模型</button></div>
+        </section>
         <div className="card-version-strip" aria-label="模型版本">{sceneVersions.map(item => <button key={item.number} type="button"
           aria-pressed={item.number === sceneVersion.number} onClick={() => setSelectedVersions(current => ({...current,[sceneAsset.id]:item.number}))}>v{item.number}</button>)}</div>
         <div className="card-model-scene-actions"><button type="button" disabled={busy || sceneVersionSaved}

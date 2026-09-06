@@ -6,12 +6,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 export type CardModelPreviewHandle = {
   zoom(factor:number): void;
   rotate(degrees:number): void;
+  rotateModel(axis:'x'|'y'|'z', degrees:number): void;
   view(direction:'front'|'back'|'left'|'right'): void;
   reset(): void;
+  resetModel(): void;
 };
 
 type PreviewRuntime = {camera:THREE.PerspectiveCamera;controls:OrbitControls;center:THREE.Vector3;
-  radius:number;homeOffset:THREE.Vector3;draw:()=>void};
+  radius:number;homeOffset:THREE.Vector3;model:THREE.Object3D;homeQuaternion:THREE.Quaternion;draw:()=>void};
 
 export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;label:string}>(function CardModelPreview({ url, label }, ref) {
   const host = useRef<HTMLDivElement>(null);
@@ -34,6 +36,13 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
       current.camera.position.copy(current.controls.target).add(offset);
       current.controls.update(); current.draw();
     },
+    rotateModel(axis, degrees) {
+      const current = runtime.current;
+      if (!current) return;
+      const axes = {x:new THREE.Vector3(1,0,0),y:new THREE.Vector3(0,1,0),z:new THREE.Vector3(0,0,1)};
+      current.model.rotateOnWorldAxis(axes[axis], THREE.MathUtils.degToRad(degrees));
+      current.draw();
+    },
     view(direction) {
       const current = runtime.current;
       if (!current) return;
@@ -43,6 +52,12 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
       current.controls.target.copy(current.center);
       current.camera.position.copy(current.center).add(vectors[direction].normalize().multiplyScalar(distance));
       current.controls.update(); current.draw();
+    },
+    resetModel() {
+      const current = runtime.current;
+      if (!current) return;
+      current.model.quaternion.copy(current.homeQuaternion);
+      current.model.updateMatrixWorld(true); current.draw();
     },
     reset() {
       const current = runtime.current;
@@ -92,7 +107,7 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;l
       camera.position.copy(center).add(homeOffset);
       camera.near = Math.max(radius / 1000, .001); camera.far = Math.max(radius * 100, 100);
       camera.updateProjectionMatrix(); controls.update();
-      runtime.current = {camera,controls,center,radius,homeOffset,draw}; draw();
+      runtime.current = {camera,controls,center,radius,homeOffset,model,homeQuaternion:model.quaternion.clone(),draw}; draw();
     }, undefined, () => setFailure('GLB 预览读取失败；请查看资产错误或下载文件检查。'));
     const resize = new ResizeObserver(draw); resize.observe(element);
     const intersection = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; draw(); });
