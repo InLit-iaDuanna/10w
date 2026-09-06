@@ -25,9 +25,9 @@ V5 增加目标理解、明确选中的项目上下文、可审阅生产计划�
 首次手动安装（不会运行本项目测试）：
 
 ```sh
-cd /Users/isduanna/Documents/10w/sceneops_forge_codex_full_pack_v3
+cd 10w/sceneops_forge_codex_full_pack_v3
 pnpm install --ignore-scripts
-uv venv .venv
+uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r services/api/requirements.txt
 ```
 
