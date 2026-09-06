@@ -39,6 +39,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/provider/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Provider Models */
+        post: operations["provider_models_api_ai_provider_models_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/provider/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Provider Check */
+        post: operations["provider_check_api_ai_provider_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/conversation": {
         parameters: {
             query?: never;
@@ -67,6 +101,23 @@ export interface paths {
         put?: never;
         /** Chat */
         post: operations["chat_api_ai_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/chat/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat Stream */
+        post: operations["chat_stream_api_ai_chat_stream_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -105,7 +156,7 @@ export interface components {
              * @default codebuddycli
              * @enum {string}
              */
-            provider: "codebuddycli" | "openai-compatible";
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
             /**
              * Mode
              * @default live
@@ -141,6 +192,77 @@ export interface components {
                 [key: string]: components["schemas"]["JsonValue"];
             };
         };
+        /** AIChatStreamEvent */
+        AIChatStreamEvent: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "status" | "text_delta" | "complete" | "error";
+            /** Text */
+            text?: string | null;
+            /** Code */
+            code?: string | null;
+            conversation?: components["schemas"]["AIConversation"] | null;
+        };
+        /** AIConnectionRequest */
+        AIConnectionRequest: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
+            /** Base Url */
+            base_url?: string | null;
+            /** Api Key */
+            api_key?: string | null;
+            /** Model */
+            model: string;
+            /**
+             * Api Protocol
+             * @default chat-completions
+             * @enum {string}
+             */
+            api_protocol: "chat-completions" | "responses";
+            /**
+             * Streaming
+             * @default true
+             */
+            streaming: boolean;
+        };
+        /** AIConnectionResult */
+        AIConnectionResult: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
+            /** Model */
+            model: string;
+            /**
+             * Api Protocol
+             * @enum {string}
+             */
+            api_protocol: "chat-completions" | "responses";
+            /** Streaming */
+            streaming: boolean;
+            /**
+             * Connected
+             * @default true
+             * @constant
+             */
+            connected: true;
+            /**
+             * Mode
+             * @default live
+             * @constant
+             */
+            mode: "live";
+            /** Latency Ms */
+            latency_ms: number;
+            /** Message */
+            message: string;
+        };
         /** AIConversation */
         AIConversation: {
             /** Project Id */
@@ -166,7 +288,7 @@ export interface components {
              * @default codebuddycli
              * @enum {string}
              */
-            provider: "codebuddycli" | "openai-compatible";
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
             /**
              * Mode
              * @enum {string}
@@ -186,7 +308,7 @@ export interface components {
              * @default codebuddycli
              * @enum {string}
              */
-            provider: "codebuddycli" | "openai-compatible";
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
         };
         /** AIModels */
         AIModels: {
@@ -195,7 +317,7 @@ export interface components {
              * @default codebuddycli
              * @enum {string}
              */
-            provider: "codebuddycli" | "openai-compatible";
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
             /** Available */
             available: boolean;
             /**
@@ -208,6 +330,35 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** AIProviderModels */
+        AIProviderModels: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "live" | "planned";
+            /** Models */
+            models: components["schemas"]["AIModel"][];
+            /** Message */
+            message: string;
+        };
+        /** AIProviderModelsRequest */
+        AIProviderModelsRequest: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
+            /** Base Url */
+            base_url?: string | null;
+            /** Api Key */
+            api_key?: string | null;
+        };
         /** AISettings */
         AISettings: {
             /**
@@ -215,7 +366,7 @@ export interface components {
              * @default codebuddycli
              * @enum {string}
              */
-            provider: "codebuddycli" | "openai-compatible";
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
             /**
              * Model
              * @default cli-default
@@ -228,17 +379,40 @@ export interface components {
              * @default false
              */
             api_key_configured: boolean;
+            /**
+             * Api Protocol
+             * @default chat-completions
+             * @enum {string}
+             */
+            api_protocol: "chat-completions" | "responses";
+            /**
+             * Streaming
+             * @default true
+             */
+            streaming: boolean;
+            /**
+             * Alignment Detail
+             * @default standard
+             * @enum {string}
+             */
+            alignment_detail: "concise" | "standard" | "deep";
         };
         /** AISettingsUpdate */
         AISettingsUpdate: {
             /** Provider */
-            provider?: ("codebuddycli" | "openai-compatible") | null;
+            provider?: ("codebuddycli" | "codexcli" | "openai-compatible") | null;
             /** Model */
             model?: string | null;
             /** Base Url */
             base_url?: string | null;
             /** Api Key */
             api_key?: string | null;
+            /** Api Protocol */
+            api_protocol?: ("chat-completions" | "responses") | null;
+            /** Streaming */
+            streaming?: boolean | null;
+            /** Alignment Detail */
+            alignment_detail?: ("concise" | "standard" | "deep") | null;
         };
         /** AdapterError */
         AdapterError: {
@@ -368,6 +542,90 @@ export interface operations {
             };
         };
     };
+    provider_models_api_ai_provider_models_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIProviderModelsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIProviderModels"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+        };
+    };
+    provider_check_api_ai_provider_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIConnectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIConnectionResult"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+        };
+    };
     conversation_api_ai_conversation_get: {
         parameters: {
             query?: {
@@ -419,6 +677,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AIConversation"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterError"];
+                };
+            };
+        };
+    };
+    chat_stream_api_ai_chat_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Server-sent JSON events. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["AIChatStreamEvent"];
                 };
             };
             /** @description Unprocessable Entity */

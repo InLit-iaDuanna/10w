@@ -12,6 +12,7 @@
     "react": ">=18 <20"
   },
   "dependencies": {
+    "@sceneops/ai-agent-runtime": "workspace:*",
     "@sceneops/core-ui": "workspace:*",
     "@sceneops/module-runtime": "workspace:*",
     "@sceneops/api-client": "workspace:*",

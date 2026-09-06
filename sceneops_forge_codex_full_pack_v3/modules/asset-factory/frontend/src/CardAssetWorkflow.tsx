@@ -1,0 +1,192 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CardModelPreview } from './CardModelPreview.tsx';
+import { cardAssetClient, cardAssetFileUrl, cardAssetKey, projectAssetLibraryKey, type CardAssetList, type CardAssetRecord } from './cardAssetClient.ts';
+import './card-asset-workflow.css';
+
+type Message = { id: string; role: string; text: string; replyTo?: string; modelingBlock?: string };
+type LiveUpdateJob = { triggerMessageId: string; modelingBlock: string;
+  transcript: {role:string;text:string}[]; retryFailed?: boolean };
+
+const MODELING_BLOCKS = [
+  {id:'shape', label:'轮廓', detail:'用途与整体造型'},
+  {id:'scale', label:'比例', detail:'尺寸与部件关系'},
+  {id:'surface', label:'表面', detail:'材质与配色'},
+  {id:'interaction', label:'交互', detail:'摆放与使用约束'},
+] as const;
+
+export type CardAssetWorkflowProps = { projectId: string; cardId: string; source: 'import'|'create';
+  sessionId: string; messages: Message[]; onCreateAnother?: () => void; onOpenEnvironment?: () => void;
+  observeConversation?: boolean };
+
+export function CardAssetWorkflow({projectId, cardId, source, sessionId, messages, onCreateAnother, onOpenEnvironment,
+  observeConversation = true}: CardAssetWorkflowProps) {
+  const cache = useQueryClient();
+  const key = cardAssetKey(projectId, cardId);
+  const query = useQuery({queryKey:key, queryFn:({signal}) => cardAssetClient.list(projectId, cardId, signal), retry:false});
+  const libraryKey = projectAssetLibraryKey(projectId);
+  const library = useQuery({queryKey:libraryKey, queryFn:({signal}) => cardAssetClient.library(projectId, signal), retry:false});
+  const [importFile, setImportFile] = useState<File|null>(null);
+  const [referenceFile, setReferenceFile] = useState<File|null>(null);
+  const [referenceId, setReferenceId] = useState<string|null>(null);
+  const [targets, setTargets] = useState<Record<string,string>>({});
+  const [selectedVersions, setSelectedVersions] = useState<Record<string,number>>({});
+  const [notice, setNotice] = useState<{text:string;kind:'success'|'error'}|null>(null);
+  const [queue, setQueue] = useState<LiveUpdateJob[]>([]);
+  const [failedJob, setFailedJob] = useState<LiveUpdateJob|null>(null);
+  const observed = useRef<{sessionId:string;messageIds:Set<string>}|null>(null);
+  const refresh = async () => { await cache.invalidateQueries({queryKey:key}); };
+
+  const imported = useMutation({mutationFn: async () => {
+    if (!importFile) throw new Error('请先选择 GLB 或 FBX 文件。');
+    return cardAssetClient.import(projectId, cardId, sessionId, importFile);
+  }, onSuccess: async () => { setImportFile(null); setNotice({text:'Blender 已读取模型，右侧可检查真实预览。',kind:'success'}); await refresh(); },
+    onError:async error => { setNotice({text:error.message,kind:'error'}); await refresh(); }});
+
+  const liveUpdated = useMutation({mutationFn: async (job: LiveUpdateJob) => {
+    let reference_id = referenceId ?? undefined;
+    if (referenceFile && !reference_id) {
+      reference_id = (await cardAssetClient.reference(projectId, cardId, referenceFile)).id;
+      setReferenceId(reference_id);
+    }
+    return cardAssetClient.liveUpdate(projectId, cardId, {
+      session_id:sessionId,
+      trigger_message_id:job.triggerMessageId,
+      modeling_block:job.modelingBlock,
+      transcript:job.transcript,
+      retry_failed:!!job.retryFailed,
+      ...(reference_id ? {reference_id} : {}),
+    });
+  }, onSuccess: async result => {
+    cache.setQueryData<CardAssetList>(key, current => current ? {
+      ...current,
+      assets:[result.asset, ...current.assets.filter(item => item.id !== result.asset.id)],
+      proposals:[result.proposal, ...current.proposals.filter(item => item.id !== result.proposal.id)],
+    } : current);
+    setReferenceFile(null);
+    setFailedJob(null);
+    setQueue(current => current.filter(item => item.triggerMessageId !== result.proposal.trigger_message_id));
+    setNotice({text:result.reused ? `本轮已生成过，已恢复 v${result.asset.current_version}。` : `草稿 v${result.asset.current_version} 已更新。`,kind:'success'});
+    await refresh();
+  }, onError: async (error, job) => {
+    setQueue(current => current.filter(item => item.triggerMessageId !== job.triggerMessageId));
+    setFailedJob({...job, retryFailed:false});
+    setNotice({text:error.message,kind:'error'});
+    await refresh();
+  }});
+
+  const normalized = useMutation({mutationFn:({asset,target}:{asset:CardAssetRecord;target:number}) => cardAssetClient.normalize(asset.id,target),
+    onSuccess:async result => {
+      setSelectedVersions(current => ({...current,[result.id]:result.current_version}));
+      setNotice({text:'已追加归一化版本；之前的草稿仍可切换查看。',kind:'success'}); await refresh();
+    }, onError:async error => { setNotice({text:error.message,kind:'error'}); await refresh(); }});
+  const savedToLibrary = useMutation({mutationFn:({assetId,version}:{assetId:string;version:number}) =>
+    cardAssetClient.saveToLibrary(assetId, version), onSuccess:async result => {
+      cache.setQueryData(libraryKey, (current:typeof library.data) => current
+        ? [result.entry, ...current.filter(item => item.id !== result.entry.id)] : [result.entry]);
+      setNotice({text:result.version_created ? '这个版本已存入项目资产库。' : '这个版本已经在项目资产库中。',kind:'success'});
+      await cache.invalidateQueries({queryKey:libraryKey});
+    }, onError:error => setNotice({text:error.message,kind:'error'})});
+
+  useEffect(() => {
+    if (!observeConversation) {
+      observed.current = null;
+      setQueue([]);
+      setFailedJob(null);
+      return;
+    }
+    const userMessages = messages.filter(message => message.role === 'user' && message.text.trim());
+    if (!observed.current || observed.current.sessionId !== sessionId) {
+      observed.current = {sessionId, messageIds:new Set(userMessages.map(message => message.id))};
+      setQueue([]); setFailedJob(null); setNotice(null);
+      return;
+    }
+    const fresh = userMessages.filter(message => !observed.current!.messageIds.has(message.id));
+    if (!fresh.length) return;
+    const jobs = fresh.map(message => {
+      observed.current!.messageIds.add(message.id);
+      const messageIndex = messages.findIndex(item => item.id === message.id);
+      const turnIndex = userMessages.findIndex(item => item.id === message.id);
+      const fallbackBlock = MODELING_BLOCKS[turnIndex]?.id ?? 'refinement';
+      return {triggerMessageId:message.id, modelingBlock:message.modelingBlock ?? fallbackBlock,
+        transcript:messages.slice(0, messageIndex + 1)
+          .filter(item => (item.role === 'user' || item.role === 'assistant') && item.text.trim())
+          .map(item => ({role:item.role,text:item.text}))};
+    });
+    setQueue(current => [...current, ...jobs.filter(job => !current.some(item => item.triggerMessageId === job.triggerMessageId))]);
+  }, [messages, observeConversation, sessionId]);
+
+  useEffect(() => {
+    if (!observeConversation || source !== 'create' || !query.isSuccess || liveUpdated.isPending || failedJob || !queue.length) return;
+    setNotice(null);
+    liveUpdated.mutate(queue[0]!);
+  }, [source, query.isSuccess, queue, failedJob, liveUpdated.isPending, observeConversation]);
+
+  const allAssets = query.data?.assets ?? [];
+  const assets = source === 'create'
+    ? allAssets.filter(asset => asset.source_type === 'generated' && asset.session_id === sessionId)
+    : allAssets.filter(asset => asset.source_type === 'import');
+  const latestProposal = query.data?.proposals.find(item => item.session_id === sessionId) ?? null;
+  const completedBlocks = useMemo(() => {
+    const ids = new Set<string>();
+    messages.filter(message => message.role === 'user').forEach((message, index) =>
+      ids.add(message.modelingBlock ?? MODELING_BLOCKS[index]?.id ?? 'refinement'));
+    return ids;
+  }, [messages]);
+  const currentBlock = MODELING_BLOCKS.find(block => !completedBlocks.has(block.id))?.id ?? 'refinement';
+  const busy = imported.isPending || liveUpdated.isPending || normalized.isPending || savedToLibrary.isPending;
+  const size = (value:readonly number[]|null|undefined) => value ? value.map(item => Number(item.toFixed(3))).join(' × ') + ' m' : '—';
+  if (query.isPending) return <p role="status" className="card-asset-status">读取当前 Git 分支的模型…</p>;
+  if (query.error) return <p role="alert" className="card-asset-status">{query.error.message} <button onClick={() => void query.refetch()}>重试</button></p>;
+
+  return <section className="card-asset-workflow" aria-label={source === 'import' ? '导入模型工作流' : '实时新建模型工作流'}>
+    {source === 'create' ? <>
+      <ol className="card-model-blocks" aria-label="建模对齐阶段">{MODELING_BLOCKS.map((block, index) => <li key={block.id}
+        data-state={completedBlocks.has(block.id) ? 'done' : currentBlock === block.id ? 'current' : 'pending'}>
+        <span>{completedBlocks.has(block.id) ? '✓' : index + 1}</span><div><strong>{block.label}</strong><small>{block.detail}</small></div></li>)}</ol>
+      <label className="card-reference-picker"><span>{referenceFile?.name ?? (referenceId ? '参考图已启用' : '参考图 · 可选')}</span>
+        <small>{referenceFile ? '将在下一轮草稿使用' : 'PNG / JPEG / WebP'}</small>
+        <input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event=>{setReferenceFile(event.target.files?.[0] ?? null);setReferenceId(null);}}/></label>
+      {liveUpdated.isPending && <div className="card-live-state" role="status"><span/><div><strong>正在生成下一版</strong><small>AI 重建方案，随后由 Blender 输出 GLB</small></div></div>}
+      {failedJob && <button className="card-live-retry" disabled={busy} onClick={() => {setNotice(null);liveUpdated.mutate({...failedJob,retryFailed:true});}}>重试本轮草稿</button>}
+    </> : <div className="card-asset-action">
+      <label className="card-asset-file"><strong>{importFile?.name ?? '选择 GLB / FBX'}</strong><small>{importFile ? `${(importFile.size/1024/1024).toFixed(2)} MiB` : '原文件会保留在当前卡片分支'}</small>
+        <input type="file" accept=".glb,.fbx,model/gltf-binary,application/octet-stream" disabled={busy} onChange={event=>setImportFile(event.target.files?.[0] ?? null)}/></label>
+      <button disabled={busy || !importFile} onClick={()=>{setNotice(null);imported.mutate();}}>{imported.isPending ? 'Blender 检查中…' : '导入并检查'}</button>
+    </div>}
+
+    {notice && <p role={notice.kind === 'error' ? 'alert' : 'status'} className="card-asset-notice" data-kind={notice.kind}>{notice.text}</p>}
+    {!!assets.length ? <div className="card-asset-results">{assets.map(asset => {
+      const versions = asset.versions ?? [];
+      const selectedNumber = selectedVersions[asset.id] ?? asset.current_version;
+      const version = versions.find(item => item.number === selectedNumber) ?? versions.at(-1);
+      const target = targets[asset.id] ?? (version ? String(Math.max(...version.dimensions_m)) : '1');
+      const libraryEntry = library.data?.find(item => item.source_asset_id === asset.id);
+      const versionSaved = !!version && !!libraryEntry?.versions.some(item => item.source_version === version.number);
+      return <article key={asset.id} className="card-asset-result" data-status={asset.status}>
+        <div className="card-asset-result-heading"><div><small>{asset.source_type === 'import' ? '已导入' : '实时草稿'}</small><h3>{asset.title}</h3></div><span>v{version?.number ?? asset.current_version}</span></div>
+        {version && <><CardModelPreview label={`${asset.title} v${version.number}`} url={cardAssetFileUrl(asset.id,'preview',version.number)}/>
+          <div className="card-version-strip" aria-label="模型版本">{versions.map(item => <button key={item.number} type="button"
+            aria-pressed={item.number === version.number} onClick={() => setSelectedVersions(current => ({...current,[asset.id]:item.number}))}>v{item.number}</button>)}</div>
+          <dl className="card-asset-metrics"><div><dt>尺寸</dt><dd>{size(version.dimensions_m)}</dd></div><div><dt>网格</dt><dd>{version.vertex_count} 顶点 · {version.triangle_count} 面</dd></div></dl>
+          <div className="card-asset-next-actions">
+            <button type="button" className="primary" disabled={busy || versionSaved}
+              onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:asset.id,version:version.number});}}>{versionSaved ? '已存资产库' : '存入资产库'}</button>
+            {versionSaved && source === 'create' && onCreateAnother && <button type="button" disabled={busy} onClick={onCreateAnother}>继续新建</button>}
+            {versionSaved && onOpenEnvironment && <button type="button" disabled={busy} onClick={onOpenEnvironment}>搭建环境 →</button>}
+          </div>
+          <details className="card-asset-details"><summary>检查、文件与归一化</summary>
+            <p>Blender {version.blender_version} · {version.operation}</p>
+            <div className="card-asset-links"><a href={cardAssetFileUrl(asset.id,'blend',version.number)}>.blend</a><a href={cardAssetFileUrl(asset.id,'preview',version.number)}>GLB</a><a href={cardAssetFileUrl(asset.id,'fbx',version.number)}>FBX</a>{asset.source_path && <a href={cardAssetFileUrl(asset.id,'source')}>原文件</a>}</div>
+            <div className="card-asset-normalize"><label>最大边（米）<input type="number" min="0.001" max="1000" step="0.1" value={target} disabled={busy} onChange={event=>setTargets(current=>({...current,[asset.id]:event.target.value}))}/></label>
+              <button disabled={busy || !Number(target) || Number(target)<=0} onClick={()=>{setNotice(null);normalized.mutate({asset,target:Number(target)});}}>另存归一化版本</button></div>
+            {asset.log_path && <p>日志：{asset.log_path}</p>}
+          </details></>}
+        {asset.error && <p role="alert">{asset.error}</p>}
+      </article>;
+    })}</div> : !liveUpdated.isPending && <p className="card-asset-empty">{source === 'create' ? '发送第一轮模型描述后，这里会出现 v1 的真实 Three.js 预览。' : '选择 GLB 或 FBX 后，这里显示检查结果。'}</p>}
+    {source === 'create' && latestProposal && <details className="card-latest-plan"><summary>当前版本的结构化方案</summary><h3>{latestProposal.title}</h3><p>{latestProposal.summary}</p><small>{latestProposal.parts.length} 个原语 · {latestProposal.provider} / {latestProposal.model}</small></details>}
+    {library.error && <p role="alert" className="card-asset-notice" data-kind="error">资产库读取失败：{library.error.message}</p>}
+    <footer>{source === 'create' ? '每轮成功都追加版本；不会覆盖旧模型，也不会自动提交 Git。' : '导入保留原件；归一化会追加版本。'}</footer>
+  </section>;
+}

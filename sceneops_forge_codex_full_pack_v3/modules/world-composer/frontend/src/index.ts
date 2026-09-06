@@ -99,3 +99,6 @@ export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');
 export type { WorldWorkbenchProps } from './web/WorldWorkbench.tsx';
 export const loadWorldSession = () => import('./web/world-session.ts');
 export type { WorldSession } from './web/world-session.ts';
+export { EnvironmentSceneWorkflow } from './EnvironmentSceneWorkflow.tsx';
+export { environmentSceneClient, environmentSceneKey, environmentAssetsKey } from './environment-client.ts';
+export type { AiBuildResult, EnvironmentObject, EnvironmentScene, EnvironmentTransform, ProjectAssetEntry } from './environment-client.ts';

@@ -1,5 +1,5 @@
 diff --git a/dist/dockview-core.js b/dist/dockview-core.js
-index 5043b157bee6343f6b674f47870baa9d6cd2ea99..092171e27566c87707d68063e759ced0f2df33dd 100644
+index 5043b157bee6343f6b674f47870baa9d6cd2ea99..e841c1b8a0e2f21335a5132c6bc8b73f48f156e1 100644
 --- a/dist/dockview-core.js
 +++ b/dist/dockview-core.js
 @@ -14442,6 +14442,13 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
@@ -16,8 +16,65 @@ index 5043b157bee6343f6b674f47870baa9d6cd2ea99..092171e27566c87707d68063e759ced0
  		}
  		/**
  		* Watch the group's tab strip so the collapsed size follows the live tab
+@@ -14485,6 +14492,11 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 		restoreExpandedSize(size) {
+ 			this._lastExpandedSize = size;
+ 		}
++		finishResize() {
++			if (!this._isCollapsed && this._lastExpandedSize <= this.collapsedSize) {
++				this._group.api.collapse();
++			}
++		}
+ 		/**
+ 		* Apply a new base (pre-gap) collapsed size, base minimum size and gap
+ 		* contribution after a theme or gap change. Base values come from the
+@@ -14509,7 +14521,7 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 			this._dockviewElement = _dockviewElement;
+ 			this._layoutDockview = _layoutDockview;
+ 			this.priority = "high";
+-			this.minimumSize = 100;
++			this.minimumSize = 0;
+ 			this.maximumSize = Number.POSITIVE_INFINITY;
+ 			this._onDidChange = new Emitter();
+ 			this.onDidChange = this._onDidChange.event;
+@@ -14534,7 +14546,7 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 		constructor(centerView, gap = 0) {
+ 			this._onDidChange = new Emitter();
+ 			this.onDidChange = this._onDidChange.event;
+-			this.minimumSize = 100;
++			this.minimumSize = 0;
+ 			this.maximumSize = Number.POSITIVE_INFINITY;
+ 			this.priority = "high";
+ 			this._element = document.createElement("div");
+@@ -14555,6 +14567,9 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 			this._centerIndex += 1;
+ 			if (this._bottomIndex !== void 0) this._bottomIndex += 1;
+ 		}
++		get onDidSashEnd() {
++			return this._splitview.onDidSashEnd;
++		}
+ 		addBottomView(view, initialSize) {
+ 			const newIndex = this._splitview.length;
+ 			this._splitview.addView(view, initialSize, newIndex);
+@@ -14627,6 +14642,16 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 			});
+ 			this._middleIndex = 0;
+ 			this._outerSplitview.addView(this._middleColumn, { type: "distribute" }, 0);
++			this._disposables.addDisposables(
++				this._outerSplitview.onDidSashEnd(() => {
++					this._leftView?.finishResize();
++					this._rightView?.finishResize();
++				}),
++				this._middleColumn.onDidSashEnd(() => {
++					this._topView?.finishResize();
++					this._bottomView?.finishResize();
++				})
++			);
+ 			this._disposables.addDisposables(watchElementResize(this._shellElement, (entry) => {
+ 				/**
+ 				* When the shell (or an ancestor) becomes hidden — e.g. a
 diff --git a/dist/dockview-core.noStyle.js b/dist/dockview-core.noStyle.js
-index 85d748735094da26d1ca22f5db7d91485323d856..6297bc2e11825ae732420129dbee2bf8a1c89a83 100644
+index 85d748735094da26d1ca22f5db7d91485323d856..5b818441134563eb70e8cb01ed7955b831b0a35e 100644
 --- a/dist/dockview-core.noStyle.js
 +++ b/dist/dockview-core.noStyle.js
 @@ -14434,6 +14434,13 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
@@ -34,8 +91,65 @@ index 85d748735094da26d1ca22f5db7d91485323d856..6297bc2e11825ae732420129dbee2bf8
  		}
  		/**
  		* Watch the group's tab strip so the collapsed size follows the live tab
+@@ -14477,6 +14484,11 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 		restoreExpandedSize(size) {
+ 			this._lastExpandedSize = size;
+ 		}
++		finishResize() {
++			if (!this._isCollapsed && this._lastExpandedSize <= this.collapsedSize) {
++				this._group.api.collapse();
++			}
++		}
+ 		/**
+ 		* Apply a new base (pre-gap) collapsed size, base minimum size and gap
+ 		* contribution after a theme or gap change. Base values come from the
+@@ -14501,7 +14513,7 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 			this._dockviewElement = _dockviewElement;
+ 			this._layoutDockview = _layoutDockview;
+ 			this.priority = "high";
+-			this.minimumSize = 100;
++			this.minimumSize = 0;
+ 			this.maximumSize = Number.POSITIVE_INFINITY;
+ 			this._onDidChange = new Emitter();
+ 			this.onDidChange = this._onDidChange.event;
+@@ -14526,7 +14538,7 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 		constructor(centerView, gap = 0) {
+ 			this._onDidChange = new Emitter();
+ 			this.onDidChange = this._onDidChange.event;
+-			this.minimumSize = 100;
++			this.minimumSize = 0;
+ 			this.maximumSize = Number.POSITIVE_INFINITY;
+ 			this.priority = "high";
+ 			this._element = document.createElement("div");
+@@ -14547,6 +14559,9 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 			this._centerIndex += 1;
+ 			if (this._bottomIndex !== void 0) this._bottomIndex += 1;
+ 		}
++		get onDidSashEnd() {
++			return this._splitview.onDidSashEnd;
++		}
+ 		addBottomView(view, initialSize) {
+ 			const newIndex = this._splitview.length;
+ 			this._splitview.addView(view, initialSize, newIndex);
+@@ -14619,6 +14634,16 @@ Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toString
+ 			});
+ 			this._middleIndex = 0;
+ 			this._outerSplitview.addView(this._middleColumn, { type: "distribute" }, 0);
++			this._disposables.addDisposables(
++				this._outerSplitview.onDidSashEnd(() => {
++					this._leftView?.finishResize();
++					this._rightView?.finishResize();
++				}),
++				this._middleColumn.onDidSashEnd(() => {
++					this._topView?.finishResize();
++					this._bottomView?.finishResize();
++				})
++			);
+ 			this._disposables.addDisposables(watchElementResize(this._shellElement, (entry) => {
+ 				/**
+ 				* When the shell (or an ancestor) becomes hidden — e.g. a
 diff --git a/dist/package/main.cjs.js b/dist/package/main.cjs.js
-index 3d3f2c8a49b845c0630f1692f2f6fa3fa3d6e87f..4b5908cc92b34a7ec85596b453de2ea9e1fdc69f 100644
+index 3d3f2c8a49b845c0630f1692f2f6fa3fa3d6e87f..7e789de2178a8273343284878b8da039c6af26eb 100644
 --- a/dist/package/main.cjs.js
 +++ b/dist/package/main.cjs.js
 @@ -14429,6 +14429,13 @@ var EdgeGroupView = class {
@@ -52,8 +166,65 @@ index 3d3f2c8a49b845c0630f1692f2f6fa3fa3d6e87f..4b5908cc92b34a7ec85596b453de2ea9
  	}
  	/**
  	* Watch the group's tab strip so the collapsed size follows the live tab
+@@ -14472,6 +14479,11 @@ var EdgeGroupView = class {
+ 	restoreExpandedSize(size) {
+ 		this._lastExpandedSize = size;
+ 	}
++	finishResize() {
++		if (!this._isCollapsed && this._lastExpandedSize <= this.collapsedSize) {
++			this._group.api.collapse();
++		}
++	}
+ 	/**
+ 	* Apply a new base (pre-gap) collapsed size, base minimum size and gap
+ 	* contribution after a theme or gap change. Base values come from the
+@@ -14496,7 +14508,7 @@ var CenterView = class {
+ 		this._dockviewElement = _dockviewElement;
+ 		this._layoutDockview = _layoutDockview;
+ 		this.priority = "high";
+-		this.minimumSize = 100;
++		this.minimumSize = 0;
+ 		this.maximumSize = Number.POSITIVE_INFINITY;
+ 		this._onDidChange = new Emitter();
+ 		this.onDidChange = this._onDidChange.event;
+@@ -14521,7 +14533,7 @@ var MiddleColumnView = class {
+ 	constructor(centerView, gap = 0) {
+ 		this._onDidChange = new Emitter();
+ 		this.onDidChange = this._onDidChange.event;
+-		this.minimumSize = 100;
++		this.minimumSize = 0;
+ 		this.maximumSize = Number.POSITIVE_INFINITY;
+ 		this.priority = "high";
+ 		this._element = document.createElement("div");
+@@ -14542,6 +14554,9 @@ var MiddleColumnView = class {
+ 		this._centerIndex += 1;
+ 		if (this._bottomIndex !== void 0) this._bottomIndex += 1;
+ 	}
++	get onDidSashEnd() {
++		return this._splitview.onDidSashEnd;
++	}
+ 	addBottomView(view, initialSize) {
+ 		const newIndex = this._splitview.length;
+ 		this._splitview.addView(view, initialSize, newIndex);
+@@ -14614,6 +14629,16 @@ var ShellManager = class {
+ 		});
+ 		this._middleIndex = 0;
+ 		this._outerSplitview.addView(this._middleColumn, { type: "distribute" }, 0);
++		this._disposables.addDisposables(
++			this._outerSplitview.onDidSashEnd(() => {
++				this._leftView?.finishResize();
++				this._rightView?.finishResize();
++			}),
++			this._middleColumn.onDidSashEnd(() => {
++				this._topView?.finishResize();
++				this._bottomView?.finishResize();
++			})
++		);
+ 		this._disposables.addDisposables(watchElementResize(this._shellElement, (entry) => {
+ 			/**
+ 			* When the shell (or an ancestor) becomes hidden — e.g. a
 diff --git a/dist/package/main.esm.mjs b/dist/package/main.esm.mjs
-index 6e8fd8c1dd781d0f24b1aa5d911edf6e5a0aeda2..350e02aca5d5154537ff2303e840f7cb05227fec 100644
+index 6e8fd8c1dd781d0f24b1aa5d911edf6e5a0aeda2..1cce793c6b5e8c35c2b6a55cd84c1c2bb3217785 100644
 --- a/dist/package/main.esm.mjs
 +++ b/dist/package/main.esm.mjs
 @@ -14427,6 +14427,13 @@ var EdgeGroupView = class {
@@ -70,3 +241,60 @@ index 6e8fd8c1dd781d0f24b1aa5d911edf6e5a0aeda2..350e02aca5d5154537ff2303e840f7cb
  	}
  	/**
  	* Watch the group's tab strip so the collapsed size follows the live tab
+@@ -14470,6 +14477,11 @@ var EdgeGroupView = class {
+ 	restoreExpandedSize(size) {
+ 		this._lastExpandedSize = size;
+ 	}
++	finishResize() {
++		if (!this._isCollapsed && this._lastExpandedSize <= this.collapsedSize) {
++			this._group.api.collapse();
++		}
++	}
+ 	/**
+ 	* Apply a new base (pre-gap) collapsed size, base minimum size and gap
+ 	* contribution after a theme or gap change. Base values come from the
+@@ -14494,7 +14506,7 @@ var CenterView = class {
+ 		this._dockviewElement = _dockviewElement;
+ 		this._layoutDockview = _layoutDockview;
+ 		this.priority = "high";
+-		this.minimumSize = 100;
++		this.minimumSize = 0;
+ 		this.maximumSize = Number.POSITIVE_INFINITY;
+ 		this._onDidChange = new Emitter();
+ 		this.onDidChange = this._onDidChange.event;
+@@ -14519,7 +14531,7 @@ var MiddleColumnView = class {
+ 	constructor(centerView, gap = 0) {
+ 		this._onDidChange = new Emitter();
+ 		this.onDidChange = this._onDidChange.event;
+-		this.minimumSize = 100;
++		this.minimumSize = 0;
+ 		this.maximumSize = Number.POSITIVE_INFINITY;
+ 		this.priority = "high";
+ 		this._element = document.createElement("div");
+@@ -14540,6 +14552,9 @@ var MiddleColumnView = class {
+ 		this._centerIndex += 1;
+ 		if (this._bottomIndex !== void 0) this._bottomIndex += 1;
+ 	}
++	get onDidSashEnd() {
++		return this._splitview.onDidSashEnd;
++	}
+ 	addBottomView(view, initialSize) {
+ 		const newIndex = this._splitview.length;
+ 		this._splitview.addView(view, initialSize, newIndex);
+@@ -14612,6 +14627,16 @@ var ShellManager = class {
+ 		});
+ 		this._middleIndex = 0;
+ 		this._outerSplitview.addView(this._middleColumn, { type: "distribute" }, 0);
++		this._disposables.addDisposables(
++			this._outerSplitview.onDidSashEnd(() => {
++				this._leftView?.finishResize();
++				this._rightView?.finishResize();
++			}),
++			this._middleColumn.onDidSashEnd(() => {
++				this._topView?.finishResize();
++				this._bottomView?.finishResize();
++			})
++		);
+ 		this._disposables.addDisposables(watchElementResize(this._shellElement, (entry) => {
+ 			/**
+ 			* When the shell (or an ancestor) becomes hidden — e.g. a

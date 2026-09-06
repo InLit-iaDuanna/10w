@@ -17,7 +17,7 @@ export const DEFAULT_EDGE_THRESHOLDS: EdgeThresholds = {
   pin: 220,
   hide: 48,
   minSize: 180,
-  maxSize: 640,
+  maxSize: Number.POSITIVE_INFINITY,
   defaultSize: 280,
 };
 
@@ -93,7 +93,7 @@ export class EdgeDrawerCoordinator {
       return { kind: 'drawer', drawer: this.setMode(gesture.edge, 'pinned', gesture.distance) };
     }
     if (gesture.distance >= this.#thresholds.peek) {
-      return { kind: 'drawer', drawer: this.setMode(gesture.edge, 'peek', gesture.distance) };
+      return { kind: 'drawer', drawer: this.setMode(gesture.edge, 'pinned', gesture.distance) };
     }
     return { kind: 'drawer', drawer: this.setMode(gesture.edge, 'hidden') };
   }

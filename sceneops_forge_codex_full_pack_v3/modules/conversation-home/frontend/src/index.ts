@@ -130,3 +130,4 @@ export { UnifiedConversation } from './unified/UnifiedConversation.tsx';
 export { AIAdvicePanel } from './unified/AIAdvicePanel.tsx';
 export { ModelProviderSettings } from './unified/ModelProviderSettings.tsx';
 export { aiKeys } from './unified/aiClient.ts';
+export { UnifiedModelPicker } from './unified/UnifiedModelPicker.tsx';

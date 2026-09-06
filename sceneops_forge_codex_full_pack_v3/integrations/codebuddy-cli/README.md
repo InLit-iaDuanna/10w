@@ -21,6 +21,13 @@ CLI 2.144.0 的 JSON 输出实测为消息数组，读取其中唯一的末尾 `
 原始 stderr、CLI envelope 和凭据不返回前端。已知登录、额度、模型权限、网络、进程退出和
 envelope 格式失败使用稳定错误类别；未知失败不猜测成功或回显原始内容。
 
+`invoke_json(..., on_event=None)` 可选异步回调启用真实 `stream-json` 和
+`--include-partial-messages`。2026-09-06 本机只读帮助与安装包的转换实现确认：
+`stream_event.event.content_block_delta` 中 `text_delta.text`、`thinking_delta.thinking`
+分别映射为 `text_delta` / `reasoning_delta`；只发送这两种实际文字与固定开始状态。
+不转发工具输入、签名、stderr 或完整 envelope。完整 `result` 仍是最终返回依据，
+不把结果拆块假装增量；管道各自最多 4 MiB，回调失败/取消停止进程，未运行真实推理验证。
+
 初始 V5 交付仅做空态烟测；随后用户明确授权 `glm-5.3-flash` / `hy4-preview` 真实 AI 连通验证，结果见根 `AI_LIVE_VERIFICATION.md`。模型目录本身仍不是可用性证明。
 
 参数依据：[官方 CLI 参考](https://www.codebuddy.ai/docs/cli/cli-reference)。

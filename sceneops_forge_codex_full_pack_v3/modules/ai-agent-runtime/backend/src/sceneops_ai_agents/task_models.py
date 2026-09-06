@@ -1,0 +1,275 @@
+"""Task authorization and observable, bounded action contracts."""
+from datetime import datetime, timezone
+from typing import Annotated, Literal
+from uuid import uuid4
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
+from sceneops_harness import ChangeSet, RuntimeBudget
+
+
+def now():
+    return datetime.now(timezone.utc)
+
+
+def identifier(prefix):
+    return f"{prefix}_{uuid4().hex}"
+
+
+class TaskModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+TASK_CAPABILITIES = ["agent.next_action", "blender.asset.create", "blender.scene.inspect",
+                     "blender.asset.export", "unity.asset.import", "unity.scene.inspect", "agent.finish"]
+PROTOTYPE_CAPABILITIES = ["agent.next_action", "unity.prototype.compose", "unity.prototype.inspect",
+    "unity.prototype.play", "unity.prototype.capture", "unity.prototype.verify", "agent.finish"]
+TASK_CAPABILITIES.append('agent.report_blocked')
+PROTOTYPE_CAPABILITIES.append('agent.report_blocked')
+CODE_CAPABILITIES = ['agent.next_action', 'code.workspace.inspect', 'code.file.read',
+                     'code.file.write', 'agent.finish', 'agent.report_blocked']
+TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development']
+ExecutionMode = Literal["typed-tools", "codex-full-access"]
+EffectState = Literal["NONE", "STAGED", "APPLIED", "COMMITTED", "UNKNOWN"]
+VerificationExecutionStatus = Literal["COMPLETED", "FAILED", "CANCELLED", "INTERRUPTED"]
+VerificationVerdict = Literal["PASS", "FAIL", "INCONCLUSIVE"]
+
+
+class ArtifactReference(TaskModel):
+    artifact_id: str
+    version: int = Field(ge=1)
+
+
+class VerificationRecord(TaskModel):
+    """A business verdict bound to the exact revision, run, suite and evidence."""
+    project_revision: str = Field(min_length=1, max_length=200)
+    run_id: str = Field(min_length=1, max_length=200)
+    run_ids: list[str] = Field(default_factory=list)
+    suite_id: str = Field(min_length=1, max_length=200)
+    suite_version: int = Field(ge=1)
+    checker_version: str = Field(min_length=1, max_length=200)
+    execution_status: VerificationExecutionStatus
+    verdict: VerificationVerdict
+    artifact_refs: list[ArtifactReference] = Field(default_factory=list)
+    assertions: list[dict[str, JsonValue]] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def verdict_requires_completed_execution(self):
+        if self.execution_status != "COMPLETED" and self.verdict != "INCONCLUSIVE":
+            raise ValueError("A non-completed checker execution can only be INCONCLUSIVE")
+        return self
+
+
+class PrepareAgentTask(TaskModel):
+    goal: str = Field(min_length=1, max_length=8000)
+    project_id: str | None = None
+    card_id: str | None = Field(default=None, pattern=r'^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$')
+    execution_mode: ExecutionMode = "typed-tools"
+    allow_image_generation: bool = False
+    allow_playtest: bool = False
+    task_profile: TaskProfile = 'asset-exchange'
+
+    @model_validator(mode='after')
+    def card_scope(self):
+        if self.task_profile == 'card-development':
+            if not self.project_id or not self.card_id or self.execution_mode != 'typed-tools':
+                raise ValueError('卡片开发需要项目、已登记卡片和 typed-tools 权限。')
+            if self.allow_playtest or self.allow_image_generation:
+                raise ValueError('卡片代码开发不包含图片生成或游测执行。')
+        elif self.card_id is not None:
+            raise ValueError('card_id 仅用于 card-development。')
+        return self
+
+
+class AuthorizeAgentTask(TaskModel):
+    authorization_card_id: str
+    accept_unknown_cost: Literal[True]
+    accept_full_access: bool = False
+
+
+class AuthorizationCard(TaskModel):
+    id: str = Field(default_factory=lambda: identifier("card"))
+    workspace_root: str
+    card_id: str | None = None
+    branch: str | None = None
+    execution_mode: ExecutionMode = "typed-tools"
+    allow_image_generation: bool = False
+    allow_playtest: bool = False
+    task_profile: TaskProfile = 'asset-exchange'
+    capability_ids: list[str] = Field(default_factory=lambda: list(TASK_CAPABILITIES))
+    max_model_calls: int | None = 8
+    max_cli_invocations: int | None = None
+    max_duration_seconds: int = 1200
+    max_attempts_per_action: int = 2
+    max_repair_rounds: int = Field(default=2, ge=0, le=2)
+    max_assets: int = 1
+    scope: str = "仅此独立空项目：创建有界立方体、检查、导出 FBX、导入和放置到 Unity；不修改已有项目，不构建、渲染或游测。"
+    cost_notice: str = "最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。"
+
+    @model_validator(mode="before")
+    @classmethod
+    def preserve_historical_playtest_authorization(cls, value):
+        if isinstance(value, dict) and 'allow_playtest' not in value:
+            value = {**value, 'allow_playtest': 'unity.prototype.verify' in value.get('capability_ids', [])}
+        return value
+
+
+class TaskGrant(TaskModel):
+    id: str = Field(default_factory=lambda: identifier("grant"))
+    task_id: str
+    project_id: str
+    workspace_root: str
+    card_id: str | None = None
+    branch: str | None = None
+    execution_mode: ExecutionMode = "typed-tools"
+    allow_image_generation: bool = False
+    capability_ids: list[str]
+    max_repair_rounds: int = Field(default=2, ge=0, le=2)
+    actor_id: str = "usr_local_workspace"
+    budget: RuntimeBudget = Field(default_factory=lambda: RuntimeBudget(max_steps=32,
+        max_attempts_per_step=2, max_duration_seconds=1200, max_metered_calls=8, usage_policy="bounded_calls"))
+    authorized_at: datetime = Field(default_factory=now)
+    expires_at: datetime
+    revoked: bool = False
+
+
+class AgentAction(TaskModel):
+    action_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,100}$")
+    capability_id: str
+    rationale: str = Field(min_length=1, max_length=2000)
+    inputs: dict[str, JsonValue] = Field(default_factory=dict)
+
+
+class NextActionInput(TaskModel):
+    goal: str
+    observations: dict[str, JsonValue]
+    history: list[dict[str, JsonValue]]
+    capabilities: list[dict[str, JsonValue]]
+    expected_provider: str
+    expected_model: str
+    input_schemas: dict[str, JsonValue] = Field(default_factory=dict)
+
+
+class CreateCubeInput(TaskModel):
+    asset_id: str = Field(pattern=r"^ast_[A-Za-z0-9_-]{8,100}$")
+    sceneops_id: str = Field(pattern=r"^sobj_[A-Za-z0-9_-]{8,100}$")
+    name: str = Field(min_length=1, max_length=100, pattern=r"^[^/\\\x00-\x1f]+$")
+    dimensions_m: tuple[Annotated[float, Field(ge=0.001, le=100, allow_inf_nan=False)],
+                        Annotated[float, Field(ge=0.001, le=100, allow_inf_nan=False)],
+                        Annotated[float, Field(ge=0.001, le=100, allow_inf_nan=False)]]
+
+
+class AssetInput(TaskModel):
+    asset_id: str = Field(pattern=r"^ast_[A-Za-z0-9_-]{8,100}$")
+
+
+class EmptyActionInput(TaskModel):
+    pass
+
+
+class CodeReadInput(TaskModel):
+    path: str = Field(min_length=1, max_length=240)
+
+
+class CodeWriteInput(CodeReadInput):
+    expected_content: str | None = Field(max_length=65536)
+    content: str = Field(max_length=65536)
+
+
+class CapabilityGapInput(TaskModel):
+    reason: str = Field(min_length=1, max_length=1500)
+    needed_capabilities: list[str] = Field(default_factory=list, max_length=10)
+
+
+class PrototypeVerifyInput(TaskModel):
+    composition_action_id: str = Field(pattern=r'^[A-Za-z0-9_-]{1,100}$')
+
+
+class CodexTaskInput(TaskModel):
+    goal: str = Field(min_length=1, max_length=8000)
+
+
+class FinishInput(TaskModel):
+    summary: str = Field(min_length=1, max_length=2000)
+
+
+class ToolResult(TaskModel):
+    evidence: dict[str, JsonValue]
+
+
+class ActionRecord(TaskModel):
+    action: AgentAction
+    assigned_role: str = "producer"
+    request_id: str = Field(default_factory=lambda: identifier("request"))
+    run_ids: list[str] = Field(default_factory=list)
+    attempts: int = 0
+    state: Literal["planned", "running", "succeeded", "failed", "uncertain", "blocked"] = "planned"
+    effect_state: EffectState = "NONE"
+    verification_result: VerificationRecord | None = None
+    change_set: ChangeSet | None = None
+    approval_id: str | None = None
+    result: dict[str, JsonValue] | None = None
+    reason: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_effect_state(cls, value):
+        """Old records did not prove external effect state; never upgrade them optimistically."""
+        if not isinstance(value, dict) or "effect_state" in value:
+            return value
+        migrated = dict(value)
+        action = migrated.get("action") or {}
+        capability_id = (action.get("capability_id", "") if isinstance(action, dict)
+                         else getattr(action, "capability_id", ""))
+        state = migrated.get("state", "planned")
+        mutating = capability_id in {
+            "blender.asset.create", "blender.asset.export", "unity.asset.import",
+            "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
+            "unity.prototype.verify", "codex.task.execute",
+        }
+        migrated["effect_state"] = "UNKNOWN" if mutating and state != "planned" else "NONE"
+        return migrated
+
+
+class AgentTaskRecord(TaskModel):
+    id: str = Field(default_factory=lambda: identifier("task"))
+    project_id: str
+    goal: str
+    status: Literal["awaiting_authorization", "queued", "running", "blocked", "needs_approval", "completed", "review_required", "failed", "cancel_pending", "cancelled", "interrupted"] = "awaiting_authorization"
+    authorization_card: AuthorizationCard
+    grant: TaskGrant | None = None
+    model_calls_used: int = 0
+    cli_invocations_used: int = 0
+    repair_rounds_used: int = Field(default=0, ge=0)
+    model_tokens_known: int = 0
+    cost_usd: float | None = None
+    budget_accounting_complete: bool = False
+    actions: list[ActionRecord] = Field(default_factory=list)
+    model_run_ids: list[str] = Field(default_factory=list)
+    current_run_id: str | None = None
+    pending_action_id: str | None = None
+    observations: dict[str, JsonValue] = Field(default_factory=dict)
+    reason: str | None = None
+    cancel_requested: bool = False
+    owner_pid: int | None = None
+    provider_id: str | None = None
+    provider_model: str | None = None
+    created_at: datetime = Field(default_factory=now)
+    updated_at: datetime = Field(default_factory=now)
+    finished_at: datetime | None = None
+
+
+class AgentTaskEvent(TaskModel):
+    sequence: int
+    task_id: str
+    project_id: str
+    occurred_at: datetime
+    event_type: str
+    payload: dict[str, JsonValue]
+
+
+class AgentTaskEvents(TaskModel):
+    events: list[AgentTaskEvent]
+    next_cursor: int
+
+
+class AgentTaskList(TaskModel):
+    tasks: list[AgentTaskRecord]

@@ -1,6 +1,7 @@
 """Public typed boundary for the SceneOps Blender integration."""
 
 from .adapter import LiveBlenderAdapter
+from .agent_session import BlenderAgentSession
 from .artifacts import artifact_sha256, read_glb_json
 from .cached_adapter import (
     CachedBlenderAdapter,
@@ -36,6 +37,7 @@ from .transport import SubprocessBlenderTransport
 __all__ = [
     "ADAPTER_VERSION",
     "BlenderAdapterError",
+    "BlenderAgentSession",
     "BlenderCommand",
     "BlenderIdentityRegistry",
     "BlenderObjectIdentity",

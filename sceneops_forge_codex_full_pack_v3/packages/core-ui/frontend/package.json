@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "dependencies": { "react-markdown": "10.1.0", "remark-gfm": "4.0.1" },
+  "peerDependencies": { "react": ">=18 <20" },
   "exports": {
     ".": "./src/index.ts"
   }

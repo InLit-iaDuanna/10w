@@ -57,4 +57,34 @@ for (const [edge, orientation, axis] of [
     view.dispose();
     assert.equal(sizeEvents.listeners.size, 0);
   });
+  test(`installed Dockview ${edge} native resize reaches both boundaries and collapses on release`, () => {
+    const sizeEvents = new Emitter();
+    let collapseCalls = 0;
+    const group = {
+      element: { classList: { add() {}, toggle() {} }, dataset: {}, querySelector: () => null },
+      layout() {},
+      api: { onDidSizeChange: sizeEvents.event, collapse() { collapseCalls++; view.setCollapsed(true); } },
+    };
+    const view = new EdgeGroupView({ id: edge, initialSize: 280, minimumSize: 12, collapsedSize: 12 }, group, orientation);
+    assert.equal(view.maximumSize, Infinity);
+    view.layout(1600, 900);
+    view.finishResize();
+    assert.equal(collapseCalls, 0);
+    assert.equal(view.lastExpandedSize, 1600);
+    view.layout(12, 900);
+    assert.equal(view.isCollapsed, false, 'resize runs through Dockview until the native sash releases');
+    view.finishResize();
+    assert.equal(collapseCalls, 1);
+    assert.equal(view.isCollapsed, true);
+    view.finishResize();
+    assert.equal(collapseCalls, 1, 'collapsed edges are not collapsed again');
+    view.dispose();
+  });
 }
+
+test('Dockview center admits zero remaining extent', () => {
+  const centerSource = source.slice(source.indexOf('var CenterView = class {'), source.indexOf('var MiddleColumnView = class {'));
+  const CenterView = runInNewContext(`${centerSource}\nCenterView`, { Emitter });
+  const center = new CenterView({}, () => undefined);
+  assert.equal(center.minimumSize, 0);
+});

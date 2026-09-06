@@ -69,6 +69,28 @@ __all__ = [
 from .concept_handoff import ConceptAssetHandoff, asset_spec_from_concept
 from .workflow import build_workflow_plan
 from .lab_service import ConceptAssetLab, LabAction, LabSnapshot, create_lab_router
+from .card_asset_models import (
+    CardAssetError,
+    CardAssetList,
+    CardAssetProposal,
+    CardAssetRecord,
+    CardAssetReference,
+    CardAssetVersion,
+    LiveModelUpdateRequest,
+    LiveModelUpdateResult,
+    ModelPlanContent,
+    ModelPlanRequest,
+    NormalizeRequest,
+    PrimitivePart,
+    SaveToLibraryRequest,
+)
+from .card_asset_router import create_card_asset_router
+from .card_asset_service import CardAssetService
 
 __all__ += ["ConceptAssetHandoff", "asset_spec_from_concept", "build_workflow_plan",
-            "ConceptAssetLab", "LabAction", "LabSnapshot", "create_lab_router"]
+            "ConceptAssetLab", "LabAction", "LabSnapshot", "create_lab_router",
+            "CardAssetError", "CardAssetList", "CardAssetProposal", "CardAssetRecord",
+            "CardAssetReference", "CardAssetVersion", "LiveModelUpdateRequest", "LiveModelUpdateResult",
+            "ModelPlanContent", "ModelPlanRequest",
+            "NormalizeRequest", "PrimitivePart", "SaveToLibraryRequest",
+            "CardAssetService", "create_card_asset_router"]

@@ -23,6 +23,10 @@ contributes:
     - unity.build.console
     - unity.profiler
   commands:
+    - unity.prototype.compose
+    - unity.prototype.inspect
+    - unity.prototype.play
+    - unity.prototype.capture
     - unity.health
     - unity.project.scan
     - unity.asset.import

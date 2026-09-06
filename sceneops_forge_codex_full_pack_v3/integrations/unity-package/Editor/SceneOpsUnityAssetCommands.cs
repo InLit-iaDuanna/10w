@@ -77,6 +77,7 @@ namespace SceneOps.Forge.Unity.Editor
                     "Unity import manifest does not match the project, source identity, or source file.");
             }
 
+            SceneOpsAgentPlacement.Validate(payload, projectRoot, manifest);
             string destinationDirectory = Path.GetDirectoryName(destination);
             if (!string.IsNullOrWhiteSpace(destinationDirectory))
             {
@@ -106,6 +107,7 @@ namespace SceneOps.Forge.Unity.Editor
                 ? ModelImporterMaterialLocation.External
                 : ModelImporterMaterialLocation.InPrefab;
             importer.SaveAndReimport();
+            SceneOpsAgentPlacement.Place(payload, projectRoot, manifest);
             return JsonUtility.ToJson(new ImportAssetResult
             {
                 assetGuid = AssetDatabase.AssetPathToGUID(payload.destination_asset_path),

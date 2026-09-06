@@ -28,6 +28,17 @@ from .verification import (
     FinalizedCandidateResolver,
     PublicationApprovalVerifier,
 )
+from .project_catalog import (
+    ProjectAssetCatalogService,
+    ProjectAssetEntry,
+    ProjectAssetRegistration,
+    ProjectAssetVersion,
+    RenameProjectAssetRequest,
+    SaveProjectAssetResult,
+    SqliteProjectAssetRepository,
+    create_project_catalog_router,
+    simple_asset_name,
+)
 
 __all__ = [
     "AIProvenance",
@@ -51,10 +62,19 @@ __all__ = [
     "PublicationApprovalVerifier",
     "PublicationRequest",
     "PublicationStatus",
+    "ProjectAssetCatalogService",
+    "ProjectAssetEntry",
+    "ProjectAssetRegistration",
+    "ProjectAssetVersion",
     "QualityGate",
+    "RenameProjectAssetRequest",
+    "SaveProjectAssetResult",
+    "SqliteProjectAssetRepository",
     "SourceAsset",
     "UnityStatus",
     "UsageReference",
     "Vector3Meters",
     "create_router",
+    "create_project_catalog_router",
+    "simple_asset_name",
 ]

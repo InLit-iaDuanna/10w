@@ -252,7 +252,7 @@ class GitRepositoryReader:
     def commits(self, root: Path) -> tuple[GitCommit, ...]:
         output = self._runner.run(
             "list_commits",
-            ("log", "-n", "50", "--format=%H%x1f%an%x1f%aI%x1f%s%x1e"),
+            ("log", "--all", "--topo-order", "-n", "200", "--format=%H%x1f%P%x1f%an%x1f%aI%x1f%s%x1e", "HEAD"),
             cwd=root,
         ).stdout
         commits: list[GitCommit] = []
@@ -260,9 +260,10 @@ class GitRepositoryReader:
             record = record.strip("\n")
             if not record:
                 continue
-            commit_id, author, authored_at, subject = record.split("\x1f", 3)
+            commit_id, parents, author, authored_at, subject = record.split("\x1f", 4)
             commits.append(
                 GitCommit(
+                    parent_ids=tuple(parents.split()),
                     commit_id=commit_id,
                     author=author,
                     authored_at=datetime.fromisoformat(authored_at).astimezone(

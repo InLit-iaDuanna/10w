@@ -10,6 +10,8 @@ from .base import Clock, ExecutionMode, UtcClock
 from .errors import ErrorCode, VersionCollaborationError
 from .git_models import (
     GitCapabilities,
+    GitFileChange,
+    GitChangeKind,
     GitRepositoryState,
     GitRollbackCommand,
     GitRollbackResult,
@@ -41,6 +43,18 @@ class GitCliAdapter:
         self._clock = clock or UtcClock()
         self._reader = GitRepositoryReader(self._runner, self._clock)
         self._rollback = GitRollbackExecutor(self._runner, self._reader)
+
+    def commit_changes(self, project_root: Path, commit_id: str) -> tuple[GitFileChange, ...]:
+        root = self._require_repository(project_root)
+        commit = self._reader.resolve_commit(root, commit_id)
+        parents = self._runner.run("commit_parents",
+            ("rev-list", "--parents", "-n", "1", commit), cwd=root).stdout.split()[1:]
+        if parents:
+            return self._reader.committed_changes(root, parents[0], commit)
+        paths = self._runner.run("initial_commit_files",
+            ("diff-tree", "--root", "--no-commit-id", "--name-only", "-r", "-z", commit), cwd=root).stdout
+        return tuple(GitFileChange(path=path, kind=GitChangeKind.ADDED)
+            for path in paths.split("\0") if path)
 
     def health_check(self, project_root: Path) -> IntegrationHealth:
         checked_at = self._clock.now()
@@ -108,6 +122,53 @@ class GitCliAdapter:
     ) -> GitRepositoryState:
         root = self._require_repository(project_root)
         return self._reader.inspect(project_id, repository_id, root)
+
+    def valid_branch_name(self, project_root: Path, branch_name: str) -> bool:
+        root = self._require_repository(project_root)
+        result = self._runner.run(
+            "branch_name_check",
+            ("check-ref-format", "--branch", branch_name),
+            cwd=root,
+            allowed_return_codes=(0, 128),
+        )
+        return result.return_code == 0
+
+    def create_branch_and_switch(
+        self,
+        project_root: Path,
+        branch_name: str,
+        source_commit: str,
+        expected_head: str,
+    ) -> None:
+        root = self._require_repository(project_root)
+        self._require_expected_head(root, expected_head)
+        target = self._reader.resolve_commit(root, source_commit)
+        self._runner.run(
+            "branch_create_switch",
+            ("switch", "-c", branch_name, target),
+            cwd=root,
+            mutation=True,
+        )
+
+    def switch_branch(
+        self, project_root: Path, branch_name: str, expected_head: str
+    ) -> None:
+        root = self._require_repository(project_root)
+        self._require_expected_head(root, expected_head)
+        self._runner.run(
+            "branch_switch",
+            ("switch", branch_name),
+            cwd=root,
+            mutation=True,
+        )
+
+    def _require_expected_head(self, root: Path, expected_head: str) -> None:
+        actual_head = self._reader.resolve_commit(root, "HEAD")
+        if actual_head != expected_head:
+            raise VersionCollaborationError(
+                ErrorCode.STALE_BASE,
+                "Git HEAD changed after the branch preview.",
+            )
 
     def compare_versions(
         self,
@@ -300,6 +361,10 @@ class GitCliAdapter:
                 "The configured project is not an available Git worktree.",
                 suggested_actions=("integration.open",),
             )
+        top = self._runner.run("repository_root", ("rev-parse", "--show-toplevel"), cwd=root).stdout.strip()
+        if Path(top).resolve() != root:
+            raise VersionCollaborationError(ErrorCode.PATH_OUTSIDE_PROJECT,
+                "项目目录不是独立的 Git 工作区。")
         return root
 
     def _require_lfs(self, project_root: Path) -> Path:

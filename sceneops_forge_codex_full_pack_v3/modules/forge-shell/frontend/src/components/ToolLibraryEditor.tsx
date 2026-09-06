@@ -1,43 +1,12 @@
 import { useId, useMemo, useState } from 'react';
 import type { EditorHostProps, EditorPlacement } from '../contracts.ts';
 import { useShellTools } from './ToolRuntime.ts';
+import { createToolLibraryTree } from './tool-library-tree.ts';
 import './tool-picker.css';
-
-const groupDetails = {
-  conversation: { title: '对话', description: '从目标开始，持续整理制作上下文。', glyph: '●' },
-  workbench: { title: '制作工作台', description: '按生产环节进入专业编辑空间。', glyph: 'W' },
-  planning: { title: 'AI 规划', description: '把制作目标组织成可执行的生产路径。', glyph: 'AI' },
-  system: { title: '系统', description: '管理工作台、命令和连接状态。', glyph: 'S' },
-} as const;
-
-const categoryGroups: Record<string, keyof typeof groupDetails> = {
-  assistant: 'conversation',
-  '工作台': 'workbench',
-  'AI 制作': 'planning',
-  system: 'system',
-};
-
-const editorDescriptions: Record<string, string> = {
-  'assistant.conversation': '描述目标、获取建议并打开所需功能。',
-  'shell.tool-library': '从当前区域选择并替换为其他功能。',
-  'shell.command-search': '快速执行打开、保存与布局命令。',
-  'workspace.projects': '浏览并切换当前电脑上的项目。',
-  'harness.pipeline': '将目标拆解为可追踪的 AI 生产计划。',
-  'workbench.project-planning': '编排需求、任务与制作节奏。',
-  'workbench.concept-assets': '衔接概念方向与资产生产。',
-  'workbench.character-animation': '管理角色制作与动画交付。',
-  'workbench.world-logic': '组织场景、玩法逻辑与交互。',
-  'workbench.ui-audio-vfx': '统一界面、声音与视觉特效。',
-  'workbench.render-ops': '检查镜头、画面与渲染任务。',
-  'workbench.unity-build': '推进 Unity 集成、构建与交付。',
-  'workbench.version-review': '查看版本变化并进行评审。',
-  'workbench.ai-playtest': '编排游测规格并查看已有证据。',
-  'workbench.integration-ops': '查看外部工具连接与运行状况。',
-};
 
 type PlacementChoice = 'current' | 'right' | 'left' | 'above' | 'below' | 'tab' | 'floating' | 'popout';
 
-export default function ToolLibraryEditor({ instanceId }: EditorHostProps) {
+export default function ToolLibraryEditor({ instanceId, context }: EditorHostProps) {
   const runtime = useShellTools();
   const [query, setQuery] = useState('');
   const [placement, setPlacement] = useState<PlacementChoice>('current');
@@ -49,10 +18,12 @@ export default function ToolLibraryEditor({ instanceId }: EditorHostProps) {
     above: { mode: 'split', direction: 'above', relativeToInstanceId: instanceId }, below: { mode: 'split', direction: 'below', relativeToInstanceId: instanceId },
     tab: { mode: 'tab', relativeToInstanceId: instanceId }, floating: { mode: 'floating' }, popout: { mode: 'popout' },
   };
-  const visibleEditors = useMemo(() => runtime.editors.filter(editor =>
-    `${editor.title} ${editor.id} ${editor.category} ${editorDescriptions[editor.id] ?? ''} ${groupDetails[categoryGroups[editor.category] ?? 'system'].title}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
-  ), [query, runtime.editors]);
+  const branches = useMemo(
+    () => createToolLibraryTree(runtime.editors, query, runtime.toolLibraryCatalog),
+    [query, runtime.editors, runtime.toolLibraryCatalog],
+  );
   return <section className="shell-tool-content picker-tool-library" aria-label="工具库">
+    {!runtime.toolLibraryCatalog && runtime.renderTaskActivity?.(context.projectId)}
     <div className="picker-toolbar">
       <div className="picker-search-control"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="5.8" /><path d="m16 16 4 4" /></svg><input id={searchId} aria-label="搜索工具" placeholder="搜索功能或用途" value={query} onChange={e => setQuery(e.target.value)} /></div>
       <select aria-label="打开位置" title="默认替换当前区域，保留位置和尺寸" value={placement} onChange={e => setPlacement(e.target.value as PlacementChoice)}>
@@ -60,17 +31,23 @@ export default function ToolLibraryEditor({ instanceId }: EditorHostProps) {
       </select>
     </div>
     <div className="picker-options" aria-label="可选功能">
-      <div className="picker-tool-grid">{visibleEditors.map(editor => {
-        const details = groupDetails[categoryGroups[editor.category] ?? 'system'];
-        return <button className="picker-tool-item" key={editor.id} title={`${details.title} · ${editorDescriptions[editor.id] ?? details.description}\n${editor.id}`} onClick={() => void (placement === 'current'
-      ? runtime.execute('workbench.switch_editor', {instanceId, editorId: editor.id})
-      : runtime.open(editor.id, placements[placement])).catch(e => setError(e.message))}>
-          <span className="picker-tool-icon" aria-hidden="true">{details.glyph}</span>
-          <span className="picker-tool-copy"><strong>{editor.title}</strong><small>{editorDescriptions[editor.id] ?? details.description}</small></span>
-          <svg className="picker-open-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
-        </button>;
-      })}</div>
-    {!visibleEditors.length && <div className="picker-empty"><strong>没有找到匹配的功能</strong><span>尝试功能名称、用途或其他类别关键词。</span></div>}
+      <div className="picker-tool-tree">{branches.map(branch => <section className={`picker-tree-branch is-${branch.kind}`} key={branch.id} aria-labelledby={`${searchId}-${branch.id}`}>
+        <header className="picker-tree-branch-header">
+          <span className="picker-tree-junction" aria-hidden="true" />
+          <span><strong id={`${searchId}-${branch.id}`}>{branch.title}</strong><small>{branch.description}</small></span>
+        </header>
+        <ol className="picker-tree-nodes">{branch.nodes.map(node => <li key={node.id}>
+          <span className="picker-tree-step" aria-hidden="true">{node.sequence ?? '·'}</span>
+          <button className="picker-tree-node" title={`${node.title} · ${node.description}\n${node.editor.id}`} onClick={() => void (placement === 'current'
+            ? runtime.execute('workbench.switch_editor', { instanceId, editorId: node.editor.id })
+            : runtime.open(node.editor.id, placements[placement])).catch(e => setError(e instanceof Error ? e.message : String(e)))}>
+            <span className="picker-tree-node-copy"><strong>{node.title}</strong><small>{node.editor.title} · {node.description}</small></span>
+            {node.editor.id.startsWith('workbench.') && runtime.renderProductionNodeStatus?.(context.projectId, node.editor.id.slice('workbench.'.length))}
+            <svg className="picker-open-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+          </button>
+        </li>)}</ol>
+      </section>)}</div>
+    {!branches.length && <div className="picker-empty"><strong>没有找到匹配的功能</strong><span>尝试功能名称、用途或生产阶段关键词。</span></div>}
     </div>
     {error && <p className="picker-feedback is-error" role="alert"><span aria-hidden="true">!</span><span><strong>无法打开功能</strong>{error}</span></p>}
   </section>;

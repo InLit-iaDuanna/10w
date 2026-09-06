@@ -1,10 +1,20 @@
 # SceneOps Forge V5 · AI 生产工作台
 
+制作卡片现在可选择“导入已有模型”或“新建模型”。导入 GLB/FBX 后由真实 Blender 检查并生成 `.blend`、预览 GLB、Unity 交换 FBX；新建在唯一主对话中逐块对齐，每条新回答都会追加一个真实 Blender/GLB 草稿版本。确认的版本可存入项目资产库，再进入 Three.js 环境场景人工摆放，或继续由同一个主对话让 AI 使用库内资产搭建。两条模型路径都写入卡片 Git 工作树且不自动提交/合并，归一化另存版本。验证范围见 [卡片模型烟测](CARD_ASSET_WORKFLOW_SMOKE.md)。
+
+最新：同一 Agent 输入框通过权限区分讨论和执行，不再分两个页面；工作台默认 Agent 输入，手动表单放入高级设置。模型设置可切换 CodeBuddy CLI、Codex CLI 与 OAI 兼容服务。Codex 完全权限须单独确认，`gpt-5.6-sol / low` 已真实完成独立文件创建/读回烟测；其他生产环节未因此自动验收。[本次说明](CODEX_PROVIDER_HANDOFF.md)。
+
 一个 Web、一个 API，原生 Dockview 停靠编辑器，不使用 iframe。首页为对话和四边拉手；点击「本地项目」创建空项目。向内拖动或双击四边拉手，在拉出的区域选择功能，并直接由该区域承载；区域顶部「选择功能」可原位切换，拆分/浮动需主动选择。首次启动不导入示例、不执行作业，AI 默认「CLI 默认模型」，不是 Mock。
 
 V5 增加目标理解、明确选中的项目上下文、可审阅生产计划、受控运行记录、恢复建议和模板草稿，并重做统一 UI/UX。默认 CodeBuddy Code CLI，也可以显式配置 OpenAI-compatible URL / API Key。当前交付是计划与运行主干，不是已验证的 Blender → Unity 全生产链。详见 [V5 交付说明](V5_HANDOFF.md)。
 
+最新增加「Agent 任务」：输入目标、确认一次范围后，自动准备独立工程并执行类型化动作。2026-09-05 已用真实 CodeBuddy `glm-5.3-flash` 完成 Blender 创建箱体 → 保存/导出 FBX → Unity 导入/放置 → 两端身份、尺寸和控制台核验，共 4 次模型调用。此项是有界基础资产闭环，不代表整条游戏生产链完成。[使用与实测证据](AGENT_LIVE_VERIFICATION.md)。
+
 ## 安装与启动
+
+当前版本采用区域内层级拆分、中性灰配色和游戏生产流程树；不再在统一页面外围叠加全局抽屉。见 [最新交互与接入状态](NESTED_REGION_VERIFICATION.md)。
+
+最新交互：全部窗口关闭后回到中央聊天，四边可拉满并拖回收起；发送立即显示用户消息。右上角「诊断」可查看/导出本机最近 200 条界面记录。[验证和限制](INTERACTION_POLISH_VERIFICATION.md)。
 
 顶部/底部拉出后现在直接显示搜索与功能列表；聊天支持 Enter 发送、Shift+Enter 换行。用户授权的扩展功能回归及未通过项见 [UI 功能验证](UI_FUNCTIONAL_VERIFICATION.md)。
 
@@ -81,7 +91,7 @@ AI 通过本机 `codebuddy --print --output-format json` 调用，共用模型�
 
 ## 维护与兼容
 
-`apps/web/workbenches.json` 是分组声明，`pnpm generate:workbenches` 生成编辑器目录。网络类型由后端公开模型/OpenAPI 生成：`pnpm generate:workspace`、`pnpm generate:ai`、`pnpm generate:harness`。这些生成命令不执行测试或业务操作。
+`apps/web/workbenches.json` 是分组声明，`pnpm generate:workbenches` 生成编辑器目录。网络类型由后端公开模型/OpenAPI 生成：`pnpm generate:workspace`、`pnpm generate:ai`、`pnpm generate:harness`、`pnpm generate:agent`、`pnpm generate:card-assets`、`pnpm generate:environment`。这些生成命令不执行测试或业务操作。
 
 API 和生成命令统一从 `services/api/requirements.txt` 中显式声明的本地包加载源码。开发用 Python 命令通过 `node scripts/python.mjs <脚本或参数>` 运行，避免依赖 editable 安装的 `.pth` 文件；不扫描用户生产目录或动态发现插件。Python 依赖变化时手动重新运行上述安装命令。
 
@@ -91,4 +101,7 @@ API 和生成命令统一从 `services/api/requirements.txt` 中显式声明的�
 
 V5 初始交付只做空态烟测。用户随后授权真实 AI 连通检查，GLM 已取得聊天、建议、结构化计划和单步专家分析的实际成功结果；同时记录了 JSON 校验拒绝和 HY4 超时，并非稳定性或内容质量验收。见 [AI 真实验证](AI_LIVE_VERIFICATION.md)。CLI 结构化输出由应用严格校验，不依赖本机存在挂起问题的 `--json-schema` 模式，仍禁用所有工具。
 
-未运行完整测试、类型检查、生产构建、游戏 demo、Unity、Blender、渲染或 AI playtest；恢复、审批与回滚没有实际业务验证，13 项外部能力仍 planned/blocked。OAI 接口保留但未真实验证。Dockview 保留原有评估水印。[初始烟测记录](V5_SMOKE.md)、[能力缺口](PROTOTYPE_GAP_MATRIX.md)；`INTEGRATION_SMOKE.md` 只记录上一版。
+最新授权范围内已运行基础资产的真实 Blender/Unity 闭环及相关定向测试。未运行完整测试套件、生产构建、游戏 demo、渲染或 AI playtest；其他外部生产能力仍保持原 planned/blocked 状态。类型检查仍有历史诊断，不能宣称全项目通过。OAI 接口保留但未真实验证。Dockview 保留原有评估水印。[初始烟测记录](V5_SMOKE.md)、[能力缺口](PROTOTYPE_GAP_MATRIX.md)；旧验收文档仅反映对应日期，不覆盖本次结果。
+# 新旅程：单人协作策划
+
+从「本地项目」创建文件夹项目，进入 idea → grill-me 对齐 → 大纲 v1 → Three.js → 制作卡片。操作、烟测和未接入范围见 [阶段一说明](PLANNING_JOURNEY_STAGE1.md)。旧项目和原有生产路径保留。

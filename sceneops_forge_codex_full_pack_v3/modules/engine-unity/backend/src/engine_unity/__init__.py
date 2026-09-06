@@ -1,6 +1,9 @@
 """Public backend API for the SceneOps Unity engine module."""
 
 from .adapter import UnityAdapter
+from .agent_session import UnityAgentSession, UnityAgentSessionError
+from .prototype_contracts import PrototypeSpec, PrototypeInput, PrototypePlayPayload
+from .image_evidence import inspect_png
 from .contracts import (
     ApprovalState,
     ChangeSet,
@@ -17,6 +20,10 @@ from .security import expected_change_targets
 from .service import UnityEngineService
 
 __all__ = [
+    "inspect_png",
+    "PrototypeSpec", "PrototypeInput", "PrototypePlayPayload",
+    "UnityAgentSession",
+    "UnityAgentSessionError",
     "ApprovalState",
     "ChangeSet",
     "CommandName",

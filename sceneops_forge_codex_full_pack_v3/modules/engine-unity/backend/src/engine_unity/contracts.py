@@ -39,6 +39,10 @@ class CommandStatus(str, Enum):
 
 
 class CommandName(str, Enum):
+    PROTOTYPE_COMPOSE = "unity.prototype.compose"
+    PROTOTYPE_INSPECT = "unity.prototype.inspect"
+    PROTOTYPE_PLAY = "unity.prototype.play"
+    PROTOTYPE_CAPTURE = "unity.prototype.capture"
     HEALTH = "unity.health"
     SCAN_PROJECT = "unity.project.scan"
     IMPORT_ASSET = "unity.asset.import"
@@ -106,9 +110,17 @@ class ImportAssetPayload(StrictModel):
     material_mode: Literal["import", "external", "none"] = "import"
     generate_colliders: bool = False
     lod_screen_percentages: List[float] = Field(default_factory=list, max_length=8)
+    destination_scene_path: str = ""
+    sceneops_id: str = ""
+    scene_instance_id: str = ""
 
     @model_validator(mode="after")
     def validate_import_files(self) -> "ImportAssetPayload":
+        if self.destination_scene_path:
+            if self.destination_scene_path != "Assets/SceneOpsAgent.unity":
+                raise ValueError("Agent placement uses the dedicated SceneOpsAgent scene only")
+            if not self.sceneops_id or not self.scene_instance_id:
+                raise ValueError("Agent placement requires source and scene-instance identities")
         allowed = {".3ds", ".dae", ".dxf", ".fbx", ".obj"}
         source_extension = Path(self.source_path).suffix.lower()
         destination_extension = Path(self.destination_asset_path).suffix.lower()
@@ -267,7 +279,13 @@ class BuildPayload(StrictModel):
         return values
 
 
+from .prototype_contracts import PrototypeSpec, PrototypePlayPayload
+
 PAYLOAD_MODELS: Mapping[CommandName, Type[StrictModel]] = {
+    CommandName.PROTOTYPE_COMPOSE: PrototypeSpec,
+    CommandName.PROTOTYPE_INSPECT: EmptyPayload,
+    CommandName.PROTOTYPE_PLAY: PrototypePlayPayload,
+    CommandName.PROTOTYPE_CAPTURE: PrototypePlayPayload,
     CommandName.HEALTH: EmptyPayload,
     CommandName.SCAN_PROJECT: ScanProjectPayload,
     CommandName.IMPORT_ASSET: ImportAssetPayload,

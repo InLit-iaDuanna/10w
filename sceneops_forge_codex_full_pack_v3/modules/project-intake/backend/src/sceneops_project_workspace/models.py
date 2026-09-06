@@ -29,6 +29,41 @@ class ProjectList(WorkspaceModel):
     projects: list[Project]
 
 
+class FolderEntry(WorkspaceModel):
+    name: str
+    path: str
+    kind: Literal["directory", "symlink"]
+    selectable: bool
+
+
+class FolderListing(WorkspaceModel):
+    path: str
+    parent_path: str | None
+    entries: list[FolderEntry]
+
+
+class FolderProjectCreate(WorkspaceModel):
+    parent_path: str = Field(min_length=1)
+    name: str = Field(min_length=1, max_length=160, pattern=r".*\S.*")
+
+
+class FolderProject(WorkspaceModel):
+    project_id: str
+    name: str
+    root_path: str
+
+
+class FolderProjectList(WorkspaceModel):
+    projects: list[FolderProject]
+
+
+class StructuredDesignArtifact(WorkspaceModel):
+    project_id: str
+    kind: Literal["draft", "snapshot"]
+    version: int | None = Field(default=None, ge=1)
+    path: str
+
+
 class ModuleDocument(WorkspaceModel):
     project_id: str
     module_id: ModuleId

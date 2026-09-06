@@ -1,0 +1,2187 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SceneOps Agent Tasks",
+    "version": "0.5.0"
+  },
+  "paths": {
+    "/api/agent/tasks": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Prepare",
+        "operationId": "prepare_api_agent_tasks_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareAgentTask"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "List Tasks",
+        "operationId": "list_tasks_api_agent_tasks_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Task",
+        "operationId": "task_api_agent_tasks__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/authorize": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Authorize",
+        "operationId": "authorize_api_agent_tasks__task_id__authorize_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorizeAgentTask"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/cancel": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Cancel",
+        "operationId": "cancel_api_agent_tasks__task_id__cancel_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/resume": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Resume",
+        "operationId": "resume_api_agent_tasks__task_id__resume_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/events": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Events",
+        "operationId": "events_api_agent_tasks__task_id__events_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskEvents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/production": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Snapshot",
+        "operationId": "snapshot_api_agent_projects__project_id__production_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/events": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Events",
+        "operationId": "events_api_agent_projects__project_id__events_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionEvents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/events/stream": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Stream Events",
+        "operationId": "stream_events_api_agent_projects__project_id__events_stream_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/artifacts/{artifact_id}/content": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Artifact Content",
+        "operationId": "artifact_content_api_agent_projects__project_id__artifacts__artifact_id__content_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "artifact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artifact Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionRecord": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AgentAction"
+          },
+          "assigned_role": {
+            "type": "string",
+            "title": "Assigned Role",
+            "default": "producer"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Run Ids"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts",
+            "default": 0
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "running",
+              "succeeded",
+              "failed",
+              "uncertain",
+              "blocked"
+            ],
+            "title": "State",
+            "default": "planned"
+          },
+          "effect_state": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "STAGED",
+              "APPLIED",
+              "COMMITTED",
+              "UNKNOWN"
+            ],
+            "title": "Effect State",
+            "default": "NONE"
+          },
+          "verification_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "change_set": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChangeSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approval_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Id"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "ActionRecord"
+      },
+      "ActorReference": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ActorType"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^(?:usr|agt|svc|sys)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+            "title": "Id"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "id"
+        ],
+        "title": "ActorReference"
+      },
+      "ActorType": {
+        "type": "string",
+        "enum": [
+          "user",
+          "agent",
+          "service",
+          "system"
+        ],
+        "title": "ActorType"
+      },
+      "AgentAction": {
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,100}$",
+            "title": "Action Id"
+          },
+          "capability_id": {
+            "type": "string",
+            "title": "Capability Id"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Inputs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action_id",
+          "capability_id",
+          "rationale"
+        ],
+        "title": "AgentAction"
+      },
+      "AgentTaskEvent": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sequence",
+          "task_id",
+          "project_id",
+          "occurred_at",
+          "event_type",
+          "payload"
+        ],
+        "title": "AgentTaskEvent"
+      },
+      "AgentTaskEvents": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "next_cursor": {
+            "type": "integer",
+            "title": "Next Cursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "events",
+          "next_cursor"
+        ],
+        "title": "AgentTaskEvents"
+      },
+      "AgentTaskList": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskRecord"
+            },
+            "type": "array",
+            "title": "Tasks"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tasks"
+        ],
+        "title": "AgentTaskList"
+      },
+      "AgentTaskRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_authorization",
+              "queued",
+              "running",
+              "blocked",
+              "needs_approval",
+              "completed",
+              "review_required",
+              "failed",
+              "cancel_pending",
+              "cancelled",
+              "interrupted"
+            ],
+            "title": "Status",
+            "default": "awaiting_authorization"
+          },
+          "authorization_card": {
+            "$ref": "#/components/schemas/AuthorizationCard"
+          },
+          "grant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskGrant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_calls_used": {
+            "type": "integer",
+            "title": "Model Calls Used",
+            "default": 0
+          },
+          "cli_invocations_used": {
+            "type": "integer",
+            "title": "Cli Invocations Used",
+            "default": 0
+          },
+          "repair_rounds_used": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Repair Rounds Used",
+            "default": 0
+          },
+          "model_tokens_known": {
+            "type": "integer",
+            "title": "Model Tokens Known",
+            "default": 0
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "budget_accounting_complete": {
+            "type": "boolean",
+            "title": "Budget Accounting Complete",
+            "default": false
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionRecord"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "model_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Model Run Ids"
+          },
+          "current_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Run Id"
+          },
+          "pending_action_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Action Id"
+          },
+          "observations": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Observations"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "cancel_requested": {
+            "type": "boolean",
+            "title": "Cancel Requested",
+            "default": false
+          },
+          "owner_pid": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Pid"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "provider_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Model"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "goal",
+          "authorization_card"
+        ],
+        "title": "AgentTaskRecord"
+      },
+      "ApprovalRequirement": {
+        "properties": {
+          "permission": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*:[a-z][a-z0-9_-]*$",
+            "title": "Permission"
+          },
+          "minimum_decisions": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Minimum Decisions",
+            "default": 1
+          },
+          "allowed_actor_types": {
+            "items": {
+              "$ref": "#/components/schemas/ActorType"
+            },
+            "type": "array",
+            "title": "Allowed Actor Types"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "permission"
+        ],
+        "title": "ApprovalRequirement"
+      },
+      "ArtifactReference": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "version"
+        ],
+        "title": "ArtifactReference"
+      },
+      "AuthorizationCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "typed-tools",
+              "codex-full-access"
+            ],
+            "title": "Execution Mode",
+            "default": "typed-tools"
+          },
+          "allow_image_generation": {
+            "type": "boolean",
+            "title": "Allow Image Generation",
+            "default": false
+          },
+          "allow_playtest": {
+            "type": "boolean",
+            "title": "Allow Playtest",
+            "default": false
+          },
+          "task_profile": {
+            "type": "string",
+            "enum": [
+              "asset-exchange",
+              "survival-prototype",
+              "auto",
+              "card-development"
+            ],
+            "title": "Task Profile",
+            "default": "asset-exchange"
+          },
+          "capability_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Ids"
+          },
+          "max_model_calls": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Model Calls",
+            "default": 8
+          },
+          "max_cli_invocations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Cli Invocations"
+          },
+          "max_duration_seconds": {
+            "type": "integer",
+            "title": "Max Duration Seconds",
+            "default": 1200
+          },
+          "max_attempts_per_action": {
+            "type": "integer",
+            "title": "Max Attempts Per Action",
+            "default": 2
+          },
+          "max_repair_rounds": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Max Repair Rounds",
+            "default": 2
+          },
+          "max_assets": {
+            "type": "integer",
+            "title": "Max Assets",
+            "default": 1
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": "仅此独立空项目：创建有界立方体、检查、导出 FBX、导入和放置到 Unity；不修改已有项目，不构建、渲染或游测。"
+          },
+          "cost_notice": {
+            "type": "string",
+            "title": "Cost Notice",
+            "default": "最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "workspace_root"
+        ],
+        "title": "AuthorizationCard"
+      },
+      "AuthorizeAgentTask": {
+        "properties": {
+          "authorization_card_id": {
+            "type": "string",
+            "title": "Authorization Card Id"
+          },
+          "accept_unknown_cost": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accept Unknown Cost"
+          },
+          "accept_full_access": {
+            "type": "boolean",
+            "title": "Accept Full Access",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "authorization_card_id",
+          "accept_unknown_cost"
+        ],
+        "title": "AuthorizeAgentTask"
+      },
+      "ChangeSet": {
+        "properties": {
+          "change_set_id": {
+            "type": "string",
+            "pattern": "^chg_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$",
+            "title": "Change Set Id"
+          },
+          "base_version": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Base Version"
+          },
+          "target": {
+            "$ref": "#/components/schemas/ChangeSetTarget"
+          },
+          "previous_values": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Previous Values"
+          },
+          "proposed_values": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Proposed Values"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "expected_result": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Expected Result"
+          },
+          "impact_scope": {
+            "$ref": "#/components/schemas/ImpactScope"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "validation_plan": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Validation Plan"
+          },
+          "rollback_plan": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Rollback Plan"
+          },
+          "approval_requirements": {
+            "items": {
+              "$ref": "#/components/schemas/ApprovalRequirement"
+            },
+            "type": "array",
+            "title": "Approval Requirements"
+          },
+          "dry_run_supported": {
+            "type": "boolean",
+            "const": true,
+            "title": "Dry Run Supported",
+            "default": true
+          },
+          "destructive": {
+            "type": "boolean",
+            "title": "Destructive",
+            "default": false
+          },
+          "status": {
+            "$ref": "#/components/schemas/ChangeSetStatus",
+            "default": "draft"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/ActorReference"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "change_set_id",
+          "base_version",
+          "target",
+          "previous_values",
+          "proposed_values",
+          "rationale",
+          "expected_result",
+          "impact_scope",
+          "risk",
+          "validation_plan",
+          "rollback_plan",
+          "created_by",
+          "created_at"
+        ],
+        "title": "ChangeSet"
+      },
+      "ChangeSetStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "waiting_approval",
+          "approved",
+          "rejected",
+          "executing",
+          "succeeded",
+          "failed",
+          "rolled_back"
+        ],
+        "title": "ChangeSetStatus"
+      },
+      "ChangeSetTarget": {
+        "properties": {
+          "module_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "title": "Module Id"
+          },
+          "integration_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Integration Id"
+          },
+          "object_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^(?:usr|agt|svc|sys|prj|brn|scn|sobj|ast|aver|bld|run|iss|chg|apr|art|evt|cmd|corr|req|wfl|fea|tsk|rjob|prun)_[A-Za-z0-9][A-Za-z0-9_-]{7,127}$"
+            },
+            "type": "array",
+            "title": "Object Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "module_id"
+        ],
+        "title": "ChangeSetTarget"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImpactScope": {
+        "type": "string",
+        "enum": [
+          "object",
+          "module",
+          "scene",
+          "project",
+          "repository",
+          "release"
+        ],
+        "title": "ImpactScope"
+      },
+      "JsonValue": {},
+      "PrepareAgentTask": {
+        "properties": {
+          "goal": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Goal"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "typed-tools",
+              "codex-full-access"
+            ],
+            "title": "Execution Mode",
+            "default": "typed-tools"
+          },
+          "allow_image_generation": {
+            "type": "boolean",
+            "title": "Allow Image Generation",
+            "default": false
+          },
+          "allow_playtest": {
+            "type": "boolean",
+            "title": "Allow Playtest",
+            "default": false
+          },
+          "task_profile": {
+            "type": "string",
+            "enum": [
+              "asset-exchange",
+              "survival-prototype",
+              "auto",
+              "card-development"
+            ],
+            "title": "Task Profile",
+            "default": "asset-exchange"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "goal"
+        ],
+        "title": "PrepareAgentTask"
+      },
+      "ProductionArtifact": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "module_id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "ai-playtest",
+              "version-review",
+              "integration-ops"
+            ],
+            "title": "Module Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "source_path": {
+            "type": "string",
+            "title": "Source Path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "image",
+              "model",
+              "audio",
+              "text",
+              "file"
+            ],
+            "title": "Kind"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "cached",
+              "mock"
+            ],
+            "title": "Mode",
+            "default": "live"
+          },
+          "verification": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "format_checked",
+              "passed",
+              "failed"
+            ],
+            "title": "Verification",
+            "default": "unverified"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "task_id",
+          "step_id",
+          "module_id",
+          "name",
+          "version",
+          "source_path",
+          "kind",
+          "media_type",
+          "size_bytes",
+          "created_at"
+        ],
+        "title": "ProductionArtifact"
+      },
+      "ProductionEvents": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "next_cursor": {
+            "type": "integer",
+            "title": "Next Cursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "events",
+          "next_cursor"
+        ],
+        "title": "ProductionEvents"
+      },
+      "ProductionModule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "ai-playtest",
+              "version-review",
+              "integration-ops"
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "handler_status": {
+            "type": "string",
+            "enum": [
+              "implemented",
+              "not_connected"
+            ],
+            "title": "Handler Status"
+          },
+          "verification": {
+            "type": "string",
+            "title": "Verification",
+            "default": "待用户实测"
+          },
+          "capability_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Ids"
+          },
+          "readiness_notice": {
+            "type": "string",
+            "title": "Readiness Notice",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "handler_status"
+        ],
+        "title": "ProductionModule"
+      },
+      "ProductionSnapshot": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskRecord"
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionArtifact"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          },
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionModule"
+            },
+            "type": "array",
+            "title": "Modules"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "cursor",
+          "tasks",
+          "steps",
+          "artifacts",
+          "modules"
+        ],
+        "title": "ProductionSnapshot"
+      },
+      "ProductionStep": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "module_id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "ai-playtest",
+              "version-review",
+              "integration-ops"
+            ],
+            "title": "Module Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "capability_id": {
+            "type": "string",
+            "title": "Capability Id"
+          },
+          "dependencies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dependencies"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "running",
+              "blocked",
+              "failed",
+              "cancelled",
+              "review_required",
+              "completed"
+            ],
+            "title": "State"
+          },
+          "verification": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "reported",
+              "passed",
+              "failed",
+              "inconclusive"
+            ],
+            "title": "Verification",
+            "default": "unverified"
+          },
+          "verification_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "effect_state": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "STAGED",
+              "APPLIED",
+              "COMMITTED",
+              "UNKNOWN"
+            ],
+            "title": "Effect State",
+            "default": "UNKNOWN"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "live",
+              "cached",
+              "mock",
+              "blocked"
+            ],
+            "title": "Mode",
+            "default": "planned"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "artifact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Artifact Ids"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "task_id",
+          "module_id",
+          "title",
+          "capability_id",
+          "state",
+          "updated_at"
+        ],
+        "title": "ProductionStep"
+      },
+      "RiskLevel": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "RiskLevel"
+      },
+      "RuntimeBudget": {
+        "properties": {
+          "max_steps": {
+            "type": "integer",
+            "maximum": 256.0,
+            "minimum": 1.0,
+            "title": "Max Steps",
+            "default": 32
+          },
+          "max_attempts_per_step": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Attempts Per Step",
+            "default": 2
+          },
+          "max_duration_seconds": {
+            "type": "number",
+            "maximum": 86400.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Max Duration Seconds",
+            "default": 300
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Max Tokens",
+            "default": 32000
+          },
+          "max_cost_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Max Cost Usd",
+            "default": 1
+          },
+          "usage_policy": {
+            "type": "string",
+            "enum": [
+              "require_reported",
+              "bounded_calls"
+            ],
+            "title": "Usage Policy",
+            "default": "require_reported"
+          },
+          "max_metered_calls": {
+            "type": "integer",
+            "maximum": 16.0,
+            "minimum": 0.0,
+            "title": "Max Metered Calls",
+            "default": 4
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuntimeBudget"
+      },
+      "TaskGrant": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "typed-tools",
+              "codex-full-access"
+            ],
+            "title": "Execution Mode",
+            "default": "typed-tools"
+          },
+          "allow_image_generation": {
+            "type": "boolean",
+            "title": "Allow Image Generation",
+            "default": false
+          },
+          "capability_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Ids"
+          },
+          "max_repair_rounds": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Max Repair Rounds",
+            "default": 2
+          },
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id",
+            "default": "usr_local_workspace"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          },
+          "authorized_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Authorized At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "revoked": {
+            "type": "boolean",
+            "title": "Revoked",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "project_id",
+          "workspace_root",
+          "capability_ids",
+          "expires_at"
+        ],
+        "title": "TaskGrant"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VerificationRecord": {
+        "properties": {
+          "project_revision": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Revision"
+          },
+          "run_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Run Id"
+          },
+          "run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Run Ids"
+          },
+          "suite_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Suite Id"
+          },
+          "suite_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Suite Version"
+          },
+          "checker_version": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Checker Version"
+          },
+          "execution_status": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "FAILED",
+              "CANCELLED",
+              "INTERRUPTED"
+            ],
+            "title": "Execution Status"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL",
+              "INCONCLUSIVE"
+            ],
+            "title": "Verdict"
+          },
+          "artifact_refs": {
+            "items": {
+              "$ref": "#/components/schemas/ArtifactReference"
+            },
+            "type": "array",
+            "title": "Artifact Refs"
+          },
+          "assertions": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Assertions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_revision",
+          "run_id",
+          "suite_id",
+          "suite_version",
+          "checker_version",
+          "execution_status",
+          "verdict"
+        ],
+        "title": "VerificationRecord",
+        "description": "A business verdict bound to the exact revision, run, suite and evidence."
+      }
+    }
+  }
+}

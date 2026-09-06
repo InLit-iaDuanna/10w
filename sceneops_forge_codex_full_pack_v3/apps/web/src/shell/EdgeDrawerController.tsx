@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { Edge, EdgeDrawerCoordinator } from '@sceneops/forge-shell';
 import { EdgePointerGesture } from './EdgePointerGesture';
+import { recordUiEvent } from '../debug';
 
 export interface EdgeDrawerControllerProps {
   coordinator: EdgeDrawerCoordinator;
@@ -49,7 +50,10 @@ function EdgeHandle({
         onChanged(edge);
       }}
       onPointerDown={(event) => {
-        if (!gesture.begin(event)) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const origin = edge === 'left' ? bounds.left : edge === 'right' ? bounds.right : edge === 'top' ? bounds.top : bounds.bottom;
+        if (!gesture.begin(event, origin)) return;
+        recordUiEvent('edge-drag.begin', { edge, phase: 'start', size: drawer.size, mode: drawer.mode });
         event.currentTarget.setPointerCapture(event.pointerId);
       }}
       onPointerMove={(event) => {
@@ -57,7 +61,9 @@ function EdgeHandle({
         if (preview?.kind === 'none') setPreviewSize(preview.previewSize);
       }}
       onPointerUp={(event) => {
+        if (!gesture.active) return;
         const result = gesture.end(event);
+        recordUiEvent('edge-drag.end', { edge, phase: result ? 'commit' : 'cancel', size: coordinator.get(edge).size, mode: coordinator.get(edge).mode });
         if (!result) return;
         setPreviewSize(0);
         event.currentTarget.releasePointerCapture(event.pointerId);
@@ -65,10 +71,16 @@ function EdgeHandle({
         onChanged(edge);
       }}
       onPointerCancel={(event) => {
-        if (gesture.cancel(event.pointerId)) setPreviewSize(0);
+        if (gesture.cancel(event.pointerId)) {
+          setPreviewSize(0);
+          recordUiEvent('edge-drag.end', { edge, phase: 'cancel' });
+        }
       }}
       onLostPointerCapture={(event) => {
-        if (gesture.cancel(event.pointerId)) setPreviewSize(0);
+        if (gesture.cancel(event.pointerId)) {
+          setPreviewSize(0);
+          recordUiEvent('edge-drag.end', { edge, phase: 'cancel' });
+        }
       }}
     >
       <span className="forge-edge-handle-label">{judgeMode ? EDGE_LABELS[edge] : '⋮'}</span>

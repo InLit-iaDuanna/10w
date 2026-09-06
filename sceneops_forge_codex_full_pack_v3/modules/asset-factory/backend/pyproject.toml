@@ -12,6 +12,7 @@ dependencies = [
   "sceneops-concept-lab==0.1.0",
   "sceneops-asset-library==0.1.0",
   "sceneops-blender-adapter==0.1.0",
+  "sceneops-ai-provider==0.1.0",
 ]
 
 [tool.setuptools.packages.find]

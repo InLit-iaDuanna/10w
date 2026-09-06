@@ -804,7 +804,7 @@ export interface components {
              * Provider
              * @enum {string}
              */
-            provider: "codebuddycli" | "openai-compatible";
+            provider: "codebuddycli" | "codexcli" | "openai-compatible";
             /**
              * Tier
              * @enum {string}

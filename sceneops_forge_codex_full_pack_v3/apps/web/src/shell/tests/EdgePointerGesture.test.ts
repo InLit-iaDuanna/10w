@@ -7,6 +7,14 @@ import { WorkbenchEventBus } from '../../../../../modules/forge-shell/frontend/s
 
 const start = { pointerId: 1, clientX: 500, clientY: 500, button: 0, isPrimary: true, shiftKey: false, altKey: false };
 
+test('pull distance is measured from the canvas edge, not the grabber hit point', () => {
+  const coordinator = new EdgeDrawerCoordinator(createDefaultDrawers(), new WorkbenchEventBus());
+  const gesture = new EdgePointerGesture('bottom', coordinator);
+  gesture.begin({ ...start, clientY: 714 }, 720);
+  gesture.end({ ...start, clientY: 48 });
+  assert.equal(coordinator.get('bottom').size, 672);
+});
+
 for (const edge of ['left', 'right', 'top', 'bottom'] as const) {
   test(`${edge} uses signed inward motion and the final pointer-up position`, () => {
     const coordinator = new EdgeDrawerCoordinator(createDefaultDrawers(), new WorkbenchEventBus());
@@ -55,5 +63,5 @@ test('secondary pointers and mouse buttons do not start or hijack an edge gestur
   assert.equal(gesture.move({ ...start, pointerId: 2 }), null);
   assert.equal(gesture.end({ ...start, pointerId: 2 }), null);
   gesture.end({ ...start, clientX: 620 });
-  assert.equal(coordinator.get('left').mode, 'peek');
+  assert.equal(coordinator.get('left').mode, 'pinned');
 });

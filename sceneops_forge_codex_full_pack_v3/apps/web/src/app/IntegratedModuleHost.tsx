@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AIAdvicePanel } from '@sceneops/conversation-home';
+import { ProductionModuleView, type ProductionSelection } from '@sceneops/ai-agent-runtime';
 import type { EditorHostProps, IntegratedWorkbenchProps, WorkbenchContext } from '@sceneops/core-ui';
 import { workspaceClient, type ModuleId } from '@sceneops/workspace-client';
 
@@ -9,6 +9,7 @@ export interface IntegratedActions {
   openProjects(): void;
   updateContext(instanceId: string, patch: Partial<WorkbenchContext>): void;
   setDirty(instanceId: string, source: string, dirty: boolean): void;
+  discuss(selection: ProductionSelection): void;
 }
 
 export function createIntegratedModuleHost(moduleId: ModuleId, title: string,
@@ -22,8 +23,8 @@ export function createIntegratedModuleHost(moduleId: ModuleId, title: string,
     const document = useQuery({ queryKey: key, queryFn: () => workspaceClient.document(id, moduleId), retry: false });
     const [error, setError] = useState('');
     const [importing, setImporting] = useState(false);
+    const [advancedOpened, setAdvancedOpened] = useState(false);
     const dirty = useCallback((value: boolean) => actions.setDirty(props.instanceId, 'draft', value), [props.instanceId]);
-    const aiDirty = useCallback((value: boolean) => actions.setDirty(props.instanceId, 'advice', value), [props.instanceId]);
     const contextChanged = useCallback((patch: Partial<WorkbenchContext>) => actions.updateContext(props.instanceId, patch), [props.instanceId]);
     const project = projects.data?.projects.find(project => project.project_id === id);
     if (projects.error || document.error) return <section className="shell-tool-content" role="alert">{(projects.error ?? document.error)?.message} <button onClick={() => { void projects.refetch(); void document.refetch(); }}>重试</button></section>;
@@ -36,19 +37,30 @@ export function createIntegratedModuleHost(moduleId: ModuleId, title: string,
       try { cache.setQueryData(key, await workspaceClient.sample(id, moduleId, {sample_id: sample, expected_revision: saved.revision})); }
       catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setImporting(false); }
     }
-    return <section className="integrated-module" aria-label={title}>
-      <header className="integrated-module-header"><strong>{title}</strong> <small>{project.name} · {saved.sample_id ? 'Mock 示例' : '本地草稿 · planned'}</small>
-        {!saved.sample_id && <details><summary>手动导入 Mock 示例</summary><button disabled={importing} onClick={() => void importSample('remember-home')}>回家之路 · Mock</button> <button disabled={importing} onClick={() => void importSample('warehouse-escape')}>仓库逃生 · Mock</button></details>}
-      </header>
-      {error && <p role="alert">{error}</p>}
-      <Suspense fallback={<p>正在加载工作台…</p>}><Workbench key={`${id}:${saved.sample_id ?? 'empty'}`} context={props.context} project={project} document={saved as IntegratedWorkbenchProps['document']}
+    if (moduleId === 'version-review') return <section className="integrated-module" aria-label="版本管理">
+      <Suspense fallback={<p>正在加载版本树…</p>}><Workbench key={`${id}:${saved.sample_id ?? 'empty'}`} context={props.context} project={project} document={saved as IntegratedWorkbenchProps['document']}
         suspended={props.suspended} onContextChange={contextChanged} onDirtyChange={dirty}
         onSave={async payload => { cache.setQueryData(key, await workspaceClient.save(id, moduleId, { expected_revision: saved.revision, payload })); }} /></Suspense>
-      <AIAdvicePanel context={props.context} moduleId={moduleId} moduleDocument={saved.payload as IntegratedWorkbenchProps['document']['payload']} onDirtyChange={aiDirty} />
+      {error && <p role="alert">{error}</p>}
+      {!saved.sample_id && <details><summary>评审示例</summary><button disabled={importing} onClick={() => void importSample('remember-home')}>回家之路 · Mock</button><button disabled={importing} onClick={() => void importSample('warehouse-escape')}>仓库逃生 · Mock</button></details>}
+    </section>;
+    return <section className="integrated-module" aria-label={title}>
+      <header className="integrated-module-header"><strong>{title}</strong> <small>{project.name} · 生产记录</small>
+      </header>
+      {error && <p role="alert">{error}</p>}
+      <ProductionModuleView projectId={id} moduleId={moduleId} onDiscuss={actions.discuss} />
+      <details className="integrated-module-advanced" onToggle={event => { if (event.currentTarget.open) setAdvancedOpened(true); }}>
+        <summary>高级 · 手动配置与原工作台</summary>
+        {!saved.sample_id && <details><summary>手动导入 Mock 示例</summary><button disabled={importing} onClick={() => void importSample('remember-home')}>回家之路 · Mock</button> <button disabled={importing} onClick={() => void importSample('warehouse-escape')}>仓库逃生 · Mock</button></details>}
+        {advancedOpened && <Suspense fallback={<p>正在加载工作台…</p>}><Workbench key={`${id}:${saved.sample_id ?? 'empty'}`} context={props.context} project={project} document={saved as IntegratedWorkbenchProps['document']}
+          suspended={props.suspended} onContextChange={contextChanged} onDirtyChange={dirty}
+          onSave={async payload => { cache.setQueryData(key, await workspaceClient.save(id, moduleId, { expected_revision: saved.revision, payload })); }} /></Suspense>}
+      </details>
     </section>;
   }
   return function IntegratedModule(props: EditorHostProps) {
-    if (!props.context.projectId) return <section className="shell-tool-content" aria-label={title}><h2>{title}</h2><p>空工作区 · 请选择或创建本地项目。没有加载示例，也没有启动作业。</p><button onClick={actions.openProjects}>选择或创建项目</button></section>;
+    if (!props.context.projectId && moduleId === 'version-review') return <section className="shell-tool-content"><p>选择本地项目后查看 Git 版本树。</p><button onClick={actions.openProjects}>选择项目</button></section>;
+    if (!props.context.projectId) return <section className="shell-tool-content" aria-label={title}><h2>{title}</h2><ProductionModuleView projectId={null} moduleId={moduleId} onDiscuss={actions.discuss} /><details><summary>高级 · 选择现有项目</summary><button onClick={actions.openProjects}>选择或创建项目</button></details></section>;
     return <ProjectModule key={props.context.projectId} {...props} />;
   };
 }

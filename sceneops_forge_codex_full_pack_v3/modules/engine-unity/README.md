@@ -10,6 +10,10 @@
 
 ## 公共入口
 
+新增任务级常驻入口 `UnityAgentSession`：授权绑定后自动创建专用空工程、配置 bundled UPM、打开可见
+Editor，并通过私有认证 mailbox 在 Unity 主线程执行类型化导入与实际回读。
+协议、授权字段、定向验证和当前许可证阻塞见 [任务会话](docs/agent-session.md)。
+
 - 后端：`engine_unity`，公开 `UnityAdapter`、`UnityEngineService`、命令/结果模型和身份读模型。
 - 前端：`frontend/src/index.ts`，注册 5 个延迟加载编辑器、16 个命令与工具库条目。
 - Unity：UPM 包 `com.sceneops.forge.unity`，当前固定版本为 Unity `2022.3.62f3c1`。
@@ -118,7 +122,7 @@ Mock 构建清单位于 `contracts/examples/unity-build-manifest.mock.json`，�
 ## Limitations
 
 - 当前仓库起点尚无 `core-kernel`、`module-runtime`、artifact store、API composition root 或生成 catalog；manifest 已声明依赖，跨模块接线为 planned。
-- 当前宿主 Unity 可执行文件存在，但无有效 Editor entitlement；真实 Edit Mode/Play Mode 测试和 playable build 为 blocked。
+- 当前宿主已由用户激活 Unity 许可证，专用空工程可见启动、包编译与常驻读取已 live 验证；Edit Mode/Play Mode 测试和 playable build 未运行。
 - CLI batch transport 无法进入交互式 Play Mode 或完成屏幕捕获；Unity Package 内的固定处理器已实现，连接式 Editor transport 需后续集成中心提供。
 - 未运行的 Unity 测试或构建不会被标记为 live；C# reference-assembly 编译通过不等同于 Editor 测试通过。
 

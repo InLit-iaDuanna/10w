@@ -3948,6 +3948,67 @@
         }
       }
     },
+    "/api/version-collaboration/tree": {
+      "get": {
+        "summary": "Version Tree",
+        "operationId": "version_tree_api_version_collaboration_tree_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionTreeState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/version-collaboration/tree/commits/{commit_id}/files": {
+      "get": {
+        "summary": "Commit Files",
+        "operationId": "commit_files_api_version_collaboration_tree_commits__commit_id__files_get",
+        "parameters": [
+          {
+            "name": "commit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Commit Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GitFileChange"
+                  },
+                  "title": "Response Commit Files Api Version Collaboration Tree Commits  Commit Id  Files Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/integration-ops/snapshot": {
       "get": {
         "tags": [
@@ -4806,6 +4867,423 @@
         }
       }
     },
+    "/api/workspace/folders": {
+      "get": {
+        "tags": [
+          "workspace-folders"
+        ],
+        "summary": "List Folders",
+        "operationId": "workspaceListFolders",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderListing"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/folder-projects": {
+      "get": {
+        "tags": [
+          "workspace-folders"
+        ],
+        "summary": "List Folder Projects",
+        "operationId": "workspaceListFolderProjects",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderProjectList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "workspace-folders"
+        ],
+        "summary": "Create Folder Project",
+        "operationId": "workspaceCreateFolderProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FolderProjectCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderProject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/folder-projects/{project_id}": {
+      "get": {
+        "tags": [
+          "workspace-folders"
+        ],
+        "summary": "Get Folder Project",
+        "operationId": "workspaceGetFolderProject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderProject"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/design/journeys/{project_id}": {
+      "get": {
+        "tags": [
+          "planning-journey"
+        ],
+        "summary": "Get",
+        "operationId": "get_api_design_journeys__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningJourney"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/design/journeys/{project_id}/command/stream": {
+      "post": {
+        "tags": [
+          "planning-journey"
+        ],
+        "summary": "Stream",
+        "operationId": "stream_api_design_journeys__project_id__command_stream_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyStreamEvent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/design/journeys/{project_id}/command": {
+      "post": {
+        "tags": [
+          "planning-journey"
+        ],
+        "summary": "Command",
+        "operationId": "command_api_design_journeys__project_id__command_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningJourney"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/ai/models": {
       "get": {
         "tags": [
@@ -4870,6 +5348,108 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AISettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/provider/models": {
+      "post": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Provider Models",
+        "operationId": "provider_models_api_ai_provider_models_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIProviderModelsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIProviderModels"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/provider/check": {
+      "post": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Provider Check",
+        "operationId": "provider_check_api_ai_provider_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIConnectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIConnectionResult"
                 }
               }
             }
@@ -4970,6 +5550,57 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AIConversation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/chat/stream": {
+      "post": {
+        "tags": [
+          "unified-ai"
+        ],
+        "summary": "Chat Stream",
+        "operationId": "chat_stream_api_ai_chat_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AIChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Server-sent JSON events.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIChatStreamEvent"
                 }
               }
             }
@@ -5165,6 +5796,935 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AiResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-assets": {
+      "get": {
+        "tags": [
+          "project-asset-library"
+        ],
+        "summary": "List Assets",
+        "operationId": "listProjectAssets",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectAssetEntry"
+                  },
+                  "title": "Response Listprojectassets"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-assets/{entry_id}": {
+      "get": {
+        "tags": [
+          "project-asset-library"
+        ],
+        "summary": "Get Asset",
+        "operationId": "getProjectAsset",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAssetEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "project-asset-library"
+        ],
+        "summary": "Rename Asset",
+        "operationId": "renameProjectAsset",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameProjectAssetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAssetEntry"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets": {
+      "get": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "List Assets",
+        "operationId": "listCardAssets",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{project_id}/{card_id}/imports": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Import Asset",
+        "operationId": "importCardAsset",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{project_id}/{card_id}/references": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Upload Reference",
+        "operationId": "uploadCardAssetReference",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetReference"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{project_id}/{card_id}/plans": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Plan",
+        "operationId": "planCardAsset",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetProposal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{project_id}/{card_id}/live-updates": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Live Update",
+        "operationId": "updateLiveCardModel",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveModelUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveModelUpdateResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/proposals/{proposal_id}/generate": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Generate",
+        "operationId": "generateCardAsset",
+        "parameters": [
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Proposal Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{asset_id}/normalize": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Normalize",
+        "operationId": "normalizeCardAsset",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NormalizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{asset_id}/library": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Save To Library",
+        "operationId": "saveCardAssetToLibrary",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveToLibraryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveProjectAssetResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{asset_id}/files/{kind}": {
+      "get": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "File",
+        "operationId": "readCardAssetFile",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/environment-scenes/{project_id}": {
+      "get": {
+        "tags": [
+          "environment-scenes"
+        ],
+        "summary": "Get Scene",
+        "operationId": "getEnvironmentScene",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentScene"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/environment-scenes/{project_id}/objects": {
+      "post": {
+        "tags": [
+          "environment-scenes"
+        ],
+        "summary": "Place Object",
+        "operationId": "placeEnvironmentObject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualPlacementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentScene"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/environment-scenes/{project_id}/objects/{object_id}": {
+      "put": {
+        "tags": [
+          "environment-scenes"
+        ],
+        "summary": "Transform Object",
+        "operationId": "transformEnvironmentObject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "object_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Object Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformObjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentScene"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "environment-scenes"
+        ],
+        "summary": "Remove Object",
+        "operationId": "removeEnvironmentObject",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "object_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Object Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveObjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentScene"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/environment-scenes/{project_id}/ai-build": {
+      "post": {
+        "tags": [
+          "environment-scenes"
+        ],
+        "summary": "Ai Build",
+        "operationId": "buildEnvironmentWithAi",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiBuildRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiBuildResult"
                 }
               }
             }
@@ -6453,6 +8013,537 @@
           }
         }
       }
+    },
+    "/api/agent/tasks": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Prepare",
+        "operationId": "prepare_api_agent_tasks_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareAgentTask"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "List Tasks",
+        "operationId": "list_tasks_api_agent_tasks_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Task",
+        "operationId": "task_api_agent_tasks__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/authorize": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Authorize",
+        "operationId": "authorize_api_agent_tasks__task_id__authorize_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorizeAgentTask"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/cancel": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Cancel",
+        "operationId": "cancel_api_agent_tasks__task_id__cancel_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/resume": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Resume",
+        "operationId": "resume_api_agent_tasks__task_id__resume_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/events": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Events",
+        "operationId": "events_api_agent_tasks__task_id__events_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskEvents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/production": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Snapshot",
+        "operationId": "snapshot_api_agent_projects__project_id__production_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/events": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Events",
+        "operationId": "events_api_agent_projects__project_id__events_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionEvents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/events/stream": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Stream Events",
+        "operationId": "stream_events_api_agent_projects__project_id__events_stream_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/artifacts/{artifact_id}/content": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Artifact Content",
+        "operationId": "artifact_content_api_agent_projects__project_id__artifacts__artifact_id__content_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "artifact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artifact Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6478,6 +8569,7 @@
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider",
@@ -6583,6 +8675,188 @@
         ],
         "title": "AIChatRequest"
       },
+      "AIChatStreamEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "status",
+              "text_delta",
+              "complete",
+              "error"
+            ],
+            "title": "Type"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "conversation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AIConversation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "AIChatStreamEvent"
+      },
+      "AIConnectionRequest": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "codexcli",
+              "openai-compatible"
+            ],
+            "title": "Provider"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192,
+                "minLength": 1,
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key",
+            "writeOnly": true
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "api_protocol": {
+            "type": "string",
+            "enum": [
+              "chat-completions",
+              "responses"
+            ],
+            "title": "Api Protocol",
+            "default": "chat-completions"
+          },
+          "streaming": {
+            "type": "boolean",
+            "title": "Streaming",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "model"
+        ],
+        "title": "AIConnectionRequest"
+      },
+      "AIConnectionResult": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "codexcli",
+              "openai-compatible"
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "api_protocol": {
+            "type": "string",
+            "enum": [
+              "chat-completions",
+              "responses"
+            ],
+            "title": "Api Protocol"
+          },
+          "streaming": {
+            "type": "boolean",
+            "title": "Streaming"
+          },
+          "connected": {
+            "type": "boolean",
+            "const": true,
+            "title": "Connected",
+            "default": true
+          },
+          "mode": {
+            "type": "string",
+            "const": "live",
+            "title": "Mode",
+            "default": "live"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Latency Ms"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "model",
+          "api_protocol",
+          "streaming",
+          "latency_ms",
+          "message"
+        ],
+        "title": "AIConnectionResult"
+      },
       "AIConversation": {
         "properties": {
           "project_id": {
@@ -6638,6 +8912,7 @@
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider",
@@ -6682,6 +8957,7 @@
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider",
@@ -6702,6 +8978,7 @@
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider",
@@ -6823,12 +9100,102 @@
         ],
         "title": "AIProvenance"
       },
+      "AIProviderModels": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "codexcli",
+              "openai-compatible"
+            ],
+            "title": "Provider"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "planned"
+            ],
+            "title": "Mode"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/AIModel"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "mode",
+          "models",
+          "message"
+        ],
+        "title": "AIProviderModels"
+      },
+      "AIProviderModelsRequest": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codebuddycli",
+              "codexcli",
+              "openai-compatible"
+            ],
+            "title": "Provider"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8192,
+                "minLength": 1,
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider"
+        ],
+        "title": "AIProviderModelsRequest"
+      },
       "AISettings": {
         "properties": {
           "provider": {
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider",
@@ -6854,6 +9221,30 @@
             "type": "boolean",
             "title": "Api Key Configured",
             "default": false
+          },
+          "api_protocol": {
+            "type": "string",
+            "enum": [
+              "chat-completions",
+              "responses"
+            ],
+            "title": "Api Protocol",
+            "default": "chat-completions"
+          },
+          "streaming": {
+            "type": "boolean",
+            "title": "Streaming",
+            "default": true
+          },
+          "alignment_detail": {
+            "type": "string",
+            "enum": [
+              "concise",
+              "standard",
+              "deep"
+            ],
+            "title": "Alignment Detail",
+            "default": "standard"
           }
         },
         "additionalProperties": false,
@@ -6868,6 +9259,7 @@
                 "type": "string",
                 "enum": [
                   "codebuddycli",
+                  "codexcli",
                   "openai-compatible"
                 ]
               },
@@ -6918,6 +9310,48 @@
             ],
             "title": "Api Key",
             "writeOnly": true
+          },
+          "api_protocol": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "chat-completions",
+                  "responses"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Protocol"
+          },
+          "streaming": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Streaming"
+          },
+          "alignment_detail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "concise",
+                  "standard",
+                  "deep"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Detail"
           }
         },
         "additionalProperties": false,
@@ -7111,6 +9545,121 @@
           "path"
         ],
         "title": "AcquireLockRequest"
+      },
+      "ActionRecord": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AgentAction"
+          },
+          "assigned_role": {
+            "type": "string",
+            "title": "Assigned Role",
+            "default": "producer"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Run Ids"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts",
+            "default": 0
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "running",
+              "succeeded",
+              "failed",
+              "uncertain",
+              "blocked"
+            ],
+            "title": "State",
+            "default": "planned"
+          },
+          "effect_state": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "STAGED",
+              "APPLIED",
+              "COMMITTED",
+              "UNKNOWN"
+            ],
+            "title": "Effect State",
+            "default": "NONE"
+          },
+          "verification_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "change_set": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/sceneops_core_contracts__models__ChangeSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approval_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Id"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "ActionRecord"
       },
       "ActivityRecord": {
         "properties": {
@@ -7346,6 +9895,40 @@
         ],
         "title": "AddCommentRequest"
       },
+      "AgentAction": {
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,100}$",
+            "title": "Action Id"
+          },
+          "capability_id": {
+            "type": "string",
+            "title": "Capability Id"
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Rationale"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Inputs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action_id",
+          "capability_id",
+          "rationale"
+        ],
+        "title": "AgentAction"
+      },
       "AgentResult": {
         "properties": {
           "task_id": {
@@ -7459,6 +10042,360 @@
           "objective"
         ],
         "title": "AgentTask"
+      },
+      "AgentTaskEvent": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sequence",
+          "task_id",
+          "project_id",
+          "occurred_at",
+          "event_type",
+          "payload"
+        ],
+        "title": "AgentTaskEvent"
+      },
+      "AgentTaskEvents": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "next_cursor": {
+            "type": "integer",
+            "title": "Next Cursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "events",
+          "next_cursor"
+        ],
+        "title": "AgentTaskEvents"
+      },
+      "AgentTaskList": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskRecord"
+            },
+            "type": "array",
+            "title": "Tasks"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tasks"
+        ],
+        "title": "AgentTaskList"
+      },
+      "AgentTaskRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_authorization",
+              "queued",
+              "running",
+              "blocked",
+              "needs_approval",
+              "completed",
+              "review_required",
+              "failed",
+              "cancel_pending",
+              "cancelled",
+              "interrupted"
+            ],
+            "title": "Status",
+            "default": "awaiting_authorization"
+          },
+          "authorization_card": {
+            "$ref": "#/components/schemas/AuthorizationCard"
+          },
+          "grant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskGrant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_calls_used": {
+            "type": "integer",
+            "title": "Model Calls Used",
+            "default": 0
+          },
+          "cli_invocations_used": {
+            "type": "integer",
+            "title": "Cli Invocations Used",
+            "default": 0
+          },
+          "repair_rounds_used": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Repair Rounds Used",
+            "default": 0
+          },
+          "model_tokens_known": {
+            "type": "integer",
+            "title": "Model Tokens Known",
+            "default": 0
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "budget_accounting_complete": {
+            "type": "boolean",
+            "title": "Budget Accounting Complete",
+            "default": false
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionRecord"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "model_run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Model Run Ids"
+          },
+          "current_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Run Id"
+          },
+          "pending_action_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Action Id"
+          },
+          "observations": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Observations"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "cancel_requested": {
+            "type": "boolean",
+            "title": "Cancel Requested",
+            "default": false
+          },
+          "owner_pid": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Pid"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "provider_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Model"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "goal",
+          "authorization_card"
+        ],
+        "title": "AgentTaskRecord"
+      },
+      "AiBuildRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,120}$",
+            "title": "Request Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "retry_failed": {
+            "type": "boolean",
+            "title": "Retry Failed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "expected_version",
+          "prompt"
+        ],
+        "title": "AiBuildRequest"
+      },
+      "AiBuildResult": {
+        "properties": {
+          "scene": {
+            "$ref": "#/components/schemas/EnvironmentScene"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "reused": {
+            "type": "boolean",
+            "title": "Reused",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scene",
+          "summary",
+          "provider",
+          "model"
+        ],
+        "title": "AiBuildResult"
       },
       "AiGenerationMetadata": {
         "properties": {
@@ -8530,6 +11467,26 @@
         ],
         "title": "ArtifactOutput"
       },
+      "ArtifactReference": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "title": "Artifact Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "version"
+        ],
+        "title": "ArtifactReference"
+      },
       "AssetChangeSet": {
         "properties": {
           "schema_version": {
@@ -9555,6 +12512,138 @@
         ],
         "title": "Authority"
       },
+      "AuthorizationCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "typed-tools",
+              "codex-full-access"
+            ],
+            "title": "Execution Mode",
+            "default": "typed-tools"
+          },
+          "allow_image_generation": {
+            "type": "boolean",
+            "title": "Allow Image Generation",
+            "default": false
+          },
+          "allow_playtest": {
+            "type": "boolean",
+            "title": "Allow Playtest",
+            "default": false
+          },
+          "task_profile": {
+            "type": "string",
+            "enum": [
+              "asset-exchange",
+              "survival-prototype",
+              "auto",
+              "card-development"
+            ],
+            "title": "Task Profile",
+            "default": "asset-exchange"
+          },
+          "capability_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Ids"
+          },
+          "max_model_calls": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Model Calls",
+            "default": 8
+          },
+          "max_cli_invocations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Cli Invocations"
+          },
+          "max_duration_seconds": {
+            "type": "integer",
+            "title": "Max Duration Seconds",
+            "default": 1200
+          },
+          "max_attempts_per_action": {
+            "type": "integer",
+            "title": "Max Attempts Per Action",
+            "default": 2
+          },
+          "max_repair_rounds": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Max Repair Rounds",
+            "default": 2
+          },
+          "max_assets": {
+            "type": "integer",
+            "title": "Max Assets",
+            "default": 1
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": "仅此独立空项目：创建有界立方体、检查、导出 FBX、导入和放置到 Unity；不修改已有项目，不构建、渲染或游测。"
+          },
+          "cost_notice": {
+            "type": "string",
+            "title": "Cost Notice",
+            "default": "最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "workspace_root"
+        ],
+        "title": "AuthorizationCard"
+      },
       "AuthorizationState": {
         "type": "string",
         "enum": [
@@ -9563,6 +12652,31 @@
           "unknown"
         ],
         "title": "AuthorizationState"
+      },
+      "AuthorizeAgentTask": {
+        "properties": {
+          "authorization_card_id": {
+            "type": "string",
+            "title": "Authorization Card Id"
+          },
+          "accept_unknown_cost": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accept Unknown Cost"
+          },
+          "accept_full_access": {
+            "type": "boolean",
+            "title": "Accept Full Access",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "authorization_card_id",
+          "accept_unknown_cost"
+        ],
+        "title": "AuthorizeAgentTask"
       },
       "AvailabilityState": {
         "type": "string",
@@ -11099,6 +14213,568 @@
         ],
         "title": "CapabilityResult"
       },
+      "CardAssetList": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/CardAssetRecord"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "proposals": {
+            "items": {
+              "$ref": "#/components/schemas/CardAssetProposal"
+            },
+            "type": "array",
+            "title": "Proposals"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/CardAssetReference"
+            },
+            "type": "array",
+            "title": "References"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "card_id",
+          "branch",
+          "assets",
+          "proposals",
+          "references"
+        ],
+        "title": "CardAssetList"
+      },
+      "CardAssetProposal": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "target_extent_m": {
+            "type": "number",
+            "maximum": 1000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Target Extent M"
+          },
+          "parts": {
+            "items": {
+              "$ref": "#/components/schemas/PrimitivePart"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Parts"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "trigger_message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trigger Message Id"
+          },
+          "modeling_block": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Block"
+          },
+          "reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "generated",
+              "failed"
+            ],
+            "title": "Status",
+            "default": "planned"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "summary",
+          "target_extent_m",
+          "parts",
+          "id",
+          "asset_id",
+          "project_id",
+          "card_id",
+          "session_id",
+          "provider",
+          "model"
+        ],
+        "title": "CardAssetProposal"
+      },
+      "CardAssetRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "import",
+              "generated"
+            ],
+            "title": "Source Type"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "source_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Filename"
+          },
+          "source_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Path"
+          },
+          "proposal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "current_version": {
+            "type": "integer",
+            "title": "Current Version",
+            "default": 0
+          },
+          "raw_dimensions_m": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Dimensions M"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/CardAssetVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "log_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Log Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "card_id",
+          "title",
+          "source_type",
+          "status"
+        ],
+        "title": "CardAssetRecord"
+      },
+      "CardAssetReference": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "media_type": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ],
+            "title": "Media Type"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "card_id",
+          "filename",
+          "path",
+          "media_type"
+        ],
+        "title": "CardAssetReference"
+      },
+      "CardAssetVersion": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Number"
+          },
+          "dimensions_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Dimensions M"
+          },
+          "vertex_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vertex Count"
+          },
+          "triangle_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Triangle Count"
+          },
+          "object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Object Ids"
+          },
+          "blender_version": {
+            "type": "string",
+            "title": "Blender Version"
+          },
+          "blend_path": {
+            "type": "string",
+            "title": "Blend Path"
+          },
+          "preview_path": {
+            "type": "string",
+            "title": "Preview Path"
+          },
+          "fbx_path": {
+            "type": "string",
+            "title": "Fbx Path"
+          },
+          "manifest_path": {
+            "type": "string",
+            "title": "Manifest Path"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "import",
+              "generate",
+              "normalize"
+            ],
+            "title": "Operation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "dimensions_m",
+          "vertex_count",
+          "triangle_count",
+          "object_ids",
+          "blender_version",
+          "blend_path",
+          "preview_path",
+          "fbx_path",
+          "manifest_path",
+          "operation"
+        ],
+        "title": "CardAssetVersion"
+      },
+      "CardBranch": {
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "worktree_path": {
+            "type": "string",
+            "title": "Worktree Path"
+          },
+          "base_commit": {
+            "type": "string",
+            "title": "Base Commit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "card_id",
+          "branch",
+          "worktree_path",
+          "base_commit"
+        ],
+        "title": "CardBranch"
+      },
+      "CardModelingSession": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "import",
+              "create"
+            ],
+            "title": "Source"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "composer_draft": {
+            "type": "string",
+            "title": "Composer Draft",
+            "default": ""
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "brief",
+              "awaiting_import"
+            ],
+            "title": "Stage"
+          },
+          "mode": {
+            "type": "string",
+            "const": "planned",
+            "title": "Mode",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "card_id",
+          "source",
+          "stage"
+        ],
+        "title": "CardModelingSession",
+        "description": "A card-owned design conversation, never evidence of a produced model."
+      },
       "CauseCandidate": {
         "properties": {
           "description": {
@@ -11992,6 +15668,10 @@
       "CommandName": {
         "type": "string",
         "enum": [
+          "unity.prototype.compose",
+          "unity.prototype.inspect",
+          "unity.prototype.play",
+          "unity.prototype.capture",
           "unity.health",
           "unity.project.scan",
           "unity.asset.import",
@@ -13925,6 +17605,194 @@
         ],
         "title": "EffectOperation"
       },
+      "EnvironmentMessage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "text"
+        ],
+        "title": "EnvironmentMessage"
+      },
+      "EnvironmentObject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "asset_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Asset Version"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "title": "Source Asset Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "transform": {
+            "$ref": "#/components/schemas/EnvironmentTransform"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "asset_id",
+          "asset_version",
+          "source_asset_id",
+          "title",
+          "transform"
+        ],
+        "title": "EnvironmentObject"
+      },
+      "EnvironmentScene": {
+        "properties": {
+          "scene_id": {
+            "type": "string",
+            "title": "Scene Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Version"
+          },
+          "objects": {
+            "items": {
+              "$ref": "#/components/schemas/EnvironmentObject"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Objects"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/EnvironmentMessage"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "History"
+          },
+          "scale_profile": {
+            "$ref": "#/components/schemas/WorldScaleProfile"
+          },
+          "mode": {
+            "type": "string",
+            "const": "live",
+            "title": "Mode",
+            "default": "live"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scene_id",
+          "project_id",
+          "version"
+        ],
+        "title": "EnvironmentScene"
+      },
+      "EnvironmentTransform": {
+        "properties": {
+          "position_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Position M",
+            "default": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "rotation_y_deg": {
+            "type": "number",
+            "title": "Rotation Y Deg",
+            "default": 0.0
+          },
+          "scale": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.01,
+            "title": "Scale",
+            "default": 1.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EnvironmentTransform"
+      },
       "Estimate": {
         "properties": {
           "estimate_id": {
@@ -14585,6 +18453,137 @@
           "profile"
         ],
         "title": "Fixture"
+      },
+      "FolderEntry": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "directory",
+              "symlink"
+            ],
+            "title": "Kind"
+          },
+          "selectable": {
+            "type": "boolean",
+            "title": "Selectable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "path",
+          "kind",
+          "selectable"
+        ],
+        "title": "FolderEntry"
+      },
+      "FolderListing": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "parent_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Path"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/FolderEntry"
+            },
+            "type": "array",
+            "title": "Entries"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "parent_path",
+          "entries"
+        ],
+        "title": "FolderListing"
+      },
+      "FolderProject": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "root_path": {
+            "type": "string",
+            "title": "Root Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "name",
+          "root_path"
+        ],
+        "title": "FolderProject"
+      },
+      "FolderProjectCreate": {
+        "properties": {
+          "parent_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Parent Path"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "parent_path",
+          "name"
+        ],
+        "title": "FolderProjectCreate"
+      },
+      "FolderProjectList": {
+        "properties": {
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/FolderProject"
+            },
+            "type": "array",
+            "title": "Projects"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "projects"
+        ],
+        "title": "FolderProjectList"
       },
       "FootPlantSample": {
         "properties": {
@@ -15801,6 +19800,15 @@
       },
       "GitCommit": {
         "properties": {
+          "parent_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{7,64}$"
+            },
+            "type": "array",
+            "title": "Parent Ids",
+            "default": []
+          },
           "commit_id": {
             "type": "string",
             "pattern": "^[0-9a-fA-F]{7,64}$",
@@ -16019,6 +20027,30 @@
           "mode"
         ],
         "title": "GitRollbackResult"
+      },
+      "GitVersion": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "commit": {
+            "type": "string",
+            "title": "Commit"
+          },
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "commit",
+          "tag"
+        ],
+        "title": "GitVersion"
       },
       "GraphDiffEntry": {
         "properties": {
@@ -16402,7 +20434,7 @@
           "external_execution": {
             "type": "string",
             "title": "External Execution",
-            "default": "not_started"
+            "default": "idle"
           }
         },
         "type": "object",
@@ -16864,6 +20896,420 @@
           "succeeded"
         ],
         "title": "JobState"
+      },
+      "JourneyChange": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "base_revision": {
+            "type": "integer",
+            "title": "Base Revision"
+          },
+          "before_outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "before_cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "Before Cards"
+          },
+          "after_outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "after_cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "After Cards"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ],
+            "title": "Status",
+            "default": "pending"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "base_revision",
+          "before_outline",
+          "before_cards",
+          "after_outline",
+          "after_cards",
+          "rationale"
+        ],
+        "title": "JourneyChange"
+      },
+      "JourneyCommand": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,100}$",
+            "title": "Request Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "message",
+              "save_draft",
+              "start_grill",
+              "generate_outline",
+              "save_outline",
+              "confirm_version",
+              "confirm_stack",
+              "generate_cards",
+              "save_cards",
+              "accept_change",
+              "reject_change",
+              "select_card",
+              "clear_card",
+              "enable_git",
+              "choose_model_source",
+              "new_modeling",
+              "open_modeling",
+              "close_modeling"
+            ],
+            "title": "Operation"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 16000,
+            "title": "Text",
+            "default": ""
+          },
+          "outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cards": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ProductionCard"
+                },
+                "type": "array",
+                "maxItems": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cards"
+          },
+          "accept_assumptions": {
+            "type": "boolean",
+            "title": "Accept Assumptions",
+            "default": false
+          },
+          "question_message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Message Id"
+          },
+          "option_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Index"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "change_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Id"
+          },
+          "model_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "import",
+                  "create"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Source"
+          },
+          "modeling_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Id"
+          },
+          "context_draft": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Draft"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "expected_revision",
+          "operation"
+        ],
+        "title": "JourneyCommand"
+      },
+      "JourneyMessage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "mock",
+              "planned"
+            ],
+            "title": "Mode",
+            "default": "live"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To"
+          },
+          "modeling_block": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Block"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "text",
+          "created_at"
+        ],
+        "title": "JourneyMessage"
+      },
+      "JourneyStreamEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "status",
+              "text_delta",
+              "reasoning_delta",
+              "complete",
+              "error"
+            ],
+            "title": "Type"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "default": ""
+          },
+          "state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningJourney"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "JourneyStreamEvent"
+      },
+      "JourneyVersion": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "title": "Confirmed At"
+          },
+          "outline": {
+            "$ref": "#/components/schemas/Outline"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "threejs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "confirmed_at",
+          "outline"
+        ],
+        "title": "JourneyVersion"
       },
       "JsonValue": {},
       "JudgeFallback": {
@@ -17603,6 +22049,91 @@
         ],
         "title": "LfsPointer"
       },
+      "LiveModelUpdateRequest": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Session Id"
+          },
+          "transcript": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "maxItems": 120,
+            "minItems": 1,
+            "title": "Transcript"
+          },
+          "reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Id"
+          },
+          "trigger_message_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Trigger Message Id"
+          },
+          "modeling_block": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Modeling Block"
+          },
+          "retry_failed": {
+            "type": "boolean",
+            "title": "Retry Failed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "session_id",
+          "transcript",
+          "trigger_message_id",
+          "modeling_block"
+        ],
+        "title": "LiveModelUpdateRequest"
+      },
+      "LiveModelUpdateResult": {
+        "properties": {
+          "proposal": {
+            "$ref": "#/components/schemas/CardAssetProposal"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/CardAssetRecord"
+          },
+          "version_created": {
+            "type": "boolean",
+            "title": "Version Created"
+          },
+          "reused": {
+            "type": "boolean",
+            "title": "Reused"
+          }
+        },
+        "type": "object",
+        "required": [
+          "proposal",
+          "asset",
+          "version_created",
+          "reused"
+        ],
+        "title": "LiveModelUpdateResult"
+      },
       "LocalEvidence": {
         "properties": {
           "artifact_id": {
@@ -17926,6 +22457,63 @@
         ],
         "title": "LoopPose"
       },
+      "ManualPlacementRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Asset Id"
+          },
+          "asset_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Version"
+          },
+          "position_m": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "asset_id"
+        ],
+        "title": "ManualPlacementRequest"
+      },
       "Milestone": {
         "properties": {
           "milestone_id": {
@@ -18043,12 +22631,53 @@
         ],
         "title": "ModelOption"
       },
+      "ModelPlanRequest": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Session Id"
+          },
+          "transcript": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "maxItems": 120,
+            "minItems": 1,
+            "title": "Transcript"
+          },
+          "reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "session_id",
+          "transcript"
+        ],
+        "title": "ModelPlanRequest"
+      },
       "ModelProfile": {
         "properties": {
           "provider": {
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider"
@@ -18254,6 +22883,22 @@
         ],
         "title": "NodeKind"
       },
+      "NormalizeRequest": {
+        "properties": {
+          "target_extent_m": {
+            "type": "number",
+            "maximum": 1000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Target Extent M"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "target_extent_m"
+        ],
+        "title": "NormalizeRequest"
+      },
       "ObserveApprovalRequest": {
         "properties": {
           "approval_id": {
@@ -18383,6 +23028,58 @@
           "summary"
         ],
         "title": "OperationsSnapshot"
+      },
+      "Outline": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "experience": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Experience"
+          },
+          "core_loop": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Core Loop"
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Scope"
+          },
+          "acceptance": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Acceptance"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Assumptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "experience",
+          "core_loop",
+          "scope",
+          "acceptance"
+        ],
+        "title": "Outline"
       },
       "ParameterKind": {
         "type": "string",
@@ -18999,6 +23696,189 @@
         ],
         "title": "PlannerEventPayload"
       },
+      "PlanningJourney": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "root_path": {
+            "type": "string",
+            "title": "Root Path"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "default": 0
+          },
+          "collaboration": {
+            "type": "string",
+            "const": "solo",
+            "title": "Collaboration",
+            "default": "solo"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "idea",
+              "grill",
+              "outline",
+              "stack",
+              "cards"
+            ],
+            "title": "Stage",
+            "default": "idea"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "threejs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "composer_draft": {
+            "type": "string",
+            "title": "Composer Draft",
+            "default": ""
+          },
+          "model_calls": {
+            "type": "integer",
+            "title": "Model Calls",
+            "default": 0
+          },
+          "git_versions": {
+            "items": {
+              "$ref": "#/components/schemas/GitVersion"
+            },
+            "type": "array",
+            "title": "Git Versions"
+          },
+          "card_branches": {
+            "items": {
+              "$ref": "#/components/schemas/CardBranch"
+            },
+            "type": "array",
+            "title": "Card Branches"
+          },
+          "active_card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Card Id"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "modeling_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/CardModelingSession"
+            },
+            "type": "array",
+            "title": "Modeling Sessions"
+          },
+          "active_modeling_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Modeling Id"
+          },
+          "cost_notice": {
+            "type": "string",
+            "title": "Cost Notice",
+            "default": "每次发送或生成最多调用一次所选模型；费用未知，不自动重试或切换提供方。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "root_path"
+        ],
+        "title": "PlanningJourney"
+      },
+      "PlanningQuestion": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionOption"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Options"
+          },
+          "recommended_index": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Recommended Index"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "prompt",
+          "options",
+          "recommended_index"
+        ],
+        "title": "PlanningQuestion"
+      },
       "PlanningRequest": {
         "properties": {
           "project_id": {
@@ -19143,6 +24023,75 @@
           "execution_requirement"
         ],
         "title": "PortableRecipeDefinition"
+      },
+      "PrepareAgentTask": {
+        "properties": {
+          "goal": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Goal"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "typed-tools",
+              "codex-full-access"
+            ],
+            "title": "Execution Mode",
+            "default": "typed-tools"
+          },
+          "allow_image_generation": {
+            "type": "boolean",
+            "title": "Allow Image Generation",
+            "default": false
+          },
+          "allow_playtest": {
+            "type": "boolean",
+            "title": "Allow Playtest",
+            "default": false
+          },
+          "task_profile": {
+            "type": "string",
+            "enum": [
+              "asset-exchange",
+              "survival-prototype",
+              "auto",
+              "card-development"
+            ],
+            "title": "Task Profile",
+            "default": "asset-exchange"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "goal"
+        ],
+        "title": "PrepareAgentTask"
       },
       "PreviewArtifact-Input": {
         "properties": {
@@ -19615,6 +24564,97 @@
         ],
         "title": "PreviewStep"
       },
+      "PrimitivePart": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cube",
+              "sphere",
+              "cylinder",
+              "cone"
+            ],
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "dimensions_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Dimensions M"
+          },
+          "location_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Location M"
+          },
+          "rotation_deg": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Rotation Deg",
+            "default": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "title": "Color"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "dimensions_m",
+          "location_m",
+          "color"
+        ],
+        "title": "PrimitivePart"
+      },
       "ProcessingLog": {
         "properties": {
           "timestamp": {
@@ -19831,6 +24871,187 @@
         ],
         "title": "ProductionAgentDefinition"
       },
+      "ProductionArtifact": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "step_id": {
+            "type": "string",
+            "title": "Step Id"
+          },
+          "module_id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "ai-playtest",
+              "version-review",
+              "integration-ops"
+            ],
+            "title": "Module Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "source_path": {
+            "type": "string",
+            "title": "Source Path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "image",
+              "model",
+              "audio",
+              "text",
+              "file"
+            ],
+            "title": "Kind"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "cached",
+              "mock"
+            ],
+            "title": "Mode",
+            "default": "live"
+          },
+          "verification": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "format_checked",
+              "passed",
+              "failed"
+            ],
+            "title": "Verification",
+            "default": "unverified"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "task_id",
+          "step_id",
+          "module_id",
+          "name",
+          "version",
+          "source_path",
+          "kind",
+          "media_type",
+          "size_bytes",
+          "created_at"
+        ],
+        "title": "ProductionArtifact"
+      },
+      "ProductionCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,80}$",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Description"
+          },
+          "dependencies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Dependencies"
+          },
+          "acceptance": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Acceptance"
+          },
+          "status": {
+            "type": "string",
+            "const": "planned",
+            "title": "Status",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "acceptance"
+        ],
+        "title": "ProductionCard"
+      },
+      "ProductionEvents": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "next_cursor": {
+            "type": "integer",
+            "title": "Next Cursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "events",
+          "next_cursor"
+        ],
+        "title": "ProductionEvents"
+      },
       "ProductionGraphView": {
         "properties": {
           "plan_id": {
@@ -19971,6 +25192,63 @@
         ],
         "title": "ProductionIntent"
       },
+      "ProductionModule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "ai-playtest",
+              "version-review",
+              "integration-ops"
+            ],
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "handler_status": {
+            "type": "string",
+            "enum": [
+              "implemented",
+              "not_connected"
+            ],
+            "title": "Handler Status"
+          },
+          "verification": {
+            "type": "string",
+            "title": "Verification",
+            "default": "待用户实测"
+          },
+          "capability_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Ids"
+          },
+          "readiness_notice": {
+            "type": "string",
+            "title": "Readiness Notice",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "handler_status"
+        ],
+        "title": "ProductionModule"
+      },
       "ProductionPlan": {
         "properties": {
           "plan_id": {
@@ -20101,6 +25379,220 @@
           "milestones"
         ],
         "title": "ProductionPlan"
+      },
+      "ProductionSnapshot": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "cursor": {
+            "type": "integer",
+            "title": "Cursor"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/AgentTaskRecord"
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionArtifact"
+            },
+            "type": "array",
+            "title": "Artifacts"
+          },
+          "modules": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionModule"
+            },
+            "type": "array",
+            "title": "Modules"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "cursor",
+          "tasks",
+          "steps",
+          "artifacts",
+          "modules"
+        ],
+        "title": "ProductionSnapshot"
+      },
+      "ProductionStep": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "module_id": {
+            "type": "string",
+            "enum": [
+              "project-planning",
+              "concept-assets",
+              "character-animation",
+              "world-logic",
+              "ui-audio-vfx",
+              "render-ops",
+              "unity-build",
+              "ai-playtest",
+              "version-review",
+              "integration-ops"
+            ],
+            "title": "Module Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "capability_id": {
+            "type": "string",
+            "title": "Capability Id"
+          },
+          "dependencies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dependencies"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "running",
+              "blocked",
+              "failed",
+              "cancelled",
+              "review_required",
+              "completed"
+            ],
+            "title": "State"
+          },
+          "verification": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "reported",
+              "passed",
+              "failed",
+              "inconclusive"
+            ],
+            "title": "Verification",
+            "default": "unverified"
+          },
+          "verification_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "effect_state": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "STAGED",
+              "APPLIED",
+              "COMMITTED",
+              "UNKNOWN"
+            ],
+            "title": "Effect State",
+            "default": "UNKNOWN"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "live",
+              "cached",
+              "mock",
+              "blocked"
+            ],
+            "title": "Mode",
+            "default": "planned"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "artifact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Artifact Ids"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "task_id",
+          "module_id",
+          "title",
+          "capability_id",
+          "state",
+          "updated_at"
+        ],
+        "title": "ProductionStep"
       },
       "ProductionTask": {
         "properties": {
@@ -20359,6 +25851,177 @@
           "timed_out"
         ],
         "title": "ProgressState"
+      },
+      "ProjectAssetEntry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "title": "Source Asset Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Title"
+          },
+          "modeling_session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Session Id"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "import",
+              "generated"
+            ],
+            "title": "Source Type"
+          },
+          "category": {
+            "type": "string",
+            "const": "model",
+            "title": "Category",
+            "default": "model"
+          },
+          "current_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Current Version"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectAssetVersion"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Versions"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "card_id",
+          "source_asset_id",
+          "title",
+          "source_type",
+          "current_version",
+          "versions"
+        ],
+        "title": "ProjectAssetEntry"
+      },
+      "ProjectAssetVersion": {
+        "properties": {
+          "source_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Source Version"
+          },
+          "dimensions_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Dimensions M"
+          },
+          "vertex_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vertex Count"
+          },
+          "triangle_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Triangle Count"
+          },
+          "blend_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Blend Path"
+          },
+          "preview_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Preview Path"
+          },
+          "fbx_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fbx Path"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "import",
+              "generate",
+              "normalize"
+            ],
+            "title": "Operation"
+          },
+          "saved_at": {
+            "type": "string",
+            "title": "Saved At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_version",
+          "dimensions_m",
+          "vertex_count",
+          "triangle_count",
+          "blend_path",
+          "preview_path",
+          "fbx_path",
+          "operation"
+        ],
+        "title": "ProjectAssetVersion"
       },
       "ProjectCreate": {
         "properties": {
@@ -20968,6 +26631,29 @@
           "completion_event_id"
         ],
         "title": "QuestNodeConfig"
+      },
+      "QuestionOption": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "description"
+        ],
+        "title": "QuestionOption"
       },
       "QueueSnapshot": {
         "properties": {
@@ -21597,6 +27283,42 @@
           "resource_id"
         ],
         "title": "ReleaseLockRequest"
+      },
+      "RemoveObjectRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "title": "RemoveObjectRequest"
+      },
+      "RenameProjectAssetRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 24,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "expected_updated_at": {
+            "type": "string",
+            "title": "Expected Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "expected_updated_at"
+        ],
+        "title": "RenameProjectAssetRequest"
       },
       "RenderBrief": {
         "properties": {
@@ -23440,6 +29162,39 @@
         ],
         "title": "SampleImport"
       },
+      "SaveProjectAssetResult": {
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/ProjectAssetEntry"
+          },
+          "version_created": {
+            "type": "boolean",
+            "title": "Version Created"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entry",
+          "version_created"
+        ],
+        "title": "SaveProjectAssetResult"
+      },
+      "SaveToLibraryRequest": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "SaveToLibraryRequest"
+      },
       "SceneCameraRef": {
         "properties": {
           "project_id": {
@@ -24606,6 +30361,109 @@
         ],
         "title": "TaskDependency"
       },
+      "TaskGrant": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "execution_mode": {
+            "type": "string",
+            "enum": [
+              "typed-tools",
+              "codex-full-access"
+            ],
+            "title": "Execution Mode",
+            "default": "typed-tools"
+          },
+          "allow_image_generation": {
+            "type": "boolean",
+            "title": "Allow Image Generation",
+            "default": false
+          },
+          "capability_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Ids"
+          },
+          "max_repair_rounds": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Max Repair Rounds",
+            "default": 2
+          },
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id",
+            "default": "usr_local_workspace"
+          },
+          "budget": {
+            "$ref": "#/components/schemas/RuntimeBudget"
+          },
+          "authorized_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Authorized At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "revoked": {
+            "type": "boolean",
+            "title": "Revoked",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "project_id",
+          "workspace_root",
+          "capability_ids",
+          "expires_at"
+        ],
+        "title": "TaskGrant"
+      },
       "TaskInput": {
         "properties": {
           "input_id": {
@@ -24699,6 +30557,62 @@
           "title"
         ],
         "title": "TitleRequest"
+      },
+      "TransformObjectRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "transform": {
+            "$ref": "#/components/schemas/EnvironmentTransform"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "transform"
+        ],
+        "title": "TransformObjectRequest"
+      },
+      "TreeProgress": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "confirmed_versions": {
+            "type": "integer",
+            "title": "Confirmed Versions"
+          },
+          "planned_cards": {
+            "type": "integer",
+            "title": "Planned Cards"
+          },
+          "card_branches": {
+            "type": "integer",
+            "title": "Card Branches"
+          },
+          "milestones": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Milestones"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stage",
+          "confirmed_versions",
+          "planned_cards",
+          "card_branches",
+          "milestones"
+        ],
+        "title": "TreeProgress"
       },
       "UiElement": {
         "properties": {
@@ -25335,6 +31249,95 @@
         ],
         "title": "Vector3Meters"
       },
+      "VerificationRecord": {
+        "properties": {
+          "project_revision": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Project Revision"
+          },
+          "run_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Run Id"
+          },
+          "run_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Run Ids"
+          },
+          "suite_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Suite Id"
+          },
+          "suite_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Suite Version"
+          },
+          "checker_version": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Checker Version"
+          },
+          "execution_status": {
+            "type": "string",
+            "enum": [
+              "COMPLETED",
+              "FAILED",
+              "CANCELLED",
+              "INTERRUPTED"
+            ],
+            "title": "Execution Status"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "FAIL",
+              "INCONCLUSIVE"
+            ],
+            "title": "Verdict"
+          },
+          "artifact_refs": {
+            "items": {
+              "$ref": "#/components/schemas/ArtifactReference"
+            },
+            "type": "array",
+            "title": "Artifact Refs"
+          },
+          "assertions": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Assertions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_revision",
+          "run_id",
+          "suite_id",
+          "suite_version",
+          "checker_version",
+          "execution_status",
+          "verdict"
+        ],
+        "title": "VerificationRecord",
+        "description": "A business verdict bound to the exact revision, run, suite and evidence."
+      },
       "VersionBinding": {
         "properties": {
           "version_id": {
@@ -25573,6 +31576,89 @@
           "rollback_version_id"
         ],
         "title": "VersionReviewResult"
+      },
+      "VersionTreeState": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id"
+          },
+          "version": {
+            "$ref": "#/components/schemas/VersionReference"
+          },
+          "dirty": {
+            "type": "boolean",
+            "title": "Dirty"
+          },
+          "conflicted": {
+            "type": "boolean",
+            "title": "Conflicted"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/GitFileChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "lfs_pointers": {
+            "items": {
+              "$ref": "#/components/schemas/LfsPointer"
+            },
+            "type": "array",
+            "title": "Lfs Pointers"
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/GitBranch"
+            },
+            "type": "array",
+            "title": "Branches"
+          },
+          "commits": {
+            "items": {
+              "$ref": "#/components/schemas/GitCommit"
+            },
+            "type": "array",
+            "title": "Commits"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TreeProgress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "version",
+          "dirty",
+          "conflicted",
+          "changes",
+          "lfs_pointers",
+          "branches",
+          "commits",
+          "mode",
+          "captured_at"
+        ],
+        "title": "VersionTreeState"
       },
       "VertexWeights": {
         "properties": {
@@ -26310,6 +32396,50 @@
           "mode"
         ],
         "title": "WorldPlanRequest"
+      },
+      "WorldScaleProfile": {
+        "properties": {
+          "unit": {
+            "type": "string",
+            "const": "meter",
+            "title": "Unit",
+            "default": "meter"
+          },
+          "up_axis": {
+            "type": "string",
+            "const": "Y",
+            "title": "Up Axis",
+            "default": "Y"
+          },
+          "handedness": {
+            "type": "string",
+            "const": "right",
+            "title": "Handedness",
+            "default": "right"
+          },
+          "grid_step_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Grid Step M",
+            "default": 1.0
+          },
+          "reference_human_height_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Reference Human Height M",
+            "default": 1.8
+          },
+          "default_object_spacing_m": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Default Object Spacing M",
+            "default": 3.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "WorldScaleProfile",
+        "description": "Project-wide spatial conventions shared by assets and scene assembly."
       },
       "WritebackApprovalSnapshot": {
         "properties": {

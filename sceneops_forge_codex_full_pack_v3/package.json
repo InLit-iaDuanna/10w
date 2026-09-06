@@ -12,6 +12,9 @@
     "generate:workspace": "node scripts/python.mjs scripts/export-workspace-contracts.py && openapi-typescript packages/workspace-client/contracts/workspace.openapi.json -o packages/workspace-client/frontend/src/generated/workspace-api.ts",
     "generate:ai": "node scripts/python.mjs modules/conversation-home/backend/export_unified_contracts.py && openapi-typescript modules/conversation-home/contracts/unified-ai.openapi.json -o modules/conversation-home/frontend/src/generated/unified-ai-api.ts",
     "generate:harness": "node scripts/python.mjs modules/ai-pipeline-compiler/backend/export_contracts.py && openapi-typescript modules/ai-pipeline-compiler/contracts/harness.openapi.json -o modules/ai-pipeline-compiler/frontend/src/generated/harness-api.ts",
+    "generate:agent": "node scripts/python.mjs scripts/export-agent-contracts.py && openapi-typescript modules/ai-agent-runtime/contracts/agent.openapi.json -o modules/ai-agent-runtime/frontend/src/generated/agent-api.ts",
+    "generate:card-assets": "node scripts/python.mjs scripts/export-card-asset-contracts.py && openapi-typescript modules/asset-factory/contracts/card-assets.openapi.json -o modules/asset-factory/frontend/src/generated/card-assets-api.ts",
+    "generate:environment": "node scripts/python.mjs scripts/export-environment-contracts.py && openapi-typescript modules/world-composer/contracts/environment.openapi.json -o modules/world-composer/frontend/src/generated/environment-api.ts",
     "lab": "node scripts/lab.mjs"
   },
   "devDependencies": {

@@ -23,6 +23,7 @@ from .contracts import (
     UpsertPrefabPayload,
 )
 from .errors import ErrorCode, UnityIntegrationError
+from .prototype_contracts import PrototypeSpec
 from .policy import (
     ALLOWLISTED_COMPONENT_PROPERTIES,
     ALLOWLISTED_PREFAB_COMPONENTS,
@@ -196,8 +197,11 @@ def expected_change_targets(
     """Return the complete stable-ID target set bound to a mutating command."""
 
     targets: List[str]
-    if isinstance(payload, ImportAssetPayload):
+    if isinstance(payload, PrototypeSpec):
+        targets = [payload.prototype_id]
+    elif isinstance(payload, ImportAssetPayload):
         targets = [payload.source_asset_id, payload.source_asset_version_id]
+        targets.extend(value for value in (payload.sceneops_id, payload.scene_instance_id) if value)
     elif isinstance(payload, MapIdentityPayload):
         targets = [
             payload.source_asset_id,
@@ -248,6 +252,8 @@ def _validate_payload_paths(
         values.extend(
             [payload.source_path, payload.destination_asset_path, payload.manifest_path]
         )
+        if payload.destination_scene_path:
+            values.append(payload.destination_scene_path)
     elif isinstance(payload, UpsertPrefabPayload):
         values.append(payload.prefab_asset_path)
     elif isinstance(payload, NavMeshPayload):

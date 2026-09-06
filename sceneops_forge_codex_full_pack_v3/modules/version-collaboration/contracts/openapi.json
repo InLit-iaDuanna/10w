@@ -166,6 +166,24 @@
         "title": "AddCommentRequest",
         "type": "object"
       },
+      "ApplyBranchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "change_set": {
+            "$ref": "#/components/schemas/BranchChangeSet"
+          },
+          "confirmed": {
+            "title": "Confirmed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "change_set",
+          "confirmed"
+        ],
+        "title": "ApplyBranchRequest",
+        "type": "object"
+      },
       "ApprovalObservation": {
         "additionalProperties": false,
         "properties": {
@@ -709,6 +727,131 @@
           "goal_progress"
         ],
         "title": "BehaviorStep",
+        "type": "object"
+      },
+      "BranchChangeSet": {
+        "additionalProperties": false,
+        "properties": {
+          "blocked_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocked Reasons",
+            "type": "array"
+          },
+          "branch_name": {
+            "title": "Branch Name",
+            "type": "string"
+          },
+          "current_branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Branch"
+          },
+          "dry_run": {
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "expected_head": {
+            "pattern": "^[0-9a-fA-F]{7,64}$",
+            "title": "Expected Head",
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "live"
+          },
+          "operation": {
+            "enum": [
+              "create",
+              "switch"
+            ],
+            "title": "Operation",
+            "type": "string"
+          },
+          "source_commit": {
+            "pattern": "^[0-9a-fA-F]{7,64}$",
+            "title": "Source Commit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "branch_name",
+          "expected_head",
+          "source_commit",
+          "current_branch",
+          "blocked_reasons"
+        ],
+        "title": "BranchChangeSet",
+        "type": "object"
+      },
+      "BranchOperationResult": {
+        "additionalProperties": false,
+        "properties": {
+          "current_branch": {
+            "title": "Current Branch",
+            "type": "string"
+          },
+          "head_commit": {
+            "pattern": "^[0-9a-fA-F]{7,64}$",
+            "title": "Head Commit",
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode",
+            "default": "live"
+          }
+        },
+        "required": [
+          "current_branch",
+          "head_commit"
+        ],
+        "title": "BranchOperationResult",
+        "type": "object"
+      },
+      "BranchPreviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "branch_name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Branch Name",
+            "type": "string"
+          },
+          "operation": {
+            "enum": [
+              "create",
+              "switch"
+            ],
+            "title": "Operation",
+            "type": "string"
+          },
+          "source_commit": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{7,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Commit"
+          }
+        },
+        "required": [
+          "operation",
+          "branch_name"
+        ],
+        "title": "BranchPreviewRequest",
         "type": "object"
       },
       "CameraPose": {
@@ -1461,6 +1604,15 @@
             "pattern": "^[0-9a-fA-F]{7,64}$",
             "title": "Commit Id",
             "type": "string"
+          },
+          "parent_ids": {
+            "default": [],
+            "items": {
+              "pattern": "^[0-9a-fA-F]{7,64}$",
+              "type": "string"
+            },
+            "title": "Parent Ids",
+            "type": "array"
           },
           "subject": {
             "maxLength": 1024,
@@ -2663,6 +2815,51 @@
         "title": "SemanticEntity",
         "type": "object"
       },
+      "TreeProgress": {
+        "additionalProperties": false,
+        "properties": {
+          "branch_labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Branch Labels",
+            "type": "object"
+          },
+          "card_branches": {
+            "title": "Card Branches",
+            "type": "integer"
+          },
+          "confirmed_versions": {
+            "title": "Confirmed Versions",
+            "type": "integer"
+          },
+          "milestones": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Milestones",
+            "type": "object"
+          },
+          "planned_cards": {
+            "title": "Planned Cards",
+            "type": "integer"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "confirmed_versions",
+          "planned_cards",
+          "card_branches",
+          "milestones",
+          "branch_labels"
+        ],
+        "title": "TreeProgress",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -2749,6 +2946,89 @@
           "commit_id"
         ],
         "title": "VersionReference",
+        "type": "object"
+      },
+      "VersionTreeState": {
+        "additionalProperties": false,
+        "properties": {
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/GitBranch"
+            },
+            "title": "Branches",
+            "type": "array"
+          },
+          "captured_at": {
+            "format": "date-time",
+            "title": "Captured At",
+            "type": "string"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/GitFileChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "commits": {
+            "items": {
+              "$ref": "#/components/schemas/GitCommit"
+            },
+            "title": "Commits",
+            "type": "array"
+          },
+          "conflicted": {
+            "title": "Conflicted",
+            "type": "boolean"
+          },
+          "dirty": {
+            "title": "Dirty",
+            "type": "boolean"
+          },
+          "lfs_pointers": {
+            "items": {
+              "$ref": "#/components/schemas/LfsPointer"
+            },
+            "title": "Lfs Pointers",
+            "type": "array"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExecutionMode"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TreeProgress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project_id": {
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$",
+            "title": "Project Id",
+            "type": "string"
+          },
+          "version": {
+            "$ref": "#/components/schemas/VersionReference"
+          }
+        },
+        "required": [
+          "project_id",
+          "version",
+          "dirty",
+          "conflicted",
+          "changes",
+          "lfs_pointers",
+          "branches",
+          "commits",
+          "mode",
+          "captured_at"
+        ],
+        "title": "VersionTreeState",
         "type": "object"
       },
       "VisualCapture": {
@@ -4028,6 +4308,143 @@
         "tags": [
           "version-collaboration"
         ]
+      }
+    },
+    "/api/version-collaboration/tree": {
+      "get": {
+        "operationId": "version_tree_api_version_collaboration_tree_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionTreeState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Version Tree"
+      }
+    },
+    "/api/version-collaboration/tree/branches/apply": {
+      "post": {
+        "operationId": "apply_branch_api_version_collaboration_tree_branches_apply_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyBranchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchOperationResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Branch"
+      }
+    },
+    "/api/version-collaboration/tree/branches/preview": {
+      "post": {
+        "operationId": "preview_branch_api_version_collaboration_tree_branches_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BranchPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BranchChangeSet"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Branch"
+      }
+    },
+    "/api/version-collaboration/tree/commits/{commit_id}/files": {
+      "get": {
+        "operationId": "commit_files_api_version_collaboration_tree_commits__commit_id__files_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "commit_id",
+            "required": true,
+            "schema": {
+              "title": "Commit Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GitFileChange"
+                  },
+                  "title": "Response Commit Files Api Version Collaboration Tree Commits  Commit Id  Files Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Commit Files"
       }
     }
   }

@@ -153,3 +153,6 @@ SceneOps Forge does not claim to:
 - guarantee subjective fun or artistic quality.
 
 It is an orchestration, production, review, and verification system.
+# 当前产品增量（2026-09-05）
+
+目标输入 → 一次任务授权 → 专用空工程自动准备 → Blender 基础资产创建/FBX 导出 → Unity 导入/放置 → 实际身份和尺寸回读已贯通。当前只有该有界资产路径为新增实测能力，其他生产节点不因有 UI 而声明真实接入。用户不需配置多 Agent 或工具参数；扩大范围、未知写入和预算异常仍停下来请求检查。见 `AGENT_LIVE_VERIFICATION.md`。

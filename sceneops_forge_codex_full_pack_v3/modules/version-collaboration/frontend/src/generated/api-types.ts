@@ -7,6 +7,8 @@ export type ActivityRecord = { readonly "activity_id": string; readonly "review_
 
 export type AddCommentRequest = { readonly "body": string; readonly "anchor": CommentAnchor; };
 
+export type ApplyBranchRequest = { readonly "change_set": BranchChangeSet; readonly "confirmed": boolean; };
+
 export type ApprovalObservation = { readonly "approval_id": string; readonly "review_id": string; readonly "review_revision_id": string; readonly "diff_bundle_id": string; readonly "subject_kind": string; readonly "subject_id": string; readonly "subject_version": number; readonly "approver_id": string; readonly "outcome": ApprovalOutcome; readonly "rationale": string; readonly "base_version": VersionReference; readonly "evidence_ids": ReadonlyArray<string>; readonly "created_at": string; readonly "mode": ExecutionMode; };
 
 export type ApprovalOutcome = "approved" | "rejected";
@@ -28,6 +30,12 @@ export type BehaviorDiffLayer = { readonly "state": DiffState; readonly "failure
 export type BehaviorSnapshot = { readonly "run_id": string; readonly "test_case_id": string; readonly "build_id": string; readonly "protocol_version": string; readonly "config_id": string; readonly "start_state_id": string; readonly "seed": number; readonly "objective_succeeded": boolean; readonly "assertions": ReadonlyArray<BehaviorAssertion>; readonly "steps": ReadonlyArray<BehaviorStep>; readonly "mode": ExecutionMode; };
 
 export type BehaviorStep = { readonly "step_id": string; readonly "action_id": string; readonly "outcome": string; readonly "goal_progress": number; readonly "target_sceneops_id"?: string | null; };
+
+export type BranchChangeSet = { readonly "operation": "create" | "switch"; readonly "branch_name": string; readonly "expected_head": string; readonly "source_commit": string; readonly "current_branch": string | null; readonly "blocked_reasons": ReadonlyArray<string>; readonly "mode"?: ExecutionMode; readonly "dry_run"?: boolean; };
+
+export type BranchOperationResult = { readonly "current_branch": string; readonly "head_commit": string; readonly "mode"?: ExecutionMode; };
+
+export type BranchPreviewRequest = { readonly "operation": "create" | "switch"; readonly "branch_name": string; readonly "source_commit"?: string | null; };
 
 export type CameraPose = { readonly "coordinate_space"?: string; readonly "axis_convention"?: string; readonly "position_m": readonly [number, number, number]; readonly "rotation_xyzw": readonly [number, number, number, number]; readonly "projection": string; readonly "vertical_fov_degrees"?: number | null; };
 
@@ -65,7 +73,7 @@ export type GitBranch = { readonly "name": string; readonly "commit_id": string;
 
 export type GitChangeKind = "added" | "modified" | "deleted" | "renamed" | "untracked" | "conflict";
 
-export type GitCommit = { readonly "commit_id": string; readonly "author": string; readonly "authored_at": string; readonly "subject": string; };
+export type GitCommit = { readonly "parent_ids"?: ReadonlyArray<string>; readonly "commit_id": string; readonly "author": string; readonly "authored_at": string; readonly "subject": string; };
 
 export type GitFileChange = { readonly "path": string; readonly "kind": GitChangeKind; readonly "old_path"?: string | null; readonly "additions"?: number | null; readonly "deletions"?: number | null; readonly "binary"?: boolean; };
 
@@ -111,9 +119,13 @@ export type SemanticDiffLayer = { readonly "state": DiffState; readonly "failure
 
 export type SemanticEntity = { readonly "entity_id": string; readonly "entity_kind": string; readonly "schema_id": string; readonly "schema_version": number; readonly "artifact_id": string; readonly "producer_module": string; readonly "values": { readonly [key: string]: unknown; }; readonly "mode": ExecutionMode; };
 
+export type TreeProgress = { readonly "stage": string; readonly "confirmed_versions": number; readonly "planned_cards": number; readonly "card_branches": number; readonly "milestones": { readonly [key: string]: string; }; readonly "branch_labels": { readonly [key: string]: string; }; };
+
 export type ValidationError = { readonly "loc": ReadonlyArray<string | number>; readonly "msg": string; readonly "type": string; readonly "input"?: unknown; readonly "ctx"?: {  }; };
 
 export type VersionReference = { readonly "provider"?: string; readonly "repository_id": string; readonly "object_format"?: string; readonly "commit_id": string; readonly "branch"?: string | null; };
+
+export type VersionTreeState = { readonly "project_id": string; readonly "version": VersionReference; readonly "dirty": boolean; readonly "conflicted": boolean; readonly "changes": ReadonlyArray<GitFileChange>; readonly "lfs_pointers": ReadonlyArray<LfsPointer>; readonly "branches": ReadonlyArray<GitBranch>; readonly "commits": ReadonlyArray<GitCommit>; readonly "mode": ExecutionMode; readonly "captured_at": string; readonly "progress"?: TreeProgress | null; };
 
 export type VisualCapture = { readonly "artifact_id": string; readonly "camera_id": string; readonly "pose": CameraPose; readonly "width": number; readonly "height": number; readonly "channels"?: number; readonly "color_space": string; readonly "capture_recipe_version": string; readonly "renderer_version": string; readonly "pixels": ReadonlyArray<number>; readonly "mode": ExecutionMode; };
 
@@ -144,4 +156,8 @@ export interface ApiOperations {
   "POST /api/version-collaboration/release-links": { params: {  }; body: ReleaseLinkRequest; response: ReleaseEvidenceLink };
   "GET /api/lab/catalog": { params: {  }; body: undefined; response: DemoCatalog };
   "POST /api/lab/reviews/{review_id}/mock-approval": { params: { review_id: string; }; body: DemoApprovalRequest; response: ApprovalObservation };
+  "GET /api/version-collaboration/tree": { params: {  }; body: undefined; response: VersionTreeState };
+  "GET /api/version-collaboration/tree/commits/{commit_id}/files": { params: { commit_id: string; }; body: undefined; response: ReadonlyArray<GitFileChange> };
+  "POST /api/version-collaboration/tree/branches/preview": { params: {  }; body: BranchPreviewRequest; response: BranchChangeSet };
+  "POST /api/version-collaboration/tree/branches/apply": { params: {  }; body: ApplyBranchRequest; response: BranchOperationResult };
 }

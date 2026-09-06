@@ -6,9 +6,9 @@ description: V5 运行专家
 status: active
 feature_flag: ai_agent_runtime
 requires:
-  modules: ["core-kernel","module-runtime","ai-model-router"]
+  modules: ["core-kernel","module-runtime","ai-model-router","project-intake","engine-unity"]
   integrations: []
-  optional_integrations: []
+  optional_integrations: ["blender","unity"]
 contributes:
   editors: []
   commands: []
@@ -16,6 +16,7 @@ contributes:
   jobs: []
   workflows: []
   policy_gates: []
-permissions: ["harness:read", "harness:plan"]
+permissions: ["harness:read", "harness:plan", "harness:approve"]
 entrypoints:
   backend: sceneops_ai_agents
+  frontend: ./frontend/src/index.ts

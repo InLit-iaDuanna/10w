@@ -14,4 +14,6 @@ export {
 } from "./manifest.ts";
 
 export { ConceptAssetsWorkbench } from './ConceptAssetsWorkbench';
+export { CardAssetWorkflow } from './CardAssetWorkflow.tsx';
+export type { CardAssetWorkflowProps } from './CardAssetWorkflow.tsx';
 export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');

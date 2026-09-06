@@ -1,4 +1,4 @@
-"""Contract/persistence/provider cases maintained, NOT RUN pending authorization."""
+"""Contract/persistence/provider cases; only explicitly reported focused cases are run."""
 import asyncio
 import sqlite3
 import tempfile
@@ -9,6 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from conversation_home.ai_repository import AIRepository
 from conversation_home.unified_router import ADVICE_PROMPTS
 from sceneops_ai_provider import ProviderFailure, ProviderService
+from sceneops_ai_provider.service import SYSTEM_PROMPT
 from sceneops_codebuddy import CodeBuddyFailure, complete
 
 
@@ -45,6 +46,7 @@ class UnifiedPersistenceTests(unittest.TestCase):
             service = ProviderService(path)
             self.assertEqual(service.settings().provider, 'codebuddycli')
             self.assertEqual(service.settings().model, 'hy3-x')
+            self.assertEqual(service.settings().alignment_detail, 'standard')
 
     def test_secret_is_write_only_and_owner_only(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -54,8 +56,23 @@ class UnifiedPersistenceTests(unittest.TestCase):
             settings = service.update_settings(provider='openai-compatible', model='custom-model',
                                                base_url='http://127.0.0.1:11434/v1', api_key='fixture-key')
             self.assertTrue(settings.api_key_configured)
+            self.assertEqual(settings.api_protocol, 'chat-completions')
+            self.assertTrue(settings.streaming)
+            self.assertEqual(settings.alignment_detail, 'standard')
             self.assertNotIn('fixture-key', repr(settings))
             self.assertEqual(secret.stat().st_mode & 0o777, 0o600)
+
+    def test_responses_streaming_and_alignment_settings_are_persisted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'workspace.sqlite3'
+            service = ProviderService(path)
+            service.update_settings(provider='openai-compatible', model='fixture-model',
+                base_url='https://provider.example/v1', api_key='fixture-key',
+                api_protocol='responses', streaming=False, alignment_detail='concise')
+            reopened = ProviderService(path)
+            self.assertEqual(reopened.settings().api_protocol, 'responses')
+            self.assertFalse(reopened.settings().streaming)
+            self.assertEqual(reopened.settings().alignment_detail, 'concise')
 
     def test_external_plain_http_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -131,7 +148,7 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
             service = ProviderService(Path(directory) / 'workspace.sqlite3')
             service.update_settings(provider='openai-compatible', model='custom-model',
                                     base_url='https://provider.example/v1', api_key='fixture-key')
-            with patch('sceneops_ai_provider.service.httpx.AsyncClient', return_value=client):
+            with patch('sceneops_ai_provider.openai_compatible.httpx.AsyncClient', return_value=client):
                 self.assertEqual(await service.complete('hello'), 'fixture reply')
         call = client.post.await_args
         self.assertEqual(call.args[0], 'https://provider.example/v1/chat/completions')
@@ -140,3 +157,49 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(messages[0]['content'])
         self.assertEqual(messages[1], {'role': 'user', 'content': 'hello'})
         self.assertEqual(call.kwargs['headers']['Authorization'], 'Bearer fixture-key')
+
+    async def test_openai_responses_shape(self):
+        response = MagicMock(is_redirect=False, status_code=200)
+        response.json.return_value = {'status': 'completed', 'output': [{
+            'type': 'message', 'role': 'assistant',
+            'content': [{'type': 'output_text', 'text': 'fixture response'}],
+        }], 'usage': {'input_tokens': 3, 'output_tokens': 2, 'total_tokens': 5}}
+        client = AsyncMock()
+        client.__aenter__.return_value = client
+        client.post.return_value = response
+        with tempfile.TemporaryDirectory() as directory:
+            service = ProviderService(Path(directory) / 'workspace.sqlite3')
+            service.update_settings(provider='openai-compatible', model='response-model',
+                base_url='https://provider.example/v1', api_key='fixture-key',
+                api_protocol='responses', streaming=False)
+            with patch('sceneops_ai_provider.openai_compatible.httpx.AsyncClient', return_value=client):
+                result = await service.generate('hello')
+        call = client.post.await_args
+        self.assertEqual(call.args[0], 'https://provider.example/v1/responses')
+        self.assertEqual(call.kwargs['json']['input'], 'hello')
+        self.assertEqual(call.kwargs['json']['instructions'], SYSTEM_PROMPT)
+        self.assertFalse(call.kwargs['json']['store'])
+        self.assertEqual(result.text, 'fixture response')
+        self.assertEqual(result.usage, {'input_tokens': 3, 'output_tokens': 2, 'total_tokens': 5})
+
+    async def test_compatible_model_discovery_uses_models_endpoint(self):
+        response = MagicMock(is_redirect=False, status_code=200)
+        response.json.return_value = {'object': 'list', 'data': [
+            {'id': 'model-b', 'object': 'model'}, {'id': 'model-a', 'object': 'model'},
+        ]}
+        client = AsyncMock()
+        client.__aenter__.return_value = client
+        client.get.return_value = response
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'workspace.sqlite3'
+            service = ProviderService(path)
+            service.update_settings(provider='openai-compatible', model='model-a',
+                base_url='https://provider.example/v1', api_key='fixture-key')
+            with patch('sceneops_ai_provider.openai_compatible.httpx.AsyncClient', return_value=client):
+                models = await service.discover_models(provider='openai-compatible',
+                    base_url='https://provider.example/v1', api_key='fixture-key')
+            cached = ProviderService(path).models()
+        self.assertEqual([item.id for item in models], ['model-a', 'model-b'])
+        self.assertEqual([item.id for item in cached if item.provider == 'openai-compatible'],
+                         ['model-a', 'model-b'])
+        self.assertEqual(client.get.await_args.args[0], 'https://provider.example/v1/models')

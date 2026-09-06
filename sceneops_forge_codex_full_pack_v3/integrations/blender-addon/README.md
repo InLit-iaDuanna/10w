@@ -52,3 +52,42 @@ PYTHONPATH=integrations/blender-addon/src python3 -m unittest discover -s integr
 
 The smoke test is not skipped: it asserts `live` when Blender is found and
 otherwise asserts a structured `blocked` result.
+
+## 任务级常驻 Blender 会话
+
+公开入口 `BlenderAgentSession(workspace_root, state_root, executable=None)` 接收服务端
+分配的工程目录与独立状态目录。实际内容位于 `workspace_root/blender`；新会话拒绝使用非空
+内容目录。默认发现 `/Applications/Blender.app/Contents/MacOS/Blender`，沿用已安装版本。
+`bind_authorization(grant)` 后调用同步 `start()` 打开可见空场景，返回真实版本、会话 ID、
+进程、对象、可用能力及隔离探针证据。`inspect()` 回读尺寸、身份和文件；`stop()` 只关闭
+已认证的自有会话。应用重启会重新连接既有会话，编辑器中断后从自有 `.blend` 和 SQLite
+请求记录恢复。
+
+授权字段为 `task_id / grant_id / project_id / workspace_root / allowed_capabilities /
+expires_at`（UTC ISO 时间）。修改调用还必须带同一授权及 `action_id / capability_id /
+change_set_id / approval_id`。能力仅有 `blender.scene.inspect`、`blender.asset.create`、
+`blender.asset.export`。模型不提供这些授权字段；执行服务从已确认记录生成它们。
+
+- `create_asset(request_id=..., asset_id=..., sceneops_id=..., dimensions_m=[x,y,z],
+  authorization=..., name=None, dry_run=False)` 创建尺寸为 0.001–100 米的单个立方体并保存。
+- `export_asset(request_id=..., asset_id=..., authorization=..., dry_run=False)` 复用已有
+  类型化 FBX 导出器，返回 `fbx_path` 与 `manifest_path`，附 Unity 身份映射 sidecar。
+- 相同请求与输入只执行一次；请求 ID 改绑其他输入被拒绝。`dry_run=True` 只返回计划写入
+  路径，不启动 Blender。所有编辑操作都在 Blender 主线程计时器执行。
+
+会话使用仅绑定 loopback 的认证传输；密钥保存在权限 0600 的状态文件，不进入响应或日志。
+macOS `sandbox-exec` 默认拒绝访问，只允许 Blender 运行时与固定桥接源码读取、专属内容与
+状态目录写入、loopback 网络。它不开放用户主目录，也不开放任意代码命令。每次启动必须
+实际尝试并拒绝目录外 sentinel 写入后才能报告连接成功。符号链接输出越界也被拒绝。
+
+定向验证：
+
+```sh
+PYTHONPATH=integrations/blender-addon/src python3 -m unittest discover -s integrations/blender-addon/tests -p test_agent_session.py -v
+# 显式真实验收：仅创建临时独立工程，打开 Blender，最后关闭自有进程。
+PYTHONPATH=integrations/blender-addon/src python3 integrations/blender-addon/scripts/smoke_agent_session.py
+```
+
+真实验收脚本涵盖空场景、尺寸与 FBX 身份、目录外拒写、认证失败、幂等、重连、符号链接
+越界、编辑器进程中断恢复及日志无密钥，保留独立目录下 `evidence.json`。当前操作系统
+实现仅支持 macOS；缺少系统沙箱或编辑器时报告真实失败，没有 Mock 替换。

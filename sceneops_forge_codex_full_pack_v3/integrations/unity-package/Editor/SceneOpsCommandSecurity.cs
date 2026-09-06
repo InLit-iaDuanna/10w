@@ -22,6 +22,7 @@ namespace SceneOps.Forge.Unity.Editor
     {
         internal static readonly HashSet<string> CommandAllowlist = new HashSet<string>(StringComparer.Ordinal)
         {
+            "unity.prototype.compose", "unity.prototype.inspect", "unity.prototype.play", "unity.prototype.capture",
             "unity.health",
             "unity.project.scan",
             "unity.asset.import",
@@ -42,6 +43,7 @@ namespace SceneOps.Forge.Unity.Editor
 
         internal static readonly HashSet<string> MutatingCommands = new HashSet<string>(StringComparer.Ordinal)
         {
+            "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
             "unity.asset.import",
             "unity.identity.map",
             "unity.prefab.upsert",
@@ -56,6 +58,7 @@ namespace SceneOps.Forge.Unity.Editor
 
         internal static readonly HashSet<string> ApprovalCommands = new HashSet<string>(StringComparer.Ordinal)
         {
+            "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
             "unity.asset.import",
             "unity.identity.map",
             "unity.prefab.upsert",
@@ -233,14 +236,17 @@ namespace SceneOps.Forge.Unity.Editor
 
         private static void RejectSymlinkSegments(string candidate, string root)
         {
-            string current = File.Exists(candidate) || Directory.Exists(candidate)
-                ? candidate
-                : Path.GetDirectoryName(candidate);
+            string current = candidate;
             while (!string.IsNullOrWhiteSpace(current) &&
                 current.StartsWith(root, PathComparison()))
             {
-                if ((File.Exists(current) || Directory.Exists(current)) &&
-                    (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                FileAttributes attributes = 0;
+                // File.Exists follows links and returns false for dangling targets. Check
+                // attributes on every segment so a future output cannot follow such a link.
+                try { attributes = File.GetAttributes(current); }
+                catch (FileNotFoundException) { }
+                catch (DirectoryNotFoundException) { }
+                if ((attributes & FileAttributes.ReparsePoint) != 0)
                 {
                     throw new SceneOpsCommandException(
                         "UNITY_PATH_OUTSIDE_PROJECT",

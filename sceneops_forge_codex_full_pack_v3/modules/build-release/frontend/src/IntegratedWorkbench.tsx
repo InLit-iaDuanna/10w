@@ -19,6 +19,6 @@ export default function IntegratedWorkbench(props: IntegratedWorkbenchProps) {
       <p>当前构建：{props.context.activeBuildId || '暂无'}。保存不扫描工程、不运行 Unity、不构建或部署。</p>
     </IntegratedDraftForm>
     {props.document.sample_id && <UnityBuildWorkbench embedded api={api} sampleId={props.document.sample_id} projectId={props.project.project_id}/>}
-    {!props.document.sample_id && <p>尚无构建或发布证据；真实 Unity、可信审批与生产发布保持未连接。手动导入 Mock 后可浏览原构建矩阵与候选审查面板。</p>}
+    {!props.document.sample_id && <p>此处仅记录构建与发布草稿，尚无实际构建或发布证据。基础资产的 Blender → Unity 真实执行请在对话的「Agent 任务」中发起，无需填写此处工程路径。手动导入 Mock 仅用于浏览原构建矩阵与候选审查面板。</p>}
   </>;
 }

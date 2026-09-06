@@ -35,6 +35,8 @@ export interface WorkbenchContext {
   activeBuildId: string | null;
   activePlaytestRunId: string | null;
   activeIssueId: string | null;
+  selectedArtifactIds?: string[];
+  activeProductionModuleId?: string;
   cameraPose?: CameraPose;
   timelineTime?: number;
 }
@@ -63,7 +65,7 @@ export type ContextBinding =
 export type EditorPlacement =
   | { mode: 'replace'; relativeToInstanceId?: string }
   | { mode: 'tab'; relativeToInstanceId?: string }
-  | { mode: 'split'; direction: SplitDirection; relativeToInstanceId?: string }
+  | { mode: 'split'; direction: SplitDirection; relativeToInstanceId?: string; initialSize?: number }
   | { mode: 'floating'; bounds?: FloatingBounds }
   | { mode: 'popout'; bounds?: FloatingBounds }
   | { mode: 'drawer'; edge: Edge };
@@ -246,7 +248,7 @@ export interface DockingEnginePort {
   capture(): JsonValue;
   describe(): DockingTopology;
   restore(layout: JsonValue): void | Promise<void>;
-  open(instance: EditorInstance, placement: EditorPlacement): void | boolean | Promise<void | boolean>;
+  open(instance: EditorInstance, placement: EditorPlacement, options?: { preserveFocus?: boolean }): void | boolean | Promise<void | boolean>;
   close(instanceId: string): void | Promise<void>;
   move(instance: EditorInstance, placement: EditorPlacement): void | boolean | Promise<void | boolean>;
   switchEditor(instance: EditorInstance): void | Promise<void>;
@@ -310,3 +312,4 @@ export interface AreaHeaderContract {
     | 'close'
   >;
 }
+export { MarkdownMessage } from './MarkdownMessage.tsx';

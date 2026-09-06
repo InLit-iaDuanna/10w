@@ -3,12 +3,13 @@ import json
 from pathlib import Path
 from collections.abc import Callable
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sceneops_ai_provider import ProviderFailure, ProviderService
 from .ai_repository import AIRepository
 from .schemas import AdapterError
-from .unified_schemas import (AIAdvice, AIAdviceRequest, AIChatRequest, AIConversation,
-    AIModel, AIModels, AISettings, AISettingsUpdate)
+from .unified_schemas import (AIAdvice, AIAdviceRequest, AIChatRequest, AIChatStreamEvent,
+    AIConnectionRequest, AIConnectionResult, AIConversation, AIModel, AIModels,
+    AIProviderModels, AIProviderModelsRequest, AISettings, AISettingsUpdate)
 
 ADVICE_PROMPTS = {
     'concept-lab': '你是游戏概念设计顾问。只提供人工评审的文字建议，不生成图片或批准资产。检查轮廓、尺寸、预算、材质及禁止元素。',
@@ -53,13 +54,21 @@ def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str
         if project_id is not None and project_exists is not None and not project_exists(project_id):
             raise HTTPException(404, '项目不存在，请重新选择项目。')
 
+    def chat_prompt(body: AIChatRequest) -> str:
+        history = repository.conversation(body.project_id).messages
+        payload = {'project_id': body.project_id, 'context': body.context,
+            'history': [{'role': item.role, 'text': item.text} for item in history],
+            'message': body.message}
+        return json.dumps(payload, ensure_ascii=False)
+
     @router.get('/models', response_model=AIModels)
     def models():
         settings = provider_service.settings()
         available = provider_service.provider_available()
-        if settings.provider == 'codebuddycli':
-            message = ('CLI 已安装；登录、模型权限和额度将在发送时检查。' if available else
-                       '找不到 codebuddy；请安装并在终端登录后重试。')
+        if settings.provider in ('codebuddycli', 'codexcli'):
+            cli = 'codebuddy' if settings.provider == 'codebuddycli' else 'codex'
+            message = (f'{cli} CLI 已安装；登录、模型权限和额度将在发送时检查。' if available else
+                       f'找不到 {cli}；请安装并在终端登录后重试。')
         else:
             message = ('兼容服务设置已保存；连接和模型权限将在发送时检查。' if available else
                        '请配置兼容服务地址和 API Key。')
@@ -81,11 +90,41 @@ def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str
                 model=body.model,
                 base_url=body.base_url,
                 api_key=body.api_key.get_secret_value() if body.api_key is not None else None,
+                api_protocol=body.api_protocol,
+                streaming=body.streaming,
+                alignment_detail=body.alignment_detail,
             )
         except ProviderFailure as error:
             return JSONResponse(status_code=error.status_code,
                 content=AdapterError(code=error.code, message=str(error)).model_dump())
         return AISettings(**updated.__dict__)
+
+    @router.post('/provider/models', response_model=AIProviderModels,
+                 responses={422: {'model': AdapterError}, 503: {'model': AdapterError}})
+    async def provider_models(body: AIProviderModelsRequest, request: Request):
+        async def discover():
+            discovered = await provider_service.discover_models(provider=body.provider,
+                base_url=body.base_url,
+                api_key=body.api_key.get_secret_value() if body.api_key is not None else None)
+            live = body.provider == 'openai-compatible'
+            message = (f'已从兼容服务获取 {len(discovered)} 个模型。' if live else
+                       f'已读取 {len(discovered)} 个本机候选模型；CLI 账户权限仍需连接检查。')
+            return AIProviderModels(provider=body.provider,
+                mode='live' if live else 'planned',
+                models=[AIModel(id=item.id, label=item.label, provider=item.provider)
+                        for item in discovered], message=message)
+        return await while_connected(request, discover())
+
+    @router.post('/provider/check', response_model=AIConnectionResult,
+                 responses={422: {'model': AdapterError}, 503: {'model': AdapterError}})
+    async def provider_check(body: AIConnectionRequest, request: Request):
+        async def check():
+            result = await provider_service.check_connection(provider=body.provider,
+                model=body.model, base_url=body.base_url,
+                api_key=body.api_key.get_secret_value() if body.api_key is not None else None,
+                api_protocol=body.api_protocol, streaming=body.streaming)
+            return AIConnectionResult(**result.__dict__)
+        return await while_connected(request, check())
 
     @router.get('/conversation', response_model=AIConversation)
     def conversation(project_id: str | None = None):
@@ -101,10 +140,7 @@ def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str
             raise HTTPException(409, '此项目有回复正在生成，请等待或取消后再发送。')
         busy_scopes.add(scope)
         async def generate():
-            history = repository.conversation(body.project_id).messages
-            payload = {'project_id': body.project_id, 'context': body.context,
-                'history': [{'role': item.role, 'text': item.text} for item in history], 'message': body.message}
-            result = await provider_service.generate(json.dumps(payload, ensure_ascii=False))
+            result = await provider_service.generate(chat_prompt(body))
             repository.append_exchange(body.project_id, body.message, result.text,
                                        result.model, result.provider)
             return repository.conversation(body.project_id)
@@ -112,6 +148,65 @@ def create_ai_router(database_path: str | Path, *, project_exists: Callable[[str
             return await while_connected(request, generate())
         finally:
             busy_scopes.discard(scope)
+
+    @router.post('/chat/stream', response_model=AIChatStreamEvent,
+                 response_class=StreamingResponse, responses={
+        200: {'description': 'Server-sent JSON events.', 'content': {
+            'text/event-stream': {'schema': {'$ref': '#/components/schemas/AIChatStreamEvent'}}}},
+        422: {'model': AdapterError}, 503: {'model': AdapterError},
+    })
+    async def chat_stream(body: AIChatRequest):
+        validate_project(body.project_id)
+        scope = repository.scope(body.project_id)
+        if scope in busy_scopes:
+            raise HTTPException(409, '此项目有回复正在生成，请等待或取消后再发送。')
+        busy_scopes.add(scope)
+
+        async def events():
+            queue: asyncio.Queue[AIChatStreamEvent] = asyncio.Queue(maxsize=256)
+
+            async def forward(event: dict):
+                if event.get('type') == 'text_delta' and isinstance(event.get('text'), str):
+                    await queue.put(AIChatStreamEvent(type='text_delta', text=event['text']))
+                elif event.get('type') == 'status' and isinstance(event.get('text'), str):
+                    await queue.put(AIChatStreamEvent(type='status', text=event['text']))
+
+            async def generate():
+                try:
+                    settings = provider_service.settings()
+                    status = '正在接收流式回复…' if settings.streaming else '正在等待完整回复…'
+                    await queue.put(AIChatStreamEvent(type='status', text=status))
+                    result = await provider_service.generate(chat_prompt(body), on_event=forward)
+                    repository.append_exchange(body.project_id, body.message, result.text,
+                                               result.model, result.provider)
+                    await queue.put(AIChatStreamEvent(type='complete',
+                        conversation=repository.conversation(body.project_id)))
+                except asyncio.CancelledError:
+                    raise
+                except ProviderFailure as error:
+                    await queue.put(AIChatStreamEvent(type='error', code=error.code,
+                                                     text=str(error)))
+                except Exception:
+                    await queue.put(AIChatStreamEvent(type='error', code='CHAT_STREAM_FAILED',
+                        text='回复流中断，请重新读取对话后手动重试。'))
+
+            pending = asyncio.create_task(generate())
+            try:
+                while True:
+                    event = await queue.get()
+                    yield 'data: ' + event.model_dump_json(exclude_none=True) + '\n\n'
+                    if event.type in ('complete', 'error'):
+                        break
+            finally:
+                if not pending.done():
+                    pending.cancel()
+                await asyncio.gather(pending, return_exceptions=True)
+                busy_scopes.discard(scope)
+
+        return StreamingResponse(events(), media_type='text/event-stream', headers={
+            'Cache-Control': 'no-cache, no-store',
+            'X-Accel-Buffering': 'no',
+        })
 
     @router.post('/advice', response_model=AIAdvice,
                  responses={422: {'model': AdapterError}, 503: {'model': AdapterError}})

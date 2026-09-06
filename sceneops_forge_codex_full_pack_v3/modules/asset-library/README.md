@@ -17,10 +17,30 @@ module contributions and never open on the chat-only home automatically.
 
 - Python: `asset_library` exports the Pydantic contract models,
   `InMemoryAssetRepository`, `AssetLibraryService`, and `create_router`.
+- Unified project catalog: `ProjectAssetCatalogService`,
+  `SqliteProjectAssetRepository`, and `create_project_catalog_router` store the
+  model versions explicitly adopted from a production card. A catalog entry
+  keeps its source asset identity while each `.blend`, preview GLB, and FBX
+  version is immutable. Re-saving the exact same source version is idempotent.
 - TypeScript: `frontend/src/index.ts` exports the module contribution, browser
   query model, filters, query keys, and inspector-state builder.
 - Command intents: `asset.search`, `asset.version.publish`.
 - Event: `asset.version.published@1`.
+
+### 统一旅程中的项目资产库
+
+统一工作台把已采用的项目资产显示为正方形缩略卡片。卡片只展示简单对象名、版本和主要尺寸；点击后才进入单资产编辑页，查看真实 GLB、源文件、版本、几何信息、重命名和“加入场景”等详细操作。场景实例的位移、旋转和缩放仍属于 World Composer，不混进资产卡片。
+
+面向用户的名称会整理成简短对象名，例如“大树”“岩石”“僵尸”。导入文件名或模型返回的长标题保存在 `source_title` 供追溯，不再占据资产库标题；同一项目重名时使用稳定的数字后缀。用户重命名通过乐观版本字段防止覆盖较新的修改。
+
+统一后端公开以下项目级接口，界面与 Agent/CLI 适配器调用的是同一套服务，不存在只在前端生效的操作：
+
+- `GET /api/project-assets?project_id=...`：读取项目资产卡片；
+- `PUT /api/project-assets/{entry_id}?project_id=...`：修改简单名称；
+- `POST /api/card-assets/{record_id}/save-to-library`：把明确采用的模型版本存入资产库；
+- `GET /api/card-assets/files/{artifact_id}`：读取已登记的源文件或预览产物。
+
+每次“新建模型”或“导入 GLB / FBX”都会创建新的 `modeling_session_id`。新会话只继承项目技术栈、策划背景和世界尺度，不继承上一件资产的聊天记录或未确认草稿。
 
 The module owns asset catalog records. It stores external scene, Unity, and build
 identifiers as stable references; it does not mutate those systems.
@@ -67,9 +87,11 @@ results = service.search(AssetSearchFilter(query="key", has_collider=True))
 
 ## Known limitations
 
-The root module runtime, generated OpenAPI TypeScript client, artifact-store, and
-Unity consumer were absent at this task's parallel starting commit. Their wiring
-is therefore `planned`; no local result is represented as a live integration.
+The unified project catalog is wired to the card-model workflow and the
+Three.js environment scene. It catalogs actual local files but does not by
+itself publish them to Unity, a build, or an external artifact store. The older
+formal publication boundary and its stronger approval/provenance requirements
+remain separate.
 
 ## 独立工作台整合
 

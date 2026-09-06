@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import type { DockviewApi } from 'dockview-react';
 import { DockviewPort } from '../DockviewPort.ts';
 
 function instance(instanceId: string, editorId = 'fixture.editor') {
@@ -20,16 +21,22 @@ function instance(instanceId: string, editorId = 'fixture.editor') {
 type FakeGroup = {
   id: string;
   panels: FakePanel[];
+  bounds?: { left: number; top: number; width: number; height: number };
   size?: { width?: number; height?: number };
   autoHide: boolean;
   collapsed: boolean;
   peeking: boolean;
   calls: string[];
+  constraints?: { minimumWidth?: number; minimumHeight?: number };
   api: {
     id: string;
+    readonly width: number;
+    readonly height: number;
+    readonly boundingBox: { left: number; top: number; width: number; height: number } | undefined;
     location: { type: 'grid' | 'edge'; position?: string };
-    moveTo: () => void;
+    moveTo: (options: { group?: FakeGroup; position?: string }) => void;
     setHeaderPosition: () => void;
+    setConstraints: (value: { minimumWidth?: number; minimumHeight?: number }) => void;
     setSize: (size: { width?: number; height?: number }) => void;
     setAutoHide: (value: boolean) => void;
     collapse: () => void;
@@ -56,7 +63,7 @@ type FakePanel = {
 
 function fakeApi() {
   const closed: string[] = [];
-  const additions: Array<{ id: string; groupId: string }> = [];
+  const additions: Array<{ id: string; groupId: string; inactive?: boolean }> = [];
   const peekCalls: Array<{ edge: string; peek: boolean }> = [];
   const clears: number[] = [];
   const panels = new Map<string, FakePanel>();
@@ -66,9 +73,20 @@ function fakeApi() {
     const group: FakeGroup = {
       id, panels: [], autoHide: false, collapsed: false, peeking: false, calls: [],
       api: {
+        get width() { return group.size?.width ?? 300; },
+        get height() { return group.size?.height ?? 240; },
+        get boundingBox() { return group.bounds; },
         id, location: edge ? { type: 'edge', position: edge } : { type: 'grid' },
-        moveTo: () => undefined,
+        moveTo: ({ group: destination, position = 'center' }) => {
+          const target = position === 'center' && destination ? destination : createGroup(`grid-${groups.length}`);
+          for (const panel of [...group.panels]) {
+            group.panels.splice(group.panels.indexOf(panel), 1);
+            panel.group = target;
+            target.panels.push(panel);
+          }
+        },
         setHeaderPosition: () => undefined,
+        setConstraints: (value) => { group.calls.push('constraints'); group.constraints = value; },
         setSize: (size) => { group.calls.push('size'); group.size = size; },
         setAutoHide: (value) => { group.calls.push('autohide'); group.autoHide = value; },
         collapse: () => { group.calls.push('collapse'); group.collapsed = true; },
@@ -92,7 +110,13 @@ function fakeApi() {
     fromJSON: () => undefined,
     getPanel: (id: string) => panels.get(id),
     getGroup: (id: string): FakeGroup | undefined => groups.find((group) => group.id === id),
+    addGroup: () => createGroup(`grid-${groups.length}`),
     getEdgeGroup: (edge: string) => edges.get(edge)?.api,
+    removeEdgeGroup: (edge: string) => {
+      const group = edges.get(edge);
+      if (group) groups.splice(groups.indexOf(group), 1);
+      edges.delete(edge);
+    },
     addEdgeGroup: (edge: string, options: { id: string; autoHide?: boolean; collapsed?: boolean }) => {
       assert.equal(edges.has(edge), false, 'an edge group is created only once');
       const group = createGroup(options.id, edge);
@@ -101,13 +125,13 @@ function fakeApi() {
       edges.set(edge, group);
       return group.api;
     },
-    addPanel: (options: { id: string; title: string; position?: { referenceGroup?: string; referencePanel?: string } }): FakePanel => {
+    addPanel: (options: { id: string; title: string; inactive?: boolean; position?: { referenceGroup?: string; referencePanel?: string; direction?: string } }): FakePanel => {
       const position = options.position;
       const group = position?.referenceGroup
         ? api.getGroup(position.referenceGroup)!
         : position?.referencePanel
           ? panels.get(position.referencePanel)!.group
-          : api.activePanel?.group ?? createGroup('grid');
+          : position?.direction ? createGroup('grid') : api.activePanel?.group ?? createGroup('grid');
       const created: FakePanel = {
         id: options.id, title: options.title, group,
         api: {
@@ -129,7 +153,7 @@ function fakeApi() {
         },
       };
       group.panels.push(created);
-      additions.push({ id: created.id, groupId: group.id });
+      additions.push({ id: created.id, groupId: group.id, ...(options.inactive === undefined ? {} : { inactive: options.inactive }) });
       panels.set(options.id, created);
       api.activePanel = created;
       return created;
@@ -145,6 +169,53 @@ function fakeApi() {
   api.addPanel({ id: 'original', title: 'original' });
   return { api, panels, closed, additions, edges, peekCalls, clears };
 }
+
+test('production auto-open asks Dockview for an inactive result panel without replacing content', async () => {
+  const { api, additions, closed } = fakeApi();
+  const port = new DockviewPort(api as unknown as DockviewApi);
+  await port.open(instance('production-result'), { mode: 'split', direction: 'right', relativeToInstanceId: 'original' }, { preserveFocus: true });
+  assert.equal(additions.at(-1)?.inactive, true);
+  assert.deepEqual(closed, []);
+});
+
+test('split placement applies its initial size on the split axis', async () => {
+  const { api, panels } = fakeApi();
+  const port = new DockviewPort(api as unknown as DockviewApi);
+  await port.open(instance('right-sidebar'), {
+    mode: 'split', direction: 'right', relativeToInstanceId: 'original', initialSize: 440,
+  });
+  assert.deepEqual(panels.get('right-sidebar')?.group.size, { width: 440 });
+});
+
+test('restore removes legacy edge limits without changing persisted user sizes or tabs', () => {
+  const { api } = fakeApi();
+  let restored: unknown;
+  const port = new DockviewPort({ ...api, fromJSON: (layout: unknown) => { restored = layout; } } as unknown as DockviewApi);
+  const layout = {
+    edgeGroups: Object.fromEntries(['left', 'right', 'top', 'bottom'].map(edge => [
+      edge, { minimumSize: 180, maximumSize: 640, size: 1200, collapsed: false, panels: ['draft'] },
+    ])),
+  };
+  port.restore(layout);
+  for (const edge of ['left', 'right', 'top', 'bottom']) {
+    const group = (restored as typeof layout).edgeGroups[edge]!;
+    assert.equal(group.minimumSize, 12);
+    assert.equal(group.maximumSize, undefined);
+    assert.equal(group.size, 1200);
+    assert.deepEqual(group.panels, ['draft']);
+    assert.equal(layout.edgeGroups[edge]!.maximumSize, 640, 'input snapshot is not mutated');
+  }
+});
+
+test('home opens in the grid after the last edge tab closes', async () => {
+  const { api, panels } = fakeApi();
+  const port = new DockviewPort(api as never);
+  await port.open(instance('tool'), { mode: 'drawer', edge: 'bottom' });
+  port.close('original');
+  port.close('tool');
+  await port.open(instance('home'), { mode: 'tab' });
+  assert.equal(panels.get('home')?.group.api.location.type, 'grid');
+});
 
 test('replace without explicit relative panel closes the pre-add active panel', async () => {
   const { api, closed } = fakeApi();
@@ -172,6 +243,78 @@ test('drawer placement creates the panel directly in each native edge group', as
   }
   assert.deepEqual(panels.get('original')?.group.panels.map((panel) => panel.id), ['original']);
   assert.deepEqual(closed, []);
+});
+
+test('region splits migrate native edge tabs into grid groups without creating or closing panels', async () => {
+  const { api, panels, closed, additions, edges } = fakeApi();
+  const port = new DockviewPort(api as never);
+  await port.open(instance('top-tool'), { mode: 'drawer', edge: 'top' });
+  await port.open(instance('bottom-tool'), { mode: 'drawer', edge: 'bottom' });
+  edges.get('top')!.size = { height: 180 };
+  edges.get('bottom')!.size = { height: 260 };
+  for (const edge of ['top', 'bottom'] as const) {
+    const group = edges.get(edge)!;
+    Object.defineProperty(group.api, 'height', {
+      get() {
+        if (group.panels.length === 0) throw new Error('released edge size');
+        return group.size?.height ?? 240;
+      },
+    });
+  }
+
+  port.enableRegionSplits();
+
+  assert.equal(edges.size, 0);
+  assert.equal(panels.get('top-tool')?.group.api.location.type, 'grid');
+  assert.equal(panels.get('bottom-tool')?.group.api.location.type, 'grid');
+  assert.deepEqual(panels.get('top-tool')?.group.size, { height: 180 });
+  assert.deepEqual(panels.get('bottom-tool')?.group.size, { height: 260 });
+  assert.deepEqual(closed, []);
+  assert.deepEqual(additions.map(({ id }) => id), ['original', 'top-tool', 'bottom-tool']);
+  assert.ok(api.groups.filter(group => group.api.location.type === 'grid')
+    .every(group => group.constraints?.minimumWidth === 12 && group.constraints.minimumHeight === 12));
+});
+
+test('region splits use an empty native root anchor when the restored layout has no grid', async () => {
+  const { api, panels, edges, additions } = fakeApi();
+  const port = new DockviewPort(api as never);
+  await port.open(instance('hidden-edge-tool'), { mode: 'drawer', edge: 'left' });
+  const originalGrid = panels.get('original')!.group;
+  api.groups.splice(api.groups.indexOf(originalGrid), 1);
+
+  port.enableRegionSplits();
+
+  assert.equal(edges.size, 0);
+  assert.equal(panels.get('hidden-edge-tool')?.group.api.location.type, 'grid');
+  assert.deepEqual(additions.map(({ id }) => id), ['original', 'hidden-edge-tool']);
+});
+
+test('region resize uses native constraints and collapsed detection returns every grid tab', async () => {
+  const { api, panels } = fakeApi();
+  const port = new DockviewPort(api as never);
+  await port.open(instance('tab'), { mode: 'tab', relativeToInstanceId: 'original' });
+
+  port.resizeRegion('original', 'bottom', 4);
+  const group = panels.get('original')!.group;
+  assert.deepEqual(group.constraints, { minimumWidth: 12, minimumHeight: 12 });
+  assert.deepEqual(group.size, { height: 12 });
+  assert.deepEqual(port.collapsedRegionIds().sort(), ['original', 'tab']);
+  group.size = { width: 320, height: 120 };
+  assert.deepEqual(port.collapsedRegionIds(), []);
+});
+
+test('reverse region pulls resolve the adjacent grid group at the pointer position', async () => {
+  const { api, panels } = fakeApi();
+  const port = new DockviewPort(api as never);
+  await port.open(instance('left-tool'), { mode: 'drawer', edge: 'left' });
+  port.enableRegionSplits();
+  const current = panels.get('original')!.group;
+  const adjacent = panels.get('left-tool')!.group;
+  current.bounds = { left: 220, top: 0, width: 680, height: 740 };
+  adjacent.bounds = { left: 0, top: 0, width: 220, height: 740 };
+
+  assert.deepEqual(port.adjacentRegionIds('original', 'left', 0.5), ['left-tool']);
+  assert.deepEqual(port.adjacentRegionIds('original', 'right', 0.5), []);
 });
 
 test('failed native edge creation does not leave the requested tool in the conversation group', async () => {

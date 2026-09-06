@@ -3,6 +3,7 @@ import sqlite3
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from sceneops_harness import ModelRoutingDecision
+from sceneops_ai_provider import ProviderId
 
 ROLE_TIERS = {"producer": "reasoning", "game-designer": "standard", "technical-artist": "reasoning",
     "blender-specialist": "reasoning", "unity-engineer": "reasoning", "render-specialist": "vision",
@@ -13,7 +14,7 @@ ModelTier = Literal['fast', 'standard', 'reasoning', 'vision', 'player']
 
 class ModelProfile(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    provider: Literal['codebuddycli', 'openai-compatible']
+    provider: ProviderId
     tier: ModelTier
     model: str | None = Field(default=None, max_length=200)
 

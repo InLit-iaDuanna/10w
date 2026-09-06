@@ -16,7 +16,7 @@ import {
 } from '../fixtures/mock-shell-fixtures.ts';
 import { validateWorkspaceDocument } from '../state/layout-persistence.ts';
 
-function setup() {
+function setup(restoreHome = false) {
   const editors = new EditorRegistry();
   editors.registerAll(createPresetMockEditors());
   editors.register(createMockEditor('fixture.two'));
@@ -39,9 +39,63 @@ function setup() {
     engine,
     environment: { permissions: new Set(['workbench:write']), connectedIntegrations: new Set() },
     createId: ids,
+    ...(restoreHome ? { emptyWorkspaceEditorId: 'assistant.conversation' } : {}),
   });
   return { coordinator, engine, events };
 }
+
+test('closing the last home editor restores one centered instance in the same transaction', async () => {
+  const { coordinator, events } = setup(true);
+  const home = Object.values(coordinator.snapshot().instances)[0]!;
+  const order: string[] = [];
+  events.on('workbench.editor.closed@1', () => order.push('closed'));
+  events.on('workbench.editor.opened@1', () => order.push('opened'));
+  const depth = coordinator.historyDepth();
+  assert.equal((await coordinator.closeEditor(home.instanceId)).status, 'closed');
+  const doc = coordinator.snapshot();
+  assert.deepEqual(Object.keys(doc.instances), [home.instanceId]);
+  assert.equal(doc.areas.length, 1);
+  assert.deepEqual(doc.areas[0]!.tabs, [home.instanceId]);
+  assert.equal(coordinator.historyDepth(), depth + 1);
+  assert.deepEqual(order, ['closed', 'opened']);
+  assert.equal((await coordinator.reopenEditor()).status, 'empty');
+});
+
+test('closing all tools restores home without losing close history or dirty confirmation', async () => {
+  const { coordinator } = setup(true);
+  const home = Object.values(coordinator.snapshot().instances)[0]!;
+  const tool = await coordinator.openEditor({ editorId: 'fixture.two', source: 'button' });
+  assert.equal(tool.status, 'opened');
+  if (tool.status !== 'opened') return;
+  await coordinator.closeEditor(home.instanceId);
+  assert.deepEqual(Object.keys(coordinator.snapshot().instances), [tool.instance.instanceId]);
+  coordinator.setDirty(tool.instance.instanceId, true);
+  assert.equal((await coordinator.closeEditor(tool.instance.instanceId)).status, 'confirmation-required');
+  await coordinator.closeEditor(tool.instance.instanceId, true);
+  assert.deepEqual(Object.keys(coordinator.snapshot().instances), [home.instanceId]);
+  assert.equal((await coordinator.reopenEditor()).status, 'opened');
+  assert.equal(Object.values(coordinator.snapshot().instances).filter(i => i.editorId === home.editorId).length, 1);
+});
+
+test('native close-all restores home and can be undone without an extra history frame', async () => {
+  const { coordinator } = setup(true);
+  const before = coordinator.snapshot();
+  const home = Object.values(before.instances)[0]!;
+  coordinator.beginDockviewMutation('remove');
+  const result = await coordinator.completeDockviewMutation('remove', { groups: [], activeInstanceId: null, maximizedInstanceId: null });
+  assert.equal(result.status, 'completed');
+  assert.deepEqual(Object.keys(coordinator.snapshot().instances), [home.instanceId]);
+  assert.equal(coordinator.historyDepth(), 1);
+  assert.equal(await coordinator.undo(), true);
+  assert.deepEqual(coordinator.snapshot().instances, before.instances);
+});
+
+test('a generic shell with no default editor can still intentionally become empty', async () => {
+  const { coordinator } = setup();
+  const home = Object.values(coordinator.snapshot().instances)[0]!;
+  await coordinator.closeEditor(home.instanceId);
+  assert.equal(Object.keys(coordinator.snapshot().instances).length, 0);
+});
 
 test('tab, replace, and four split placements update metadata and delegate geometry', async () => {
   const { coordinator, engine } = setup();
@@ -366,6 +420,20 @@ test('assistant cannot self-confirm a material mutation on a customized workspac
     status: 'confirmation-required', reason: 'assistant-layout-change',
   });
   assert.notEqual(coordinator.snapshot().workspaceId, 'judge');
+});
+
+test('removed native edges cannot retain pinned metadata and reappear on the next command', async () => {
+  const { coordinator, engine } = setup();
+  coordinator.syncDrawer({ ...coordinator.getDrawer('left'), mode: 'pinned' });
+  const home = Object.keys(coordinator.snapshot().instances)[0]!;
+  engine.topology = {
+    groups: [{ groupId: 'center', location: 'grid', tabs: [home], activeInstanceId: home, headerPosition: 'top' }],
+    activeInstanceId: home, maximizedInstanceId: null,
+  };
+  coordinator.beginDockviewMutation('remove');
+  await coordinator.completeDockviewMutation('remove', engine.topology);
+  assert.equal(coordinator.getDrawer('left').mode, 'hidden');
+  assert.deepEqual(coordinator.getDrawer('left').tabs, []);
 });
 
 test('native Dockview mutations reconcile tabs and reject removal of dirty editors', async () => {

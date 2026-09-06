@@ -10,6 +10,7 @@ requires:
   modules:
     - core-kernel
     - module-runtime
+    - ai-agent-runtime
   integrations: []
   optional_integrations:
     - llm-provider

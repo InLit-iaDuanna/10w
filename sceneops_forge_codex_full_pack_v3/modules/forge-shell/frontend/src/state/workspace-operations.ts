@@ -12,6 +12,7 @@ export interface OpenEditorRequest {
   confirmed?: boolean;
   forceReplaceDirty?: boolean;
   executionMode?: EditorInstance['executionMode'];
+  preserveFocus?: boolean;
 }
 
 export type OpenEditorResult =

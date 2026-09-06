@@ -27,8 +27,8 @@ export class BindableDockingPort implements DockingEnginePort {
     return this.#requireDelegate().restore(layout);
   }
 
-  open(instance: EditorInstance, placement: EditorPlacement): void | boolean | Promise<void | boolean> {
-    return this.#requireDelegate().open(instance, placement);
+  open(instance: EditorInstance, placement: EditorPlacement, options?: { preserveFocus?: boolean }): void | boolean | Promise<void | boolean> {
+    return this.#requireDelegate().open(instance, placement, options);
   }
 
   close(instanceId: string): void | Promise<void> {

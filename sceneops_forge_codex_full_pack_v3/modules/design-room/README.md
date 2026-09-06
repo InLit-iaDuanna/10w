@@ -1,5 +1,33 @@
 # Design Room
 
+## 精简制作阶段
+
+Three.js 单人原型只在项目页展示四条主制作线：`3D 世界`、`核心玩法`、`成长与反馈`、`完成 Demo`。地图、环境、角色与怪物外观、模型导入和新建、尺度归一化、相机、空间点位及场景搭建全部留在同一个 3D 工作流内，不再拆成十几张实现卡片。敌人类型、武器类型、对象池等属于工作流内部事项，不占用项目级卡片。
+
+重新保存或确认合并后的卡片时，旧卡片集合写入 SQLite 的 `design_journey_card_history`，已有 Git worktree 记录和磁盘目录保持不变。主项目 JSON 继续使用原合同字段，因此正在运行的旧版本后端仍能读取四张新卡。
+
+## 渐进式模型工具
+
+公开 `CurrentModelingTool` 为四边工作区提供当前制作卡片、建模会话和模型产物的专用承载区。它不增加第二个聊天框：模型描述仍由唯一主对话完成，工具区只负责选择卡片或会话、导入、预览、归一化和存入资产库。工具区通过同一 `journeyKey` 读取状态，切换会话仍调用既有 Journey 命令。
+
+## 卡片资产来源与建模子对话（增量）
+
+卡片可选择导入或新建。新建进入关联该卡片的需求子对话，仍复用唯一输入框与提供方；默认按轮廓、比例、表面、交互四个大块逐一对齐，而不是连续展示大量细碎问题。全局“对齐详细程度”可设为精简 2 块、标准 4 块、深入 8 块，达到上限后生成摘要；后续仍可直接描述微调。返回卡片、切换来源不会删除另一条记录。选择来源本身不调用模型；通用源码任务降为高级入口。
+
+Design Room 只拥有来源选择、问题分块和建模对话；实际文件处理由宿主注入 Asset Factory 的公开 `CardAssetWorkflow`，没有跨模块内部导入。每条新用户回答带稳定消息 ID 交给 Asset Factory；右侧独立 Three.js 面板展示真实执行状态、GLB、尺寸、网格统计和历史版本。模型生成说明与真实资产结果分开，只有 Blender 成功写出并回读的版本才显示为就绪。当前统一入口也连接图片参考上传、GLB/FBX 导入、FBX 导出和另存归一化版本。它不自动提交/合并 Git，也未连接 GLB 压缩或下游场景采用。最小真实 Blender 与 CodeBuddy → Blender 烟测均在隔离临时 Git 工程中通过；不因此宣称完整资产生产链完成。
+
+## Git 分支上下文与修改提案
+
+`select_card` 是用户明确的目录/分支准备动作，先持久化导出意图，再经 workspace 公开接口创建/复用 Git worktree。模型不能产生 Git 权限或命令。`RevisionReply` 返回修改提案，`accept_change` 核对原大纲/卡片后采用，`reject_change` 保留原数据；不自动确认正式版本。历史版本、Git 提交映射和活动卡片是独立字段，避免改写不可变快照。见根 `GIT_CARD_BRANCHES.md`。
+
+### 单题选项与实时正文
+
+`PlanningQuestion` 持有一个问题、2至3个选项和推荐项；用户确认后才提交并产生关联回答。普通策划回复为 Markdown，grill-me 输出为结构化卡片；`command/stream` SSE 通过 ProviderService 的实际回调展示正文/思考（如有）。最终已保存状态替换临时流，不模拟 token。客户端可停止请求，失败保留输入供手动重试。当前界面保持一个主输入，不启用每步骤独立工作台。
+
+## 单人协作策划（2026-09-06）
+
+新增公开 `PlanningJourneyService`、`create_journey_router` 和前端 `PlanningJourneyGate`，文件夹项目在唯一主对话中按 idea → grill → outline → stack → cards 推进。用户明确触发追问、生成和版本确认，模型不能审批或启动制作。卡片只是策划交接草稿，不创建 Harness 任务。存储通过 workspace 公开固定用途接口完成；不直接写生产文件。大纲/卡片编辑绑定原 revision，导出状态持久化后才写不可变快照；中断不重放模型。详情见根 `PLANNING_JOURNEY_STAGE1.md`。
+
 Design Room 把项目意图组织成 Project Bible、结构化 GDD 和可执行的 Feature Spec。三者都使用显式字段、稳定 ID 和状态，而 Bible 与 Feature Spec 另外提供版本与结构 diff；它们都不是不可检查的 Markdown 大字段。
 
 ## 公开编辑器

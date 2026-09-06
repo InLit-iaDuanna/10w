@@ -6,7 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "sceneops-world-composer"
 version = "0.1.0"
 requires-python = ">=3.9"
-dependencies = ["fastapi>=0.110,<1", "pydantic>=2.7,<3", "sceneops-core-contracts==0.1.0"]
+dependencies = [
+  "fastapi>=0.110,<1",
+  "pydantic>=2.7,<3",
+  "sceneops-core-contracts==0.1.0",
+  "sceneops-asset-library==0.1.0",
+  "sceneops-ai-provider==0.1.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

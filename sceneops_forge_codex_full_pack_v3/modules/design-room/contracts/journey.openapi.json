@@ -1,0 +1,1043 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SceneOps Planning Journey",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/design/journeys/{project_id}": {
+      "get": {
+        "tags": [
+          "planning-journey"
+        ],
+        "summary": "Get",
+        "operationId": "get_api_design_journeys__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningJourney"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/design/journeys/{project_id}/command/stream": {
+      "post": {
+        "tags": [
+          "planning-journey"
+        ],
+        "summary": "Stream",
+        "operationId": "stream_api_design_journeys__project_id__command_stream_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyStreamEvent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/design/journeys/{project_id}/command": {
+      "post": {
+        "tags": [
+          "planning-journey"
+        ],
+        "summary": "Command",
+        "operationId": "command_api_design_journeys__project_id__command_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningJourney"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CardBranch": {
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "worktree_path": {
+            "type": "string",
+            "title": "Worktree Path"
+          },
+          "base_commit": {
+            "type": "string",
+            "title": "Base Commit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "card_id",
+          "branch",
+          "worktree_path",
+          "base_commit"
+        ],
+        "title": "CardBranch"
+      },
+      "CardModelingSession": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "import",
+              "create"
+            ],
+            "title": "Source"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "composer_draft": {
+            "type": "string",
+            "title": "Composer Draft",
+            "default": ""
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "brief",
+              "awaiting_import"
+            ],
+            "title": "Stage"
+          },
+          "mode": {
+            "type": "string",
+            "const": "planned",
+            "title": "Mode",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "card_id",
+          "source",
+          "stage"
+        ],
+        "title": "CardModelingSession",
+        "description": "A card-owned design conversation, never evidence of a produced model."
+      },
+      "GitVersion": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "commit": {
+            "type": "string",
+            "title": "Commit"
+          },
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "commit",
+          "tag"
+        ],
+        "title": "GitVersion"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JourneyChange": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "base_revision": {
+            "type": "integer",
+            "title": "Base Revision"
+          },
+          "before_outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "before_cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "Before Cards"
+          },
+          "after_outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "after_cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "After Cards"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ],
+            "title": "Status",
+            "default": "pending"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "base_revision",
+          "before_outline",
+          "before_cards",
+          "after_outline",
+          "after_cards",
+          "rationale"
+        ],
+        "title": "JourneyChange"
+      },
+      "JourneyCommand": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,100}$",
+            "title": "Request Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Revision"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "message",
+              "save_draft",
+              "start_grill",
+              "generate_outline",
+              "save_outline",
+              "confirm_version",
+              "confirm_stack",
+              "generate_cards",
+              "save_cards",
+              "accept_change",
+              "reject_change",
+              "select_card",
+              "clear_card",
+              "enable_git",
+              "choose_model_source",
+              "new_modeling",
+              "open_modeling",
+              "close_modeling"
+            ],
+            "title": "Operation"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 16000,
+            "title": "Text",
+            "default": ""
+          },
+          "outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cards": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ProductionCard"
+                },
+                "type": "array",
+                "maxItems": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cards"
+          },
+          "accept_assumptions": {
+            "type": "boolean",
+            "title": "Accept Assumptions",
+            "default": false
+          },
+          "question_message_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Message Id"
+          },
+          "option_index": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Index"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "change_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Id"
+          },
+          "model_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "import",
+                  "create"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Source"
+          },
+          "modeling_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Id"
+          },
+          "context_draft": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Draft"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "expected_revision",
+          "operation"
+        ],
+        "title": "JourneyCommand"
+      },
+      "JourneyMessage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "mock",
+              "planned"
+            ],
+            "title": "Mode",
+            "default": "live"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply To"
+          },
+          "modeling_block": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Block"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "text",
+          "created_at"
+        ],
+        "title": "JourneyMessage"
+      },
+      "JourneyStreamEvent": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "status",
+              "text_delta",
+              "reasoning_delta",
+              "complete",
+              "error"
+            ],
+            "title": "Type"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "default": ""
+          },
+          "state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningJourney"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "JourneyStreamEvent"
+      },
+      "JourneyVersion": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "title": "Confirmed At"
+          },
+          "outline": {
+            "$ref": "#/components/schemas/Outline"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "threejs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "confirmed_at",
+          "outline"
+        ],
+        "title": "JourneyVersion"
+      },
+      "Outline": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "experience": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Experience"
+          },
+          "core_loop": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Core Loop"
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Scope"
+          },
+          "acceptance": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Acceptance"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Assumptions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "experience",
+          "core_loop",
+          "scope",
+          "acceptance"
+        ],
+        "title": "Outline"
+      },
+      "PlanningJourney": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "root_path": {
+            "type": "string",
+            "title": "Root Path"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision",
+            "default": 0
+          },
+          "collaboration": {
+            "type": "string",
+            "const": "solo",
+            "title": "Collaboration",
+            "default": "solo"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "idea",
+              "grill",
+              "outline",
+              "stack",
+              "cards"
+            ],
+            "title": "Stage",
+            "default": "idea"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "outline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Outline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "threejs"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "composer_draft": {
+            "type": "string",
+            "title": "Composer Draft",
+            "default": ""
+          },
+          "model_calls": {
+            "type": "integer",
+            "title": "Model Calls",
+            "default": 0
+          },
+          "git_versions": {
+            "items": {
+              "$ref": "#/components/schemas/GitVersion"
+            },
+            "type": "array",
+            "title": "Git Versions"
+          },
+          "card_branches": {
+            "items": {
+              "$ref": "#/components/schemas/CardBranch"
+            },
+            "type": "array",
+            "title": "Card Branches"
+          },
+          "active_card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Card Id"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "modeling_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/CardModelingSession"
+            },
+            "type": "array",
+            "title": "Modeling Sessions"
+          },
+          "active_modeling_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Modeling Id"
+          },
+          "cost_notice": {
+            "type": "string",
+            "title": "Cost Notice",
+            "default": "每次发送或生成最多调用一次所选模型；费用未知，不自动重试或切换提供方。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "root_path"
+        ],
+        "title": "PlanningJourney"
+      },
+      "PlanningQuestion": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "maxLength": 1200,
+            "minLength": 1,
+            "title": "Prompt"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionOption"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Options"
+          },
+          "recommended_index": {
+            "type": "integer",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Recommended Index"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "prompt",
+          "options",
+          "recommended_index"
+        ],
+        "title": "PlanningQuestion"
+      },
+      "ProductionCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,80}$",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Description"
+          },
+          "dependencies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Dependencies"
+          },
+          "acceptance": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Acceptance"
+          },
+          "status": {
+            "type": "string",
+            "const": "planned",
+            "title": "Status",
+            "default": "planned"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "acceptance"
+        ],
+        "title": "ProductionCard"
+      },
+      "QuestionOption": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "description"
+        ],
+        "title": "QuestionOption"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

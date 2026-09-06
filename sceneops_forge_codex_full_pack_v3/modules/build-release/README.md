@@ -1,5 +1,7 @@
 # Build and Release
 
+2026-09-05：基础资产的 Blender → Unity 真实执行由统一对话的「Agent 任务」入口负责；本模块仍为构建/发布草稿与审查能力，不因资产交换成功而宣称构建或发布已完成。此处手填工程路径不是 Agent 连接配置。见根 `AGENT_LIVE_VERIFICATION.md`。
+
 Build and Release 把 Unity 构建产物、版本上下文、门禁证据、审批与 ChangeSet 串成可追溯
 的 Release Candidate，并负责本地/Judge 发布记录、补丁说明和追加式回滚。模块不会执行
 Unity 构建或 Git 变更；这些能力只能通过 typed public contracts 输入。

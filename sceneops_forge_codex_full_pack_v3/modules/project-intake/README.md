@@ -1,5 +1,9 @@
 # Project Intake
 
+## Git 文件夹项目
+
+新增公开 `ensure_project_git`、`commit_design_version`、`open_card_worktree`，仅操作应用绑定的根目录。新建目录初始化独立 Git；旧根需明确动作启用。正式版本不夹带用户暂存文件；卡片是实际 Git 分支和独立 worktree。全部 Git 调用禁用 hooks、签名和配置的 checkout filters，不修改全局配置、不自动联网。Git 失败保留已有目录、绑定及历史。详细范围见根 `GIT_CARD_BRANCHES.md`。
+
 Project Intake 把“一句项目想法”或“扫描现有项目”的结果转换为可检查、可确认的项目入口记录。它不接触生产文件；扫描器必须先通过公开的 `ProjectScanAdapter` 把 Unity、Blender 或其他工具的数据归一化。
 
 ## 用户与数据
@@ -14,6 +18,7 @@ Project Intake 把“一句项目想法”或“扫描现有项目”的结果�
 - Commands：`project.intake.create_new_draft`、`project.intake.draft_from_conversation`、`project.intake.scan_existing`、`project.intake.confirm_field`
 - Events：`project.intake.drafted@1`、`project.intake.field_confirmed@1`
 - 公开入口：`frontend/src/index.ts`
+- Backend：`sceneops_project_workspace.create_folder_router(repository)` 提供应用内目录浏览和文件夹项目创建/重开；`SqliteWorkspaceRepository` 是公开持久化实现。
 - 权限：读取 `project:read`；新建/确认 `project:write`；扫描还需 `project:scan`
 
 对话命令返回结构化 `workbench.open_editor` 动作。它创建的只是应用内草稿，不会改写项目文件，也不会启动生产任务。
@@ -48,3 +53,14 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 
 以上旧文中的 React/跨模块规划 blocked 描述仅适用于原始模块交付；本轮独立工作台已连通。
 正式 Shell 注册、统一身份与生产级持久化仍未接入，不能将独立 lab 当作已接入完整 Shell。
+
+## 文件夹项目与设计存储
+
+本地 API 可通过 `GET /api/workspace/folders?path=` 浏览真实目录。省略 `path` 时从当前用户主目录开始；符号链接只显示为不可选项。`POST /api/workspace/folder-projects` 接收 `parent_path` 和单段 `name`，仅在已存在的父目录下排他创建全新子目录，同时创建并绑定现有 workspace Project ID。`GET /api/workspace/folder-projects` 和 `GET /api/workspace/folder-projects/{id}` 用于持久列出和重新打开。
+
+跨模块只使用公开 repository 方法：
+
+- `write_design_draft(project_id, payload)` 原子写入绑定根目录中的 `.sceneops/design/draft.json`；
+- `create_design_snapshot(project_id, payload, version)` 排他创建 `.sceneops/design/snapshots/vN.json`。同版本、同结构化 JSON 的重试返回已有快照，不同内容会冲突且绝不覆盖。
+
+调用方不能提供相对路径。存储拒绝相对目录、目录链上的符号链接、已有项目子目录和不安全的 SceneOps 元数据目录；不会改写所选父目录中的任意已有内容。

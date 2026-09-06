@@ -16,6 +16,7 @@ export type DockviewWorkspaceRestoreStatus = 'restored' | 'materialized' | 'reco
 
 export class DockviewPort implements DockingEnginePort {
   readonly #api: DockviewApi;
+  #regionSplits = false;
 
   constructor(api: DockviewApi) {
     this.#api = api;
@@ -67,7 +68,17 @@ export class DockviewPort implements DockingEnginePort {
       }
       return;
     }
-    this.#api.fromJSON(layout as unknown as SerializedDockview, { reuseExistingPanels: true });
+    const snapshot = structuredClone(layout) as unknown as SerializedDockview;
+    // Edge constraints are shell policy, not saved user geometry. Older
+    // snapshots carried the previous 180/640 limits.
+    for (const edge of EDGES) {
+      const group = snapshot.edgeGroups?.[edge];
+      if (!group) continue;
+      group.minimumSize = 12;
+      delete group.maximumSize;
+    }
+    this.#api.fromJSON(snapshot, { reuseExistingPanels: true });
+    if (this.#regionSplits) this.enableRegionSplits();
   }
 
   async restoreWorkspace(document: WorkspaceDocument): Promise<DockviewWorkspaceRestoreStatus> {
@@ -141,7 +152,15 @@ export class DockviewPort implements DockingEnginePort {
     if (maximized) this.maximize(maximized);
   }
 
-  async open(instance: EditorInstance, placement: EditorPlacement): Promise<boolean> {
+  async open(instance: EditorInstance, placement: EditorPlacement, options?: { preserveFocus?: boolean }): Promise<boolean> {
+    // Empty edge groups survive their last tab. A default insertion would reuse
+    // that active (possibly collapsed) group, hiding the restored home screen.
+    const emptyWorkspace = this.#api.groups.every(group => group.panels.length === 0);
+    if (emptyWorkspace && placement.mode === 'tab') {
+      for (const edge of EDGES) {
+        if (this.#api.getEdgeGroup(edge)) this.#api.removeEdgeGroup(edge);
+      }
+    }
     const replacementId = placement.mode === 'replace'
       ? placement.relativeToInstanceId ?? this.#api.activePanel?.id
       : undefined;
@@ -151,11 +170,15 @@ export class DockviewPort implements DockingEnginePort {
       title: instance.title,
       params: { instanceId: instance.instanceId, editorId: instance.editorId },
       renderer: 'always',
+      ...(options?.preserveFocus ? { inactive: true } : {}),
       ...(placement.mode === 'drawer'
         ? { position: { referenceGroup: this.#ensureEdgeGroup(placement.edge).id } }
-        : addPanelPlacement(placement, this.#api.activePanel?.id)),
+        : placement.mode === 'tab' && emptyWorkspace
+          ? { position: { direction: 'right' as const } }
+          : addPanelPlacement(placement, this.#api.activePanel?.id)),
     });
     if (placement.mode === 'replace') closeReplacement(this.#api, panel, replacementId);
+    applyInitialSplitSize(panel, placement);
     if (placement.mode !== 'popout') return true;
     const opened = await this.#api.addPopoutGroup(panel, popoutOptions(placement.bounds));
     if (!opened) panel.api.close();
@@ -163,7 +186,12 @@ export class DockviewPort implements DockingEnginePort {
   }
 
   close(instanceId: string): void {
-    this.#api.getPanel(instanceId)?.api.close();
+    const panel = this.#api.getPanel(instanceId);
+    const group = panel?.group;
+    panel?.api.close();
+    if (group?.api.location.type === 'edge' && group.panels.length === 0) {
+      this.#api.removeEdgeGroup(group.api.location.position);
+    }
   }
 
   async move(instance: EditorInstance, placement: EditorPlacement): Promise<boolean> {
@@ -185,6 +213,7 @@ export class DockviewPort implements DockingEnginePort {
     if (!reference) return true;
     if (placement.mode === 'split') {
       panel.api.moveTo({ group: reference.group, position: splitPosition(placement.direction) });
+      applyInitialSplitSize(panel, placement);
     } else {
       panel.api.moveTo({ group: reference.group });
       if (placement.mode === 'replace') reference.api.close();
@@ -214,6 +243,107 @@ export class DockviewPort implements DockingEnginePort {
 
   focus(instanceId: string): void {
     this.#requirePanel(instanceId).api.setActive();
+  }
+
+  /**
+   * Retire the legacy outer drawers in favour of ordinary Dockview grid
+   * groups. Moving the existing groups keeps their panels and renderers alive;
+   * no editor instance is created or discarded by this migration.
+   */
+  enableRegionSplits(): void {
+    this.#regionSplits = true;
+    let anchor = this.#api.groups.find((group) => group.api.location.type === 'grid');
+    const rememberedEdgeSizes = this.#api.toJSON().edgeGroups;
+    for (const group of this.#api.groups) {
+      if (group.api.location.type === 'grid') setRegionConstraints(group);
+    }
+
+    for (const edge of EDGES) {
+      const edgeApi = this.#api.getEdgeGroup(edge);
+      if (!edgeApi) continue;
+      const edgeGroup = this.#api.groups.find((group) => group.id === edgeApi.id);
+      if (!edgeGroup) continue;
+      if (edgeGroup.panels.length === 0) {
+        this.#api.removeEdgeGroup(edge);
+        continue;
+      }
+      const firstPanel = edgeGroup.panels[0]!;
+      // Serialized edge size is the expanded memory even when the visible
+      // group is collapsed to its label strip. Read both values before moveTo,
+      // which is allowed to dispose the legacy edge view.
+      const size = rememberedEdgeSizes?.[edge]?.size ??
+        (edge === 'left' || edge === 'right' ? edgeApi.width : edgeApi.height);
+
+      if (!anchor) {
+        anchor = this.#api.addGroup({ direction: 'right' });
+        // An empty root group is only a temporary native anchor. Moving the
+        // first legacy group within it avoids inventing a placeholder panel.
+        edgeGroup.api.moveTo({ group: anchor, position: 'center' });
+      } else {
+        edgeGroup.api.moveTo({ group: anchor, position: splitPositionForEdge(edge) });
+      }
+      const migrated = firstPanel.group;
+      setRegionConstraints(migrated);
+      if (Number.isFinite(size) && size > 0) {
+        migrated.api.setSize(edge === 'left' || edge === 'right' ? { width: size } : { height: size });
+      }
+      this.#api.removeEdgeGroup(edge);
+      anchor = anchor.api.location.type === 'grid' ? anchor : migrated;
+    }
+  }
+
+  resizeRegion(instanceId: string, edge: DrawerState['edge'], size: number): void {
+    const group = this.#requirePanel(instanceId).group;
+    if (group.api.location.type !== 'grid') return;
+    for (const candidate of this.#api.groups) {
+      if (candidate.api.location.type === 'grid') setRegionConstraints(candidate);
+    }
+    const nextSize = Math.max(REGION_MINIMUM_SIZE, size);
+    group.api.setSize(edge === 'left' || edge === 'right'
+      ? { width: nextSize }
+      : { height: nextSize });
+  }
+
+  collapsedRegionIds(): string[] {
+    return this.#api.groups.flatMap((group) =>
+      group.api.location.type === 'grid' &&
+      (group.api.width <= REGION_MINIMUM_SIZE || group.api.height <= REGION_MINIMUM_SIZE)
+        ? group.panels.map((panel) => panel.id)
+        : [],
+    );
+  }
+
+  /** Return the tabs in the grid region immediately across one panel edge. */
+  adjacentRegionIds(instanceId: string, edge: DrawerState['edge'], crossRatio: number): string[] {
+    const current = this.#api.getPanel(instanceId)?.group;
+    if (!current || current.api.location.type !== 'grid') return [];
+    const currentBounds = current.api.boundingBox;
+    if (!currentBounds) return [];
+
+    const horizontalEdge = edge === 'left' || edge === 'right';
+    const ratio = Math.max(0, Math.min(1, crossRatio));
+    const boundary = horizontalEdge
+      ? currentBounds.left + (edge === 'right' ? currentBounds.width : 0)
+      : currentBounds.top + (edge === 'bottom' ? currentBounds.height : 0);
+    const crossCoordinate = horizontalEdge
+      ? currentBounds.top + currentBounds.height * ratio
+      : currentBounds.left + currentBounds.width * ratio;
+    const candidates = this.#api.groups.flatMap((group) => {
+      if (group.id === current.id || group.api.location.type !== 'grid') return [];
+      const bounds = group.api.boundingBox;
+      if (!bounds) return [];
+      const candidateBoundary = horizontalEdge
+        ? bounds.left + (edge === 'left' ? bounds.width : 0)
+        : bounds.top + (edge === 'top' ? bounds.height : 0);
+      const crossStart = horizontalEdge ? bounds.top : bounds.left;
+      const crossSize = horizontalEdge ? bounds.height : bounds.width;
+      if (Math.abs(candidateBoundary - boundary) > REGION_ADJACENCY_TOLERANCE ||
+          crossCoordinate < crossStart - REGION_ADJACENCY_TOLERANCE ||
+          crossCoordinate > crossStart + crossSize + REGION_ADJACENCY_TOLERANCE) return [];
+      return [{ group, distance: Math.abs(crossCoordinate - (crossStart + crossSize / 2)) }];
+    }).sort((a, b) => a.distance - b.distance);
+
+    return candidates[0]?.group.panels.map((panel) => panel.id) ?? [];
   }
 
   syncDrawer(drawer: DrawerState): void {
@@ -261,8 +391,7 @@ export class DockviewPort implements DockingEnginePort {
     return this.#api.getEdgeGroup(edge) ?? this.#api.addEdgeGroup(edge, {
       id: `forge-edge-${edge}`,
       ...(size === undefined ? {} : { initialSize: size }),
-      minimumSize: 180,
-      maximumSize: 640,
+      minimumSize: 12,
       collapsedSize: 12,
       collapsed: true,
       autoHide: true,
@@ -314,6 +443,13 @@ function splitPosition(direction: 'left' | 'right' | 'above' | 'below') {
   if (direction === 'above') return 'top' as const;
   if (direction === 'below') return 'bottom' as const;
   return direction;
+}
+
+function applyInitialSplitSize(panel: IDockviewPanel, placement: EditorPlacement): void {
+  if (placement.mode !== 'split' || placement.initialSize === undefined) return;
+  panel.group.api.setSize(placement.direction === 'left' || placement.direction === 'right'
+    ? { width: placement.initialSize }
+    : { height: placement.initialSize });
 }
 
 function floatingOptions(bounds?: FloatingBounds) {
@@ -391,3 +527,18 @@ function normalizedContainer(location: string, tabs: string[]): string {
 }
 
 const EDGES: DrawerState['edge'][] = ['left', 'right', 'top', 'bottom'];
+const REGION_MINIMUM_SIZE = 12;
+const REGION_ADJACENCY_TOLERANCE = 4;
+
+function setRegionConstraints(group: IDockviewPanel['group']): void {
+  group.api.setConstraints({
+    minimumWidth: REGION_MINIMUM_SIZE,
+    minimumHeight: REGION_MINIMUM_SIZE,
+  });
+}
+
+function splitPositionForEdge(edge: DrawerState['edge']) {
+  if (edge === 'top') return 'top' as const;
+  if (edge === 'bottom') return 'bottom' as const;
+  return edge;
+}

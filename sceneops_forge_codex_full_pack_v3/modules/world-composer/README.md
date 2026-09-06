@@ -2,6 +2,18 @@
 
 World Composer 是 SceneOps Forge 的关卡空间生产模块。它把稳定场景身份、空间标注、对象放置提案、世界图、路径/区域、导航、灯光目标、固定相机恢复和关卡门禁组织成一条可审查的数据链；编辑器本身不直接修改 Blender、Unity 或项目文件。
 
+## 2026-09-06：统一应用的 Three.js 环境场景
+
+统一制作旅程现增加一条真实环境草稿路径：用户先把卡片模型的明确版本存入项目资产库，再进入右侧 Three.js 场景。人工模式可从项目资产库加入实际 GLB、在视口选择对象并编辑米制位置、Y 轴旋转和缩放；每次修改都追加 SQLite 场景版本。移除对象也只生成新版本，旧版本仍可按版本号回读。
+
+AI 模式不增加第二个聊天框。左侧唯一主对话把目标交给当前选择的提供方，后端要求模型返回类型化摆放清单，并只接受当前项目资产库中的稳定资产 ID。成功后追加对象和一版场景，同时记录真实 provider/model；请求 ID 提供幂等复用，失败必须由用户明确重试。此路径只修改 SceneOps 的 Three.js 场景草稿，不直接写 Blender、Unity 或用户项目文件。
+
+公开接口位于 `world_composer.environment_scene`，网络合同由 `scripts/export-environment-contracts.py` 生成。定向烟测已覆盖人工加入/变换、真实 GLB 绘制、版本回读、AI 请求幂等，以及真实 `codebuddycli / glm-5.3-flash` 生成 3 棵树的 v3 场景。
+
+当前统一旅程采用两层交互：默认资产库只显示正方形小卡片，点击资产才打开它的预览、版本和属性；点击场景中的实例才显示位置、旋转和缩放。新增资产提供“导入 GLB / FBX”和“新建模型”两个入口，两者都会开启独立会话，并只带入当前项目背景。
+
+每个环境场景持久保存同一份世界尺度：米制、Y 轴向上、右手坐标系、1 米网格、1.8 米参考人物和 3 米默认物体间距。该尺度会进入模型生成上下文，并在资产编辑页可见，避免每件模型各自猜测大小。公开 `GET /api/environment-scenes/{project_id}` 返回场景、版本和 `scale_profile`；人工摆放、AI 摆放及 CLI/Agent 适配器共用这一合同。
+
 ## 当前完成范围
 
 - `sceneops_id` 加载、选择、重命名/复制语义，以及父子层级 local/world 换算；
@@ -106,11 +118,11 @@ npm run typecheck --prefix modules/world-composer/frontend
 
 | 模式 | 当前状态 |
 |---|---|
-| Live | Planned/Blocked：没有 React/R3F host、artifact-store、Asset Browser、Blender/Unity typed adapter 或真实项目。 |
+| Live | 已接通统一应用中的项目资产目录、Three.js GLB 预览、人工场景版本和受限 AI 摆放；不代表已写回 Blender/Unity。 |
 | Mock | 已实现：纯算法、viewer 端口、mock adapter 和两套项目 fixture 可重复运行。 |
 | Cached | 未提供：仓库没有任何既往真实运行产物，进程内资源 cache 不等于 cached evidence。 |
-| Planned | 固定相机 artifact、真实 asset drop source、外部 scene mutation 和视觉 E2E。 |
-| Blocked | 正式 core types、module catalog/feature flag、生成 API client、shell/R3F、Blender/Unity、hero build/playtest。 |
+| Planned | 固定相机 artifact、空间点位编辑、外部 scene mutation 和 Unity 写回。 |
+| Blocked | Blender/Unity 场景写回、hero build/playtest，以及尚未获得授权或真实处理器的生产步骤。 |
 
 ## 降级行为
 
@@ -123,7 +135,7 @@ npm run typecheck --prefix modules/world-composer/frontend
 
 - 当前 editor loaders 返回模块本地、框架无关的可见 screen model；正式 React `EditorProps` 绑定因 shell/core 类型缺失而 Blocked。
 - `module.yaml` 可由本地合同测试核对，但正式 manifest schema、依赖图和 generated catalog 因 `module-runtime` 缺失而 Blocked。
-- 没有实际 GLB 解码、WebGL 绘制、fixed-camera artifact、Unity/Blender mutation 或真实 Cached evidence。
+- 统一旅程已实际解码 GLB 并通过 Three.js/WebGL 绘制；仍没有 fixed-camera artifact、Unity/Blender 场景 mutation 或真实 Cached evidence。
 - Hero fixture 只覆盖 key placement 与 Home Entrance 的 world 数据；pickup/inventory/lock/quest 属于 `logic-studio`。
 - Warehouse fixture 验证同一算法和合同；真实 Unity build 与 E2E 留给后续集成任务。
 

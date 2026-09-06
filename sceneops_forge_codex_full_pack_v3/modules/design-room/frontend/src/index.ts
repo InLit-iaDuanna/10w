@@ -14,3 +14,7 @@ export * from "./manifest.ts";
 export const loadDesignPanel = () => import('./DesignPanel.tsx').then(module => ({default:module.DesignPanel}));
 export type {AiSuggestion, AiRequest, AiResult, ModelCatalog} from './generated/ai-contracts.ts';
 export type {DesignAiClient} from './DesignAiControls.tsx';
+export { PlanningJourneyGate } from './PlanningJourney.tsx';
+export type { JourneySurfaceRequest } from './PlanningJourney.tsx';
+export { CurrentModelingTool } from './CurrentModelingTool.tsx';
+export type { CurrentModelingAssetInput } from './CurrentModelingTool.tsx';

@@ -4,6 +4,7 @@ import os
 import shutil
 import signal
 import tempfile
+from collections.abc import Awaitable, Callable
 from jsonschema import Draft202012Validator, ValidationError
 
 MODEL_IDS = ('hy4-preview', 'hy3', 'hy3-x', 'glm-5.3', 'glm-5.3-flash', 'glm-5.2',
@@ -85,7 +86,7 @@ def _parse_output(stdout: bytes, stderr: bytes = b'') -> dict:
         raise _failure_from_output(json.dumps(result).encode(), stderr, None)
     return result
 
-def _arguments(model: str, schema: dict | None) -> list[str]:
+def _arguments(model: str, schema: dict | None, *, streaming: bool = False) -> list[str]:
     # Use one tool-free reply for both modes. Application-owned JSON Schema
     # validation avoids the CLI's agentic StructuredOutput/StopHook lifecycle.
     system_prompt = SYSTEM_PROMPT
@@ -97,7 +98,74 @@ def _arguments(model: str, schema: dict | None) -> list[str]:
         'default', '--max-turns', '1', '--system-prompt', system_prompt]
     if model != 'cli-default':
         arguments += ['--model', model]
+    if streaming:
+        arguments[arguments.index('--output-format') + 1] = 'stream-json'
+        arguments += ['--include-partial-messages']
     return arguments
+
+
+def _stream_event(event: dict) -> dict | None:
+    """Only model SSE deltas; no assistant envelope, tools, signatures or stderr."""
+    if event.get('type') != 'stream_event' or not isinstance(event.get('event'), dict):
+        return None
+    message = event['event']
+    if message.get('type') == 'message_start':
+        return {'type': 'status', 'text': '提供方已开始回复。'}
+    delta = message.get('delta')
+    if message.get('type') != 'content_block_delta' or not isinstance(delta, dict):
+        return None
+    field = {'text_delta': 'text', 'thinking_delta': 'thinking'}.get(delta.get('type'))
+    if field and isinstance(delta.get(field), str) and delta[field]:
+        return {'type': 'text_delta' if field == 'text' else 'reasoning_delta', 'text': delta[field]}
+    return None
+
+
+async def _stream_exchange(process, prompt: bytes, on_event) -> tuple[bytes, bytes]:
+    limit = 4 * 1024 * 1024
+    async def read(stream, *, events=False):
+        chunks, pending, size = [], b'', 0
+        async def consume(line):
+            try:
+                event = json.loads(line.decode('utf-8-sig'), parse_constant=_reject_nonfinite)
+                if not isinstance(event, dict):
+                    raise ValueError('Expected event object')
+            except (ValueError, UnicodeError) as error:
+                raise CodeBuddyFailure('CLI_INVALID_RESPONSE', 'CodeBuddy 流事件不是有效 JSON。') from error
+            summary = _stream_event(event)
+            if summary is not None:
+                await on_event(summary)
+        while chunk := await stream.read(65536):
+            size += len(chunk)
+            if size > limit:
+                raise CodeBuddyFailure('CLI_OUTPUT_LIMIT', 'CodeBuddy 回复超过本次输出限制，未采用该结果。')
+            chunks.append(chunk)
+            if events:
+                pending += chunk
+                while b'\n' in pending:
+                    line, pending = pending.split(b'\n', 1)
+                    if line.strip():
+                        await consume(line)
+        if events and pending.strip():
+            await consume(pending)
+        return b''.join(chunks)
+    async def write():
+        try:
+            process.stdin.write(prompt)
+            await process.stdin.drain()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            process.stdin.close()
+    tasks = [asyncio.create_task(read(process.stdout, events=True)),
+             asyncio.create_task(read(process.stderr)), asyncio.create_task(write())]
+    try:
+        stdout, stderr, _ = await asyncio.gather(*tasks)
+        await process.wait()
+        return stdout, stderr
+    finally:
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
 
 def _structured_result(result: dict, schema: dict) -> dict:
     try:
@@ -114,7 +182,8 @@ def _structured_result(result: dict, schema: dict) -> dict:
     return {**result, 'structured_output': value}
 
 async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict | None = None,
-                      timeout: int = 120) -> dict:
+                      timeout: int = 120,
+                      on_event: Callable[[dict], Awaitable[None]] | None = None) -> dict:
     if model != 'cli-default' and model not in MODEL_IDS:
         raise CodeBuddyFailure('CLI_MODEL_INVALID', '所选模型不在允许列表中，请重新选择。')
     executable = shutil.which('codebuddy')
@@ -125,7 +194,7 @@ async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict |
         prompt += ('\n\n应用输出合同：只返回下面 JSON Schema 的数据实例，第一字符为 {，最后字符为 }。'
             '不要使用 Markdown 代码块，不要新增合同以外的字段。\n'
             + json.dumps(schema, ensure_ascii=False))
-    arguments = _arguments(model, schema)
+    arguments = _arguments(model, schema, streaming=on_event is not None)
     with tempfile.TemporaryDirectory(prefix='sceneops-codebuddy-') as directory:
         try:
             process = await asyncio.create_subprocess_exec(executable, *arguments, cwd=directory,
@@ -134,7 +203,9 @@ async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict |
         except OSError as error:
             raise CodeBuddyFailure('CLI_START_FAILED', '无法启动 CodeBuddy，请检查本机安装及执行权限。') from error
         try:
-            stdout, stderr = await asyncio.wait_for(process.communicate(prompt.encode()), timeout)
+            exchange = (_stream_exchange(process, prompt.encode(), on_event) if on_event is not None
+                        else process.communicate(prompt.encode()))
+            stdout, stderr = await asyncio.wait_for(exchange, timeout)
         except asyncio.TimeoutError as error:
             raise CodeBuddyFailure('CLI_TIMEOUT', 'CodeBuddy 请求超时，请检查登录、网络与额度后手动重试。') from error
         except asyncio.CancelledError:
@@ -143,6 +214,13 @@ async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict |
             await _stop(process)
         if process.returncode:
             raise _failure_from_output(stdout, stderr, process.returncode)
+    if on_event is not None:
+        try:
+            events = [json.loads(line, parse_constant=_reject_nonfinite)
+                      for line in stdout.decode('utf-8-sig').splitlines() if line.strip()]
+        except (ValueError, UnicodeError) as error:
+            raise CodeBuddyFailure('CLI_INVALID_RESPONSE', 'CodeBuddy 流事件不是有效 JSON。') from error
+        stdout = json.dumps(events).encode()
     result = _parse_output(stdout, stderr)
     return _structured_result(result, schema) if schema is not None else result
 

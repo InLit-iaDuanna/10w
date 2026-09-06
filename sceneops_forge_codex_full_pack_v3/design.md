@@ -6,6 +6,15 @@ Visual direction: **compact graphite workbench, readable conversation, blue inte
 
 ## Current V5 UI refresh (2026-09-05)
 
+当前统一应用采用渐进式工具发布。四边拉起和区域标题的功能选择器只列出已经接通当前用户旅程的「模型与资产」「环境场景」；旧工作台继续注册以兼容历史布局，但不出现在当前目录，也不再由生产事件自动弹出。后续工具必须随用户旅程逐项加入，不能因为模块已注册就一次性展示。
+
+Latest user revision supersedes global-drawer appearance/behavior below: the unified application
+uses nested native grid regions. Pull within the current editor to split that editor only; both
+regions can select and host a function. Legacy edge groups migrate without dropping tabs. Shared
+surfaces now use the chat's neutral charcoal palette (#1b1b1b canvas, #222/#292929 surfaces), with
+semantic errors/warnings retained. The tool library is a game-production node tree, not a tile wall.
+See `NESTED_REGION_VERIFICATION.md`.
+
 Current chat appearance supersedes the welcome/composer notes below: no marketing welcome or
 suggestion cards; a neutral charcoal conversation canvas, compact thread title, flat assistant
 messages, subtle user bubbles and one 20px-radius composer. Context is selected through the plus
@@ -758,3 +767,14 @@ At narrow widths:
 # 拉出区域交互补充（2026-09-05）
 
 区域是功能容器，不是只负责打开其他窗口的启动栏。四边拉出空区域时，直接在其中选择功能；选中后同一面板原位承载，保留尺寸和位置。标题栏提供「选择功能」，需要其他布局时才显式选择添加标签、拆分或浮动。响应式布局以面板宽度而非整页宽度判断，窄抽屉中的搜索和功能内容必须可读可操作。
+# 任务授权交互增量（2026-09-05）
+
+最新用户修订覆盖下文旧两模式页设计：一个 Agent 对话、一个输入框，用权限区分讨论/授权执行；工具工作台默认 Agent 输入与结果，手动配置收进高级区。提供方切换可选 Codex CLI。入口统一不代表全部生产能力已执行，详见 `CODEX_PROVIDER_HANDOFF.md`。
+
+聊天维持纯问答；「Agent 任务」让用户描述目标、审阅一次授权卡，再自动配置专有工具会话和执行注册动作。技术配置默认隐藏，不要求填工程路径或端口。任务卡与生产节点树共享进度；真实错误、未知费用、授权到期、停止和恢复均明确展示。卡片完成状态只取服务端双端验收，不取模型自述。首版有界箱体闭环已实测，详见 `AGENT_LIVE_VERIFICATION.md`。
+# 单人策划新入口（2026-09-06）
+
+文件夹项目的唯一主对话按 idea、grill-me、大纲、技术路线、制作卡片显示阶段。阶段推进由明确按钮触发，不将普通讨论当作执行授权。文档和卡片编辑是结构化内容编辑，不新增聊天输入。继承中性灰、四边拉手和已有布局。原有项目不强制迁移；多人入口预留但不实现。见 `PLANNING_JOURNEY_STAGE1.md`。
+# 最新用户修订：先保持单一简洁对话
+
+不继续展开每步骤的独立功能页。策划只显示当前阶段和下一步，大纲/制作清单/版本成为可展开结果附件，不默认铺开表单。文件夹选择保留路径与精简目录浏览。此修订优先于下方阶段导航与复杂工作台目标。

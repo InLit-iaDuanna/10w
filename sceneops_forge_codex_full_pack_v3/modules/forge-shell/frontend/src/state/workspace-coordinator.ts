@@ -55,6 +55,7 @@ export class WorkspaceCoordinator {
   readonly #engine: DockingEnginePort;
   readonly #environment: EditorEnvironment;
   readonly #createId: IdentifierFactory;
+  readonly #emptyWorkspaceEditorId: string | undefined;
   readonly #history: WorkspaceHistoryFrame[] = [];
   readonly #closed: EditorInstance[] = [];
   #pendingDockviewMutation: (
@@ -70,6 +71,8 @@ export class WorkspaceCoordinator {
     engine: DockingEnginePort;
     environment: EditorEnvironment;
     createId?: IdentifierFactory;
+    /** App-selected editor to show after the last window is closed. */
+    emptyWorkspaceEditorId?: string;
   }) {
     this.#document = clone(options.document);
     this.#editors = options.editors;
@@ -78,6 +81,7 @@ export class WorkspaceCoordinator {
     this.#engine = options.engine;
     this.#environment = options.environment;
     this.#createId = options.createId ?? randomIdentifier;
+    this.#emptyWorkspaceEditorId = options.emptyWorkspaceEditorId;
   }
 
   snapshot(): WorkspaceDocument {
@@ -120,7 +124,7 @@ export class WorkspaceCoordinator {
         });
         if (moved.status !== 'completed') return moved;
       }
-      await this.#engine.focus(existing.instanceId);
+      if (!request.preserveFocus) await this.#engine.focus(existing.instanceId);
       return { status: 'focused', instance: clone(existing) };
     }
     if (request.source === 'assistant' && this.#document.customized) {
@@ -137,7 +141,7 @@ export class WorkspaceCoordinator {
       : 'live';
     const instance = this.#createInstance(request.editorId, executionMode);
     const before = this.snapshot();
-    const opened = await this.#engine.open(clone(instance), placement);
+    const opened = await this.#engine.open(clone(instance), placement, { preserveFocus: request.preserveFocus });
     if (opened === false) return { status: 'unavailable', code: 'POPOUT_BLOCKED' };
     this.#remember(before);
     if (replaced) {
@@ -176,8 +180,9 @@ export class WorkspaceCoordinator {
     this.#removeInstance(instanceId);
     this.#closed.push(clone(instance));
     this.#adoptCompleteEngineTopology();
-    this.#document.customized = true;
     this.#events.emit('workbench.editor.closed@1', { instance: clone(instance) });
+    await this.#restoreEmptyWorkspace();
+    this.#document.customized = true;
     this.#emitLayout('close-editor');
     return { status: 'closed', instance: clone(instance) };
   }
@@ -364,6 +369,7 @@ export class WorkspaceCoordinator {
     await this.#engine.restore(clone(previous.document.dockviewLayout));
     this.#history.pop();
     this.#document = clone(previous.document);
+    this.#adoptCompleteEngineTopology();
     this.#closed.splice(0, this.#closed.length, ...clone(previous.closed));
     this.#emitLayout('undo');
     return true;
@@ -465,6 +471,7 @@ export class WorkspaceCoordinator {
       this.#events.emit('workbench.editor.closed@1', { instance: clone(instance) });
     }
     this.#applyTopology(topology);
+    await this.#restoreEmptyWorkspace();
     this.#document.dockviewLayout = clone(this.#engine.capture());
     this.#document.customized = true;
     const mutationKind = pending.kind === kind ? kind : `${pending.kind}-${kind}`;
@@ -490,6 +497,22 @@ export class WorkspaceCoordinator {
       if (group.location === 'edge' && group.edge) this.#syncDrawerFromTopology(group);
     }
     this.#emitLayout('dockview-layout');
+  }
+
+  async #restoreEmptyWorkspace(): Promise<void> {
+    if (!this.#emptyWorkspaceEditorId || Object.keys(this.#document.instances).length > 0) return;
+    // This is part of the close transaction, not a new undo step or a reset of
+    // project data. Reuse the just-closed home editor when possible.
+    const closedIndex = this.#closed.findLastIndex(instance => instance.editorId === this.#emptyWorkspaceEditorId);
+    const instance = closedIndex >= 0
+      ? clone(this.#closed[closedIndex]!)
+      : this.#createInstance(this.#emptyWorkspaceEditorId, 'live');
+    const opened = await this.#engine.open(clone(instance), { mode: 'tab' });
+    if (opened === false) throw new Error('无法恢复默认聊天区域');
+    if (closedIndex >= 0) this.#closed.splice(closedIndex, 1);
+    this.#place(instance, { mode: 'tab' });
+    this.#adoptCompleteEngineTopology();
+    this.#events.emit('workbench.editor.opened@1', { instance: clone(instance), placement: { mode: 'tab' }, source: 'button' });
   }
 
   #remember(document: WorkspaceDocument, closed: EditorInstance[] = this.#closed): void {
@@ -782,6 +805,7 @@ export class WorkspaceCoordinator {
     for (const drawer of Object.values(this.#document.drawers)) {
       drawer.tabs = [];
       drawer.activeInstanceId = null;
+      drawer.mode = 'hidden';
     }
     for (const group of topology.groups) {
       const area = {

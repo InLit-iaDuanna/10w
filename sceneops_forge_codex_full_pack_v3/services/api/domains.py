@@ -8,7 +8,7 @@ from sceneops_production_planner import create_workspace_router as planning_rout
 from asset_factory import ConceptAssetLab, create_lab_router as asset_router
 from render_ops import RenderLabService, create_render_lab_router
 from build_release import UnityBuildWorkbenchService, create_workbench_router as build_router
-from version_collaboration import create_workspace_router as review_router
+from version_collaboration import create_workspace_router as review_router, create_tree_router, TreeProgress
 from ui_studio import create_lab_router as ui_router
 from audio_studio import create_lab_router as audio_router
 from vfx_shader import create_lab_router as vfx_router
@@ -58,9 +58,26 @@ def compose_domains(app, repository, data_dir: Path):
 
     def reviews(project_id):
         database = project_directory(project_id) / "reviews.sqlite3"
-        result = ProjectModule(review_router(database, project_id, saved_sample(project_id, "version-review")))
+        def progress():
+            journey = getattr(app.state, "planning_journey", None)
+            if journey is None:
+                return None
+            state = journey.get(project_id)
+            card_titles = {card.id: card.title for card in state.cards}
+            return TreeProgress(stage=state.stage, confirmed_versions=len(state.versions),
+                planned_cards=len(state.cards), card_branches=len(state.card_branches),
+                milestones={version.commit: f"策划 v{version.number}" for version in state.git_versions},
+                branch_labels={branch.branch: card_titles.get(branch.card_id, branch.card_id)
+                    for branch in state.card_branches})
+
+        def compose_review(sample):
+            router = review_router(database, project_id, sample)
+            router.include_router(create_tree_router(project_id,
+                lambda: Path(repository.get_folder_project(project_id).root_path), progress))
+            return router
+        result = ProjectModule(compose_review(saved_sample(project_id, "version-review")))
         def load(sample):
-            result.router = review_router(database, project_id, sample)
+            result.router = compose_review(sample)
         result.import_sample = load
         return result
 

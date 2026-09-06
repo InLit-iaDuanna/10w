@@ -158,8 +158,9 @@ function isEditorPlacement(value: unknown): value is EditorPlacement {
   }
   if (value.mode === 'drawer') return hasOnlyKeys(value, ['mode', 'edge']) && isEdge(value.edge);
   if (value.mode === 'split') {
-    return hasOnlyKeys(value, ['mode', 'direction', 'relativeToInstanceId']) &&
-      isSplitDirection(value.direction) && optionalString(value.relativeToInstanceId);
+    return hasOnlyKeys(value, ['mode', 'direction', 'relativeToInstanceId', 'initialSize']) &&
+      isSplitDirection(value.direction) && optionalString(value.relativeToInstanceId) &&
+      optionalPositiveNumber(value.initialSize);
   }
   if (value.mode === 'replace' || value.mode === 'tab') {
     return hasOnlyKeys(value, ['mode', 'relativeToInstanceId']) && optionalString(value.relativeToInstanceId);
@@ -189,6 +190,10 @@ function optionalString(value: unknown): boolean {
 
 function optionalBoolean(value: unknown): boolean {
   return value === undefined || typeof value === 'boolean';
+}
+
+function optionalPositiveNumber(value: unknown): boolean {
+  return value === undefined || (typeof value === 'number' && Number.isFinite(value) && value > 0);
 }
 
 function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {

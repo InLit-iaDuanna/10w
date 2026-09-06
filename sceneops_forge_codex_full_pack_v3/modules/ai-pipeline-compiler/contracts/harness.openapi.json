@@ -2754,6 +2754,7 @@
             "type": "string",
             "enum": [
               "codebuddycli",
+              "codexcli",
               "openai-compatible"
             ],
             "title": "Provider"

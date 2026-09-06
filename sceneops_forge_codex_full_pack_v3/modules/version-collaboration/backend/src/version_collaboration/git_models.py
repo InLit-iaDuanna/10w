@@ -81,6 +81,7 @@ class GitBranch(FrozenModel):
 
 
 class GitCommit(FrozenModel):
+    parent_ids: tuple[CommitId, ...] = ()
     commit_id: CommitId
     author: str = Field(min_length=1, max_length=320)
     authored_at: datetime

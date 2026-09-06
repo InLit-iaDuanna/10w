@@ -78,6 +78,9 @@ namespace SceneOps.Forge.Unity.Editor
         public string material_mode = "import";
         public bool generate_colliders;
         public float[] lod_screen_percentages = Array.Empty<float>();
+        public string destination_scene_path = string.Empty;
+        public string sceneops_id = string.Empty;
+        public string scene_instance_id = string.Empty;
     }
 
     [Serializable]

@@ -17,6 +17,10 @@ class CommandPolicy:
 
 
 COMMAND_POLICIES: Mapping[CommandName, CommandPolicy] = {
+    CommandName.PROTOTYPE_COMPOSE: CommandPolicy("unity:write", True, True, False),
+    CommandName.PROTOTYPE_INSPECT: CommandPolicy("unity:read", False, False, True),
+    CommandName.PROTOTYPE_PLAY: CommandPolicy("unity:execute", True, True, False),
+    CommandName.PROTOTYPE_CAPTURE: CommandPolicy("unity:execute", True, True, False),
     CommandName.HEALTH: CommandPolicy("unity:read", False, False, True),
     CommandName.SCAN_PROJECT: CommandPolicy("unity:read", False, False, True),
     CommandName.IMPORT_ASSET: CommandPolicy("unity:write", True, True, False),

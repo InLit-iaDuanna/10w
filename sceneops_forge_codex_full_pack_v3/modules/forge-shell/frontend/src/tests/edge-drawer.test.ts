@@ -4,7 +4,7 @@ import { EdgeDrawerCoordinator } from '../state/edge-drawer-coordinator.ts';
 import { createDefaultDrawers } from '../fixtures/workspace-presets.ts';
 import { WorkbenchEventBus } from '../events/workbench-event-bus.ts';
 
-test('all four edges transition deterministically through hidden, peek, and pinned', () => {
+test('all four edges pull open with a native divider and reverse to hidden', () => {
   const events = new WorkbenchEventBus();
   const changes: string[] = [];
   events.on('workbench.drawer.changed@1', ({ edge, mode }) => changes.push(`${edge}:${mode}`));
@@ -21,7 +21,7 @@ test('all four edges transition deterministically through hidden, peek, and pinn
     coordinator.begin(edge);
     coordinator.move(120);
     coordinator.end();
-    assert.equal(coordinator.get(edge).mode, 'peek');
+    assert.equal(coordinator.get(edge).mode, 'pinned');
 
     coordinator.begin(edge);
     coordinator.move(260);
@@ -69,7 +69,17 @@ test('short revealed drawers retain enough space for the function toolbar and ch
     coordinator.begin(edge);
     coordinator.move(80);
     coordinator.end();
-    assert.equal(coordinator.get(edge).mode, 'peek');
+    assert.equal(coordinator.get(edge).mode, 'pinned');
     assert.equal(coordinator.get(edge).size, 180);
+  }
+});
+
+test('all edge pulls can request the full viewport without a fixed size ceiling', () => {
+  const coordinator = new EdgeDrawerCoordinator(createDefaultDrawers(), new WorkbenchEventBus());
+  for (const edge of ['left', 'right', 'top', 'bottom'] as const) {
+    coordinator.begin(edge);
+    assert.deepEqual(coordinator.move(1600), { kind: 'none', revealLine: true, previewSize: 1600 });
+    coordinator.end();
+    assert.equal(coordinator.get(edge).size, 1600);
   }
 });

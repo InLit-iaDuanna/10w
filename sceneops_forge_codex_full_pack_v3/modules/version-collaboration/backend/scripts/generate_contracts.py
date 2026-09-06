@@ -31,6 +31,8 @@ def build_openapi() -> dict[str, Any]:
     )
     app.include_router(create_demo_router(cast(VersionCollaborationService, object()),
                                           DemoCatalog(entries=()), DemoApprovals()))
+    from version_collaboration.tree_router import create_tree_router
+    app.include_router(create_tree_router("schema", lambda: Path(".")))
     return app.openapi()
 
 

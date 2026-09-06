@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import time
 from dataclasses import dataclass
@@ -89,6 +90,7 @@ class GitCommandRunner:
                 (self._git_binary, *args),
                 cwd=cwd,
                 shell=False,
+                env={key: value for key, value in os.environ.items() if not key.startswith("GIT_")},
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,

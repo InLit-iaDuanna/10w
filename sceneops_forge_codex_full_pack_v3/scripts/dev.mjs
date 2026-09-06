@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { pythonEnvironment } from './python-workspace.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const python = process.env.SCENEOPS_PYTHON ?? path.join(root, '.venv/bin/python');
@@ -31,4 +32,20 @@ process.on('SIGTERM', () => stop());
 console.log(`SceneOps Forge · Web http://127.0.0.1:${env.SCENEOPS_WEB_PORT} · API http://127.0.0.1:${env.SCENEOPS_API_PORT}`);
 console.log('空工作区启动；不安装依赖、不导入案例、不启动作业或 AI 推理。');
 start(python, ['-m', 'uvicorn', 'services.api.app:create_app', '--factory', '--host', '127.0.0.1', '--port', env.SCENEOPS_API_PORT]);
-start(path.join(root, 'node_modules/.bin/vite'), ['--config', 'apps/web/vite.config.ts']);
+// Expose the Web only after its API is ready, so initial queries cannot cache a startup 502.
+const deadline = Date.now() + 60_000;
+let ready = false;
+while (!stopping && Date.now() < deadline) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${env.SCENEOPS_API_PORT}/api/health`, {
+      signal: AbortSignal.timeout(1000),
+    });
+    ready = response.ok && (await response.json()).status === 'ready';
+  } catch { /* The API is still binding its loopback listener. */ }
+  if (ready) break;
+  await delay(200);
+}
+if (!stopping) {
+  if (ready) start(path.join(root, 'node_modules/.bin/vite'), ['--config', 'apps/web/vite.config.ts']);
+  else { console.error('API 在 60 秒内未就绪，请查看上方启动错误。'); stop(1); }
+}

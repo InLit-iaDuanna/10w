@@ -8,6 +8,7 @@ interface PointerSample {
 
 export class EdgePointerGesture {
   #start: PointerSample | null = null;
+  #origin = 0;
   readonly edge: Edge;
   readonly coordinator: EdgeDrawerCoordinator;
   constructor(edge: Edge, coordinator: EdgeDrawerCoordinator) {
@@ -15,9 +16,12 @@ export class EdgePointerGesture {
     this.coordinator = coordinator;
   }
 
-  begin(event: PointerSample & { button: number; isPrimary: boolean; shiftKey: boolean; altKey: boolean }): boolean {
+  get active(): boolean { return this.#start !== null; }
+
+  begin(event: PointerSample & { button: number; isPrimary: boolean; shiftKey: boolean; altKey: boolean }, edgeOrigin?: number): boolean {
     if (!event.isPrimary || event.button !== 0 || this.#start) return false;
     this.#start = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY };
+    this.#origin = edgeOrigin ?? (this.edge === 'left' || this.edge === 'right' ? event.clientX : event.clientY);
     this.coordinator.begin(this.edge, { shiftKey: event.shiftKey, altKey: event.altKey });
     return true;
   }
@@ -25,7 +29,7 @@ export class EdgePointerGesture {
   move(event: PointerSample) {
     if (!this.#start || event.pointerId !== this.#start.pointerId) return null;
     const distance = this.edge === 'left' || this.edge === 'right'
-      ? event.clientX - this.#start.clientX : event.clientY - this.#start.clientY;
+      ? event.clientX - this.#origin : event.clientY - this.#origin;
     return this.coordinator.move(this.edge === 'right' || this.edge === 'bottom' ? -distance : distance);
   }
 

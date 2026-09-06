@@ -1,8 +1,24 @@
 # Asset Factory
 
+`CardAssetWorkflow.observeConversation` 默认开启，使主对话中的新一轮模型描述触发一次真实草稿更新。独立的模型工具区将它设为 `false`，只读取并操作同一产物，避免主对话预览与停靠工具同时观察消息而重复发起 Blender 作业。
+
 Asset Factory turns a canonical AssetSpec and source `.blend` file into reviewed,
 validated GLB/FBX artifacts and an immutable AssetVersion. One versioned workflow
 is reused by the Find My Way Home key and Warehouse Escape obstacle fixtures.
+
+## 卡片模型工作流（2026-09-06）
+
+制作卡片现在有两条接入当前 Git 卡片工作树的真实路径：
+
+- **导入**：选择 GLB 或 FBX，点击“导入并检查”后由 Blender 5.1 读取；原文件保留，另存 `.blend`、可交互预览 GLB、Unity 交换 FBX 和 manifest。
+- **新建**：复用卡片的唯一建模对话。每条新用户回答请求一份结构化修改方案，并由固定 Blender 工作器用允许的 cube、sphere、cylinder、cone 更新真实草稿；右侧 Three.js 面板随成功结果刷新。第一次生成 v1，后续回答在同一会话资产上追加版本，旧版本保留。
+- **归一化**：填写目标最大边（米）后另存新版本，统一缩放、水平居中并落到 Z=0；不覆盖原文件或旧版本。
+
+实时请求以 `project_id + card_id + session_id + trigger_message_id` 唯一识别。相同消息的已完成结果直接复用，不会重复调用模型或 Blender；失败后必须显式设置重试。组件挂载时把已有历史作为基线，只处理随后出现的新消息，因此刷新或重新打开长对话不会补跑旧内容。
+
+工作流不自动提交或合并 Git，不运行游戏、构建、渲染或 Demo。CodeBuddy CLI 支持文字方案；其当前非交互合同没有本地参考图参数，所以带参考图时需选择 Codex CLI 或支持视觉输入的 OpenAI 兼容模型，不能自动换提供方。当前没有自动执行 GLB 压缩；压缩继续作为显式后续动作。
+
+网络合同由 `contracts/card-assets.openapi.json` 和生成的 TypeScript 类型承载；运行 `pnpm generate:card-assets` 更新。实际产物在当前卡片分支的 `assets/models/<card_id>/<asset_id>/` 下，执行日志留在应用 `.local` 数据目录。
 
 ## Workflow
 
@@ -71,6 +87,14 @@ Selection is explicit. The live service does not silently auto-fallback.
 PYTHONPATH=modules/asset-library/backend/src:integrations/blender-addon/src:modules/asset-factory/backend/src python3 -m unittest discover -s modules/asset-factory/backend/tests -v
 node --test modules/asset-factory/frontend/src/tests/*.test.ts
 ```
+
+卡片路径的最小真实 Blender 烟测是显式 opt-in：
+
+```text
+SCENEOPS_REAL_BLENDER_SMOKE=1 node scripts/python.mjs -m unittest modules.asset-factory.backend.tests.test_card_asset_workflow_smoke.CardAssetWorkflowSmoke.test_real_generate_import_and_normalize -v
+```
+
+它只在临时 Git 工程中检查新建、GLB/FBX 导入和归一化；不会写当前用户项目。实时多版本和真实 CodeBuddy → Blender 链路分别由 `test_real_live_dialogue_versions` 与 `test_real_codebuddy_live_dialogue_to_blender` 覆盖，并且都需要显式环境变量才运行。
 
 ## Known limitations
 

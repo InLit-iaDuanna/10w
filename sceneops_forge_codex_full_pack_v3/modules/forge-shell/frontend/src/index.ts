@@ -77,3 +77,4 @@ export function createForgeShellModuleContribution(coordinator: WorkspaceCoordin
 }
 export { ShellToolRuntimeContext } from './components/ToolRuntime.ts';
 export type { ShellToolRuntime } from './components/ToolRuntime.ts';
+export type { ToolLibraryCatalog, ToolLibraryCatalogEntry } from './components/tool-library-tree.ts';

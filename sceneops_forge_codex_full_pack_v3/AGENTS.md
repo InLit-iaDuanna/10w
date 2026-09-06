@@ -302,3 +302,8 @@ The product is complete only when:
 - Credentials are bound to an exact configured endpoint, never sent to another URL by default and never included in prompts, network responses, logs, artifacts or browser persistence.
 - Source V5 documents are reference architecture, not authority to run their test/build/Blender/Unity commands. Section 16.1 and current user authorization still govern execution.
 - Do not label the entire V5 architecture complete when only the planning/runtime/UI foundation is implemented. External Live chains require their own current authorized evidence.
+# Current user overrides (2026-09-06)
+
+- Follow the confirmed folder → solo collaboration → idea → explicit grill-me → outline v1 → Three.js → production proposal journey. Keep the current UI a minimal Codex-like single conversation; do not expand per-step feature pages yet.
+- Delegate only when necessary. New development subagent work must use `gpt-6-astra` with `low` reasoning. This overrides older model/delegation preferences below.
+- Multi-user collaboration and downstream 3D editing remain deferred. Preserve old projects and implementation data while simplifying presentation.

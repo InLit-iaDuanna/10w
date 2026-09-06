@@ -2,6 +2,12 @@
 
 Version: 2.0
 
+最新统一宿主启用 `ForgeShell.onRegionSplit`：各 editor 内拉手以原 instanceId 调用 split，新增区域仍用已注册工具库。`DockviewPort.enableRegionSplits` 迁移旧全局边栏；`resizeRegion` 仅调用原生尺寸接口。统一应用不再从四边创建全局抽屉，以下 drawer-change 说明仅适用于兼容入口。详见 `NESTED_REGION_VERIFICATION.md`。
+
+统一宿主可以通过 `ShellToolRuntime.toolLibraryCatalog` 发布一个显式的渐进目录。传入目录后，工具库只显示目录中的已注册 editor，不追加生产全表、系统入口或未分类 editor；不传入时保持完整开发目录。当前产品目录只开放「模型与资产」和「环境场景」，旧 editor 仍可恢复历史布局，但不会自动弹出。
+
+当前交互补充：只有 drawer-change 命令向原生引擎写入边栏尺寸，原生布局通知只同步实际结果，不能在每次 React 渲染后回写尺寸。统一宿主配置 `emptyWorkspaceEditorId`，最后关闭事务恢复中央聊天。UI 调试使用 `apps/web/src/debug` 的字段白名单接口，不记录业务内容。验证见 `INTERACTION_POLISH_VERIFICATION.md`。
+
 ## 1. Purpose
 
 This guide defines how to add, replace, or integrate frontend functionality without changing the core shell. The frontend is a chat-first, dockable editor environment assembled from feature modules.
@@ -495,3 +501,18 @@ V5 视觉更新：应用根 `workbench.css` 提供语义色彩和全局外壳；
 真实入口：`pnpm lab shell`；初装见 `apps/labs/shell/README.md`。UI 类型统一为 `@sceneops/core-ui` 的 `EditorDefinition`/`EditorHostProps`，Forge Shell 继续转导。ModuleContribution/manifest 来自 module-runtime，manifest 统一使用生成的 snake_case 字段。conversation-home 的默认 placement 为 `{ mode: 'tab' }`，Home preset 决定它独占画布。
 
 `@sceneops/web` 的 `ShellWorkbench` 组合生成目录、EditorRegistry、WorkspaceCoordinator、现有 DockviewPort 和真实对话 runtime。runtime-fixture 在此入口显式禁用。模型选择使用 CodeBuddy CLI API；按钮、搜索、确认后的对话动作都转交已有 WorkbenchCommandBus。代码生成/依赖安装不是完整测试授权。
+# 任务级 Agent 追加（2026-09-05）
+
+后续按用户修订：取消聊天/任务模式页，统一输入框中的权限选择决定仅讨论或准备授权卡；`AgentTaskTimeline` 内嵌同一对话。`initialModuleId` 只预选当前工作台已保存上下文，任务暂不附带此草稿。IntegratedModuleHost 默认组合此公开 Agent 界面，旧编辑器首次打开高级区时才加载，加载后关闭不会丢弃未保存草稿。提供方类型包含 `codexcli`，见 `CODEX_PROVIDER_HANDOFF.md`。下文模式页描述为前一增量记录。
+
+`@sceneops/ai-agent-runtime` 公开 `AgentTaskWorkbench` / `AgentTaskActivity`。统一对话负责聊天与 Agent 模式切换，保留两个视图的草稿；项目切换仍遵循未保存提示。服务端状态由 TanStack Query 管理，API 类型来自 `pnpm generate:agent`，不复制网络合同。工具库通过 `ToolRuntime.renderTaskActivity` 组合公开进度视图，不直接依赖运行模块内部实现。
+
+授权卡准备不执行模型和工具；确认后通过同一 AgentTaskService 执行。等待、失败、取消、连接受阻、恢复及核验证据都有 UI；事件按服务端游标逐页读取。当前使用轮询同步持久事件，并非 WebSocket/SSE 推送。详情及真实验收见 `AGENT_LIVE_VERIFICATION.md`。
+# 策划旅程组合（2026-09-06）
+
+Shell 通过 Design Room 公开 `PlanningJourneyGate` 为文件夹项目承载策划主对话，未绑定的旧项目继续 `UnifiedConversation`。模型选择器由 Conversation Home 公开导出并通过组合参数传入，不复制提供方配置。文件夹列表使用 workspace-client，策划类型由 `journey.openapi.json` 生成。草稿编辑绑定初始 revision，刷新不静默覆盖本地文档。当前制作卡片只作为计划提案，不映射成已执行生产节点。
+# 卡片开发组合端口
+
+Design Room 的 `PlanningJourneyGate.development` 由宿主传入任务准备和时间线渲染函数，保持设计模块不依赖运行模块。共享主输入框区分讨论/开发；prepare仅生成授权卡，不立即执行。任务时间线按选中card_id过滤；退出卡片仍保留项目任务入口。`ProductionAutoOpen` 不为 card-development 任务自动弹出模块页面。
+
+版本管理增量（2026-09-06）：当前功能目录新增 `workbench.version-review`，标题「版本管理」。其 IntegratedWorkbench 默认展示模块自有 VersionTree，旧评审草稿折叠保留；同一项目作用域客户端读取生成的 tree API 类型，不改变初始对话或自动打开工具。

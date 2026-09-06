@@ -49,3 +49,11 @@ Errors use the standard structured shape：
 `event_type` 不带版本后缀，`event_version` 为 `1`。每个事件含 UTC timestamp、project、correlation/causation IDs、actor、mode 和 stable subject IDs。Publisher consumer 必须用 `event_id` 幂等处理。
 
 Approval event 表示“core ApprovalVerifier 已验证并被本模块观察到”，不是本模块自行签发通用 Approval。Release link event 表示稳定 ID 链接已记录；release 的创建和有效性仍由 `build-release` 所有。
+
+## 版本树只读 API
+
+- `GET /api/version-collaboration/tree`：宿主根据 `X-SceneOps-Project` 绑定项目目录；返回 GitRepositoryState 字段及可空 `progress`。GitCommit 新增兼容性默认字段 `parent_ids`，提交按 child-before-parent 拓扑顺序返回，UI 从上到下反向绘制。最多 200 个提交，分支读取本地 refs/heads；`--all` 同时纳入其他本地已有引用可达的历史，不进行远端 fetch。
+- `GET /api/version-collaboration/tree/commits/{commit_id}/files`：返回结构化变更文件；合并提交相对第一父提交，初始提交返回新增文件。
+- `POST /api/version-collaboration/tree/branches/preview`：生成创建或切换本地分支的 typed BranchChangeSet dry-run，包含预期 HEAD、起点和结构化阻塞原因。
+- `POST /api/version-collaboration/tree/branches/apply`：只接受刚刚预览且显式确认的完整 ChangeSet；重新检查仓库状态一致后执行 `git switch -c` 或 `git switch`。不提供删除、远端 push 或 merge。
+- progress 仅反映策划服务现有事实，不表示生产验收完成率。不存在可读取仓库时返回 409 及中文说明。

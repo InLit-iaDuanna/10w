@@ -14,7 +14,7 @@
 .forge-shell .dockview-theme-abyss {
   --dv-color-abyss-dark: var(--canvas);
   --dv-color-abyss: var(--surface-1);
-  --dv-color-abyss-light: #151920;
+  --dv-color-abyss-light: var(--surface-1);
   --dv-color-abyss-lighter: var(--border-subtle);
   --dv-color-abyss-primary-text: var(--text-primary);
   --dv-color-abyss-secondary-text: var(--text-muted);
@@ -35,6 +35,47 @@
   position: absolute;
   inset: 0;
 }
+
+/* The primary conversation and its 3D companion tools use one compact tab
+   bar. Their editor-specific content starts immediately below it, like a
+   task canvas with a native right inspector instead of a nested window. */
+.forge-shell .forge-minimal-chrome-group {
+  --dv-tabs-and-actions-container-height: 38px;
+  --dv-tabs-and-actions-container-background-color: var(--canvas);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--surface-2);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--surface-1);
+  --dv-activegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-tab-margin: 5px 2px;
+  --dv-tab-border-radius: 6px;
+}
+
+.forge-shell .forge-minimal-chrome-group > .dv-tabs-and-actions-container {
+  padding: 0 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.forge-shell .forge-minimal-chrome-group .dv-tab {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding-inline: 9px 6px;
+  font-weight: 550;
+}
+
+.forge-shell .forge-minimal-chrome-group .dv-default-tab-action {
+  border-radius: 5px;
+  color: var(--text-muted);
+}
+
+.forge-shell .forge-workflow-sidebar-group {
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -12px 0 32px rgb(0 0 0 / 10%);
+}
+
+.forge-shell.has-workflow-sidebar .forge-window-menu { display: none; }
+.forge-editor-layout.is-minimal-chrome .forge-region-pull.forge-edge-top { top: 0; }
+.forge-editor-layout.is-workflow-sidebar .current-modeling-tool > header { display: none; }
 
 .forge-area-header {
   display: flex;
@@ -111,13 +152,46 @@
   border-radius: 99px;
   opacity: .5;
   background: var(--surface-2, #1b1f24);
-  transition: opacity 160ms ease 120ms;
+  transition: opacity 180ms ease, scale 240ms cubic-bezier(.22, 1, .36, 1);
+  scale: 1;
 }
 
 .forge-edge-handle:hover .forge-edge-handle-label,
 .forge-edge-handle:focus-visible .forge-edge-handle-label,
 .forge-edge-handle[data-judge-visible='true'] .forge-edge-handle-label {
   opacity: 1;
+  scale: 1.24;
+}
+
+.forge-region-pull[data-collapse-ready='true'] .forge-edge-handle-label {
+  opacity: 1;
+  scale: 1.24;
+  background: var(--accent-blue);
+}
+
+/* The approach area grows only around the grabber, leaving the rest of
+   the edge's existing 12px strip and adjacent tool buttons untouched. */
+.forge-edge-handle::before {
+  content: '';
+  position: absolute;
+}
+.forge-edge-left::before, .forge-edge-right::before {
+  width: 24px;
+  height: 72px;
+  top: calc(50% - 36px);
+}
+.forge-edge-left::before { left: 0; }
+.forge-edge-right::before { right: 0; }
+.forge-edge-top::before, .forge-edge-bottom::before {
+  height: 24px;
+  width: 72px;
+  left: calc(50% - 36px);
+}
+.forge-edge-top::before { top: 0; }
+.forge-edge-bottom::before { bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-edge-handle-label { transition: none; }
 }
 
 .forge-edge-handle:focus-visible .forge-edge-handle-label,
@@ -139,6 +213,29 @@
   left: 0;
   height: 12px;
   min-height: 12px;
+}
+
+/* Per-panel pull handles only need a focused grab zone around the visible
+   marker. Keeping them off the full header edge prevents the transparent
+   drag target from covering the editor selector and area actions. */
+.forge-region-pull.forge-edge-left,
+.forge-region-pull.forge-edge-right {
+  top: 50%;
+  bottom: auto;
+  height: 72px;
+  transform: translateY(-50%);
+}
+.forge-region-pull.forge-edge-top,
+.forge-region-pull.forge-edge-bottom {
+  right: auto;
+  left: 50%;
+  width: 72px;
+  transform: translateX(-50%);
+}
+.forge-region-pull.forge-edge-top {
+  /* The editor header owns the first 36px. Put the grabber on the content
+     boundary so choosing a tool never competes with a transparent drag zone. */
+  top: 36px;
 }
 .forge-edge-top { top: 0; border-top: 2px solid transparent; }
 .forge-edge-bottom { bottom: 0; border-bottom: 2px solid transparent; }
@@ -209,4 +306,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .forge-edge-handle-label { transition: none; }
+}
+.forge-shell .dv-sash.dv-disabled {
+  /* At zero center extent, opposing sashes overlap. An inactive divider
+     must not intercept the enabled divider underneath it. */
+  pointer-events: none;
 }

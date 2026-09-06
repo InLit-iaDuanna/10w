@@ -37,7 +37,7 @@ namespace SceneOps.Forge.Unity.Editor
             }
         }
 
-        private static BatchCommandResult Run(BatchCommandRequest request)
+        internal static BatchCommandResult Run(BatchCommandRequest request)
         {
             SceneOpsCommandSecurity.ValidateCommand(request.command);
             SceneOpsCommandSecurity.ValidateVersion();
@@ -74,6 +74,11 @@ namespace SceneOps.Forge.Unity.Editor
         {
             switch (command)
             {
+                case "unity.prototype.compose":
+                case "unity.prototype.inspect":
+                case "unity.prototype.play":
+                case "unity.prototype.capture":
+                    throw new SceneOpsCommandException("UNITY_CONNECTED_EDITOR_REQUIRED", "Prototype commands require the authenticated persistent Editor session.");
                 case "unity.health":
                     return SceneOpsUnityInspectionCommands.Health();
                 case "unity.project.scan":

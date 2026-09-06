@@ -401,3 +401,17 @@ Workspace SQLite also holds provider metadata, model tiers, proposals and derive
 API startup and schema generation use `scripts/python-workspace.mjs` to load only the checked-in local sources declared by requirements, avoiding editable-install `.pth` behavior. This is development package resolution, not runtime plugin discovery.
 
 See `V5_HANDOFF.md`, `V5_SMOKE.md`, `CURRENT_CAPABILITY_CATALOG.md` and `PROTOTYPE_GAP_MATRIX.md` for the delivered scope and unverified behavior.
+# 任务授权执行补充（2026-09-05）
+
+完整 CLI 模式是显式授权的新增高风险能力 `codex.task.execute`，复用 TaskService/Harness，而非修改默认受限模型边界。卡片/任务/grant 持久绑定模式，固定一次 CLI 调用、20 分钟；内部模型次数未知。任务级审批覆盖 CLI 原生执行，不保证逐文件 ChangeSet 或全机隔离；结果标待审阅。授权范围作为独立 developer 指令进入 CLI，不只是 UI 提醒。见 `CODEX_PROVIDER_HANDOFF.md`。
+
+提供方扩展：`sceneops_ai_provider` 内部 Codex CLI transport 保持同一 generate/structured 合同，`codexcli` 模型独立持久化；配置从后端生成到前端，应用权限不随 provider 放宽。单 Agent 输入按权限使用讨论或原 TaskService，不引入第二套执行服务。见 `CODEX_PROVIDER_HANDOFF.md`。
+
+`sceneops_ai_agents.AgentTaskService` 管理任务授权和跨 run 预算；每次模型决策、类型化工具动作均复用 `sceneops_harness`。任务与事件写入 SQLite，ChangeSet/审批/执行记录保持原 Harness 合同。应用只组合公开路由和生命周期。
+
+模型无文件路径、Shell 或任意代码权限。工具会话按服务端 grant 绑定独立 `agent-workspaces/<project_id>`，Blender 使用受限本地 socket 和 OS 沙箱，Unity 使用私有 mailbox 与编辑器主线程 dispatcher。Unity 自有包从固定随附代码路径加载，产物仍被限制在独立工程；不是全进程 OS 沙箱。最终成功需实时双端身份/尺寸/console 回读。未明确的写入结果停止，不盲目重复。
+
+健康状态通过 `AgentTaskService.execution_status()` 读取应用跟踪的生命周期，不探测或启动工具；外部手动关闭进程在下次真实工具读回中确认。真实验证及剩余边界见 `AGENT_LIVE_VERIFICATION.md`。
+# 单人策划旅程增量（2026-09-06）
+
+新文件夹项目以 workspace 公开存储接口绑定本地根目录。Design Room 的 PlanningJourneyService 拥有单人策划状态、消息、大纲和制作卡片提案，不执行生产任务。模型只由明确命令调用，沿用 ProviderService。持久导出记录衔接 SQLite 与项目内 JSON，最终提交使用 revision 比较，快照仅在用户确认后创建。旧项目继续原有路径。详细协议与局限见 `PLANNING_JOURNEY_STAGE1.md`。
