@@ -157,14 +157,20 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
   const sceneVersions = sceneAsset?.versions ?? [];
   const sceneVersionNumber = sceneAsset ? selectedVersions[sceneAsset.id] ?? sceneAsset.current_version : undefined;
   const sceneVersion = sceneVersions.find(item => item.number === sceneVersionNumber) ?? sceneVersions.at(-1);
+  const sceneGenerationPending = liveUpdated.isPending || sceneAsset?.status === 'processing';
   const sceneVersionSaved = !!sceneAsset && !!sceneVersion && !!library.data?.find(item => item.source_asset_id === sceneAsset.id)
     ?.versions.some(item => item.source_version === sceneVersion.number);
   if (presentation === 'scene') return <section ref={sceneRoot} className="card-model-scene-workflow"
     style={{'--card-model-scene-share':`${sceneShare}%`} as CSSProperties} aria-label="当前模型场景">
     <section className="card-model-scene-card" aria-label="当前模型预览">
-      <div className="card-model-scene-status"><span>{sceneVersion ? `模型 v${sceneVersion.number}` : '模型草稿'}</span>
-        <strong>{sceneAsset?.title ?? (liveUpdated.isPending ? '正在生成模型' : '等待确认建模')}</strong>
-        <small>{liveUpdated.isPending ? 'AI 方案 → Blender → GLB' : 'Three.js · 米制网格'}</small></div>
+      <div className="card-model-scene-status"><div className="card-model-scene-title"><span>{sceneVersion ? `模型 v${sceneVersion.number}` : '模型草稿'}</span>
+        <strong>{sceneAsset?.title ?? (sceneGenerationPending ? '正在生成模型' : '等待确认建模')}</strong></div>
+        <div className="card-model-scene-meta">{sceneGenerationPending
+          ? <span className="card-model-generation-status" role="status" aria-live="polite"><i/>正在生成中</span>
+          : <small>Three.js · 米制网格</small>}
+          {!!sceneVersions.length && <div className="card-version-strip card-model-top-versions" aria-label="模型版本">{sceneVersions.map(item => <button key={item.number} type="button"
+            aria-pressed={item.number === sceneVersion?.number} onClick={() => setSelectedVersions(current => ({...current,[sceneAsset!.id]:item.number}))}>v{item.number}</button>)}</div>}
+        </div></div>
       {sceneAsset && sceneVersion ? <CardModelPreview ref={preview} label={`${sceneAsset.title} v${sceneVersion.number}`}
         url={cardAssetFileUrl(sceneAsset.id,'preview',sceneVersion.number)}/>
         : <div className="card-model-scene-empty"><strong>{source === 'import' ? '等待导入模型' : '当前需求还没有模型版本'}</strong>
@@ -181,7 +187,6 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     <section className="card-model-camera-card" aria-label="模型视角操作">
       <header><div><strong>模型视角</strong><small>拖动画布也可以自由查看</small></div>
         {sceneVersion && <span>{size(sceneVersion.dimensions_m)}</span>}</header>
-      {liveUpdated.isPending && <div className="card-live-state" role="status"><span/><div><strong>正在生成下一版</strong><small>AI 重建方案，随后由 Blender 输出 GLB</small></div></div>}
       {notice && <p role={notice.kind === 'error' ? 'alert' : 'status'} className="card-asset-notice" data-kind={notice.kind}>{notice.text}</p>}
       {failedJob && <button className="card-live-retry" disabled={busy} onClick={() => {setNotice(null);liveUpdated.mutate({...failedJob,retryFailed:true});}}>重试本轮草稿</button>}
       {source === 'import' && <div className="card-asset-action"><label className="card-asset-file"><strong>{importFile?.name ?? '选择 GLB / FBX'}</strong>
@@ -203,8 +208,6 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
             <button type="button" onClick={() => preview.current?.rotateModel('z',90)}>Z 轴 +90°</button>
             <button type="button" onClick={() => preview.current?.resetModel()}>复位模型</button></div>
         </section>
-        <div className="card-version-strip" aria-label="模型版本">{sceneVersions.map(item => <button key={item.number} type="button"
-          aria-pressed={item.number === sceneVersion.number} onClick={() => setSelectedVersions(current => ({...current,[sceneAsset.id]:item.number}))}>v{item.number}</button>)}</div>
         <div className="card-model-scene-actions"><button type="button" disabled={busy || sceneVersionSaved}
           onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:sceneAsset.id,version:sceneVersion.number});}}>{sceneVersionSaved ? '已存资产库' : '存入资产库'}</button>
           {onCreateAnother && <button type="button" disabled={busy} onClick={onCreateAnother}>新建另一个</button>}
