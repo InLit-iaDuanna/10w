@@ -57,6 +57,11 @@ export function AgentTaskWorkbench({ projectId, onDirtyChange }: { projectId: st
 
 /** Timeline-only embedding for the conversation canvas; preparation remains owned by the caller. */
 export function AgentTaskTimeline({ projectId, cardId, onContinue }: { projectId: string | null; cardId?: string; onContinue?: () => void }) {
+  if (!projectId) return null;
+  return <ProjectAgentTaskTimeline projectId={projectId} {...(cardId === undefined ? {} : { cardId })} {...(onContinue ? { onContinue } : {})} />;
+}
+
+function ProjectAgentTaskTimeline({ projectId, cardId, onContinue }: { projectId: string; cardId?: string; onContinue?: () => void }) {
   const query = useTasks(projectId);
   if (query.isPending) return <p className="agent-task-timeline-state" role="status">正在读取任务记录…</p>;
   if (query.error) return <p className="agent-task-timeline-state" role="alert">任务服务未连接：{query.error.message} <button onClick={() => void query.refetch()}>重新连接</button></p>;
@@ -197,6 +202,11 @@ export function activityLabel(value: unknown): string {
 }
 
 export function AgentTaskActivity({ projectId }: { projectId: string | null }) {
+  if (!projectId) return null;
+  return <ProjectAgentTaskActivity projectId={projectId} />;
+}
+
+function ProjectAgentTaskActivity({ projectId }: { projectId: string }) {
   const tasks = useTasks(projectId);
   const task = tasks.data?.tasks.find(busy) ?? tasks.data?.tasks[0];
   if (!task) return null;

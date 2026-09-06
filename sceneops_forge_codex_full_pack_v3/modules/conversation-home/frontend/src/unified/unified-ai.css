@@ -193,4 +193,4 @@
   .unified-ai-conversation textarea { min-height: 40px; }
   .unified-ai-composer-note { padding-bottom: 0; }
 }
-.unified-ai-permission { display: grid; gap: 2px; color: var(--text-muted, #7d899a); font-size: 10px; }.unified-ai-permission select { min-width: 142px; padding: 5px 7px; border: 1px solid var(--border-default, #394554); border-radius: 6px; color: var(--text-primary, #eef2f6); background: var(--surface-2, #222932); font: inherit; }.unified-ai-task-note { margin: 8px 0 0; color: var(--accent-violet, #b5a4ed); font-size: 11px; line-height: 1.45; }
+.unified-ai-discussion-mode { padding: 6px 9px; border: 1px solid var(--border-default, #394554); border-radius: 999px; color: var(--text-secondary, #a8b3c2); background: var(--surface-2, #222932); font-size: 11px; white-space: nowrap; }.unified-ai-task-note { margin: 8px 0 0; color: var(--accent-violet, #b5a4ed); font-size: 11px; line-height: 1.45; }

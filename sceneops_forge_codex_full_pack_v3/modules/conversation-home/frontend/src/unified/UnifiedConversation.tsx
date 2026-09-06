@@ -14,7 +14,7 @@ import {
 } from './outgoingConversation.ts';
 import type { CancellationCause, OutgoingAttempt } from './outgoingConversation.ts';
 import './unified-ai.css';
-import { AgentTaskTimeline, agentTasks, productionKeys, type AgentTask } from '@sceneops/ai-agent-runtime';
+import { AgentTaskTimeline } from '@sceneops/ai-agent-runtime';
 
 type ConversationProps = {
   context: WorkbenchContext;
@@ -22,7 +22,6 @@ type ConversationProps = {
   initialModuleId?: ModuleId;
   /** Opens the host-owned production-plan editor. The conversation never creates a plan itself. */
   onOpenPipeline?: () => void;
-  onTaskPrepared?: (task: AgentTask) => void;
 };
 
 type SendVariables = {
@@ -70,16 +69,13 @@ function snapshotContext(context: WorkbenchContext): WorkbenchContext {
   };
 }
 
-export function UnifiedConversation({ context, onDirtyChange, onOpenPipeline, initialModuleId, onTaskPrepared }: ConversationProps) {
+export function UnifiedConversation({ context, onDirtyChange, onOpenPipeline, initialModuleId }: ConversationProps) {
   // A project change disposes pending requests and cannot mix transcript or composer state.
-  return <ProjectConversation key={context.projectId ?? 'pre_project'} context={context} onDirtyChange={onDirtyChange} initialModuleId={initialModuleId} {...(onTaskPrepared ? { onTaskPrepared } : {})} {...(onOpenPipeline ? { onOpenPipeline } : {})} />;
+  return <ProjectConversation key={context.projectId ?? 'pre_project'} context={context} onDirtyChange={onDirtyChange} initialModuleId={initialModuleId} {...(onOpenPipeline ? { onOpenPipeline } : {})} />;
 }
 
-function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialModuleId, onTaskPrepared }: ConversationProps) {
+function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialModuleId }: ConversationProps) {
   const [draft, setDraft] = useState('');
-  const [permission, setPermission] = useState<'discussion' | 'task' | 'codex-full-access'>('discussion');
-  const [allowImages, setAllowImages] = useState(false);
-  const taskPermission = permission !== 'discussion';
   const [attempts, dispatchAttempt] = useReducer(outgoingConversationReducer, []);
   const [selectedModule, setSelectedModule] = useState<ModuleId | ''>(initialModuleId ?? '');
   const moduleDocument = useConversationDocument(context.projectId, selectedModule);
@@ -126,20 +122,6 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialMo
     },
     onSettled: (_data, _error, variables) => {
       if (activeRequest.current?.attemptId === variables.attemptId) activeRequest.current = null;
-    },
-  });
-  const prepareTask = useMutation({
-    mutationFn: (goal: string) => agentTasks.prepare({ goal, allow_game_execution:false, allow_dependency_install:false,
-      execution_mode: permission === 'codex-full-access' ? 'codex-full-access' : 'typed-tools',
-      allow_image_generation: permission === 'codex-full-access' && allowImages,
-      allow_playtest: false,
-      task_profile: 'auto',
-      ...(context.projectId ? { project_id: context.projectId } : {}) }),
-    onSuccess: async (task, goal) => {
-      setDraft(current => current.trim() === goal ? '' : current);
-      await cache.invalidateQueries({ queryKey: ['agent-tasks'] });
-      await cache.invalidateQueries({ queryKey: productionKeys.snapshot(task.project_id) });
-      requestAnimationFrame(() => { if (transcript.current) transcript.current.scrollTop = transcript.current.scrollHeight; });
     },
   });
   const pendingAttempt = attempts.find(attempt => attempt.status === 'pending');
@@ -190,37 +172,24 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialMo
     const node = transcript.current;
     if (node) node.scrollTop = node.scrollHeight;
   }, [history.data?.messages.length, attempts]);
-  useEffect(() => { onDirtyChange?.(!!draft.trim() || requestBusy || prepareTask.isPending); }, [draft, requestBusy, prepareTask.isPending, onDirtyChange]);
-  const selectedPreparedTask = useRef<string | null>(null);
-  useEffect(() => {
-    const task = prepareTask.data;
-    if (!prepareTask.isSuccess || prepareTask.isPending || draft.trim() || !task || selectedPreparedTask.current === task.id) return;
-    selectedPreparedTask.current = task.id;
-    onTaskPrepared?.(task);
-  }, [prepareTask.data, prepareTask.isSuccess, prepareTask.isPending, draft, onTaskPrepared]);
+  useEffect(() => { onDirtyChange?.(!!draft.trim() || requestBusy); }, [draft, requestBusy, onDirtyChange]);
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
   useEffect(() => {
     const beforeUnload = (event: BeforeUnloadEvent) => {
-      if (draft.trim() || requestBusy || prepareTask.isPending) { event.preventDefault(); event.returnValue = ''; }
+      if (draft.trim() || requestBusy) { event.preventDefault(); event.returnValue = ''; }
     };
     window.addEventListener('beforeunload', beforeUnload);
     return () => window.removeEventListener('beforeunload', beforeUnload);
-  }, [draft, requestBusy, prepareTask.isPending]);
+  }, [draft, requestBusy]);
 
   const rows = [
     ...(history.data?.messages.map(message => ({ kind: 'saved' as const, createdAt: message.created_at, message })) ?? []),
     ...attempts.map(attempt => ({ kind: 'outgoing' as const, createdAt: attempt.createdAt, attempt })),
   ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
-  const taskGoalValid = draft.trim().length > 0 && draft.trim().length <= 8000;
-  const composerBusy = requestBusy || prepareTask.isPending;
+  const composerBusy = requestBusy;
   function submitComposer() {
     const message = draft.trim();
     if (!message || composerBusy) return;
-    if (taskPermission) {
-      if (!taskGoalValid) return;
-      prepareTask.mutate(message);
-      return;
-    }
     startRequest(message);
   }
 
@@ -249,7 +218,7 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialMo
       event.preventDefault();
       submitComposer();
     }}>
-      <label className="unified-ai-input-label"><span>{taskPermission ? '任务目标' : '需求或问题'}</span><textarea aria-label={taskPermission ? '任务目标' : '需求或问题'} value={draft} maxLength={taskPermission ? 8000 : 16000} rows={2}
+      <label className="unified-ai-input-label"><span>需求或问题</span><textarea aria-label="需求或问题" value={draft} maxLength={16000} rows={2}
         onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => {
           if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
           event.preventDefault();
@@ -267,18 +236,16 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialMo
             </div>
           </details>
           <UnifiedModelPicker disabled={composerBusy} compact />
-          {selectedModule && permission === 'discussion' && <span className="unified-ai-context-chip" title="已明确选择的模块草稿">已附带草稿</span>}
+          {selectedModule && <span className="unified-ai-context-chip" title="已明确选择的模块草稿">已附带草稿</span>}
           {!!context.selectedArtifactIds?.length && <span className="unified-ai-context-chip">已选产物 {context.selectedArtifactIds.length} 项</span>}
         </div>
         <div className="unified-ai-actions">
-          <label className="unified-ai-permission"><span>权限</span><select aria-label="执行权限" value={permission} disabled={composerBusy} onChange={event => setPermission(event.target.value as typeof permission)}><option value="discussion">仅讨论</option><option value="task">受控工具（先授权）</option><option value="codex-full-access">Codex 完全权限（先授权）</option></select></label>
+          <span className="unified-ai-discussion-mode" title="先讨论并确认制作步骤；执行能力在具体步骤中单独授权。">讨论与对齐</span>
           {pendingAttempt ? <button className="unified-ai-cancel" type="button" aria-label="取消回复" title="取消回复" onClick={() => cancelActiveRequest('user')}><svg aria-hidden="true" viewBox="0 0 16 16"><rect x="5" y="5" width="6" height="6" rx="1" /></svg><span>取消</span></button>
-            : <button className="unified-ai-send" type="submit" aria-label={taskPermission ? '准备任务授权' : '发送消息'} title={taskPermission ? '准备任务授权' : '发送消息'} disabled={taskPermission ? !taskGoalValid || composerBusy : !draft.trim() || !ready || !history.isSuccess || !documentReady || composerBusy}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 12.5v-9M4.5 7 8 3.5 11.5 7" /></svg><span>{prepareTask.isPending ? '准备中…' : taskPermission ? '准备授权' : '发送'}</span></button>}
+            : <button className="unified-ai-send" type="submit" aria-label="发送消息" title="发送消息" disabled={!draft.trim() || !ready || !history.isSuccess || !documentReady || composerBusy}><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 12.5v-9M4.5 7 8 3.5 11.5 7" /></svg><span>发送</span></button>}
         </div>
       </div>
-      {taskPermission && <p className="unified-ai-task-note">先准备授权卡，不立即执行。任务仅使用目标，不附带模块草稿，最多 8000 字符。{permission === 'codex-full-access' && ' 需选择 Codex CLI；完全权限允许文件/Shell 操作，并非系统沙箱。low 轻量思考。'}</p>}
-      {permission === 'codex-full-access' && <label className="unified-ai-task-note"><input type="checkbox" checked={allowImages} disabled={composerBusy} onChange={event => setAllowImages(event.target.checked)} /> 本任务允许 GPT 图片生成（Codex 登录，不切换付费 API）</label>}
-      {prepareTask.error && <p role="alert">准备任务失败：{prepareTask.error.message}</p>}
+      <p className="unified-ai-task-note">这里的消息只用于讨论和对齐。进入已确认的制作步骤后，再单独授权 Agent 执行。</p>
     </form>
     <div className="unified-ai-composer-note"><span>本地对话 · 操作需确认</span><span>Enter 发送 · Shift + Enter 换行</span></div>
   </section>;

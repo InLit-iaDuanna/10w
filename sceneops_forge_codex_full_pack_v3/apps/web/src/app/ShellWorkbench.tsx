@@ -170,7 +170,7 @@ function createWorkbench(unified: boolean) {
               }, renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}
               modelPicker={busy => <UnifiedModelPicker disabled={busy} compact />}
               onOpenProjects={() => void open('workspace.projects', {mode:'split',direction:'right'}).catch(report)}
-              fallback={<UnifiedConversation context={props.context} onDirtyChange={dirty} onTaskPrepared={task => actions.selectProject(task.project_id)} onOpenPipeline={() => void open('harness.pipeline', {mode:'split',direction:'right'}).catch(report)} />} />;
+              fallback={<UnifiedConversation context={props.context} onDirtyChange={dirty} onOpenPipeline={() => void open('harness.pipeline', {mode:'split',direction:'right'}).catch(report)} />} />;
           }};
           const { default: Conversation } = await assistantConversationEditor.load();
           return { default: (props: EditorHostProps) => <Conversation {...props} localState={assistantConversationEditor.restoreState(props.localState)} runtime={conversation ?? undefined} modelTransport={transport ?? undefined} /> };
