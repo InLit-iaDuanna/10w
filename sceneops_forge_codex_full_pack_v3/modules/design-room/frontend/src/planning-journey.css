@@ -45,6 +45,9 @@
 .planning-journey .journey-composer>textarea { display:block; width:100%; box-sizing:border-box; resize:none; background:transparent; color:inherit; border:0; border-radius:0; outline:none; box-shadow:none; padding:3px 0; font:inherit; font-size:14px; line-height:1.55; min-height:40px; max-height:144px; overflow-y:auto; }
 .planning-journey .journey-composer>textarea:focus-visible { outline:none; }
 .journey-composer-tools { display:flex; align-items:center; gap:10px; min-height:30px; }
+.planning-journey button.journey-confirm-model { flex:none; padding:6px 11px; border-color:#8e7d50; border-radius:999px; background:#d8bc72; color:#211d13; font-weight:650; }
+.planning-journey button.journey-confirm-model:hover:not(:disabled) { border-color:#ead28f; background:#e1c87f; }
+.planning-journey button.journey-confirm-model:disabled { border-color:var(--border-default,#444); background:var(--surface-3,#333); color:var(--text-muted,#888); }
 .journey-draft-status { margin-left:auto; font-size:11px; color:var(--text-muted,#888); }
 .planning-journey button.journey-submit { border-radius:50%; width:30px; height:30px; padding:0; font-size:20px; background:var(--text-primary,#e5e5e5); color:var(--canvas,#1b1b1b); border:0; flex:none; }
 .journey-cost { font-size:11px; text-align:center; padding:5px; color:var(--text-muted,#888); }

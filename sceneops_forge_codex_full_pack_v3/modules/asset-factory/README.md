@@ -1,6 +1,6 @@
 # Asset Factory
 
-`CardAssetWorkflow.observeConversation` 默认开启，使主对话中的新一轮模型描述触发一次真实草稿更新。独立的模型工具区将它设为 `false`，只读取并操作同一产物，避免主对话预览与停靠工具同时观察消息而重复发起 Blender 作业。
+`CardAssetWorkflow.observeConversation` 默认开启。没有模型产物时，它只把对话消息记作需求基线，等待用户点击“确认并建模”；首版成功后，主对话中的新一轮模型描述会触发同一资产的真实草稿更新。稳定消息 ID 保证同一轮不会重复执行。
 
 Asset Factory turns a canonical AssetSpec and source `.blend` file into reviewed,
 validated GLB/FBX artifacts and an immutable AssetVersion. One versioned workflow
@@ -12,7 +12,7 @@ is reused by the Find My Way Home key and Warehouse Escape obstacle fixtures.
 
 - **导入**：选择 GLB 或 FBX，点击“导入并检查”后由 Blender 5.1 读取；原文件保留，另存 `.blend`、可交互预览 GLB、Unity 交换 FBX 和 manifest。
 - **场景投放导入**：把一个或多个 GLB / FBX 直接拖入 3D 世界预览，会复用同一导入检查，成功版本自动存入项目资产库并加入当前场景。
-- **新建**：复用卡片的唯一建模对话。每条新用户回答请求一份结构化修改方案，并由固定 Blender 工作器用允许的 cube、sphere、cylinder、cone 更新真实草稿；右侧 Three.js 面板随成功结果刷新。第一次生成 v1，后续回答在同一会话资产上追加版本，旧版本保留。
+- **新建**：复用卡片的唯一建模对话。用户点击“确认并建模”后请求首份结构化方案，并由固定 Blender 工作器用允许的 cube、sphere、cylinder、cone 生成真实草稿；右侧 Three.js 面板随成功结果刷新。后续回答在同一会话资产上追加版本，旧版本保留。
 - **归一化**：填写目标最大边（米）后另存新版本，统一缩放、水平居中并落到 Z=0；不覆盖原文件或旧版本。
 
 实时请求以 `project_id + card_id + session_id + trigger_message_id` 唯一识别。相同消息的已完成结果直接复用，不会重复调用模型或 Blender；失败后必须显式设置重试。组件挂载时把已有历史作为基线，只处理随后出现的新消息，因此刷新或重新打开长对话不会补跑旧内容。

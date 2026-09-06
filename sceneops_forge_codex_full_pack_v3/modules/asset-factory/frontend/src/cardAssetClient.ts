@@ -59,3 +59,8 @@ export async function importProjectAssetFile(projectId: string, cardId: string, 
   const saved = await cardAssetClient.saveToLibrary(asset.id, asset.current_version);
   return saved.entry;
 }
+
+export async function buildProjectAssetDraft(projectId: string, cardId: string, body: LiveModelUpdateRequest) {
+  const result = await cardAssetClient.liveUpdate(projectId, cardId, body);
+  return {version:result.asset.current_version,reused:result.reused};
+}

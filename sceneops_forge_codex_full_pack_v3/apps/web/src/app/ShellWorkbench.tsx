@@ -13,7 +13,7 @@ import {
   UnifiedConversation, UnifiedModelPicker,
 } from '@sceneops/conversation-home';
 import { WorkspaceProjects } from '@sceneops/project-intake';
-import { CurrentModelingTool, PlanningJourneyGate, type JourneySurfaceRequest } from '../../../../modules/design-room/frontend/src/index';
+import { CurrentModelingTool, CurrentWorldTool, PlanningJourneyGate, type JourneySurfaceRequest } from '../../../../modules/design-room/frontend/src/index';
 import { integratedWorkbenches } from '../registries/generated-workbench-catalog';
 import { createIntegratedModuleHost, type IntegratedActions } from './IntegratedModuleHost';
 import { resolveFrontendModuleStates, type ModuleManifest } from '@sceneops/module-runtime';
@@ -25,7 +25,7 @@ import { conversationCommandBridge } from './conversationBridge';
 import './workbench.css';
 import { DebugPanel, installUiDiagnostics, recordUiError, recordUiEvent } from '../debug';
 import { AgentTaskActivity, AgentTaskTimeline, agentTasks, productionKeys, ProductionModuleView, ProductionNodeStatus } from '@sceneops/ai-agent-runtime';
-import { CardAssetWorkflow, importProjectAssetFile } from '@sceneops/asset-factory';
+import { buildProjectAssetDraft, CardAssetWorkflow, importProjectAssetFile } from '@sceneops/asset-factory';
 import { EnvironmentSceneWorkflow, environmentSceneClient, environmentSceneKey } from '../../../../modules/world-composer/frontend/src/index';
 
 const CURRENT_TOOL_CATALOG = {
@@ -52,6 +52,11 @@ function createJourneySurfaceCoordinator() {
     },
     request(surface: JourneySurfaceRequest['surface'], action: Omit<NonNullable<JourneySurfaceRequest['action']>, 'id'>) {
       current = { surface, hosted: owner !== null, action:{...action,id:crypto.randomUUID()}, revision: ++revision };
+      for (const listener of listeners) listener();
+    },
+    acknowledge(actionId: string) {
+      if (!current?.action || current.action.id !== actionId) return;
+      current = {surface:current.surface,hosted:current.hosted,revision:++revision};
       for (const listener of listeners) listener();
     },
     release(instanceId: string) {
@@ -150,6 +155,7 @@ function createWorkbench(unified: boolean) {
             const surfaceRequest = useSyncExternalStore(journeySurface.subscribe, journeySurface.snapshot, journeySurface.snapshot);
             return <PlanningJourneyGate projectId={props.context.projectId} onDirtyChange={dirty}
               surfaceRequest={surfaceRequest}
+              onSurfaceActionHandled={journeySurface.acknowledge}
               onOpenSurface={surface => {
                 const editorId = surface === 'environment' ? 'journey.environment' : 'journey.modeling';
                 const surfaceInstance = Object.values(coordinator.snapshot().instances)
@@ -173,7 +179,14 @@ function createWorkbench(unified: boolean) {
                   .map(instance => instance.instanceId);
                 void (async () => { for (const instanceId of ids) await execute('workbench.close_editor', {instanceId}); })().catch(report);
               }}
-              assets={{render: input => <CardAssetWorkflow {...input} />}}
+              assets={{render: input => <CardAssetWorkflow {...input} />, build: async input => {
+                const result = await buildProjectAssetDraft(input.projectId, input.cardId, {
+                  session_id:input.sessionId,trigger_message_id:input.triggerMessageId,
+                  modeling_block:input.modelingBlock,transcript:input.transcript,retry_failed:false,
+                });
+                await queryClient.invalidateQueries({queryKey:['card-assets',input.projectId,input.cardId]});
+                return result;
+              }}}
               environment={{render: input => <EnvironmentSceneWorkflow {...input}
                 onImportAsset={file => importProjectAssetFile(input.projectId, 'world-3d', file)} />, read: async projectId => {
                 const scene = await environmentSceneClient.get(projectId);
@@ -249,12 +262,12 @@ function createWorkbench(unified: boolean) {
       }, [props.instanceId, props.suspended]);
       if (!props.context.projectId) return <section className="integrated-state"><strong>尚未选择项目</strong><p>先通过右上角“本地项目”选择一个文件夹。</p></section>;
       const createAsset = (source: 'import'|'create') => {
-        void open('journey.modeling', {mode:'tab',relativeToInstanceId:props.instanceId})
-          .then(() => journeySurface.request('modeling', {type:'new-asset',source}))
-          .catch(report);
+        journeySurface.request('environment', {type:'new-asset',source});
       };
-      return <EnvironmentSceneWorkflow projectId={props.context.projectId} onCreateAsset={createAsset}
-        onImportAsset={file => importProjectAssetFile(props.context.projectId!, 'world-3d', file)}/>;
+      return <CurrentWorldTool projectId={props.context.projectId}
+        renderModel={input => <CardAssetWorkflow {...input} />}
+        renderEnvironment={() => <EnvironmentSceneWorkflow projectId={props.context.projectId!} onCreateAsset={createAsset}
+          onImportAsset={file => importProjectAssetFile(props.context.projectId!, 'world-3d', file)}/>}/>;
     }}}});
   }
   workspaces.register(HOME_PRESET);

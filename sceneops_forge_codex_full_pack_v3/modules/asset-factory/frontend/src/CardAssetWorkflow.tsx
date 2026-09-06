@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CardModelPreview } from './CardModelPreview.tsx';
+import { CardModelPreview, type CardModelPreviewHandle } from './CardModelPreview.tsx';
 import { cardAssetClient, cardAssetFileUrl, cardAssetKey, projectAssetLibraryKey, type CardAssetList, type CardAssetRecord } from './cardAssetClient.ts';
 import './card-asset-workflow.css';
 
@@ -17,10 +17,10 @@ const MODELING_BLOCKS = [
 
 export type CardAssetWorkflowProps = { projectId: string; cardId: string; source: 'import'|'create';
   sessionId: string; messages: Message[]; onCreateAnother?: () => void; onOpenEnvironment?: () => void;
-  observeConversation?: boolean };
+  observeConversation?: boolean; presentation?: 'workflow'|'scene' };
 
 export function CardAssetWorkflow({projectId, cardId, source, sessionId, messages, onCreateAnother, onOpenEnvironment,
-  observeConversation = true}: CardAssetWorkflowProps) {
+  observeConversation = true, presentation = 'workflow'}: CardAssetWorkflowProps) {
   const cache = useQueryClient();
   const key = cardAssetKey(projectId, cardId);
   const query = useQuery({queryKey:key, queryFn:({signal}) => cardAssetClient.list(projectId, cardId, signal), retry:false});
@@ -34,7 +34,13 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
   const [notice, setNotice] = useState<{text:string;kind:'success'|'error'}|null>(null);
   const [queue, setQueue] = useState<LiveUpdateJob[]>([]);
   const [failedJob, setFailedJob] = useState<LiveUpdateJob|null>(null);
+  const [cameraAngle, setCameraAngle] = useState(30);
+  const [sceneShare, setSceneShare] = useState(() => Math.min(76, Math.max(36,
+    Number(localStorage.getItem('sceneops.environment.scene-share.v1')) || 62)));
   const observed = useRef<{sessionId:string;messageIds:Set<string>}|null>(null);
+  const preview = useRef<CardModelPreviewHandle>(null);
+  const sceneRoot = useRef<HTMLElement>(null);
+  const resizingScene = useRef(false);
   const refresh = async () => { await cache.invalidateQueries({queryKey:key}); };
 
   const imported = useMutation({mutationFn: async () => {
@@ -87,6 +93,11 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
       setNotice({text:result.version_created ? '这个版本已存入项目资产库。' : '这个版本已经在项目资产库中。',kind:'success'});
       await cache.invalidateQueries({queryKey:libraryKey});
     }, onError:error => setNotice({text:error.message,kind:'error'})});
+  const allAssets = query.data?.assets ?? [];
+  const assets = source === 'create'
+    ? allAssets.filter(asset => asset.source_type === 'generated' && asset.session_id === sessionId)
+    : allAssets.filter(asset => asset.source_type === 'import');
+  const hasSessionDraft = source === 'create' && assets.length > 0;
 
   useEffect(() => {
     if (!observeConversation) {
@@ -103,8 +114,9 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     }
     const fresh = userMessages.filter(message => !observed.current!.messageIds.has(message.id));
     if (!fresh.length) return;
+    fresh.forEach(message => observed.current!.messageIds.add(message.id));
+    if (source === 'create' && !hasSessionDraft) return;
     const jobs = fresh.map(message => {
-      observed.current!.messageIds.add(message.id);
       const messageIndex = messages.findIndex(item => item.id === message.id);
       const turnIndex = userMessages.findIndex(item => item.id === message.id);
       const fallbackBlock = MODELING_BLOCKS[turnIndex]?.id ?? 'refinement';
@@ -114,7 +126,7 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
           .map(item => ({role:item.role,text:item.text}))};
     });
     setQueue(current => [...current, ...jobs.filter(job => !current.some(item => item.triggerMessageId === job.triggerMessageId))]);
-  }, [messages, observeConversation, sessionId]);
+  }, [messages, observeConversation, sessionId, source, hasSessionDraft]);
 
   useEffect(() => {
     if (!observeConversation || source !== 'create' || !query.isSuccess || liveUpdated.isPending || failedJob || !queue.length) return;
@@ -122,10 +134,6 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     liveUpdated.mutate(queue[0]!);
   }, [source, query.isSuccess, queue, failedJob, liveUpdated.isPending, observeConversation]);
 
-  const allAssets = query.data?.assets ?? [];
-  const assets = source === 'create'
-    ? allAssets.filter(asset => asset.source_type === 'generated' && asset.session_id === sessionId)
-    : allAssets.filter(asset => asset.source_type === 'import');
   const latestProposal = query.data?.proposals.find(item => item.session_id === sessionId) ?? null;
   const completedBlocks = useMemo(() => {
     const ids = new Set<string>();
@@ -136,8 +144,67 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
   const currentBlock = MODELING_BLOCKS.find(block => !completedBlocks.has(block.id))?.id ?? 'refinement';
   const busy = imported.isPending || liveUpdated.isPending || normalized.isPending || savedToLibrary.isPending;
   const size = (value:readonly number[]|null|undefined) => value ? value.map(item => Number(item.toFixed(3))).join(' × ') + ' m' : '—';
+  const resizeScene = (clientY:number) => {
+    const bounds = sceneRoot.current?.getBoundingClientRect();
+    if (!bounds) return;
+    setSceneShare(Math.min(76, Math.max(36, ((clientY - bounds.top) / bounds.height) * 100)));
+  };
+  useEffect(() => { localStorage.setItem('sceneops.environment.scene-share.v1', String(sceneShare)); }, [sceneShare]);
   if (query.isPending) return <p role="status" className="card-asset-status">读取当前 Git 分支的模型…</p>;
   if (query.error) return <p role="alert" className="card-asset-status">{query.error.message} <button onClick={() => void query.refetch()}>重试</button></p>;
+
+  const sceneAsset = assets[0];
+  const sceneVersions = sceneAsset?.versions ?? [];
+  const sceneVersionNumber = sceneAsset ? selectedVersions[sceneAsset.id] ?? sceneAsset.current_version : undefined;
+  const sceneVersion = sceneVersions.find(item => item.number === sceneVersionNumber) ?? sceneVersions.at(-1);
+  const sceneVersionSaved = !!sceneAsset && !!sceneVersion && !!library.data?.find(item => item.source_asset_id === sceneAsset.id)
+    ?.versions.some(item => item.source_version === sceneVersion.number);
+  if (presentation === 'scene') return <section ref={sceneRoot} className="card-model-scene-workflow"
+    style={{'--card-model-scene-share':`${sceneShare}%`} as CSSProperties} aria-label="当前模型场景">
+    <section className="card-model-scene-card" aria-label="当前模型预览">
+      <div className="card-model-scene-status"><span>{sceneVersion ? `模型 v${sceneVersion.number}` : '模型草稿'}</span>
+        <strong>{sceneAsset?.title ?? (liveUpdated.isPending ? '正在生成模型' : '等待确认建模')}</strong>
+        <small>{liveUpdated.isPending ? 'AI 方案 → Blender → GLB' : 'Three.js · 米制网格'}</small></div>
+      {sceneAsset && sceneVersion ? <CardModelPreview ref={preview} label={`${sceneAsset.title} v${sceneVersion.number}`}
+        url={cardAssetFileUrl(sceneAsset.id,'preview',sceneVersion.number)}/>
+        : <div className="card-model-scene-empty"><strong>{source === 'import' ? '等待导入模型' : '当前需求还没有模型版本'}</strong>
+          <span>{source === 'import' ? '在下方选择 GLB 或 FBX。' : '在左侧对话确认需求，然后点击“确认并建模”。'}</span></div>}
+    </section>
+    <div className="card-model-scene-splitter" role="separator" aria-label="调整模型预览与操作区高度" aria-orientation="horizontal"
+      aria-valuemin={36} aria-valuemax={76} aria-valuenow={Math.round(sceneShare)} tabIndex={0}
+      onPointerDown={event => {resizingScene.current=true;event.currentTarget.setPointerCapture(event.pointerId);resizeScene(event.clientY);}}
+      onPointerMove={event => {if (resizingScene.current) resizeScene(event.clientY);}}
+      onPointerUp={event => {resizingScene.current=false;event.currentTarget.releasePointerCapture(event.pointerId);}}
+      onPointerCancel={() => {resizingScene.current=false;}}
+      onKeyDown={event => {if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;event.preventDefault();
+        setSceneShare(value => Math.min(76, Math.max(36, value + (event.key === 'ArrowUp' ? -4 : 4))));}}><span/></div>
+    <section className="card-model-camera-card" aria-label="模型视角操作">
+      <header><div><strong>模型视角</strong><small>拖动画布也可以自由查看</small></div>
+        {sceneVersion && <span>{size(sceneVersion.dimensions_m)}</span>}</header>
+      {liveUpdated.isPending && <div className="card-live-state" role="status"><span/><div><strong>正在生成下一版</strong><small>AI 重建方案，随后由 Blender 输出 GLB</small></div></div>}
+      {notice && <p role={notice.kind === 'error' ? 'alert' : 'status'} className="card-asset-notice" data-kind={notice.kind}>{notice.text}</p>}
+      {failedJob && <button className="card-live-retry" disabled={busy} onClick={() => {setNotice(null);liveUpdated.mutate({...failedJob,retryFailed:true});}}>重试本轮草稿</button>}
+      {source === 'import' && <div className="card-asset-action"><label className="card-asset-file"><strong>{importFile?.name ?? '选择 GLB / FBX'}</strong>
+        <small>{importFile ? `${(importFile.size/1024/1024).toFixed(2)} MiB` : '原文件会保留在当前卡片分支'}</small>
+        <input type="file" accept=".glb,.fbx,model/gltf-binary,application/octet-stream" disabled={busy} onChange={event=>setImportFile(event.target.files?.[0] ?? null)}/></label>
+        <button disabled={busy || !importFile} onClick={()=>{setNotice(null);imported.mutate();}}>{imported.isPending ? 'Blender 检查中…' : '导入并检查'}</button></div>}
+      {sceneVersion && <><div className="card-model-camera-grid">
+        <button type="button" onClick={() => preview.current?.zoom(.8)}>放大 ＋</button><button type="button" onClick={() => preview.current?.zoom(1.25)}>缩小 －</button>
+        <button type="button" onClick={() => preview.current?.view('front')}>前视</button><button type="button" onClick={() => preview.current?.view('back')}>后视</button>
+        <button type="button" onClick={() => preview.current?.view('left')}>左视</button><button type="button" onClick={() => preview.current?.view('right')}>右视</button>
+        <button type="button" onClick={() => preview.current?.rotate(-cameraAngle)}>左转 {cameraAngle}°</button><button type="button" onClick={() => preview.current?.rotate(cameraAngle)}>右转 {cameraAngle}°</button>
+      </div><div className="card-model-angle-row"><label>旋转角度<select value={cameraAngle} onChange={event => setCameraAngle(Number(event.target.value))}>
+        {[15,30,45,90].map(value => <option key={value} value={value}>{value}°</option>)}</select></label>
+        <button type="button" onClick={() => preview.current?.reset()}>复位视角</button></div>
+        <div className="card-version-strip" aria-label="模型版本">{sceneVersions.map(item => <button key={item.number} type="button"
+          aria-pressed={item.number === sceneVersion.number} onClick={() => setSelectedVersions(current => ({...current,[sceneAsset.id]:item.number}))}>v{item.number}</button>)}</div>
+        <div className="card-model-scene-actions"><button type="button" disabled={busy || sceneVersionSaved}
+          onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:sceneAsset.id,version:sceneVersion.number});}}>{sceneVersionSaved ? '已存资产库' : '存入资产库'}</button>
+          {onCreateAnother && <button type="button" disabled={busy} onClick={onCreateAnother}>新建另一个</button>}
+          {onOpenEnvironment && <button type="button" disabled={busy} onClick={onOpenEnvironment}>返回世界</button>}</div></>}
+      {!sceneVersion && source === 'create' && <p className="card-asset-empty">首版由左侧“确认并建模”启动；之后继续对话会更新同一个模型。</p>}
+    </section>
+  </section>;
 
   return <section className="card-asset-workflow" aria-label={source === 'import' ? '导入模型工作流' : '实时新建模型工作流'}>
     {source === 'create' ? <>

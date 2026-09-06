@@ -1,11 +1,57 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-export function CardModelPreview({ url, label }: {url: string; label: string}) {
+export type CardModelPreviewHandle = {
+  zoom(factor:number): void;
+  rotate(degrees:number): void;
+  view(direction:'front'|'back'|'left'|'right'): void;
+  reset(): void;
+};
+
+type PreviewRuntime = {camera:THREE.PerspectiveCamera;controls:OrbitControls;center:THREE.Vector3;
+  radius:number;homeOffset:THREE.Vector3;draw:()=>void};
+
+export const CardModelPreview = forwardRef<CardModelPreviewHandle, {url:string;label:string}>(function CardModelPreview({ url, label }, ref) {
   const host = useRef<HTMLDivElement>(null);
+  const runtime = useRef<PreviewRuntime|null>(null);
   const [failure, setFailure] = useState('');
+  useImperativeHandle(ref, () => ({
+    zoom(factor) {
+      const current = runtime.current;
+      if (!current) return;
+      const offset = current.camera.position.clone().sub(current.controls.target);
+      const distance = Math.min(current.radius * 20, Math.max(current.radius * .18, offset.length() * factor));
+      current.camera.position.copy(current.controls.target).add(offset.setLength(distance));
+      current.camera.updateProjectionMatrix(); current.controls.update(); current.draw();
+    },
+    rotate(degrees) {
+      const current = runtime.current;
+      if (!current) return;
+      const offset = current.camera.position.clone().sub(current.controls.target)
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(degrees));
+      current.camera.position.copy(current.controls.target).add(offset);
+      current.controls.update(); current.draw();
+    },
+    view(direction) {
+      const current = runtime.current;
+      if (!current) return;
+      const distance = Math.max(current.camera.position.distanceTo(current.controls.target), current.radius * 2.2);
+      const vectors = {front:new THREE.Vector3(0,.15,1),back:new THREE.Vector3(0,.15,-1),
+        left:new THREE.Vector3(-1,.15,0),right:new THREE.Vector3(1,.15,0)};
+      current.controls.target.copy(current.center);
+      current.camera.position.copy(current.center).add(vectors[direction].normalize().multiplyScalar(distance));
+      current.controls.update(); current.draw();
+    },
+    reset() {
+      const current = runtime.current;
+      if (!current) return;
+      current.controls.target.copy(current.center);
+      current.camera.position.copy(current.center).add(current.homeOffset);
+      current.controls.update(); current.draw();
+    },
+  }), []);
   useEffect(() => {
     const element = host.current;
     if (!element) return;
@@ -42,9 +88,11 @@ export function CardModelPreview({ url, label }: {url: string; label: string}) {
       const center = box.getCenter(new THREE.Vector3());
       const radius = Math.max(size.x, size.y, size.z, .1);
       controls.target.copy(center);
-      camera.position.copy(center).add(new THREE.Vector3(radius * 1.35, radius * .95, radius * 1.35));
+      const homeOffset = new THREE.Vector3(radius * 1.35, radius * .95, radius * 1.35);
+      camera.position.copy(center).add(homeOffset);
       camera.near = Math.max(radius / 1000, .001); camera.far = Math.max(radius * 100, 100);
-      camera.updateProjectionMatrix(); controls.update(); draw();
+      camera.updateProjectionMatrix(); controls.update();
+      runtime.current = {camera,controls,center,radius,homeOffset,draw}; draw();
     }, undefined, () => setFailure('GLB 预览读取失败；请查看资产错误或下载文件检查。'));
     const resize = new ResizeObserver(draw); resize.observe(element);
     const intersection = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; draw(); });
@@ -52,6 +100,7 @@ export function CardModelPreview({ url, label }: {url: string; label: string}) {
     document.addEventListener('visibilitychange', draw);
     draw();
     return () => {
+      runtime.current = null;
       resize.disconnect(); intersection.disconnect(); controls.removeEventListener('change', draw);
       document.removeEventListener('visibilitychange', draw); controls.dispose();
       if (model) model.traverse(object => {
@@ -64,4 +113,4 @@ export function CardModelPreview({ url, label }: {url: string; label: string}) {
     };
   }, [url]);
   return <div className="card-model-preview" ref={host} aria-label={`${label} 3D 预览`}>{failure && <p role="alert">{failure}</p>}</div>;
-}
+});

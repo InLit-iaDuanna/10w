@@ -16,5 +16,5 @@ export {
 export { ConceptAssetsWorkbench } from './ConceptAssetsWorkbench';
 export { CardAssetWorkflow } from './CardAssetWorkflow.tsx';
 export type { CardAssetWorkflowProps } from './CardAssetWorkflow.tsx';
-export { importProjectAssetFile } from './cardAssetClient.ts';
+export { buildProjectAssetDraft, importProjectAssetFile } from './cardAssetClient.ts';
 export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');
