@@ -139,13 +139,14 @@ def changeset(task, entry):
     tool = entry.action.capability_id.split(".")[0]
     full_access = entry.action.capability_id == "codex.task.execute"
     code_write = entry.action.capability_id == 'code.file.write'
+    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.'))
     return ChangeSet(change_set_id=identifier("chg"), base_version=f"agent-task:{task.id}",
         target={"module_id": "ai-agent-runtime", "integration_id": tool,
-                "object_ids": [task.project_id] if code_write or full_access or entry.action.capability_id.startswith('unity.prototype.') else [entry.action.inputs["asset_id"]]},
-        previous_values={"path": entry.action.inputs['path'], "content": entry.action.inputs['expected_content']} if code_write else {"task_owned_readback": task.observations.get("codex_prechange" if full_access else tool, {})},
+                "object_ids": [task.project_id] if code_write or project_operation or full_access or entry.action.capability_id.startswith('unity.prototype.') else [entry.action.inputs["asset_id"]]},
+        previous_values={"path": entry.action.inputs['path'], "content": entry.action.inputs['expected_content']} if code_write else {"task_owned_readback": task.observations.get('game_project' if project_operation else "codex_prechange" if full_access else tool, {})},
         proposed_values=entry.action.inputs, rationale=entry.action.rationale,
         expected_result="源码写入后回读实际内容；不运行或编译，待用户审阅。" if code_write else "Codex 完成目标后返回待审阅结果；不声称独立验收。" if full_access else "仅授权独立工作区内的类型化动作，并由工具即时读回核验。",
-        impact_scope="project" if full_access else "object", risk="high" if full_access else "low", validation_plan=["比对精确前文并回读当前源码；人工审阅差异"] if code_write else ["人工核对任务产物及 CLI 执行摘要"] if full_access else ["读回当前对象身份、尺寸、路径及 console"],
+        impact_scope="project" if full_access or project_operation else "object", risk="high" if full_access else "low", validation_plan=["比对精确前文并回读当前源码；人工审阅差异"] if code_write else ["记录固定工程操作的退出码、日志、产物与本地预览状态"] if project_operation else ["人工核对任务产物及 CLI 执行摘要"] if full_access else ["读回当前对象身份、尺寸、路径及 console"],
         rollback_plan=["停止任务专有会话，保留独立工程和产物供审阅；不自动删除或覆盖"],
         approval_requirements=[{"permission": "harness:approve", "minimum_decisions": 1, "allowed_actor_types": ["user"]}],
         created_by={"type": "agent", "id": "agt_" + entry.assigned_role.replace("-", "_")}, created_at=now())
@@ -274,8 +275,10 @@ async def execute_action(service, task_id, action_id):
         elif entry.action.capability_id == "agent.finish" and run.state == "completed":
             production_ready = (action.result or {}).get('evidence', {}).get('delivery_status') == 'production_ready'
             code_written = (action.result or {}).get('evidence', {}).get('delivery_status') == 'code_written'
-            current.status = 'review_required' if production_ready or code_written else 'completed'
-            current.reason = ('源码已写入并回读，待检查；未运行或编译。' if code_written else
+            build_ready = (action.result or {}).get('evidence', {}).get('delivery_status') == 'build_ready'
+            current.status = 'review_required' if production_ready or code_written or build_ready else 'completed'
+            current.reason = ('类型检查和构建已通过，本地预览正在运行；待浏览器与玩法验收。' if build_ready else
+                '源码已写入并回读，待检查；未运行或编译。' if code_written else
                 '制作与编译检查完成，待用户手动试玩；未执行自动游测。' if production_ready else None)
             current.finished_at = now()
         elif entry.action.capability_id == "codex.task.execute" and run.state == "completed":

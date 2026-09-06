@@ -1,5 +1,11 @@
 # 运行专家
 
+## 游戏工程运行闭环
+
+`card-development` 可由用户在新授权卡中选择 `allow_game_execution` 与 `allow_dependency_install`。前者加入固定 TypeScript 检查、Vite 构建和严格 localhost 预览，后者额外允许对当前登记卡片 worktree 执行禁用安装脚本的 pnpm 依赖准备。模型不能提供命令、目录、端口或环境变量；任务按钮调用同一个 `GameProjectRuntime`。源码写入会使旧检查、构建和预览失效，Agent 必须读取真实日志并重新验证。旧任务和未选择运行权限的任务继续以 `code_written` 结束。
+
+公开路由 `GET /api/agent/tasks/{task_id}/game` 返回当前依赖、检查、构建、预览及日志状态；`POST` 只接受 `prepare | check | build | preview_start | preview_stop`。预览只服务当前 `dist`，仅监听 `127.0.0.1`，服务关闭时停止。完整实现与真实 Agent/浏览器证据见根目录 `GAME_PROJECT_RUNTIME_MILESTONE.md`。
+
 本次增加 `ProductionStore` 与公开 `create_production_router(service)`：项目级一致性快照、持久序号 SSE、生产步骤及产物版本。任务和工作台共享此状态，不创建另一套执行引擎。每项目可准备多任务；工程写入由事务占用串行化，不确定写入需核查，不能自动释放后重放。产物复制到应用数据目录，限 512 MB、拒绝越界/符号链接/隐藏文件，HTML/SVG 不内联。受控 Blender/Unity 跨任务重绑定仍未接入，已有非空工程的受控续作会明确拒绝；Codex 可在应用登记工程中接受新的独立授权。详情见根 `SINGLE_AGENT_WORKBENCH_HANDOFF.md`，不能据状态底座实现宣称全流程可用。
 
 最新追加：`PrepareAgentTask.execution_mode='codex-full-access'` 是用户明确要求的原生 CLI 执行权限，默认仍 `typed-tools`。必须选择 `codexcli`，以新授权卡和 `accept_full_access=true` 确认，不升级旧 grant。使用原 Harness 高风险任务级 ChangeSet/真实空目录记录/审批；一次 CLI 启动、20 分钟、low 思考，内部模型次数和费用未知，不自动重试。默认不加载用户全局 MCP/插件；完全权限不是 OS 沙箱，工作目录外访问技术上可行，范围约束作为 developer 指令传入。CLI 成功为 `review_required`，实际产物仍需审阅。完整说明与真实文件烟测证据见根 `CODEX_PROVIDER_HANDOFF.md`；下文 8 次模型及立方体限制仅适用于 `typed-tools`。
@@ -10,7 +16,7 @@ V5 AI Harness 垂直模块。公开 Python 包：`sceneops_ai_agents`；Pipeline
 
 ## 有界 Agent 任务
 
-公开 `AgentTaskService(database_path, workspace_repository, data_dir, *, provider=None, blender_factory=None, unity_factory=None)` 与 `create_agent_task_router(service)`。`router(None)` 只用于 OpenAPI 导出，调用时返回未启用。主应用必须保留现有 loopback、同源请求及身份认证中间件；任务接口不接受客户端自报权限。
+公开 `AgentTaskService(database_path, workspace_repository, data_dir, *, provider=None, blender_factory=None, unity_factory=None, card_context=None)` 与 `create_agent_task_router(service)`。`router(None)` 只用于 OpenAPI 导出，调用时返回未启用。主应用必须保留现有 loopback、同源请求及身份认证中间件；任务接口不接受客户端自报权限。
 
 `execution_status() -> Literal['running','connected','idle']` 供组合根健康接口读取：活动任务、连接检查或清理中为 running；持有已启动且尚未成功停止的本地会话为 connected；其余为 idle。查询不启动或探测 DCC。该状态表示服务端已观测的生命周期，外部手动关闭编辑器要在后续实际读回时才能确认；成功 stop 会清除会话缓存。
 

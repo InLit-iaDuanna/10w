@@ -162,11 +162,12 @@ function createWorkbench(unified: boolean) {
                 queryClient.setQueryData(environmentSceneKey(input.projectId), result.scene);
                 return {summary:result.summary,provider:result.provider,model:result.model};
               }}}
-              development={{ prepare: async (projectId, cardId, goal) => {
-                await agentTasks.prepare({project_id:projectId,card_id:cardId,goal,task_profile:'card-development',execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false});
+              development={{ prepare: async (projectId, cardId, goal, options) => {
+                await agentTasks.prepare({project_id:projectId,card_id:cardId,goal,task_profile:'card-development',execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
+                  allow_game_execution:options.allowGameExecution,allow_dependency_install:options.allowDependencyInstall});
                 await queryClient.invalidateQueries({queryKey:['agent-tasks']});
                 await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
-              }, renderTasks: (projectId, cardId) => <AgentTaskTimeline projectId={projectId} cardId={cardId} /> }}
+              }, renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}
               modelPicker={busy => <UnifiedModelPicker disabled={busy} compact />}
               onOpenProjects={() => void open('workspace.projects', {mode:'split',direction:'right'}).catch(report)}
               fallback={<UnifiedConversation context={props.context} onDirtyChange={dirty} onTaskPrepared={task => actions.selectProject(task.project_id)} onOpenPipeline={() => void open('harness.pipeline', {mode:'split',direction:'right'}).catch(report)} />} />;

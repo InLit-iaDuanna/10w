@@ -14,6 +14,8 @@ from engine_unity import PrototypeSpec, PrototypePlayPayload
 MUTATIONS = {"blender.asset.create", "blender.asset.export", "unity.asset.import", "codex.task.execute"}
 MUTATIONS.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prototype.capture', 'unity.prototype.verify'})
 MUTATIONS.add('code.file.write')
+MUTATIONS.update({'code.dependencies.prepare', 'code.project.check', 'code.project.build',
+                  'code.preview.start', 'code.preview.stop'})
 INPUT_MODELS = {"blender.asset.create": CreateCubeInput, "blender.asset.export": AssetInput,
     "unity.asset.import": AssetInput, "blender.scene.inspect": EmptyActionInput,
     "unity.scene.inspect": EmptyActionInput, "agent.finish": FinishInput,
@@ -24,6 +26,9 @@ INPUT_MODELS.update({'unity.prototype.compose': PrototypeSpec, 'unity.prototype.
 INPUT_MODELS['agent.report_blocked'] = CapabilityGapInput
 INPUT_MODELS.update({'code.workspace.inspect': EmptyActionInput,
                      'code.file.read': CodeReadInput, 'code.file.write': CodeWriteInput})
+INPUT_MODELS.update({capability: EmptyActionInput for capability in
+    ('code.dependencies.prepare', 'code.project.status', 'code.project.check', 'code.project.build',
+     'code.preview.start', 'code.preview.stop')})
 
 
 def contained(path, root):
@@ -134,6 +139,18 @@ class TaskTools:
             evidence = await self.finish(task)
         elif invocation.capability_id == 'agent.report_blocked':
             evidence = {'tool': 'capability_gap', 'code': 'BLOCKED_CAPABILITY_GAP', **invocation.inputs}
+        elif invocation.capability_id == 'code.project.status':
+            snapshot = self.service.game.snapshot(task)
+            evidence = {'tool': 'game_project', 'mode': 'live', 'effect_state': 'NONE',
+                        'project': snapshot.model_dump(mode='json')}
+        elif invocation.capability_id in ('code.dependencies.prepare', 'code.project.check', 'code.project.build',
+                                          'code.preview.start', 'code.preview.stop'):
+            if invocation.capability_id == 'code.dependencies.prepare' and not task.grant.allow_dependency_install:
+                raise HarnessError('DEPENDENCY_INSTALL_NOT_AUTHORIZED', '此任务未授权准备工程依赖。')
+            operation = {'code.dependencies.prepare': 'prepare', 'code.project.check': 'check',
+                         'code.project.build': 'build', 'code.preview.start': 'preview_start',
+                         'code.preview.stop': 'preview_stop'}[invocation.capability_id]
+            evidence = await self.service.game.execute(task, operation)
         elif invocation.capability_id.startswith('code.'):
             from .code_workspace import read_source
             if invocation.capability_id == 'code.workspace.inspect':
@@ -243,7 +260,10 @@ class TaskTools:
     async def finish(self, task):
         task = self.service.check_grant(self.task_id, "agent.finish")
         if task.authorization_card.task_profile == 'card-development':
-            return self.service.code.finish(task)
+            code = self.service.code.finish(task)
+            if not task.authorization_card.allow_game_execution:
+                return code
+            return {**code, **self.service.finish_game(task)}
         if task.authorization_card.task_profile == 'survival-prototype' or any(item.action.capability_id == 'unity.prototype.compose' for item in task.actions):
             from .prototype_execution import finish_prototype
             return await finish_prototype(self, task)

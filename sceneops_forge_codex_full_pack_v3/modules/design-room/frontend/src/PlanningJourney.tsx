@@ -23,8 +23,9 @@ type Props = { projectId: string | null; fallback: ReactNode; modelPicker: (busy
   surfaceRequest?: JourneySurfaceRequest | null;
   onOpenSurface?: (surface: JourneySurfaceRequest['surface']) => void;
   onCloseSurfaces?: () => void;
-  development?: { prepare: (projectId: string, cardId: string, goal: string) => Promise<void>;
-    renderTasks: (projectId: string, cardId?: string) => ReactNode };
+  development?: { prepare: (projectId: string, cardId: string, goal: string,
+      options: { allowGameExecution: boolean; allowDependencyInstall: boolean }) => Promise<void>;
+    renderTasks: (projectId: string, cardId?: string, onContinue?: () => void) => ReactNode };
   assets?: { render: (input: {projectId:string;cardId:string;source:'import'|'create';sessionId:string;
     messages:{id:string;role:string;text:string;replyTo?:string;modelingBlock?:string}[]; observeConversation?: boolean;
     onCreateAnother:()=>void;onOpenEnvironment:()=>void}) => ReactNode };
@@ -54,6 +55,8 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const [editing, setEditing] = useState<'outline' | 'cards' | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [workMode, setWorkMode] = useState<'discuss' | 'develop'>('discuss');
+  const [allowGameExecution, setAllowGameExecution] = useState(true);
+  const [allowDependencyInstall, setAllowDependencyInstall] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [environmentOpen, setEnvironmentOpen] = useState(false);
   const [environmentTurns, setEnvironmentTurns] = useState<JourneyMessage[]>([]);
@@ -61,7 +64,9 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const prepareDevelopment = useMutation({
     mutationFn: ({ goal, cardId }: { goal: string; cardId: string }) => {
       if (!development) throw new Error('当前宿主没有连接分支开发服务。');
-      return development.prepare(projectId, cardId, goal);
+      return development.prepare(projectId, cardId, goal, {
+        allowGameExecution, allowDependencyInstall: allowGameExecution && allowDependencyInstall,
+      });
     },
     onSuccess: async (_task, variables) => {
       setDraft(current => current.trim() === variables.goal ? '' : current);
@@ -347,7 +352,10 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
       })}{!state.git_versions?.length && <button type="button" disabled={busy} onClick={() => act('enable_git')}>将已确认版本纳入 Git</button>}</details>}
       {development?.renderTasks(projectId)}
       </>}
-      {activeCard && development?.renderTasks(projectId, activeCard.id)}
+      {activeCard && development?.renderTasks(projectId, activeCard.id, () => {
+        setWorkMode('develop');
+        requestAnimationFrame(() => input.current?.focus());
+      })}
     </div>
     {sidePreview && <aside className="journey-model-preview-pane" data-open={previewOpen} aria-label={environmentOpen ? '环境场景预览' : '实时模型预览'}>
       <header><div><strong>{environmentOpen ? '3D 世界' : modeling?.source === 'create' ? '模型生成' : '模型导入'}</strong><small>Three.js</small></div>
@@ -357,6 +365,15 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     {notice && <p role="alert" className="journey-notice">{notice} {environmentFailed && <button onClick={() => {setOutgoing(environmentFailed.text);setDraft('');setNotice('');environmentBuild.mutate({text:environmentFailed.text,requestId:environmentFailed.requestId,retryFailed:true});}}>重试本次 AI 搭建</button>} <button onClick={() => { void query.refetch(); }}>重新读取（保留本地修改）</button>
       {editing && <button onClick={async () => { if (window.confirm('放弃未保存的文档修改，重新读取已保存版本？')) { await query.refetch(); setEditing(null); editBase.current = null; setNotice(''); } }}>放弃本地文档修改</button>}
       {!editing && <button onClick={() => setNotice('')}>关闭提示 / 允许重试</button>}</p>}
+    {activeCard && !modeling && !environmentOpen && workMode === 'develop' && <section className="journey-development-permissions" aria-label="开发执行范围">
+      <label><input type="checkbox" checked={allowGameExecution} disabled={busy} onChange={event => {
+        setAllowGameExecution(event.target.checked);
+        if (!event.target.checked) setAllowDependencyInstall(false);
+      }} />允许 Agent 执行类型检查、构建和本地预览</label>
+      <label><input type="checkbox" checked={allowDependencyInstall} disabled={busy || !allowGameExecution}
+        onChange={event => setAllowDependencyInstall(event.target.checked)} />允许在当前游戏工程内准备依赖</label>
+      <small>发送后仍会先展示具体授权卡；取消运行权限时保留原有的仅源码修改流程。</small>
+    </section>}
     <form className="unified-ai-composer journey-composer" onSubmit={event => { event.preventDefault(); send(); }}>
       <textarea ref={input} aria-label={environmentOpen ? '3D 世界对话' : modeling ? '模型生成对话' : activeCard ? `${activeCard.title}对话` : '策划对话'} disabled={!environmentOpen && modeling?.source === 'import'} placeholder={environmentOpen ? '描述要构建的世界、场景或资产；右侧可以直接新建、导入和摆放…' : modeling ? modeling.source === 'create' ? '描述模型、风格、尺寸和用途；也可以在上方加参考图…' : '请在右侧选择 GLB 或 FBX 文件' : activeCard ? workMode === 'develop' ? `让 Agent 实现「${activeCard.title}」的什么内容？` : `继续讨论「${activeCard.title}」…` : state.stage === 'idea' ? '聊聊你的 idea…' : '补充想法，或告诉我大纲和卡片要怎么改…'} value={draft} rows={1} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
       <div className="journey-composer-tools">{modelPicker(replying || prepareDevelopment.isPending)}

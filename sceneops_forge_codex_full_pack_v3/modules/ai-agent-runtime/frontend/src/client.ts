@@ -11,10 +11,13 @@ type TaskList = Omit<components['schemas']['AgentTaskList'], 'tasks'> & { tasks:
 type TaskEvents = components['schemas']['AgentTaskEvents'];
 type Prepare = components['schemas']['PrepareAgentTask'];
 type Authorize = components['schemas']['AuthorizeAgentTask'];
+export type GameProjectExecution = components['schemas']['GameProjectExecution'];
+type GameOperation = components['schemas']['GameOperationRequest']['operation'];
 
 export const agentTaskKeys = {
   list: (projectId: string | null) => ['agent-tasks', 'list', projectId] as const,
   detail: (taskId: string) => ['agent-tasks', taskId] as const,
+  game: (taskId: string) => ['agent-tasks', taskId, 'game'] as const,
 };
 const root = '/api/agent/tasks';
 export const agentTasks = {
@@ -25,6 +28,10 @@ export const agentTasks = {
   authorize: (id: string, body: Authorize) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/authorize`, { body }),
   cancel: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/cancel`, { body: {} }),
   resume: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/resume`, { body: {} }),
+  gameStatus: (id: string, signal?: AbortSignal) => requestJson<GameProjectExecution>(
+    `${root}/${encodeURIComponent(id)}/game`, signal ? { signal } : {}),
+  gameOperation: (id: string, operation: GameOperation) => requestJson<GameProjectExecution>(
+    `${root}/${encodeURIComponent(id)}/game`, { body: { operation } }),
   events: (id: string, after: number, signal?: AbortSignal) => requestJson<TaskEvents>(`${root}/${encodeURIComponent(id)}/events?after=${after}`, signal ? { signal } : {}),
   allEvents: async (id: string, signal?: AbortSignal): Promise<TaskEvents> => {
     const events: NonNullable<TaskEvents['events']> = [];

@@ -26,6 +26,18 @@ TASK_CAPABILITIES.append('agent.report_blocked')
 PROTOTYPE_CAPABILITIES.append('agent.report_blocked')
 CODE_CAPABILITIES = ['agent.next_action', 'code.workspace.inspect', 'code.file.read',
                      'code.file.write', 'agent.finish', 'agent.report_blocked']
+GAME_EXECUTION_CAPABILITIES = ['code.project.status', 'code.project.check', 'code.project.build',
+                               'code.preview.start', 'code.preview.stop']
+DEPENDENCY_CAPABILITY = 'code.dependencies.prepare'
+
+
+def card_code_capabilities(value):
+    capabilities = list(CODE_CAPABILITIES)
+    if value.allow_game_execution:
+        capabilities[4:4] = GAME_EXECUTION_CAPABILITIES
+        if value.allow_dependency_install:
+            capabilities.insert(4, DEPENDENCY_CAPABILITY)
+    return capabilities
 TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development']
 ExecutionMode = Literal["typed-tools", "codex-full-access"]
 EffectState = Literal["NONE", "STAGED", "APPLIED", "COMMITTED", "UNKNOWN"]
@@ -65,6 +77,8 @@ class PrepareAgentTask(TaskModel):
     execution_mode: ExecutionMode = "typed-tools"
     allow_image_generation: bool = False
     allow_playtest: bool = False
+    allow_game_execution: bool = False
+    allow_dependency_install: bool = False
     task_profile: TaskProfile = 'asset-exchange'
 
     @model_validator(mode='after')
@@ -74,6 +88,10 @@ class PrepareAgentTask(TaskModel):
                 raise ValueError('卡片开发需要项目、已登记卡片和 typed-tools 权限。')
             if self.allow_playtest or self.allow_image_generation:
                 raise ValueError('卡片代码开发不包含图片生成或游测执行。')
+            if self.allow_dependency_install and not self.allow_game_execution:
+                raise ValueError('依赖准备只能与游戏工程执行权限一起授权。')
+        elif self.allow_game_execution or self.allow_dependency_install:
+            raise ValueError('游戏工程执行权限仅用于 card-development。')
         elif self.card_id is not None:
             raise ValueError('card_id 仅用于 card-development。')
         return self
@@ -93,6 +111,8 @@ class AuthorizationCard(TaskModel):
     execution_mode: ExecutionMode = "typed-tools"
     allow_image_generation: bool = False
     allow_playtest: bool = False
+    allow_game_execution: bool = False
+    allow_dependency_install: bool = False
     task_profile: TaskProfile = 'asset-exchange'
     capability_ids: list[str] = Field(default_factory=lambda: list(TASK_CAPABILITIES))
     max_model_calls: int | None = 8
@@ -107,9 +127,19 @@ class AuthorizationCard(TaskModel):
     @model_validator(mode="before")
     @classmethod
     def preserve_historical_playtest_authorization(cls, value):
-        if isinstance(value, dict) and 'allow_playtest' not in value:
-            value = {**value, 'allow_playtest': 'unity.prototype.verify' in value.get('capability_ids', [])}
+        if isinstance(value, dict):
+            value = dict(value)
+            if 'allow_playtest' not in value:
+                value['allow_playtest'] = 'unity.prototype.verify' in value.get('capability_ids', [])
+            value.setdefault('allow_game_execution', False)
+            value.setdefault('allow_dependency_install', False)
         return value
+
+    @model_validator(mode='after')
+    def dependency_scope(self):
+        if self.allow_dependency_install and not self.allow_game_execution:
+            raise ValueError('依赖准备需要游戏工程执行权限。')
+        return self
 
 
 class TaskGrant(TaskModel):
@@ -121,6 +151,8 @@ class TaskGrant(TaskModel):
     branch: str | None = None
     execution_mode: ExecutionMode = "typed-tools"
     allow_image_generation: bool = False
+    allow_game_execution: bool = False
+    allow_dependency_install: bool = False
     capability_ids: list[str]
     max_repair_rounds: int = Field(default=2, ge=0, le=2)
     actor_id: str = "usr_local_workspace"
@@ -163,6 +195,49 @@ class AssetInput(TaskModel):
 
 class EmptyActionInput(TaskModel):
     pass
+
+
+GameOperation = Literal['prepare', 'check', 'build', 'preview_start', 'preview_stop']
+GameRunStatus = Literal['running', 'succeeded', 'failed', 'stale', 'stopped', 'interrupted']
+
+
+class GameOperationRequest(TaskModel):
+    operation: GameOperation
+
+
+class GameExecutionRun(TaskModel):
+    id: str = Field(default_factory=lambda: identifier('game_run'))
+    operation: GameOperation
+    status: GameRunStatus = 'running'
+    mode: Literal['live'] = 'live'
+    project_id: str
+    card_id: str
+    task_id: str
+    workspace_root: str
+    branch: str
+    started_at: datetime = Field(default_factory=now)
+    finished_at: datetime | None = None
+    exit_code: int | None = None
+    passed: bool | None = None
+    failure_code: str | None = None
+    log: str = ''
+    artifact_path: str | None = None
+    preview_url: str | None = None
+    source_stale: bool = False
+
+
+class GameProjectExecution(TaskModel):
+    project_id: str
+    card_id: str
+    workspace_root: str
+    branch: str
+    dependencies_ready: bool = False
+    dependency: GameExecutionRun | None = None
+    check: GameExecutionRun | None = None
+    build: GameExecutionRun | None = None
+    preview: GameExecutionRun | None = None
+    browser_errors_verified: bool = False
+    gameplay_verified: bool = False
 
 
 class CodeReadInput(TaskModel):
@@ -224,6 +299,8 @@ class ActionRecord(TaskModel):
             "blender.asset.create", "blender.asset.export", "unity.asset.import",
             "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
             "unity.prototype.verify", "codex.task.execute",
+            "code.dependencies.prepare", "code.project.check", "code.project.build",
+            "code.preview.start", "code.preview.stop",
         }
         migrated["effect_state"] = "UNKNOWN" if mutating and state != "planned" else "NONE"
         return migrated

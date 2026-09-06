@@ -129,7 +129,7 @@ function ProjectConversation({ context, onDirtyChange, onOpenPipeline, initialMo
     },
   });
   const prepareTask = useMutation({
-    mutationFn: (goal: string) => agentTasks.prepare({ goal,
+    mutationFn: (goal: string) => agentTasks.prepare({ goal, allow_game_execution:false, allow_dependency_install:false,
       execution_mode: permission === 'codex-full-access' ? 'codex-full-access' : 'typed-tools',
       allow_image_generation: permission === 'codex-full-access' && allowImages,
       allow_playtest: false,

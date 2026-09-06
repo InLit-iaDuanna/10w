@@ -135,3 +135,6 @@
   .planning-journey.has-model-preview .journey-cost { margin-right:0; }
   .journey-model-preview-pane[data-open=true] { top:auto; left:12px; right:12px; bottom:108px; width:auto; max-height:56%; }
 }
+.journey-development-permissions { display: grid; gap: 6px; padding: 9px 14px; border-top: 1px solid var(--border-default); background: var(--surface-1); }
+.journey-development-permissions label { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+.journey-development-permissions small { color: var(--text-muted); }

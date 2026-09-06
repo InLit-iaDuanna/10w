@@ -176,7 +176,9 @@ class CodeWorkspace:
         with source_parent(root, relative, create=True) as parent:
             current, info = read_at(parent, relative.name)
             if state != 'NEW' and current == evidence['after']:
-                return self.commit_evidence(entry.request_id, evidence, recovered=True)
+                committed = self.commit_evidence(entry.request_id, evidence, recovered=True)
+                self.service.game.invalidate_workspace(root)
+                return committed
             if state == 'COMMITTED' or current != evidence['before']:
                 raise HarnessError('CODE_PREIMAGE_CONFLICT', '源码已改变，精确前文不匹配；未覆盖当前文件，请重新读取。')
             temporary = '.sceneops-write-' + uuid4().hex
@@ -215,7 +217,9 @@ class CodeWorkspace:
                 os.fsync(parent)
                 if read_at(parent, relative.name)[0] != evidence['after']:
                     raise HarnessError('ACTION_UNCERTAIN', '写入后源码发生变化，需要检查当前文件。')
-                return self.commit_evidence(entry.request_id, evidence)
+                committed = self.commit_evidence(entry.request_id, evidence)
+                self.service.game.invalidate_workspace(root)
+                return committed
             finally:
                 if temporary is not None:
                     os.unlink(temporary, dir_fd=parent)

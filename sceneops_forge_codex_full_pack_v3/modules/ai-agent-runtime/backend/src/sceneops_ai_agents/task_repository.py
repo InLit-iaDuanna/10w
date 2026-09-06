@@ -14,7 +14,8 @@ class AgentTaskRepository:
             return False
         mutations = {'blender.asset.create', 'blender.asset.export', 'unity.asset.import', 'codex.task.execute'}
         mutations.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prototype.capture', 'unity.prototype.verify'})
-        mutations.add('code.file.write')
+        mutations.update({'code.file.write', 'code.dependencies.prepare', 'code.project.check',
+                          'code.project.build', 'code.preview.start', 'code.preview.stop'})
         writes = [action for action in task.actions if action.action.capability_id in mutations]
         if any(action.state in ('running', 'uncertain') or action.effect_state in ('STAGED', 'APPLIED', 'UNKNOWN')
                for action in writes):

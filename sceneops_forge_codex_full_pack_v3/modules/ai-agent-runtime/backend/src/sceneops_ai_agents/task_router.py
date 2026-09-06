@@ -4,7 +4,8 @@ from urllib.parse import quote
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from sceneops_harness import HarnessError
-from .task_models import AgentTaskEvents, AgentTaskList, AgentTaskRecord, AuthorizeAgentTask, PrepareAgentTask
+from .task_models import (AgentTaskEvents, AgentTaskList, AgentTaskRecord, AuthorizeAgentTask,
+                          PrepareAgentTask, GameOperationRequest, GameProjectExecution)
 from .production_models import ProductionEvents, ProductionSnapshot
 
 
@@ -39,6 +40,14 @@ def create_agent_task_router(service):
     @router.post("/{task_id}/resume", response_model=AgentTaskRecord)
     async def resume(task_id: str):
         return await require_service().resume(task_id)
+
+    @router.get('/{task_id}/game', response_model=GameProjectExecution)
+    def game_status(task_id: str):
+        return require_service().game_status(task_id)
+
+    @router.post('/{task_id}/game', response_model=GameProjectExecution)
+    async def game_operation(task_id: str, body: GameOperationRequest):
+        return await require_service().game_operation(task_id, body)
 
     @router.get("/{task_id}/events", response_model=AgentTaskEvents)
     def events(task_id: str, after: int = Query(default=0, ge=0)):

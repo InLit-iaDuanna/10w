@@ -24,3 +24,14 @@
 .agent-task-activity span, .agent-task-activity small { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .agent-task-timeline { width: min(100%, 850px); margin: 18px auto 0; }.agent-task-timeline-state { width: min(100%, 850px); margin: 14px auto; color: var(--text-muted); font-size: 12px; }.agent-task-timeline .agent-task-list { max-width: none; }.agent-task-timeline .agent-task-card { padding: 16px; border: 1px solid var(--border-default); border-radius: 10px; background: color-mix(in srgb, var(--surface-1) 84%, transparent); }.agent-task-timeline .agent-task-card + .agent-task-card { margin-top: 10px; }
 .agent-task-card pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto; font-size: 12px; }
+.agent-game-runtime { margin: 12px 0; padding: 12px; border: 1px solid var(--border-default); border-radius: 10px; background: var(--surface-2); }
+.agent-game-runtime > header { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.agent-game-runtime > header div { display: grid; gap: 2px; }
+.agent-game-runtime > header a, .agent-game-runtime > header span { font-size: 12px; }
+.agent-game-runtime p { overflow-wrap: anywhere; }
+.agent-game-runtime dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+.agent-game-runtime dl div { display: grid; gap: 3px; }
+.agent-game-runtime dt { color: var(--text-muted); font-size: 11px; }.agent-game-runtime dd { margin: 0; font-size: 12px; }
+.agent-game-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.agent-game-runtime details { margin: 10px 0; }
+@media (max-width: 700px) { .agent-game-runtime dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

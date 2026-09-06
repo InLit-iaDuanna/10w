@@ -271,6 +271,98 @@
         }
       }
     },
+    "/api/agent/tasks/{task_id}/game": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Game Status",
+        "operationId": "game_status_api_agent_tasks__task_id__game_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameProjectExecution"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Game Operation",
+        "operationId": "game_operation_api_agent_tasks__task_id__game_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameOperationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameProjectExecution"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/tasks/{task_id}/events": {
       "get": {
         "tags": [
@@ -1118,6 +1210,16 @@
             "title": "Allow Playtest",
             "default": false
           },
+          "allow_game_execution": {
+            "type": "boolean",
+            "title": "Allow Game Execution",
+            "default": false
+          },
+          "allow_dependency_install": {
+            "type": "boolean",
+            "title": "Allow Dependency Install",
+            "default": false
+          },
           "task_profile": {
             "type": "string",
             "enum": [
@@ -1387,6 +1489,262 @@
         ],
         "title": "ChangeSetTarget"
       },
+      "GameExecutionRun": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "prepare",
+              "check",
+              "build",
+              "preview_start",
+              "preview_stop"
+            ],
+            "title": "Operation"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "failed",
+              "stale",
+              "stopped",
+              "interrupted"
+            ],
+            "title": "Status",
+            "default": "running"
+          },
+          "mode": {
+            "type": "string",
+            "const": "live",
+            "title": "Mode",
+            "default": "live"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "exit_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Code"
+          },
+          "passed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Passed"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "log": {
+            "type": "string",
+            "title": "Log",
+            "default": ""
+          },
+          "artifact_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Path"
+          },
+          "preview_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Url"
+          },
+          "source_stale": {
+            "type": "boolean",
+            "title": "Source Stale",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation",
+          "project_id",
+          "card_id",
+          "task_id",
+          "workspace_root",
+          "branch"
+        ],
+        "title": "GameExecutionRun"
+      },
+      "GameOperationRequest": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "prepare",
+              "check",
+              "build",
+              "preview_start",
+              "preview_stop"
+            ],
+            "title": "Operation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation"
+        ],
+        "title": "GameOperationRequest"
+      },
+      "GameProjectExecution": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "dependencies_ready": {
+            "type": "boolean",
+            "title": "Dependencies Ready",
+            "default": false
+          },
+          "dependency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "build": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "browser_errors_verified": {
+            "type": "boolean",
+            "title": "Browser Errors Verified",
+            "default": false
+          },
+          "gameplay_verified": {
+            "type": "boolean",
+            "title": "Gameplay Verified",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "card_id",
+          "workspace_root",
+          "branch"
+        ],
+        "title": "GameProjectExecution"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1461,6 +1819,16 @@
           "allow_playtest": {
             "type": "boolean",
             "title": "Allow Playtest",
+            "default": false
+          },
+          "allow_game_execution": {
+            "type": "boolean",
+            "title": "Allow Game Execution",
+            "default": false
+          },
+          "allow_dependency_install": {
+            "type": "boolean",
+            "title": "Allow Dependency Install",
             "default": false
           },
           "task_profile": {
@@ -2002,6 +2370,16 @@
           "allow_image_generation": {
             "type": "boolean",
             "title": "Allow Image Generation",
+            "default": false
+          },
+          "allow_game_execution": {
+            "type": "boolean",
+            "title": "Allow Game Execution",
+            "default": false
+          },
+          "allow_dependency_install": {
+            "type": "boolean",
+            "title": "Allow Dependency Install",
             "default": false
           },
           "capability_ids": {

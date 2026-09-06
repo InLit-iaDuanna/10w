@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { agentTasks, agentTaskKeys, type AgentTask } from './client';
+import { agentTasks, agentTaskKeys, type AgentTask, type GameProjectExecution } from './client';
 import { useProduction, productionKeys } from './production-client';
 import './agent-task.css';
 
@@ -17,6 +17,9 @@ const ACTIONS: Record<string, string> = {
   'agent.finish': '核验交付',
   'codex.task.execute': 'Codex 自主执行',
   'code.workspace.inspect': '检查分支文件', 'code.file.read': '读取源码', 'code.file.write': '写入并回读源码',
+  'code.dependencies.prepare': '准备游戏工程依赖', 'code.project.status': '读取工程运行状态',
+  'code.project.check': 'TypeScript 检查', 'code.project.build': '构建游戏',
+  'code.preview.start': '启动本地预览', 'code.preview.stop': '停止本地预览',
 };
 const busy = (task: AgentTask) => ['queued', 'running'].includes(task.status);
 
@@ -31,7 +34,8 @@ export function AgentTaskWorkbench({ projectId, onDirtyChange }: { projectId: st
   const [goal, setGoal] = useState('');
   const query = useTasks(projectId);
   const cache = useQueryClient();
-  const prepare = useMutation({ mutationFn: () => agentTasks.prepare({ goal: goal.trim(), execution_mode: 'typed-tools', allow_image_generation: false, allow_playtest:false, task_profile: 'auto', ...(projectId ? { project_id: projectId } : {}) }),
+  const prepare = useMutation({ mutationFn: () => agentTasks.prepare({ goal: goal.trim(), execution_mode: 'typed-tools', allow_image_generation: false, allow_playtest:false,
+    allow_game_execution:false,allow_dependency_install:false,task_profile: 'auto', ...(projectId ? { project_id: projectId } : {}) }),
     onSuccess: () => { setGoal(''); void cache.invalidateQueries({ queryKey: ['agent-tasks'] }); } });
   useEffect(() => { onDirtyChange?.(!!goal.trim()); }, [goal, onDirtyChange]);
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
@@ -52,16 +56,16 @@ export function AgentTaskWorkbench({ projectId, onDirtyChange }: { projectId: st
 }
 
 /** Timeline-only embedding for the conversation canvas; preparation remains owned by the caller. */
-export function AgentTaskTimeline({ projectId, cardId }: { projectId: string | null; cardId?: string }) {
+export function AgentTaskTimeline({ projectId, cardId, onContinue }: { projectId: string | null; cardId?: string; onContinue?: () => void }) {
   const query = useTasks(projectId);
   if (query.isPending) return <p className="agent-task-timeline-state" role="status">正在读取任务记录…</p>;
   if (query.error) return <p className="agent-task-timeline-state" role="alert">任务服务未连接：{query.error.message} <button onClick={() => void query.refetch()}>重新连接</button></p>;
   const tasks = query.data?.tasks.filter(task => cardId === undefined || task.authorization_card.card_id === cardId) ?? [];
   if (!tasks.length) return null;
-  return <section className="agent-task-timeline" aria-label="任务时间线"><div className="agent-task-list">{tasks.map(task => <TaskCard key={task.id} task={task} />)}</div></section>;
+  return <section className="agent-task-timeline" aria-label="任务时间线"><div className="agent-task-list">{tasks.map(task => <TaskCard key={task.id} task={task} onContinue={onContinue} />)}</div></section>;
 }
 
-function TaskCard({ task }: { task: AgentTask }) {
+function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => void }) {
   const cache = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const action = useMutation({ mutationFn: (kind: 'authorize' | 'cancel' | 'resume') => kind === 'authorize'
@@ -78,7 +82,8 @@ function TaskCard({ task }: { task: AgentTask }) {
   const fullAccess = card.execution_mode === 'codex-full-access';
   const activity = task.observations.codex_activity;
   const grantExpired = !!task.grant && Date.parse(task.grant.expires_at) <= Date.now();
-  const restart = useMutation({ mutationFn: () => agentTasks.prepare({ goal: task.goal, execution_mode: card.execution_mode, allow_image_generation: card.allow_image_generation, allow_playtest:false, task_profile: card.task_profile,
+  const restart = useMutation({ mutationFn: () => agentTasks.prepare({ goal: task.goal, execution_mode: card.execution_mode, allow_image_generation: card.allow_image_generation, allow_playtest:false,
+    allow_game_execution: card.allow_game_execution, allow_dependency_install: card.allow_dependency_install, task_profile: card.task_profile,
     ...(card.card_id ? { project_id: task.project_id, card_id: card.card_id } : {}) }),
     onSuccess: () => cache.invalidateQueries({ queryKey: ['agent-tasks'] }) });
   return <article className="agent-task-card" data-state={task.status}>
@@ -95,6 +100,7 @@ function TaskCard({ task }: { task: AgentTask }) {
     {task.reason && <p className="agent-task-reason" role="alert">{task.reason}</p>}
     {fullAccess && activity != null && <p className="agent-task-live-activity" role="status">最近执行活动：{activityLabel(activity)}</p>}
     {fullAccess && task.observations.codex != null && <details><summary>查看 Codex 结果与执行摘要</summary><pre>{JSON.stringify(task.observations.codex, null, 2)}</pre></details>}
+    {card.allow_game_execution && task.grant && <GameRuntimePanel task={task} />}
     <ol className="agent-action-tree">{task.actions.map(record => <li key={record.request_id} data-state={record.state}>
       <strong>{ACTIONS[record.action.capability_id] ?? record.action.capability_id}</strong><span>{record.state === 'succeeded' ? '已执行' : record.state === 'running' ? '执行中' : record.state}</span>
       <small>{record.action.rationale}</small>{record.reason && <p>{record.reason}</p>}
@@ -105,6 +111,7 @@ function TaskCard({ task }: { task: AgentTask }) {
       {(busy(task) || ['awaiting_authorization', 'blocked'].includes(task.status)) && <button disabled={action.isPending || task.cancel_requested} onClick={() => action.mutate('cancel')}>{task.cancel_requested ? '正在停止…' : '停止任务'}</button>}
       {task.status === 'blocked' && task.grant && !grantExpired && <button disabled={action.isPending} onClick={() => action.mutate('resume')}>检查连接并继续</button>}
       {((grantExpired && task.status === 'blocked') || ['interrupted', 'failed', 'needs_approval'].includes(task.status)) && <button disabled={restart.isPending} onClick={() => restart.mutate()}>重新准备独立任务</button>}
+      {onContinue && ['completed', 'review_required', 'failed', 'needs_approval'].includes(task.status) && <button onClick={onContinue}>继续修改同一工程</button>}
       <button aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? '收起记录' : '查看执行记录'}</button>
     </footer>
     {action.error && <p role="alert">{action.error.message}</p>}
@@ -115,6 +122,62 @@ function TaskCard({ task }: { task: AgentTask }) {
       <details><summary>工具回读证据</summary><pre>{JSON.stringify(task.observations, null, 2)}</pre></details>
     </section>}
   </article>;
+}
+
+type GameOperation = 'prepare' | 'check' | 'build' | 'preview_start' | 'preview_stop';
+
+function GameRuntimePanel({ task }: { task: AgentTask }) {
+  const cache = useQueryClient();
+  const query = useQuery({ queryKey: agentTaskKeys.game(task.id), queryFn: ({ signal }) => agentTasks.gameStatus(task.id, signal),
+    retry: false, refetchInterval: state => {
+      const snapshot = state.state.data as GameProjectExecution | undefined;
+      return busy(task) || snapshot?.preview?.status === 'running' ? 1500 : false;
+    } });
+  const operation = useMutation({ mutationFn: async (kind: GameOperation | 'check_build') => {
+    if (kind !== 'check_build') return agentTasks.gameOperation(task.id, kind);
+    const checked = await agentTasks.gameOperation(task.id, 'check');
+    if (checked.check?.passed !== true) return checked;
+    return agentTasks.gameOperation(task.id, 'build');
+  }, onSuccess: snapshot => {
+    cache.setQueryData(agentTaskKeys.game(task.id), snapshot);
+    void cache.invalidateQueries({ queryKey: ['agent-tasks'] });
+  } });
+  const snapshot = query.data;
+  if (query.isPending) return <section className="agent-game-runtime"><p role="status">读取工程运行状态…</p></section>;
+  if (query.error) return <section className="agent-game-runtime"><p role="alert">工程状态读取失败：{query.error.message}</p></section>;
+  if (!snapshot) return null;
+  const previewRunning = snapshot.preview?.status === 'running';
+  const agentBusy = busy(task);
+  const latest = [snapshot.dependency, snapshot.check, snapshot.build, snapshot.preview].filter(Boolean).at(-1);
+  return <section className="agent-game-runtime" aria-label="游戏工程运行">
+    <header><div><strong>游戏工程</strong><small>{snapshot.branch}</small></div>
+      {previewRunning && snapshot.preview?.preview_url && !snapshot.preview.source_stale
+        ? <a href={snapshot.preview.preview_url} target="_blank" rel="noopener noreferrer">打开独立预览 ↗</a>
+        : <span>{snapshot.preview?.source_stale ? '源码已改变 · 需重新构建' : '预览未运行'}</span>}</header>
+    <p><code>{snapshot.workspace_root}</code></p>
+    <dl><div><dt>依赖</dt><dd>{snapshot.dependencies_ready ? '已准备' : '未准备'}</dd></div>
+      <div><dt>类型检查</dt><dd>{runLabel(snapshot.check)}</dd></div><div><dt>构建</dt><dd>{runLabel(snapshot.build)}</dd></div>
+      <div><dt>预览</dt><dd>{previewRunning ? '运行中' : runLabel(snapshot.preview)}</dd></div></dl>
+    <div className="agent-game-actions">
+      {task.authorization_card.allow_dependency_install && <button disabled={operation.isPending || agentBusy} onClick={() => operation.mutate('prepare')}>准备依赖</button>}
+      <button disabled={operation.isPending || agentBusy || !snapshot.dependencies_ready} onClick={() => operation.mutate('check_build')}>检查并构建</button>
+      <button disabled={operation.isPending || agentBusy || snapshot.build?.status !== 'succeeded' || snapshot.build.source_stale === true || previewRunning} onClick={() => operation.mutate('preview_start')}>启动预览</button>
+      <button disabled={operation.isPending || agentBusy || !previewRunning} onClick={() => operation.mutate('preview_stop')}>停止预览</button>
+    </div>
+    {operation.isPending && <p role="status">正在执行固定工程操作…</p>}
+    {operation.error && <p role="alert">{operation.error.message}</p>}
+    {latest?.log && <details><summary>最近日志 · {latest.operation}</summary><pre>{latest.log}</pre></details>}
+    <small>浏览器错误与玩法结果尚未自动判定，请在独立预览中验收。</small>
+  </section>;
+}
+
+function runLabel(run: GameProjectExecution['check'] | undefined) {
+  if (!run) return '未执行';
+  if (run.status === 'succeeded') return '通过';
+  if (run.status === 'stale' || run.source_stale) return '源码已改变';
+  if (run.status === 'running') return '运行中';
+  if (run.status === 'stopped') return '已停止';
+  return `失败${run.exit_code == null ? '' : ` · exit ${run.exit_code}`}`;
 }
 
 function CodeWriteEvidence({ result }: { result: unknown }) {

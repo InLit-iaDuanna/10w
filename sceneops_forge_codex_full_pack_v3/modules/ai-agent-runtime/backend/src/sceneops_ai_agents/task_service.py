@@ -7,7 +7,8 @@ from typing import Literal
 from sceneops_ai_provider import ProviderService
 from sceneops_harness import Authority, CapabilityRegistry, HarnessError, HarnessRuntime, RuntimeBudget
 from .task_models import (AgentTaskRecord, AuthorizationCard, AuthorizeAgentTask, PrepareAgentTask,
-                          TaskGrant, now, PROTOTYPE_CAPABILITIES, TASK_CAPABILITIES, CODE_CAPABILITIES)
+                          TaskGrant, now, PROTOTYPE_CAPABILITIES, TASK_CAPABILITIES,
+                          card_code_capabilities, GameOperationRequest)
 from .task_repository import AgentTaskRepository
 from .task_tools import TaskTools, contained
 from .production_store import ProductionStore
@@ -15,7 +16,8 @@ from .production_store import ProductionStore
 
 class AgentTaskService:
     def __init__(self, database_path, workspace_repository, data_dir, *, provider=None,
-                 blender_factory=None, unity_factory=None, card_context=None):
+                 blender_factory=None, unity_factory=None, card_context=None, game_runtime=None,
+                 pnpm_executable=None):
         from . import AgentRuntime
         self.database_path = Path(database_path)
         self.workspace = workspace_repository
@@ -26,6 +28,10 @@ class AgentTaskService:
         self.provider = provider or ProviderService(database_path)
         self.agents = AgentRuntime(self.provider)
         self.records = AgentTaskRepository(database_path)
+        if game_runtime is None:
+            from .game_runtime import GameProjectRuntime
+            game_runtime = GameProjectRuntime(self.records, self.data_dir, pnpm_executable=pnpm_executable)
+        self.game = game_runtime
         from .code_workspace import CodeWorkspace
         self.code = CodeWorkspace(self)
         self.records.recover_workspace_ownership(self.workspace_base)
@@ -68,14 +74,28 @@ class AgentTaskService:
             raise HarnessError("TYPED_CONTINUATION_NOT_CONNECTED", "此应用工程已有内容，受控 Blender/Unity 跨任务会话重绑定尚未接入。不会重放或覆盖；可在主对话明确选择 Codex 完全权限继续，或创建新项目。")
         card = AuthorizationCard(workspace_root=str(root), execution_mode=request.execution_mode,
             allow_image_generation=request.allow_image_generation, allow_playtest=request.allow_playtest,
+            allow_game_execution=request.allow_game_execution,
+            allow_dependency_install=request.allow_dependency_install,
             task_profile=request.task_profile, card_id=request.card_id,
             branch=card_work['branch'] if card_work else None)
         if card_work:
-            card.capability_ids = list(CODE_CAPABILITIES)
+            card.capability_ids = card_code_capabilities(card)
             card.scope = ('仅此项目的已登记卡片分支：读取有界 UTF-8 源码，按精确前文创建或修改代码文件；'
                 '每文件最多 64 KiB、每任务最多 32 个文件写入动作与累计 512 KiB 新内容。'
                 '可按精确前文修改用户已有改动；拒绝隐藏路径、链接、二进制与依赖锁文件。'
                 '不执行源码、Shell、安装、Git 修改、构建或游测；完成后必须人工审阅。')
+            if card.allow_game_execution:
+                card.max_model_calls = 16
+                card.scope = ('仅此项目的已登记卡片分支：读取和增量修改有界 UTF-8 源码；执行固定的 TypeScript 检查、'
+                    'Vite 构建，并从该分支的 dist 在 127.0.0.1 随机端口启动应用自有预览。'
+                    'Agent 不能提供 Shell 命令、工作目录、端口或环境变量；不合并分支、不发布。')
+                card.cost_notice = ('最多 16 次模型请求（含读取、修复和验证），20 分钟；固定工程命令会真实运行，'
+                    '本地预览只服务本卡片当前构建。模型费用可能未知。')
+                if card.allow_dependency_install:
+                    card.scope += (' 本次另授权在该游戏工程内执行一次或多次 pnpm 依赖准备；安装脚本禁用，'
+                        '网络访问仅用于工程声明的依赖。')
+                else:
+                    card.scope += ' 本次未授权安装依赖；依赖缺失时 Agent 必须报告。'
         elif request.task_profile == 'survival-prototype':
             card.capability_ids = list(PROTOTYPE_CAPABILITIES)
             card.scope = ('本任务专用空 Unity 工程：以有界数据生成方块生存射击原型，'
@@ -147,9 +167,12 @@ class AgentTaskService:
         if grant.execution_mode != task.authorization_card.execution_mode:
             raise HarnessError("TASK_SCOPE_DENIED", "执行权限与已确认授权卡不一致。")
         if task.authorization_card.task_profile == 'card-development':
+            expected_capabilities = card_code_capabilities(task.authorization_card)
             if (grant.card_id != task.authorization_card.card_id or grant.branch != task.authorization_card.branch
                     or grant.workspace_root != task.authorization_card.workspace_root
-                    or grant.execution_mode != 'typed-tools' or grant.capability_ids != CODE_CAPABILITIES):
+                    or grant.execution_mode != 'typed-tools' or grant.capability_ids != expected_capabilities
+                    or grant.allow_game_execution != task.authorization_card.allow_game_execution
+                    or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')
             self.card_workspace(task.project_id, grant.card_id, expected_root=grant.workspace_root, expected_branch=grant.branch)
         else:
@@ -196,10 +219,17 @@ class AgentTaskService:
                 execution_mode=task.authorization_card.execution_mode,
                 max_repair_rounds=task.authorization_card.max_repair_rounds,
                 allow_image_generation=task.authorization_card.allow_image_generation,
+                allow_game_execution=task.authorization_card.allow_game_execution,
+                allow_dependency_install=task.authorization_card.allow_dependency_install,
                 capability_ids=list(task.authorization_card.capability_ids), expires_at=now() + timedelta(minutes=20))
             if task.grant.execution_mode == "codex-full-access":
                 task.grant.budget = RuntimeBudget(max_steps=1, max_attempts_per_step=1,
                     max_duration_seconds=1200, max_metered_calls=1, usage_policy="bounded_calls")
+            elif task.authorization_card.max_model_calls is not None:
+                task.grant.budget = RuntimeBudget(max_steps=32,
+                    max_attempts_per_step=task.authorization_card.max_attempts_per_action,
+                    max_duration_seconds=task.authorization_card.max_duration_seconds,
+                    max_metered_calls=task.authorization_card.max_model_calls, usage_policy='bounded_calls')
             task.status, task.reason = "queued", None
         task = self.records.update(task_id, grant, "agent.task.authorized")
         if task.status == "queued" and task_id not in self.jobs:
@@ -241,6 +271,13 @@ class AgentTaskService:
             self._stop_record(task_id, "failed", f"{getattr(error, 'code', type(error).__name__)}: {error}")
         finally:
             task = self.get(task_id)
+            if task.cancel_requested and task.authorization_card.task_profile == 'card-development':
+                try:
+                    await self.game.stop_task_preview(task)
+                except Exception as error:
+                    self.records.update(task_id,
+                        lambda current: current.observations.update({'cleanup_uncertain': True,
+                            'preview_cleanup_error': str(error)}), 'agent.preview.stop_failed')
             if task.status != "blocked":
                 stopped = await self.tools[task_id].stop()
                 if any(isinstance(result, BaseException) for result in stopped):
@@ -399,11 +436,66 @@ class AgentTaskService:
         await asyncio.gather(*list(self.jobs.values()), return_exceptions=True)
         await asyncio.gather(*list(self.cleanups.values()), return_exceptions=True)
         await asyncio.gather(*(tools.stop() for tools in self.tools.values()), return_exceptions=True)
+        await self.game.close()
+
+    def _game_task(self, task_id, *, active_agent=False, manual_operation=False):
+        task = self.get(task_id)
+        card = task.authorization_card
+        if card.task_profile != 'card-development' or not card.allow_game_execution or task.grant is None:
+            raise HarnessError('GAME_EXECUTION_NOT_AUTHORIZED', '此任务没有游戏工程运行权限。')
+        if active_agent:
+            task = self.check_grant(task_id)
+        elif manual_operation and task.cancel_requested:
+            raise HarnessError('TASK_GRANT_INVALID', '已取消任务不能再运行工程。')
+        if manual_operation and task.owner_pid is not None:
+            raise HarnessError('TASK_BUSY', 'Agent 正在修改或运行此工程，请等待当前任务结束。')
+        self.card_workspace(task.project_id, card.card_id,
+            expected_root=card.workspace_root, expected_branch=card.branch)
+        if manual_operation:
+            with self.records.connect() as connection:
+                claim = connection.execute('SELECT task_id FROM agent_project_claims WHERE project_id=?',
+                                           (task.project_id,)).fetchone()
+            if claim and claim[0] != task.id:
+                raise HarnessError('PROJECT_EXECUTION_BUSY', '该项目正在由另一项任务修改，请等待其结束。')
+        return task
+
+    def game_status(self, task_id):
+        return self.game.snapshot(self._game_task(task_id))
+
+    async def game_operation(self, task_id, request: GameOperationRequest):
+        task = self._game_task(task_id, manual_operation=True)
+        if request.operation == 'prepare' and not task.authorization_card.allow_dependency_install:
+            raise HarnessError('DEPENDENCY_INSTALL_NOT_AUTHORIZED', '此任务未授权准备工程依赖。')
+        evidence = await self.game.execute(task, request.operation)
+        def observed(current):
+            current.observations['game_project'] = evidence
+        self.records.update(task_id, observed, 'agent.game_project.manual_operation',
+            {'operation': request.operation, 'run_id': evidence['run']['id']})
+        return self.game.snapshot(task)
+
+    def finish_game(self, task):
+        snapshot = self.game.snapshot(task)
+        if not snapshot.check or snapshot.check.status != 'succeeded' or not snapshot.check.passed:
+            raise HarnessError('VERIFICATION_INCOMPLETE', '当前源码还没有通过 TypeScript 检查。')
+        if not snapshot.build or snapshot.build.status != 'succeeded' or not snapshot.build.passed:
+            raise HarnessError('VERIFICATION_INCOMPLETE', '当前源码还没有产生通过的 Vite 构建。')
+        if (not snapshot.preview or snapshot.preview.status != 'running'
+                or not snapshot.preview.passed or snapshot.preview.source_stale):
+            raise HarnessError('VERIFICATION_INCOMPLETE', '当前构建还没有运行中的本地预览。')
+        return {'tool': 'game_project', 'mode': 'live', 'delivery_status': 'build_ready',
+            'content_verified': True, 'compilation_verified': True, 'verified': False,
+            'browser_errors_verified': False, 'gameplay_verified': False,
+            'preview_url': snapshot.preview.preview_url,
+            'card_id': snapshot.card_id, 'branch': snapshot.branch,
+            'workspace_root': snapshot.workspace_root,
+            'summary': '源码已回读，类型检查和构建通过，本地预览正在运行；浏览器错误和玩法仍待人工验收。'}
 
     def execution_status(self) -> Literal["running", "connected", "idle"]:
         """Local observed lifecycle only; never launch/probe DCCs for a health request."""
         if self.connection_checks or any(not job.done() for job in (*self.jobs.values(), *self.cleanups.values())):
             return "running"
         if any(tools.has_connected_sessions() for tools in self.tools.values()):
+            return "connected"
+        if self.game.has_active_previews():
             return "connected"
         return "idle"

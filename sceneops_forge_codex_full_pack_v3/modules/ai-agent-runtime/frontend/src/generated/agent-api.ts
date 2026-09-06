@@ -90,6 +90,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/game": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Game Status */
+        get: operations["game_status_api_agent_tasks__task_id__game_get"];
+        put?: never;
+        /** Game Operation */
+        post: operations["game_operation_api_agent_tasks__task_id__game_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/events": {
         parameters: {
             query?: never;
@@ -404,6 +422,16 @@ export interface components {
              */
             allow_playtest: boolean;
             /**
+             * Allow Game Execution
+             * @default false
+             */
+            allow_game_execution: boolean;
+            /**
+             * Allow Dependency Install
+             * @default false
+             */
+            allow_dependency_install: boolean;
+            /**
              * Task Profile
              * @default asset-exchange
              * @enum {string}
@@ -525,6 +553,103 @@ export interface components {
             /** Object Ids */
             object_ids?: string[];
         };
+        /** GameExecutionRun */
+        GameExecutionRun: {
+            /** Id */
+            id?: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop";
+            /**
+             * Status
+             * @default running
+             * @enum {string}
+             */
+            status: "running" | "succeeded" | "failed" | "stale" | "stopped" | "interrupted";
+            /**
+             * Mode
+             * @default live
+             * @constant
+             */
+            mode: "live";
+            /** Project Id */
+            project_id: string;
+            /** Card Id */
+            card_id: string;
+            /** Task Id */
+            task_id: string;
+            /** Workspace Root */
+            workspace_root: string;
+            /** Branch */
+            branch: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at?: string;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Exit Code */
+            exit_code?: number | null;
+            /** Passed */
+            passed?: boolean | null;
+            /** Failure Code */
+            failure_code?: string | null;
+            /**
+             * Log
+             * @default
+             */
+            log: string;
+            /** Artifact Path */
+            artifact_path?: string | null;
+            /** Preview Url */
+            preview_url?: string | null;
+            /**
+             * Source Stale
+             * @default false
+             */
+            source_stale: boolean;
+        };
+        /** GameOperationRequest */
+        GameOperationRequest: {
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop";
+        };
+        /** GameProjectExecution */
+        GameProjectExecution: {
+            /** Project Id */
+            project_id: string;
+            /** Card Id */
+            card_id: string;
+            /** Workspace Root */
+            workspace_root: string;
+            /** Branch */
+            branch: string;
+            /**
+             * Dependencies Ready
+             * @default false
+             */
+            dependencies_ready: boolean;
+            dependency?: components["schemas"]["GameExecutionRun"] | null;
+            check?: components["schemas"]["GameExecutionRun"] | null;
+            build?: components["schemas"]["GameExecutionRun"] | null;
+            preview?: components["schemas"]["GameExecutionRun"] | null;
+            /**
+             * Browser Errors Verified
+             * @default false
+             */
+            browser_errors_verified: boolean;
+            /**
+             * Gameplay Verified
+             * @default false
+             */
+            gameplay_verified: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -560,6 +685,16 @@ export interface components {
              * @default false
              */
             allow_playtest: boolean;
+            /**
+             * Allow Game Execution
+             * @default false
+             */
+            allow_game_execution: boolean;
+            /**
+             * Allow Dependency Install
+             * @default false
+             */
+            allow_dependency_install: boolean;
             /**
              * Task Profile
              * @default asset-exchange
@@ -784,6 +919,16 @@ export interface components {
              * @default false
              */
             allow_image_generation: boolean;
+            /**
+             * Allow Game Execution
+             * @default false
+             */
+            allow_game_execution: boolean;
+            /**
+             * Allow Dependency Install
+             * @default false
+             */
+            allow_dependency_install: boolean;
             /** Capability Ids */
             capability_ids: string[];
             /**
@@ -1048,6 +1193,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    game_status_api_agent_tasks__task_id__game_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameProjectExecution"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    game_operation_api_agent_tasks__task_id__game_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameOperationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameProjectExecution"];
                 };
             };
             /** @description Validation Error */
