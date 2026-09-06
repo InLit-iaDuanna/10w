@@ -65,7 +65,7 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 
 本地 API 可通过 `GET /api/workspace/folders?path=` 浏览真实目录。省略 `path` 时从当前用户主目录开始；符号链接只显示为不可选项。`POST /api/workspace/folder-projects` 接收 `parent_path` 和单段 `name`，仅在已存在的父目录下排他创建全新子目录、身份文件和独立 Git，然后登记 workspace Project ID。`GET /api/workspace/folder-projects` 和 `GET /api/workspace/folder-projects/{id}` 用于持久列出和重新打开；`POST /api/workspace/folder-projects/inspect` 和 `/recover` 提供显式身份恢复。
 
-本地项目界面采用 Codex 式入口层级：主界面直接提供“新建项目”和“打开项目”，空工作区突出唯一的新建主动作；新建面板只要求项目名称并显示最终路径，保存位置在需要时单独选择。“打开项目”进入文件夹选择和身份检查，恢复、移动与副本处理只在检测到对应状态后显示。最近项目、独立对话与旧版无文件夹入口继续保留。
+本地项目界面采用 Codex 式入口层级：主界面直接提供“新建项目”和“打开项目”，空工作区突出唯一的新建主动作；新建面板只要求项目名称并显示最终路径，保存位置在需要时单独选择。“打开项目”进入文件夹选择和身份检查，恢复、移动与副本处理只在检测到对应状态后显示。创建或打开成功后，本地项目区域自动关闭并回到主对话。最近项目、独立对话与旧版无文件夹入口继续保留。
 
 跨模块只使用公开 repository 方法：
 

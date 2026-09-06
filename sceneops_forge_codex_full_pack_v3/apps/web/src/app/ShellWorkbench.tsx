@@ -181,7 +181,14 @@ function createWorkbench(unified: boolean) {
   if (unified) {
     const defaults = {icon:'panel',category:'工作台',defaultPlacement:{mode:'split',direction:'right'} as const,
       singleton:true, renderPolicy:'suspend-when-hidden' as const, initialState:()=>({}), serializeState:()=>({}), restoreState:()=>({})};
-    editors.register({...defaults,id:'workspace.projects',title:'本地项目',async load(){return {default:(props:EditorHostProps)=><WorkspaceProjects projectId={props.context.projectId} onSelect={actions.selectProject}/>};}});
+    editors.register({...defaults,id:'workspace.projects',title:'本地项目',async load(){return {default:function WorkspaceProjectsHost(props:EditorHostProps) {
+      const selectAndClose = (id: string | null) => {
+        actions.selectProject(id);
+        if (context.workbench.projectId !== id) return;
+        void execute('workbench.close_editor', {instanceId: props.instanceId}).catch(report);
+      };
+      return <WorkspaceProjects projectId={props.context.projectId} onSelect={selectAndClose}/>;
+    }};}});
     editors.register({...defaults,id:'harness.pipeline',title:'AI 生产计划',category:'AI 制作',async load(){
       const {PipelineWorkbench} = await import('@sceneops/ai-pipeline-compiler');
       return {default:function PipelineHost(props:EditorHostProps){
