@@ -4,6 +4,10 @@ import re
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+COST_NOTICE = ('每次发送或生成通常调用一次所选模型；结构化结果校验失败时，系统会把错误原因告知同一模型并自动重试一次。'
+    '费用未知，不自动切换提供方。')
+
+
 class JourneyModel(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
@@ -205,7 +209,7 @@ class PlanningJourney(JourneyModel):
     changes: list[JourneyChange] = Field(default_factory=list)
     modeling_sessions: list[CardModelingSession] = Field(default_factory=list)
     active_modeling_id: str | None = None
-    cost_notice: str = '每次发送或生成最多调用一次所选模型；费用未知，不自动重试或切换提供方。'
+    cost_notice: str = COST_NOTICE
 
 
 class JourneyCommand(JourneyModel):

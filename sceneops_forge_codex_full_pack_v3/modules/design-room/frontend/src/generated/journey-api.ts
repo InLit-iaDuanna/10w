@@ -391,7 +391,7 @@ export interface components {
             active_modeling_id?: string | null;
             /**
              * Cost Notice
-             * @default 每次发送或生成最多调用一次所选模型；费用未知，不自动重试或切换提供方。
+             * @default 每次发送或生成通常调用一次所选模型；结构化结果校验失败时，系统会把错误原因告知同一模型并自动重试一次。费用未知，不自动切换提供方。
              */
             cost_notice: string;
         };

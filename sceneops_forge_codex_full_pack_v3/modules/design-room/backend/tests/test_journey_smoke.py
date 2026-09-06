@@ -6,9 +6,11 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from fastapi import HTTPException
+from sceneops_ai_provider import ProviderFailure
 from sceneops_project_workspace import GitProjectError, SqliteWorkspaceRepository
 from sceneops_design_ai import PlanningJourneyService
-from sceneops_design_ai.journey_models import JourneyCommand, Outline, JourneyVersion, ProductionCard
+from sceneops_design_ai.journey_models import (JourneyCommand, Outline, JourneyVersion,
+    ProductionCard, GrillReply)
 
 
 class FixtureProvider:
@@ -50,6 +52,58 @@ class FixtureProvider:
 
 
 class JourneySmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_structured_failure_retries_once_with_feedback(self):
+        class FailOnceProvider(FixtureProvider):
+            def __init__(self):
+                super().__init__()
+                self.prompts = []
+
+            async def generate(self, prompt, **kwargs):
+                self.prompts.append(prompt)
+                if len(self.prompts) == 1:
+                    self.calls += 1
+                    raise ProviderFailure('CLI_STRUCTURED_INVALID',
+                        'CodeBuddy JSON 未通过结构校验（additionalProperties）。')
+                return await super().generate(prompt, **kwargs)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = FailOnceProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            state = service.get(project.project_id)
+
+            result = await service.generate(state, '生成一个问题。', GrillReply)
+
+            self.assertEqual(provider.calls, 2)
+            self.assertEqual(state.model_calls, 2)
+            self.assertIn('你上一次对同一请求的返回是错误的', provider.prompts[1])
+            self.assertIn('CLI_STRUCTURED_INVALID', provider.prompts[1])
+            self.assertEqual(service.get(project.project_id).model_calls, 2)
+            self.assertEqual(GrillReply.model_validate_json(result.text).text, '先确定目标。')
+
+    async def test_structured_failure_stops_after_one_automatic_retry(self):
+        class AlwaysInvalidProvider(FixtureProvider):
+            async def generate(self, prompt, **kwargs):
+                self.calls += 1
+                raise ProviderFailure('CLI_STRUCTURED_INVALID',
+                    'CodeBuddy JSON 未通过结构校验（additionalProperties）。')
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = AlwaysInvalidProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            state = service.get(project.project_id)
+
+            with self.assertRaisesRegex(ProviderFailure, '自动纠正重试仍未通过结构校验'):
+                await service.generate(state, '生成一个问题。', GrillReply)
+
+            self.assertEqual(provider.calls, 2)
+            self.assertEqual(service.get(project.project_id).model_calls, 2)
+
     async def test_concise_alignment_stops_after_two_questions(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
