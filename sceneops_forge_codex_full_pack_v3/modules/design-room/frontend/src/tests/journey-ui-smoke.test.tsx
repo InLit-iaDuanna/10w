@@ -5,8 +5,23 @@ import { MarkdownMessage } from '../../../../../packages/core-ui/frontend/src/Ma
 import { PlanningQuestionCard } from '../PlanningQuestionCard';
 import { JourneyChangeReview } from '../JourneyChangeReview';
 import { CardModelingEntry } from '../CardModelingEntry';
+import { ExistingProjectAdoptionNotice } from '../PlanningJourney';
 import type { PlanningJourney } from '../journey-client';
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+
+test('unadopted copied project is visible and requires an explicit next flow', async () => {
+  const host = document.createElement('div');
+  const root = createRoot(host);
+  let opened = 0;
+  try {
+    await act(async () => root.render(<ExistingProjectAdoptionNotice fallback={<span>对话</span>}
+      onOpenProjects={() => { opened += 1; }} />));
+    expect(host.textContent).toContain('尚未采用为可开发工程');
+    expect(host.textContent).toContain('不会自动提交、重建或复制');
+    await act(async () => host.querySelector('button')!.click());
+    expect(opened).toBe(1);
+  } finally { await act(async () => root.unmount()); }
+});
 
 test('model source entry uses explicit choices without another composer or fake upload', async () => {
   const host = document.createElement('div');

@@ -288,6 +288,51 @@
             ],
             "title": "Initialization Status"
           },
+          "project_kind": {
+            "type": "string",
+            "enum": [
+              "sceneops_created",
+              "existing_unadopted",
+              "legacy"
+            ],
+            "title": "Project Kind",
+            "default": "legacy"
+          },
+          "architecture_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Architecture Version"
+          },
+          "design_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Design Version"
+          },
+          "baseline_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Commit"
+          },
           "package_manager": {
             "anyOf": [
               {

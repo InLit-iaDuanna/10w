@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { workspaceClient } from '@sceneops/workspace-client';
+import { workspaceClient, type FolderProjectIdentityInspection } from '@sceneops/workspace-client';
 import './workspace-projects.css';
 
 export function WorkspaceProjects({ projectId, onSelect }: { projectId: string | null; onSelect(id: string | null): void }) {
@@ -15,6 +15,33 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
   const [folderName, setFolderName] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [identityBusy, setIdentityBusy] = useState(false);
+  const [inspection, setInspection] = useState<FolderProjectIdentityInspection | null>(null);
+  const refreshProjects = async () => {
+    await Promise.all([
+      cache.invalidateQueries({ queryKey: ['workspace-projects'] }),
+      cache.invalidateQueries({ queryKey: ['workspace-folder-projects'] }),
+      cache.invalidateQueries({ queryKey: ['workspace-folders'] }),
+    ]);
+  };
+  const inspectCurrentFolder = async () => {
+    if (!folders.data) return;
+    setIdentityBusy(true); setError('');
+    try { setInspection(await workspaceClient.inspectFolderProject({path: folders.data.path})); }
+    catch (e) { setInspection(null); setError(e instanceof Error ? e.message : String(e)); }
+    finally { setIdentityBusy(false); }
+  };
+  const recoverCurrentFolder = async (resolution: 'restore' | 'move' | 'copy') => {
+    if (!inspection) return;
+    setIdentityBusy(true); setError('');
+    try {
+      const project = await workspaceClient.recoverFolderProject({path: inspection.path, resolution});
+      await refreshProjects();
+      setInspection(await workspaceClient.inspectFolderProject({path: inspection.path}));
+      onSelect(project.project_id);
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+    finally { setIdentityBusy(false); }
+  };
   return <section className="shell-tool-content workspace-folder-intake" aria-label="本地项目">
     <header className="workspace-projects-header"><h2>项目</h2><p>选择文件夹，开始协作。</p></header>
     {projects.isPending && <p role="status">正在读取本地项目…</p>}
@@ -28,7 +55,7 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
       {folderProjects.error && <p role="alert">{folderProjects.error.message} <button onClick={() => void folderProjects.refetch()}>重试</button></p>}
       {folderProjects.data?.projects.length === 0 && <p>尚未创建文件夹项目。</p>}
       <div className="workspace-project-list">
-        {folderProjects.data?.projects.map(project => <button className={`workspace-project-card ${projectId === project.project_id ? 'is-selected' : ''}`} key={project.project_id} aria-pressed={projectId === project.project_id} onClick={() => onSelect(project.project_id)}><span><strong>{project.name}</strong><small>{project.root_path}</small></span><b>{projectId === project.project_id ? '当前' : '重新打开'}</b></button>)}
+        {folderProjects.data?.projects.map(project => <button className={`workspace-project-card ${projectId === project.project_id ? 'is-selected' : ''}`} key={project.project_id} aria-pressed={projectId === project.project_id} disabled={project.root_available === false} onClick={() => onSelect(project.project_id)}><span><strong>{project.name}</strong><small>{project.root_path}</small>{project.root_available === false && <small>原登记目录不可用 · 请浏览移动后的目录并检查身份</small>}{project.project_kind === 'existing_unadopted' && <small>副本已登记 · 等待已有工程采用流程</small>}</span><b>{project.root_available === false ? '等待定位' : projectId === project.project_id ? '当前' : '重新打开'}</b></button>)}
       </div>
     </div>
     <form onSubmit={async event => {
@@ -37,11 +64,7 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
       setBusy(true); setError('');
       try {
         const project = await workspaceClient.createFolderProject({ parent_path: folders.data.path, name: folderName.trim() });
-        await Promise.all([
-          cache.invalidateQueries({ queryKey: ['workspace-projects'] }),
-          cache.invalidateQueries({ queryKey: ['workspace-folder-projects'] }),
-          cache.invalidateQueries({ queryKey: ['workspace-folders'] }),
-        ]);
+        await refreshProjects();
         setFolderName(''); onSelect(project.project_id);
       } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
     }} className="workspace-project-create">
@@ -51,10 +74,32 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
       {folders.error && <p role="alert">{folders.error.message} <button type="button" onClick={() => void folders.refetch()}>重试</button></p>}
       {folders.data && <div>
         <p><strong>当前父目录</strong><br/><small>{folders.data.path}</small></p>
+        <button type="button" disabled={identityBusy} onClick={() => void inspectCurrentFolder()}>
+          {identityBusy ? '检查中…' : '检查此文件夹中的 SceneOps 项目'}
+        </button>
+        {inspection?.path === folders.data.path && <div className="workspace-identity-review" role="status">
+          <strong>{inspection.status === 'registered' ? '项目身份已登记' :
+            inspection.status === 'recoverable' ? '发现可恢复项目' :
+            inspection.status === 'move_candidate' ? '发现移动后的项目或副本' :
+            inspection.status === 'identity_conflict' ? '发现重复项目身份' : '尚未采用的已有工程'}</strong>
+          <p>{inspection.message}</p>
+          {inspection.registered_root_path && inspection.registered_root_path !== inspection.path &&
+            <small>原登记位置：{inspection.registered_root_path}</small>}
+          <div className="workspace-identity-actions">
+            {inspection.status === 'registered' && inspection.project_id &&
+              <button type="button" onClick={() => onSelect(inspection.project_id!)}>打开已登记项目</button>}
+            {(inspection.allowed_resolutions ?? []).includes('restore') &&
+              <button type="button" disabled={identityBusy} onClick={() => void recoverCurrentFolder('restore')}>恢复本机登记</button>}
+            {(inspection.allowed_resolutions ?? []).includes('move') &&
+              <button type="button" disabled={identityBusy} onClick={() => void recoverCurrentFolder('move')}>确认是移动后的原项目</button>}
+            {(inspection.allowed_resolutions ?? []).includes('copy') &&
+              <button type="button" disabled={identityBusy} onClick={() => void recoverCurrentFolder('copy')}>作为副本登记并分配新 ID</button>}
+          </div>
+        </div>}
         <details><summary>浏览文件夹</summary>{folders.data.parent_path && <button type="button" onClick={() => setBrowsePath(folders.data?.parent_path ?? undefined)}>返回上一级</button>}
         <label><input type="checkbox" checked={showHidden} onChange={e => setShowHidden(e.target.checked)} />显示隐藏目录</label>
         <div className="workspace-project-list" aria-label="子目录" style={{maxHeight:220, overflow:'auto'}}>
-          {folders.data.entries.filter(entry => showHidden || !entry.name.startsWith('.')).map(entry => <button type="button" className="workspace-project-card" key={entry.path} disabled={!entry.selectable} onClick={() => setBrowsePath(entry.path)}><span><strong>{entry.name}</strong></span><b>{entry.selectable ? '打开' : '符号链接不可选'}</b></button>)}
+          {folders.data.entries.filter(entry => showHidden || !entry.name.startsWith('.')).map(entry => <button type="button" className="workspace-project-card" key={entry.path} disabled={!entry.selectable} onClick={() => { setBrowsePath(entry.path); setInspection(null); }}><span><strong>{entry.name}</strong></span><b>{entry.selectable ? '打开' : '符号链接不可选'}</b></button>)}
         </div></details>
       </div>}
       <label>新项目目录名称 <input required maxLength={160} value={folderName} placeholder="例如：归途" onChange={e => setFolderName(e.target.value)} /></label>

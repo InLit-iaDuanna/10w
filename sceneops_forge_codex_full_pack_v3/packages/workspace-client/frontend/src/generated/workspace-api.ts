@@ -109,6 +109,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspace/folder-projects/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inspect Folder Project */
+        post: operations["workspaceInspectFolderProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspace/folder-projects/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recover Folder Project */
+        post: operations["workspaceRecoverFolderProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspace/folder-projects/{project_id}": {
         parameters: {
             query?: never;
@@ -170,6 +204,17 @@ export interface components {
             name: string;
             /** Root Path */
             root_path: string;
+            /**
+             * Project Kind
+             * @default legacy
+             * @enum {string}
+             */
+            project_kind: "sceneops_created" | "existing_unadopted" | "legacy";
+            /**
+             * Root Available
+             * @default true
+             */
+            root_available: boolean;
         };
         /** FolderProjectCreate */
         FolderProjectCreate: {
@@ -178,10 +223,47 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** FolderProjectIdentityInspection */
+        FolderProjectIdentityInspection: {
+            /** Path */
+            path: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "registered" | "recoverable" | "move_candidate" | "identity_conflict" | "missing_identity";
+            /** Project Id */
+            project_id?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Registered Root Path */
+            registered_root_path?: string | null;
+            /** Registered Root Exists */
+            registered_root_exists?: boolean | null;
+            /** Allowed Resolutions */
+            allowed_resolutions?: ("restore" | "move" | "copy")[];
+            /** Message */
+            message: string;
+        };
+        /** FolderProjectInspect */
+        FolderProjectInspect: {
+            /** Path */
+            path: string;
+        };
         /** FolderProjectList */
         FolderProjectList: {
             /** Projects */
             projects: components["schemas"]["FolderProject"][];
+        };
+        /** FolderProjectRecover */
+        FolderProjectRecover: {
+            /** Path */
+            path: string;
+            /**
+             * Resolution
+             * @enum {string}
+             */
+            resolution: "restore" | "move" | "copy";
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -710,6 +792,126 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderProject"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceError"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspaceInspectFolderProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FolderProjectInspect"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderProjectIdentityInspection"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceError"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workspaceRecoverFolderProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FolderProjectRecover"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

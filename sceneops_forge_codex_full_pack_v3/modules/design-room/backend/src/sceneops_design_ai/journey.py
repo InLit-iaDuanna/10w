@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sceneops_ai_provider import ProviderFailure
 from sceneops_ai_provider import ProviderService
-from sceneops_project_workspace import GameProjectError
+from sceneops_project_workspace import GameProjectError, GitProjectError
 from .journey_models import (PlanningJourney, JourneyCommand, JourneyMessage, JourneyVersion,
     Outline, CardProposal, CompactCardProposal, GrillReply, AlignmentSummaryReply, JourneyStreamEvent, RevisionReply,
     GitVersion, CardBranch, ArchitectureRecommendation, GameTechnicalPlan, GameProjectScaffold)
@@ -341,8 +341,9 @@ class PlanningJourneyService:
                 'selection_method': command.selection_method, 'rationale': rationale,
                 'tradeoffs': tradeoffs, 'ecs_library': 'miniplex' if command.code_architecture == 'ecs' else None}
             try:
-                scaffold = self.folders.initialize_game_project(state.project_id, selection)
-            except GameProjectError as error:
+                scaffold = self.folders.initialize_game_project(
+                    state.project_id, selection, state.versions[-1].number)
+            except (GameProjectError, GitProjectError) as error:
                 raise HTTPException(409, str(error)) from error
             state.technical_plan = GameTechnicalPlan(**selection,
                 scaffold=GameProjectScaffold.model_validate(scaffold), selected_at=timestamp())
@@ -480,7 +481,10 @@ def create_journey_router(service):
                     pending.cancel()
                     raise asyncio.CancelledError()
                 await asyncio.wait({pending}, timeout=.2)
-            return await pending
+            try:
+                return await pending
+            except (GameProjectError, GitProjectError) as error:
+                raise HTTPException(409, str(error)) from error
         finally:
             if not pending.done(): pending.cancel()
             await asyncio.gather(pending, return_exceptions=True)

@@ -4,11 +4,11 @@
 
 公开 `initialize_game_project` 根据 Design Room 已确认的技术方案创建真实 Web + Three.js 工程。对象／组件式和 ECS · Miniplex 使用不同源码组织和更新循环，均包含启动入口、最小移动—收集—计分交互、类型检查、构建和预览命令。架构记录写入 `.sceneops/game-architecture.json`；重复同方案为幂等操作，改选架构要求明确迁移任务。
 
-检测到已有 `package.json`、`index.html` 或 `src` 时只记录选择，不覆盖代码。打开卡片 worktree 时复制尚未被 Git 纳入的普通项目文件，排除元数据、隐藏文件、依赖和构建目录，且不覆盖 worktree 现有文件。详细行为和限制见根目录 `GAME_CODE_ARCHITECTURE_MILESTONE.md`。
+检测到已有 `package.json`、`index.html` 或 `src` 时只记录选择，不覆盖或自动提交源码，并把项目标记为 `existing_unadopted`。完整采用已有工程属于后续里程碑。SceneOps 新生成的 scaffold 会形成选择性 Git 基线，卡片 worktree 只从 Git 历史继承文件，不再复制主目录中的未跟踪文件。详细行为见根目录 `GAME_CODE_ARCHITECTURE_MILESTONE.md` 和 `GAME_PROJECT_IDENTITY_BASELINE_MILESTONE.md`。
 
 ## Git 文件夹项目
 
-新增公开 `ensure_project_git`、`commit_design_version`、`open_card_worktree`，仅操作应用绑定的根目录。新建目录初始化独立 Git；旧根需明确动作启用。正式版本不夹带用户暂存文件；卡片是实际 Git 分支和独立 worktree。全部 Git 调用禁用 hooks、签名和配置的 checkout filters，不修改全局配置、不自动联网。Git 失败保留已有目录、绑定及历史。详细范围见根 `GIT_CARD_BRANCHES.md`。
+新增公开 `ensure_project_git`、`commit_design_version`、`open_card_worktree`，仅操作应用绑定的根目录。新建目录先写 `.sceneops/project.json` 并验证独立 Git，再登记 SQLite；中断目录可通过 `inspect_folder_project` 和 `recover_folder_project` 显式恢复、移动或登记为副本。正式版本和工程基线都不夹带用户暂存文件；新卡是从当前有效 `codex/integration` HEAD 懒创建的实际 Git 分支和独立 worktree，旧卡保持原 base。全部 Git 调用禁用 hooks、签名和配置的 checkout filters，不修改全局配置、不自动联网。
 
 Project Intake 把“一句项目想法”或“扫描现有项目”的结果转换为可检查、可确认的项目入口记录。它不接触生产文件；扫描器必须先通过公开的 `ProjectScanAdapter` 把 Unity、Blender 或其他工具的数据归一化。
 
@@ -25,6 +25,7 @@ Project Intake 把“一句项目想法”或“扫描现有项目”的结果�
 - Events：`project.intake.drafted@1`、`project.intake.field_confirmed@1`
 - 公开入口：`frontend/src/index.ts`
 - Backend：`sceneops_project_workspace.create_folder_router(repository)` 提供应用内目录浏览和文件夹项目创建/重开；`SqliteWorkspaceRepository` 是公开持久化实现。
+- 磁盘合同：`contracts/manifests/project-identity.v1.schema.json` 定义 `.sceneops/project.json`。
 - 权限：读取 `project:read`；新建/确认 `project:write`；扫描还需 `project:scan`
 
 对话命令返回结构化 `workbench.open_editor` 动作。它创建的只是应用内草稿，不会改写项目文件，也不会启动生产任务。
@@ -62,7 +63,7 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 
 ## 文件夹项目与设计存储
 
-本地 API 可通过 `GET /api/workspace/folders?path=` 浏览真实目录。省略 `path` 时从当前用户主目录开始；符号链接只显示为不可选项。`POST /api/workspace/folder-projects` 接收 `parent_path` 和单段 `name`，仅在已存在的父目录下排他创建全新子目录，同时创建并绑定现有 workspace Project ID。`GET /api/workspace/folder-projects` 和 `GET /api/workspace/folder-projects/{id}` 用于持久列出和重新打开。
+本地 API 可通过 `GET /api/workspace/folders?path=` 浏览真实目录。省略 `path` 时从当前用户主目录开始；符号链接只显示为不可选项。`POST /api/workspace/folder-projects` 接收 `parent_path` 和单段 `name`，仅在已存在的父目录下排他创建全新子目录、身份文件和独立 Git，然后登记 workspace Project ID。`GET /api/workspace/folder-projects` 和 `GET /api/workspace/folder-projects/{id}` 用于持久列出和重新打开；`POST /api/workspace/folder-projects/inspect` 和 `/recover` 提供显式身份恢复。
 
 跨模块只使用公开 repository 方法：
 

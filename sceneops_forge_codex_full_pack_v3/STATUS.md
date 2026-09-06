@@ -1,5 +1,9 @@
 # 当前状态：单主对话生产状态底座已接入，全流程改造仍在进行
 
+## 2026-09-07：新建项目身份与工程基线
+
+新建项目先写 `.sceneops/project.json`、验证独立 Git，再登记 SQLite；中断后可显式恢复。架构 scaffold 现在以选择性提交进入 `codex/integration`，不安装依赖、不包含 lockfile、依赖目录或用户额外文件。新卡从当前有效 integration HEAD 创建，旧卡保持原 base；移动与复制项目使用明确分流，副本在已有工程采用完成前不能进入开发旅程。定向后端和 UI 烟测通过；全项目类型检查仍被已有诊断阻断。见 [身份与基线里程碑](GAME_PROJECT_IDENTITY_BASELINE_MILESTONE.md)。
+
 ## 2026-09-06：游戏代码架构选择与真实工程
 
 第一次生成代码前可手动选择对象／组件式或 ECS · Miniplex，也可由当前 AI 提供方根据策划推荐；确认后创建真实 Vite + TypeScript + Three.js 工程。技术方案进入制作卡、Git worktree 和 Agent 任务上下文，旧项目不从 Three.js 猜架构、不覆盖源码。两类样例的类型检查、构建和浏览器输入通过；真实 `gpt-5.6-sol` Agent 在 ECS worktree 内只修改输入系统增加 Shift 冲刺，随后构建通过。见 [里程碑交付](GAME_CODE_ARCHITECTURE_MILESTONE.md)。

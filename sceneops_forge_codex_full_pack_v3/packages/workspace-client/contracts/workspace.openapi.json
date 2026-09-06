@@ -612,6 +612,148 @@
         }
       }
     },
+    "/api/workspace/folder-projects/inspect": {
+      "post": {
+        "tags": [
+          "workspace-folders"
+        ],
+        "summary": "Inspect Folder Project",
+        "operationId": "workspaceInspectFolderProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FolderProjectInspect"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderProjectIdentityInspection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/folder-projects/recover": {
+      "post": {
+        "tags": [
+          "workspace-folders"
+        ],
+        "summary": "Recover Folder Project",
+        "operationId": "workspaceRecoverFolderProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FolderProjectRecover"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderProject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/workspace/folder-projects/{project_id}": {
       "get": {
         "tags": [
@@ -790,6 +932,21 @@
           "root_path": {
             "type": "string",
             "title": "Root Path"
+          },
+          "project_kind": {
+            "type": "string",
+            "enum": [
+              "sceneops_created",
+              "existing_unadopted",
+              "legacy"
+            ],
+            "title": "Project Kind",
+            "default": "legacy"
+          },
+          "root_available": {
+            "type": "boolean",
+            "title": "Root Available",
+            "default": true
           }
         },
         "additionalProperties": false,
@@ -824,6 +981,108 @@
         ],
         "title": "FolderProjectCreate"
       },
+      "FolderProjectIdentityInspection": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "registered",
+              "recoverable",
+              "move_candidate",
+              "identity_conflict",
+              "missing_identity"
+            ],
+            "title": "Status"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "registered_root_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registered Root Path"
+          },
+          "registered_root_exists": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registered Root Exists"
+          },
+          "allowed_resolutions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "restore",
+                "move",
+                "copy"
+              ]
+            },
+            "type": "array",
+            "title": "Allowed Resolutions"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "status",
+          "message"
+        ],
+        "title": "FolderProjectIdentityInspection"
+      },
+      "FolderProjectInspect": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Path"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "FolderProjectInspect"
+      },
       "FolderProjectList": {
         "properties": {
           "projects": {
@@ -840,6 +1099,31 @@
           "projects"
         ],
         "title": "FolderProjectList"
+      },
+      "FolderProjectRecover": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Path"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "restore",
+              "move",
+              "copy"
+            ],
+            "title": "Resolution"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "resolution"
+        ],
+        "title": "FolderProjectRecover"
       },
       "HTTPValidationError": {
         "properties": {

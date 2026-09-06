@@ -120,6 +120,10 @@ class ArchitectureRecommendation(JourneyModel):
 class GameProjectScaffold(JourneyModel):
     root_path: str
     initialization_status: Literal['generated', 'existing']
+    project_kind: Literal['sceneops_created', 'existing_unadopted', 'legacy'] = 'legacy'
+    architecture_version: int | None = Field(default=None, ge=1)
+    design_version: int | None = Field(default=None, ge=1)
+    baseline_commit: str | None = None
     package_manager: Literal['pnpm'] | None = None
     entry_file: str | None = None
     generated_files: list[str] = Field(default_factory=list, max_length=30)

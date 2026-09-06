@@ -7,6 +7,7 @@ import subprocess
 import stat
 import tempfile
 from contextlib import contextmanager
+from datetime import datetime, timezone
 
 
 class GitProjectError(ValueError):
@@ -43,27 +44,150 @@ class GitProjects:
 
     def ensure(self, project_id):
         root = self._root(project_id)
+        self.initialize_root(root)
+        return {"root_path": str(root), "branch": self._branch(root),
+                "head_commit": self._git(root, "rev-parse", "--verify", "HEAD", optional=True)}
+
+    @classmethod
+    def initialize_root(cls, root):
         metadata = root / ".git"
         if metadata.is_symlink() or (metadata.exists() and not metadata.is_dir()):
             raise GitProjectError("项目必须使用独立 Git 仓库，不能绑定其他仓库的工作区。")
         if not metadata.exists():
-            self._git(root, "init", "--initial-branch=codex/integration", "--template=")
-        self._verify_root(root)
-        return {"root_path": str(root), "branch": self._branch(root),
-                "head_commit": self._git(root, "rev-parse", "--verify", "HEAD", optional=True)}
+            cls._git(root, "init", "--initial-branch=codex/integration", "--template=")
+        cls.verify_root_path(root)
+        if cls._branch(root) != "codex/integration":
+            raise GitProjectError("新项目必须初始化在 codex/integration 分支。")
 
     def _verify_root(self, root):
+        self.verify_root_path(root)
+
+    @classmethod
+    def verify_root_path(cls, root):
         if not (root / ".git").is_dir() or (root / ".git").is_symlink():
             raise GitProjectError("请先明确启用此项目的 Git 版本管理。")
-        actual = self._git(root, "rev-parse", "--show-toplevel")
+        actual = cls._git(root, "rev-parse", "--show-toplevel")
         if Path(actual).resolve() != root.resolve():
             raise GitProjectError("Git 根目录与绑定项目不一致。")
 
-    def _branch(self, root):
-        branch = self._git(root, "symbolic-ref", "--quiet", "HEAD", optional=True)
+    @classmethod
+    def _branch(cls, root):
+        branch = cls._git(root, "symbolic-ref", "--quiet", "HEAD", optional=True)
         if not branch or not branch.startswith("refs/heads/"):
             raise GitProjectError("项目处于游离版本，请切回项目分支后重试。")
         return branch.removeprefix("refs/heads/")
+
+    def game_baseline(self, project_id):
+        with self.repository.connect() as connection:
+            row = connection.execute("SELECT * FROM workspace_game_baselines WHERE project_id=?",
+                                     (project_id,)).fetchone()
+        return dict(row) if row else None
+
+    def commit_game_baseline(self, project_id, paths, message, design_version, architecture_version=1):
+        root = self._root(project_id)
+        self._verify_root(root)
+        if self.repository.get_folder_project(project_id).project_kind != "sceneops_created":
+            raise GitProjectError("只有 SceneOps 新建工程可以自动建立游戏代码基线。")
+        if self._branch(root) != "codex/integration":
+            raise GitProjectError("工程基线只能提交到 codex/integration。")
+        if self._git_operation_active(root):
+            raise GitProjectError("Git 正在合并、变基或解决冲突，不能建立工程基线。")
+        head = self._git(root, "rev-parse", "--verify", "HEAD", optional=True)
+        design = self._git(root, "rev-parse", "--verify", f"refs/tags/v{design_version}^{{commit}}", optional=True)
+        if not head or not design or self._git(root, "merge-base", "--is-ancestor", design, head, optional=True) is None:
+            raise GitProjectError("当前集成分支没有包含已登记的正式策划版本。")
+        relative_paths = sorted(set(paths))
+        if not relative_paths or any(Path(path).is_absolute() or ".." in Path(path).parts for path in relative_paths):
+            raise GitProjectError("工程基线路径无效。")
+        with self._locked_index(root) as index_state, self.repository.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute("SELECT * FROM workspace_game_baselines WHERE project_id=?",
+                                     (project_id,)).fetchone()
+            if row is not None:
+                if row["design_version"] != design_version or row["architecture_version"] != architecture_version:
+                    raise GitProjectError("已登记的工程基线与当前技术方案不一致。")
+                commit = row["commit_id"]
+                if self._git(root, "rev-parse", "--verify", commit + "^{commit}", optional=True) != commit:
+                    raise GitProjectError("已登记的工程基线提交不存在。")
+                if not row["index_synced"]:
+                    parent = self._git(root, "rev-parse", "--verify", commit + "^", optional=True)
+                    current = self._git(root, "rev-parse", "--verify", "HEAD", optional=True)
+                    if current == parent:
+                        self._git(root, "update-ref", "refs/heads/codex/integration", commit, parent)
+                    elif current != commit:
+                        raise GitProjectError("工程基线恢复期间集成分支已经变化，请人工检查。")
+                    self._sync_paths_from_commit(root, index_state, relative_paths, commit, parent)
+                    self._finish_baseline_index(connection, index_state, project_id)
+                return commit
+            blobs = {}
+            for relative in relative_paths:
+                source = root / relative
+                if source.is_symlink() or not source.is_file():
+                    raise GitProjectError(f"工程基线文件 {relative} 不存在或不是普通文件。")
+                try:
+                    content = source.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError) as error:
+                    raise GitProjectError(f"工程基线文件 {relative} 无法读取。") from error
+                blob = self._git(root, "hash-object", "-w", "--stdin", input=content)
+                blobs[relative] = blob
+                self._prepare_index_entry(root, index_state, relative, blob, head)
+            with tempfile.TemporaryDirectory(prefix="sceneops-baseline-index-") as directory:
+                baseline_index = Path(directory) / "index"
+                env = {"GIT_INDEX_FILE": str(baseline_index)}
+                self._git(root, "read-tree", head, environment=env)
+                for relative in relative_paths:
+                    self._git(root, "update-index", "--add", "--cacheinfo", "100644", blobs[relative],
+                              relative, environment=env)
+                tree = self._git(root, "write-tree", environment=env)
+            commit = self._git(root, "commit-tree", tree, "-p", head, "-m", message)
+            connection.execute("""INSERT INTO workspace_game_baselines
+                (project_id,architecture_version,design_version,commit_id,index_synced,created_at)
+                VALUES (?,?,?,?,0,?)""",
+                (project_id, architecture_version, design_version, commit,
+                 datetime.now(timezone.utc).isoformat()))
+            connection.commit()
+            self._git(root, "update-ref", "refs/heads/codex/integration", commit, head)
+            connection.execute("BEGIN IMMEDIATE")
+            self._finish_baseline_index(connection, index_state, project_id)
+            return commit
+
+    def _sync_paths_from_commit(self, root, index_state, paths, commit, parent):
+        for relative in paths:
+            entry = self._git(root, "ls-tree", commit, "--", relative)
+            fields = entry.split("\t", 1)[0].split() if entry else []
+            if len(fields) != 3 or fields[1] != "blob":
+                raise GitProjectError(f"工程基线提交缺少 {relative}。")
+            self._prepare_index_entry(root, index_state, relative, fields[2], parent)
+
+    @staticmethod
+    def _finish_baseline_index(connection, state, project_id):
+        os.replace(state["lock"], state["index"])
+        state["published"] = True
+        connection.execute("UPDATE workspace_game_baselines SET index_synced=1 WHERE project_id=?",
+                           (project_id,))
+
+    def _git_operation_active(self, root):
+        if self._git(root, "ls-files", "-u"):
+            return True
+        return any(self._git(root, "rev-parse", "--verify", ref, optional=True) is not None
+                   for ref in ("MERGE_HEAD", "REBASE_HEAD", "CHERRY_PICK_HEAD"))
+
+    def _prepare_index_entry(self, root, state, relative, blob, head):
+        env = {"GIT_INDEX_FILE": str(state["lock"])}
+        staged = self._git(root, "ls-files", "--stage", "--", relative, environment=env)
+        entries = staged.splitlines() if staged else []
+        current = None
+        if entries:
+            fields = entries[0].split("\t", 1)[0].split()
+            if len(entries) != 1 or fields[2] != "0":
+                raise GitProjectError(f"工程基线文件 {relative} 存在未解决的暂存冲突。")
+            current = (fields[0], fields[1])
+        previous = self._git(root, "ls-tree", head, "--", relative) if head else ""
+        previous_fields = previous.split("\t", 1)[0].split() if previous else []
+        expected = (previous_fields[0], previous_fields[2]) if previous_fields else None
+        if current not in (expected, ("100644", blob)):
+            raise GitProjectError(f"工程基线文件 {relative} 已有不同的暂存修改。")
+        self._git(root, "update-index", "--add", "--cacheinfo", "100644", blob, relative, environment=env)
 
     def commit_version(self, project_id, version, payload):
         if isinstance(version, bool) or not isinstance(version, int) or version < 1:
@@ -182,14 +306,32 @@ class GitProjects:
             raise GitProjectError("项目或卡片标识无效。")
         root = self._root(project_id)
         self._verify_root(root)
-        head = self._git(root, "rev-parse", "--verify", "HEAD", optional=True)
         with self.repository.connect() as connection:
             version = connection.execute("SELECT version, commit_id FROM workspace_git_versions WHERE project_id=? AND index_synced=1 ORDER BY version DESC LIMIT 1",
                                          (project_id,)).fetchone()
-        confirmed = version and self._git(root, "rev-parse", "--verify",
-            f"refs/tags/v{version['version']}^{{commit}}", optional=True) == version["commit_id"]
-        if not head or not confirmed:
-            raise GitProjectError("请先确认正式策划版本，再打开卡片工作区。")
+            registered = connection.execute("SELECT * FROM workspace_card_worktrees WHERE project_id=? AND card_id=?",
+                                            (project_id, card_id)).fetchone()
+            baseline = connection.execute("SELECT * FROM workspace_game_baselines WHERE project_id=?",
+                                          (project_id,)).fetchone()
+        if registered is not None:
+            head = registered["base_commit"]
+        else:
+            if self._branch(root) != "codex/integration":
+                raise GitProjectError("新卡片只能从 codex/integration 的当前版本创建。")
+            if self._git_operation_active(root):
+                raise GitProjectError("Git 正在合并、变基或解决冲突，不能创建卡片工作区。")
+            head = self._git(root, "rev-parse", "--verify", "HEAD", optional=True)
+            confirmed = version and self._git(root, "rev-parse", "--verify",
+                f"refs/tags/v{version['version']}^{{commit}}", optional=True) == version["commit_id"]
+            if not head or not confirmed or self._git(root, "merge-base", "--is-ancestor", version["commit_id"], head, optional=True) is None:
+                raise GitProjectError("请先确认正式策划版本，再打开卡片工作区。")
+            if baseline is not None:
+                if not baseline["index_synced"] or self._git(root, "merge-base", "--is-ancestor",
+                        baseline["commit_id"], head, optional=True) is None:
+                    raise GitProjectError("当前集成分支没有包含已登记的游戏工程基线。")
+            elif self._has_game_architecture(root):
+                raise GitProjectError("此项目没有可验证的游戏工程基线；已有工程采用流程尚未完成。")
+            self._require_clean_project_sources(root)
         branch = f"codex/card-{card_id}"
         base = self.repository.path.absolute().parent / "card-worktrees"
         base.mkdir(mode=0o700, exist_ok=True)
@@ -233,6 +375,18 @@ class GitProjects:
                 self.repository._write_json_exclusive(brief, {"project_id": project_id,
                     "card_id": card_id, "title": title, "base_commit": head, "card": card})
         return {"branch": branch, "worktree_path": str(target), "base_commit": head}
+
+    @staticmethod
+    def _has_game_architecture(root):
+        marker = root / ".sceneops" / "game-architecture.json"
+        return marker.exists() or marker.is_symlink()
+
+    def _require_clean_project_sources(self, root):
+        paths = [".gitignore", ".sceneops/project.json", ".sceneops/game-architecture.json",
+                 "README.md", "ARCHITECTURE.md", "package.json", "tsconfig.json", "index.html", "src"]
+        dirty = self._git(root, "status", "--porcelain=v1", "--untracked-files=all", "--", *paths)
+        if dirty:
+            raise GitProjectError("主工程仍有未提交的源码或工程配置，不能创建卡片工作区。")
 
     def _verify_worktree(self, root, target, branch):
         self.repository._safe_existing_directory(target)

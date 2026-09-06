@@ -53,14 +53,14 @@ pnpm dev
 
 旧 Journey 缺少 `technical_plan` 和推荐字段时仍可反序列化和打开。确认架构时若项目根目录已有 `package.json`、`index.html` 或 `src`，系统只记录选择，不重建、不覆盖源码，也不提供虚假的初始化命令。
 
-打开卡片时，Git 已跟踪的文件由 worktree 自然提供；尚未跟踪的普通项目文件会安全复制到新卡片 worktree。复制排除 `.git`、`.sceneops`、隐藏文件、依赖目录和构建目录，并且不覆盖 worktree 中已有文件。根项目内容保持不变。
+2026-09-07 后，SceneOps 新生成的工程在架构确认时创建选择性 Git 基线；卡片只通过 Git 历史获得工程文件，不再复制主目录的未跟踪内容。检测到已有源码的项目会标记为 `existing_unadopted`，必须等待独立采用流程后才能创建新卡片。旧项目仍可读取，系统不会静默补交源码或基线。详见 `GAME_PROJECT_IDENTITY_BASELINE_MILESTONE.md`。
 
 已有技术方案后选择另一种架构会明确提示需要迁移任务。本轮没有实现一键架构迁移。
 
 ## 修改范围
 
-- `modules/project-intake/backend/src/sceneops_project_workspace/game_projects.py`：真实工程模板、初始化记录、旧项目和卡片 worktree 材料化。
-- `modules/project-intake/backend/src/sceneops_project_workspace/repository.py` 与 `__init__.py`：公开初始化入口并在卡片创建时接入工程。
+- `modules/project-intake/backend/src/sceneops_project_workspace/game_projects.py`：真实工程模板、初始化记录和选择性工程基线。
+- `modules/project-intake/backend/src/sceneops_project_workspace/repository.py` 与 `__init__.py`：公开初始化和身份恢复入口。
 - `modules/design-room/backend/src/sceneops_design_ai/journey_models.py`、`journey.py`、`card_modeling.py`：技术方案模型、AI 推荐、手动确认、持久化和下游提示。
 - `modules/design-room/frontend/src/PlanningJourney.tsx` 与 `planning-journey.css`：非专业术语说明、方案选择、推荐理由、恢复信息和开发入口约束。
 - `modules/ai-agent-runtime/backend/src/sceneops_ai_agents/task_service.py`：实际开发任务上下文和缺失方案拒绝。
@@ -74,7 +74,7 @@ pnpm dev
 模板和模拟 Provider 测试：
 
 - `python -m unittest ...test_journey_smoke ...test_card_git_write_smoke -v`：9 项通过。
-- 覆盖 AI 推荐 ECS、手动对象／组件式、选择保存和重开恢复、旧 JSON 缺字段、已有源码不覆盖、已有源码进入卡片 worktree、Agent 任务拿到架构和实际工作区。
+- 覆盖 AI 推荐 ECS、手动对象／组件式、选择保存和重开恢复、旧 JSON 缺字段、已有源码不覆盖、已有源码阻止未采用卡片开发、Agent 任务拿到架构和实际工作区。
 - `py_compile` 与 `git diff --check`：通过。
 - 统一 Web Vite 生产构建：848 个模块转换完成，构建通过；保留现有的大 chunk 和动态导入提示。
 
@@ -93,6 +93,6 @@ pnpm dev
 
 - 当前只实现已接通的 Web + Three.js；没有同时铺开 Unity、Godot 或其他引擎。
 - 真实 Agent 的受控卡片权限只允许源码读写，不允许 Shell、安装和构建。Agent 写入后的类型检查和构建由本轮验收单独执行，未扩大产品权限。
-- 已有但尚未进入 Git 的项目复制最多 2048 个文件、单文件 64 MiB、总计 256 MiB；超过范围时要求先纳入 Git，不会截断或静默漏文件。
+- 已有但尚未进入 Git 的项目不会复制到卡片 worktree；完整采用流程仍未实现。
 - 没有实现架构迁移、自动提交、自动合并、发布或 AI 自动游测。
 - Design Room 独立 `node:test` 入口仍有既有 Node ESM 扩展名和 `.tsx` 加载配置失败；根 `tsc --noEmit` 仍有既有跨模块严格类型诊断。本轮使用统一 Web Vite 构建验证了实际集成前端。

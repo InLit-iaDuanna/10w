@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from fastapi import HTTPException
-from sceneops_project_workspace import SqliteWorkspaceRepository
+from sceneops_project_workspace import GitProjectError, SqliteWorkspaceRepository
 from sceneops_design_ai import PlanningJourneyService
 from sceneops_design_ai.journey_models import JourneyCommand, Outline, JourneyVersion, ProductionCard
 
@@ -182,6 +182,7 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
             state.outline = Outline(title='收集游戏', experience='移动收集', core_loop='移动—收集—计分',
                 scope='一个场景', acceptance='可以移动并得到三分')
             state.versions = [JourneyVersion(number=1, confirmed_at='2026-09-06T00:00:00Z', outline=state.outline)]
+            folders.commit_design_version(folder.project_id, 1, state.versions[-1].model_dump(mode='json'))
             with service.connection() as db:
                 db.execute('INSERT INTO design_journeys VALUES (?,?)', (folder.project_id, state.model_dump_json()))
             selected = await service.command(folder.project_id, JourneyCommand(request_id='architecture',
@@ -205,7 +206,7 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
             self.assertIsNone(reopened.technical_plan)
             self.assertEqual((project_root/'src/game/objects/Player.ts').read_text(), before)
 
-    async def test_existing_project_is_copied_to_card_without_rewriting_root(self):
+    async def test_existing_project_requires_adoption_before_opening_a_new_card(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
             folders = SqliteWorkspaceRepository(root/'state.sqlite3')
@@ -224,18 +225,18 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
                 'code_architecture':'object-component', 'architecture_label':'对象／组件式',
                 'selection_method':'manual', 'rationale':'沿用已有对象代码。',
                 'tradeoffs':['继续整理对象依赖'], 'ecs_library':None}
-            scaffold = folders.initialize_game_project(folder.project_id, selection)
+            folders.commit_design_version(folder.project_id, 1, {'title':'existing'})
+            scaffold = folders.initialize_game_project(folder.project_id, selection, 1)
             self.assertEqual(scaffold['initialization_status'], 'existing')
+            self.assertEqual(scaffold['project_kind'], 'existing_unadopted')
+            self.assertIsNone(scaffold['baseline_commit'])
             self.assertEqual(source.read_text(), 'export const existingGame = true;\n')
             plan = {**selection, 'selected_at':'2026-09-06T00:00:00Z', 'scaffold':scaffold}
-            folders.commit_design_version(folder.project_id, 1, {'title':'existing'})
-            card = folders.open_card_worktree(folder.project_id, 'continue', '继续开发',
-                card={'technical_plan':plan})
-            card_root = Path(card['worktree_path'])
-            self.assertEqual((card_root/'src/main.ts').read_text(), source.read_text())
-            self.assertEqual((card_root/'package.json').read_text(), package.read_text())
-            self.assertFalse((card_root/'.env').exists())
-            self.assertFalse((card_root/'node_modules').exists())
+            with self.assertRaisesRegex(GitProjectError, '采用流程'):
+                folders.open_card_worktree(folder.project_id, 'continue', '继续开发',
+                    card={'technical_plan':plan})
+            self.assertFalse((root/'card-worktrees').exists())
+            self.assertEqual(package.read_text(), '{"scripts":{"check":"custom"}}\n')
             self.assertEqual(source.read_text(), 'export const existingGame = true;\n')
 
     async def test_interrupted_snapshot_export_reconciles_without_new_model_call(self):

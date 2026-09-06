@@ -4,6 +4,8 @@
 
 正式策划版本之后不再只确认 Three.js。界面分别展示 Web 目标平台、Three.js 引擎／渲染技术和游戏代码架构；用户可手动选择对象／组件式或 ECS · Miniplex，也可让当前 AI 提供方推荐后再采用。确认会通过 Project Intake 创建真实工程，并把完整方案带入制作卡、建模上下文、卡片 worktree 和 Agent 开发任务。旧 `stack: threejs` 只表示渲染路线，不能推断代码架构。实现和验收见根目录 `GAME_CODE_ARCHITECTURE_MILESTONE.md`。
 
+SceneOps 新生成工程在确认架构后创建选择性 Git 基线，方案同时记录策划版本、架构版本和基线提交。副本项目登记为 `existing_unadopted`，现有旅程会显示明确阻断状态，不会自动提交或复制源码。身份恢复与卡片基线规则见根目录 `GAME_PROJECT_IDENTITY_BASELINE_MILESTONE.md`。
+
 制作卡片的高级代码开发入口现在会在准备任务前让用户选择是否授权工程检查、构建、本地预览和依赖准备。发送目标仍只产生授权卡；确认后，Agent 与任务卡按钮共用运行能力，并可从任务卡回到同一 worktree 继续修改。见根目录 `GAME_PROJECT_RUNTIME_MILESTONE.md`。
 
 ## 精简制作阶段

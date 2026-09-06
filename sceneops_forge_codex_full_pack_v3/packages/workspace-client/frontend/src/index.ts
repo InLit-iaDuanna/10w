@@ -6,6 +6,7 @@ export type ModuleId = ModuleDocument['module_id'];
 export type FolderEntry = components['schemas']['FolderEntry'];
 export type FolderListing = components['schemas']['FolderListing'];
 export type FolderProject = components['schemas']['FolderProject'];
+export type FolderProjectIdentityInspection = components['schemas']['FolderProjectIdentityInspection'];
 export const workspaceClient = {
   modules: () => requestJson<components['schemas']['ModuleList']>('/api/workspace/modules'),
   projects: () => requestJson<components['schemas']['ProjectList']>('/api/workspace/projects'),
@@ -17,4 +18,8 @@ export const workspaceClient = {
   folderProjects: () => requestJson<components['schemas']['FolderProjectList']>('/api/workspace/folder-projects'),
   folderProject: (id: string) => requestJson<FolderProject>(`/api/workspace/folder-projects/${encodeURIComponent(id)}`),
   createFolderProject: (body: components['schemas']['FolderProjectCreate']) => requestJson<FolderProject>('/api/workspace/folder-projects', { body }),
+  inspectFolderProject: (body: components['schemas']['FolderProjectInspect']) =>
+    requestJson<FolderProjectIdentityInspection>('/api/workspace/folder-projects/inspect', { body }),
+  recoverFolderProject: (body: components['schemas']['FolderProjectRecover']) =>
+    requestJson<FolderProject>('/api/workspace/folder-projects/recover', { body }),
 };

@@ -124,6 +124,18 @@ export interface components {
              * @enum {string}
              */
             initialization_status: "generated" | "existing";
+            /**
+             * Project Kind
+             * @default legacy
+             * @enum {string}
+             */
+            project_kind: "sceneops_created" | "existing_unadopted" | "legacy";
+            /** Architecture Version */
+            architecture_version?: number | null;
+            /** Design Version */
+            design_version?: number | null;
+            /** Baseline Commit */
+            baseline_commit?: string | null;
             /** Package Manager */
             package_manager?: "pnpm" | null;
             /** Entry File */

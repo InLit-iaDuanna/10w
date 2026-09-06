@@ -1,6 +1,6 @@
 # SceneOps Forge V5 · AI 生产工作台
 
-最新：第一次生成游戏工程代码前，用户可手动选择对象／组件式或 ECS · Miniplex，也可让当前 AI 提供方推荐。确认后会创建真实、可构建和预览的 Three.js 工程，制作卡与卡片 Agent 持续读取同一技术方案。[实现、操作与真实 Agent 验证](GAME_CODE_ARCHITECTURE_MILESTONE.md)。卡片 Agent 现在还能在明确授权后自行准备依赖、检查、构建、按日志修复并启动严格 localhost 预览，任务卡按钮复用相同能力。[运行闭环与验收记录](GAME_PROJECT_RUNTIME_MILESTONE.md)。
+最新：第一次生成游戏工程代码前，用户可手动选择对象／组件式或 ECS · Miniplex，也可让当前 AI 提供方推荐。确认后会创建真实、可构建和预览的 Three.js 工程，制作卡与卡片 Agent 持续读取同一技术方案。[实现、操作与真实 Agent 验证](GAME_CODE_ARCHITECTURE_MILESTONE.md)。新建项目现已写入可恢复身份，scaffold 形成选择性 Git 基线；新卡从进入时最新的集成提交创建，旧卡保持原 base，复制项目不会静默改绑。[身份与基线里程碑](GAME_PROJECT_IDENTITY_BASELINE_MILESTONE.md)。卡片 Agent 还能在明确授权后自行准备依赖、检查、构建、按日志修复并启动严格 localhost 预览，任务卡按钮复用相同能力。[运行闭环与验收记录](GAME_PROJECT_RUNTIME_MILESTONE.md)。
 
 制作卡片现在可选择“导入已有模型”或“新建模型”。导入 GLB/FBX 后由真实 Blender 检查并生成 `.blend`、预览 GLB、Unity 交换 FBX；新建在唯一主对话中逐块对齐，每条新回答都会追加一个真实 Blender/GLB 草稿版本。确认的版本可存入项目资产库，再进入 Three.js 环境场景人工摆放，或继续由同一个主对话让 AI 使用库内资产搭建。两条模型路径都写入卡片 Git 工作树且不自动提交/合并，归一化另存版本。验证范围见 [卡片模型烟测](CARD_ASSET_WORKFLOW_SMOKE.md)。
 

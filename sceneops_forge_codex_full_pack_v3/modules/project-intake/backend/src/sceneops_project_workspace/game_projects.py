@@ -1,9 +1,10 @@
 """Create the first real Three.js project without overwriting existing game code."""
 import json
 import os
-import stat
 from datetime import datetime, timezone
 from pathlib import Path
+
+from .git_projects import GitProjects
 
 
 class GameProjectError(ValueError):
@@ -12,13 +13,7 @@ class GameProjectError(ValueError):
 
 THREE_VERSION = "0.183.2"
 MINIPLEX_VERSION = "2.0.0"
-EXCLUDED_PROJECT_DIRECTORIES = {
-    '.git', '.sceneops', '.venv', 'node_modules', 'dist', 'build', 'coverage',
-    'Library', 'Temp', 'Obj', 'Logs', 'Build', 'Builds',
-}
-MAX_EXISTING_PROJECT_FILES = 2048
-MAX_EXISTING_PROJECT_BYTES = 256 * 1024 * 1024
-MAX_EXISTING_FILE_BYTES = 64 * 1024 * 1024
+ARCHITECTURE_VERSION = 1
 
 
 def _shared_files(*, ecs: bool) -> dict[str, str]:
@@ -308,117 +303,74 @@ class GameProjects:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(content.encode("utf-8"))
 
-    @staticmethod
-    def _copy_file(source: Path, destination: Path):
-        source_descriptor = os.open(source, os.O_RDONLY | os.O_NOFOLLOW)
-        try:
-            info = os.fstat(source_descriptor)
-            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > MAX_EXISTING_FILE_BYTES:
-                raise GameProjectError(f"工程文件 {source.name} 不是可复制的普通文件或体积过大。")
-            mode = 0o755 if info.st_mode & stat.S_IXUSR else 0o644
-            destination_descriptor = os.open(
-                destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, mode)
-            try:
-                with os.fdopen(source_descriptor, 'rb', closefd=False) as source_stream, \
-                        os.fdopen(destination_descriptor, 'wb') as destination_stream:
-                    copied = 0
-                    while chunk := source_stream.read(1024 * 1024):
-                        copied += len(chunk)
-                        if copied > MAX_EXISTING_FILE_BYTES:
-                            raise GameProjectError(f"工程文件 {source.name} 在复制时超出体积限制。")
-                        destination_stream.write(chunk)
-            except Exception:
-                destination.unlink(missing_ok=True)
-                raise
-        finally:
-            os.close(source_descriptor)
-
-    @staticmethod
-    def _existing_project_files(root: Path) -> list[Path]:
-        files, total = [], 0
-        for parent, directories, names in os.walk(root, followlinks=False):
-            directories[:] = sorted(name for name in directories
-                if name not in EXCLUDED_PROJECT_DIRECTORIES and not name.startswith('.')
-                and not (Path(parent) / name).is_symlink())
-            for name in sorted(names):
-                if name.startswith('.') and name != '.gitignore':
-                    continue
-                source = Path(parent) / name
-                if source.is_symlink():
-                    continue
-                try:
-                    info = source.stat()
-                except OSError as error:
-                    raise GameProjectError("读取已有工程文件时项目发生变化，请重试。") from error
-                if not stat.S_ISREG(info.st_mode):
-                    continue
-                if info.st_nlink != 1:
-                    raise GameProjectError(f"已有工程文件 {source.relative_to(root)} 存在多个硬链接，未复制到卡片工作区。")
-                if info.st_size > MAX_EXISTING_FILE_BYTES:
-                    raise GameProjectError(f"已有工程文件 {source.relative_to(root)} 体积过大，未复制到卡片工作区。")
-                files.append(source)
-                total += info.st_size
-                if len(files) > MAX_EXISTING_PROJECT_FILES or total > MAX_EXISTING_PROJECT_BYTES:
-                    raise GameProjectError("已有工程超出卡片工作区复制范围，请先将工程纳入 Git 后重试。")
-        return files
-
-    def initialize(self, project_id: str, selection: dict) -> dict:
+    def initialize(self, project_id: str, selection: dict, design_version: int) -> dict:
         root = self._root(project_id)
+        project = self.repository.get_folder_project(project_id)
         metadata = self.repository._real_directory(root / ".sceneops", create=True)
         marker = metadata / "game-architecture.json"
         if marker.exists() or marker.is_symlink():
             current = self._read_json(marker)
             if current.get("code_architecture") != selection["code_architecture"]:
                 raise GameProjectError("游戏工程已有代码架构；更换架构需要建立明确迁移任务。")
-            return current["scaffold"]
+            scaffold = current["scaffold"]
+            if scaffold.get("initialization_status") != "generated":
+                return scaffold
+            recorded_version = current.get("design_version")
+            if recorded_version is None or project.project_kind != "sceneops_created":
+                # Old projects stay readable, but are not silently adopted into a new baseline.
+                return scaffold
+            if recorded_version != design_version:
+                raise GameProjectError("游戏工程基线绑定了其他策划版本，请先建立明确迁移任务。")
+            self._materialize_files(root, template_files(selection["code_architecture"]))
+            baseline = self._commit_baseline(project_id, current, recorded_version)
+            return {**scaffold, "baseline_commit": baseline}
 
         files = template_files(selection["code_architecture"])
         code_candidates = [root / "package.json", root / "index.html", root / "src"]
         existing_code = any(path.exists() or path.is_symlink() for path in code_candidates)
         if existing_code:
+            self.repository.set_project_kind(project_id, "existing_unadopted")
             scaffold = {
                 "root_path": str(root), "initialization_status": "existing",
+                "project_kind": "existing_unadopted", "architecture_version": ARCHITECTURE_VERSION,
+                "design_version": design_version, "baseline_commit": None,
                 "package_manager": None, "entry_file": None, "generated_files": [],
                 "check_command": None, "build_command": None, "preview_command": None,
             }
         else:
-            for relative, content in files.items():
-                target = root / relative
-                target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-                if target.exists() or target.is_symlink():
-                    if target.is_symlink() or not target.is_file() or target.read_text(encoding="utf-8") != content:
-                        raise GameProjectError(f"工程文件 {relative} 已存在，未覆盖。")
-                    continue
-                self._write_text(target, content)
             scaffold = {
                 "root_path": str(root), "initialization_status": "generated",
+                "project_kind": "sceneops_created", "architecture_version": ARCHITECTURE_VERSION,
+                "design_version": design_version, "baseline_commit": None,
                 "package_manager": "pnpm", "entry_file": "src/main.ts",
                 "generated_files": sorted(files), "check_command": "pnpm check",
                 "build_command": "pnpm build", "preview_command": "pnpm dev",
             }
-        record = {**selection, "selected_at": datetime.now(timezone.utc).isoformat(), "scaffold": scaffold}
+        record = {**selection, "project_kind": scaffold["project_kind"],
+                  "architecture_version": ARCHITECTURE_VERSION, "design_version": design_version,
+                  "selected_at": datetime.now(timezone.utc).isoformat(), "scaffold": scaffold}
         self.repository._write_json_exclusive(marker, record)
-        return scaffold
+        if scaffold["initialization_status"] != "generated":
+            return scaffold
+        self._materialize_files(root, files)
+        baseline = self._commit_baseline(project_id, record, design_version)
+        return {**scaffold, "baseline_commit": baseline}
 
-    def materialize_card(self, project_id: str, target: Path, technical_plan: dict | None):
-        if not technical_plan:
-            return
-        scaffold = technical_plan.get("scaffold") or {}
-        status = scaffold.get("initialization_status")
-        if status not in ("generated", "existing"):
-            return
-        root = self._root(project_id)
-        sources = ([root / relative for relative in scaffold.get("generated_files", [])]
-                   if status == "generated" else self._existing_project_files(root))
-        for source in sources:
-            relative = source.relative_to(root)
-            destination = target / relative
-            if source.is_symlink() or not source.is_file():
-                raise GameProjectError(f"工程文件 {relative} 不可安全复制。")
-            destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-            if destination.exists() or destination.is_symlink():
+    def _materialize_files(self, root: Path, files: dict[str, str]):
+        for relative, content in files.items():
+            target = root / relative
+            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            if target.exists() or target.is_symlink():
+                if (target.is_symlink() or not target.is_file()
+                        or target.read_text(encoding="utf-8") != content):
+                    raise GameProjectError(f"工程文件 {relative} 已存在，未覆盖。")
                 continue
-            self._copy_file(source, destination)
-        marker = target / ".sceneops" / "game-architecture.json"
-        if not marker.exists() and not marker.is_symlink():
-            self.repository._write_json_exclusive(marker, technical_plan)
+            self._write_text(target, content)
+
+    def _commit_baseline(self, project_id: str, record: dict, design_version: int) -> str:
+        scaffold = record["scaffold"]
+        paths = [".sceneops/project.json", ".sceneops/game-architecture.json",
+                 *scaffold["generated_files"]]
+        return GitProjects(self.repository).commit_game_baseline(
+            project_id, paths, f"Initialize game project: {record['architecture_label']}",
+            design_version, ARCHITECTURE_VERSION)

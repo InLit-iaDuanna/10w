@@ -51,6 +51,36 @@ class FolderProject(WorkspaceModel):
     project_id: str
     name: str
     root_path: str
+    project_kind: Literal["sceneops_created", "existing_unadopted", "legacy"] = "legacy"
+    root_available: bool = True
+
+
+class ProjectIdentity(WorkspaceModel):
+    schema_version: Literal[1] = 1
+    project_id: str = Field(pattern=r"^prj_[A-Za-z0-9_-]+$")
+    name: str = Field(min_length=1, max_length=160, pattern=r".*\S.*")
+    created_at: datetime
+    copied_from_project_id: str | None = Field(default=None, pattern=r"^prj_[A-Za-z0-9_-]+$")
+
+
+class FolderProjectInspect(WorkspaceModel):
+    path: str = Field(min_length=1)
+
+
+class FolderProjectIdentityInspection(WorkspaceModel):
+    path: str
+    status: Literal["registered", "recoverable", "move_candidate", "identity_conflict", "missing_identity"]
+    project_id: str | None = None
+    name: str | None = None
+    registered_root_path: str | None = None
+    registered_root_exists: bool | None = None
+    allowed_resolutions: list[Literal["restore", "move", "copy"]] = Field(default_factory=list)
+    message: str
+
+
+class FolderProjectRecover(WorkspaceModel):
+    path: str = Field(min_length=1)
+    resolution: Literal["restore", "move", "copy"]
 
 
 class FolderProjectList(WorkspaceModel):

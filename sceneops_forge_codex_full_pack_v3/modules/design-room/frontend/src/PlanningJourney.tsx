@@ -18,6 +18,14 @@ const architectureOptions = [
 export type JourneySurfaceRequest = { surface: 'modeling' | 'environment'; hosted: boolean; revision: number;
   action?: {id:string;type:'new-asset';source:'import'|'create'} };
 
+export function ExistingProjectAdoptionNotice({fallback, onOpenProjects}:{fallback:ReactNode;onOpenProjects:()=>void}) {
+  return <div className="journey-legacy"><div className="journey-start" role="status">
+    <strong>这个副本已登记，尚未采用为可开发工程</strong>
+    <span>SceneOps 不会自动提交、重建或复制其中的源码。已有工程采用流程将在下一里程碑接通。</span>
+    <button onClick={onOpenProjects}>查看项目身份</button>
+  </div>{fallback}</div>;
+}
+
 type Props = { projectId: string | null; fallback: ReactNode; modelPicker: (busy: boolean) => ReactNode;
   onDirtyChange?: (dirty: boolean) => void; onOpenProjects: () => void;
   surfaceRequest?: JourneySurfaceRequest | null;
@@ -37,6 +45,8 @@ export function PlanningJourneyGate(props: Props) {
   if (folders.isPending) return <p role="status">读取项目入口…</p>;
   if (folders.error) return <p role="alert">{folders.error.message} <button onClick={() => void folders.refetch()}>重试</button></p>;
   const bound = folders.data?.projects.find(project => project.project_id === props.projectId);
+  if (bound?.project_kind === 'existing_unadopted') return <ExistingProjectAdoptionNotice
+    fallback={props.fallback} onOpenProjects={props.onOpenProjects} />;
   if (bound) return <PlanningJourneyChat key={bound.project_id} {...props} projectId={bound.project_id} />;
   return <div className="journey-legacy">{!props.projectId && <div className="journey-start"><strong>从一个文件夹开始你的游戏</strong>
     <span>选择文件夹，和 AI 聊 idea，再一起对齐策划。</span><button onClick={props.onOpenProjects}>选择文件夹 · 单人协作</button></div>}{props.fallback}</div>;

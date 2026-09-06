@@ -6,6 +6,7 @@ const contractFiles = [
   "events/project.intake.drafted.v1.schema.json",
   "events/project.intake.field_confirmed.v1.schema.json",
   "manifests/project-intake-record.v1.schema.json",
+  "manifests/project-identity.v1.schema.json",
   "manifests/project-scan-report.v1.schema.json",
 ] as const;
 
