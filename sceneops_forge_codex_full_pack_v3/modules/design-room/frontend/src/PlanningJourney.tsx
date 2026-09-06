@@ -15,6 +15,20 @@ const architectureOptions = [
     tradeoff:'适合大量同类实体和组合玩法；需要理解实体、组件和系统的分工。'},
 ];
 
+type SharedProjectMemory = { project_title: string; experience: string; core_loop: string; scope: string;
+  technical_plan: string; active_card: string };
+export type WorldCreationMode = 'model' | 'environment' | null;
+
+export function WorldCreationActions({mode, busy, memoryLabel, onNewModel, onEnvironment}: {
+  mode: WorldCreationMode; busy: boolean; memoryLabel: string;
+  onNewModel: () => void; onEnvironment: () => void;
+}) {
+  return <section className="journey-creation-shortcuts"><nav className="journey-conversation-modes" aria-label="3D 世界制作方式">
+    <button type="button" aria-pressed={mode === 'model'} disabled={busy} onClick={onNewModel}>＋ 新建模型</button>
+    <button type="button" aria-pressed={mode === 'environment'} disabled={busy} onClick={onEnvironment}>搭建世界</button>
+  </nav><small className="journey-shared-memory">公共上下文 · {memoryLabel}</small></section>;
+}
+
 export type JourneySurfaceRequest = { surface: 'modeling' | 'environment'; hosted: boolean; revision: number;
   action?: {id:string;type:'new-asset';source:'import'|'create'} };
 
@@ -38,7 +52,9 @@ type Props = { projectId: string | null; fallback: ReactNode; modelPicker: (busy
     messages:{id:string;role:string;text:string;replyTo?:string;modelingBlock?:string}[]; observeConversation?: boolean;
     onCreateAnother:()=>void;onOpenEnvironment:()=>void}) => ReactNode };
   environment?: { render: (input:{projectId:string;aiBusy:boolean;onCreateAsset:(source:'import'|'create')=>void}) => ReactNode;
-    build: (input:{projectId:string;text:string;requestId:string;retryFailed:boolean}) => Promise<{summary:string;provider:string;model:string}> } };
+    read: (projectId:string) => Promise<{messages:JourneyMessage[]}>;
+    build: (input:{projectId:string;text:string;requestId:string;retryFailed:boolean;sharedMemory:SharedProjectMemory}) =>
+      Promise<{summary:string;provider:string;model:string;messages:JourneyMessage[]}> } };
 
 export function PlanningJourneyGate(props: Props) {
   const folders = useQuery({ queryKey: ['workspace-folder-projects'], queryFn: () => workspaceClient.folderProjects(), retry: false });
@@ -70,7 +86,10 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const [previewOpen, setPreviewOpen] = useState(true);
   const [environmentOpen, setEnvironmentOpen] = useState(false);
   const [environmentTurns, setEnvironmentTurns] = useState<JourneyMessage[]>([]);
-  const [environmentFailed, setEnvironmentFailed] = useState<{requestId:string;text:string}|null>(null);
+  const [environmentFailed, setEnvironmentFailed] = useState<{requestId:string;text:string;sharedMemory:SharedProjectMemory}|null>(null);
+  const environmentConversationKey = ['journey-environment-conversation', projectId] as const;
+  const environmentConversation = useQuery({queryKey:environmentConversationKey,
+    queryFn:() => environment!.read(projectId), enabled:environmentOpen && !!environment, retry:false});
   const prepareDevelopment = useMutation({
     mutationFn: ({ goal, cardId }: { goal: string; cardId: string }) => {
       if (!development) throw new Error('当前宿主没有连接分支开发服务。');
@@ -84,20 +103,18 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     onError: error => setNotice(error.message),
   });
   const environmentBuild = useMutation({
-    mutationFn: ({text,requestId,retryFailed}:{text:string;requestId:string;retryFailed:boolean}) => {
+    mutationFn: ({text,requestId,retryFailed,sharedMemory}:{text:string;requestId:string;retryFailed:boolean;sharedMemory:SharedProjectMemory}) => {
       if (!environment) throw new Error('当前宿主没有连接环境场景服务。');
-      return environment.build({projectId,text,requestId,retryFailed});
+      return environment.build({projectId,text,requestId,retryFailed,sharedMemory});
     },
     onSuccess: (result, variables) => {
-      setEnvironmentTurns(current => [...current,
-        {id:`${variables.requestId}:user`,role:'user',text:variables.text,created_at:new Date().toISOString(),mode:'live'},
-        {id:`${variables.requestId}:assistant`,role:'assistant',text:result.summary,created_at:new Date().toISOString(),
-          provider:result.provider,model:result.model,mode:'live'}]);
+      setEnvironmentTurns(result.messages);
+      cache.setQueryData(environmentConversationKey, {messages:result.messages});
       setOutgoing(''); setEnvironmentFailed(null); setNotice('');
     },
     onError: (error, variables) => {
       setOutgoing(''); setDraft(current => current || variables.text);
-      setEnvironmentFailed({requestId:variables.requestId,text:variables.text});
+      setEnvironmentFailed({requestId:variables.requestId,text:variables.text,sharedMemory:variables.sharedMemory});
       setNotice(error.message);
     },
   });
@@ -161,6 +178,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     if (activeCardId === 'world-3d' && environmentAvailable) {
       setEnvironmentOpen(true);
       setPreviewOpen(true);
+      onOpenSurface?.('environment');
       return;
     }
     setEnvironmentOpen(false);
@@ -178,12 +196,12 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
       }
       return;
     }
-    setEnvironmentOpen(surfaceRequest.surface === 'environment');
-    setEnvironmentTurns([]);
-    setEnvironmentFailed(null);
     setPreviewOpen(true);
     if (!surfaceRequest.action || handledSurfaceAction.current === surfaceRequest.action.id || mutation.isPending) return;
     handledSurfaceAction.current = surfaceRequest.action.id;
+    setEnvironmentOpen(false);
+    setEnvironmentTurns([]);
+    setEnvironmentFailed(null);
     mutation.mutate({operation:'new_modeling', card_id:current.active_card_id,
       model_source:surfaceRequest.action.source, context_draft:''});
   }, [surfaceRequest?.revision, query.data?.revision, mutation.isPending]);
@@ -227,12 +245,23 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
       ...(['select_card', 'clear_card', 'choose_model_source', 'new_modeling', 'open_modeling', 'close_modeling'].includes(operation) ? { context_draft: draft } : {}) });
   };
   const stages = [['idea', '聊 idea'], ['grill', '对齐细节'], ['outline', '策划大纲'], ['stack', '技术路线'], ['cards', '制作卡片']];
-  const messages = environmentOpen ? environmentTurns : (modeling ? modeling.messages : state.messages) ?? [];
+  const focusedMessages = environmentOpen ? (environmentTurns.length ? environmentTurns : environmentConversation.data?.messages ?? [])
+    : modeling ? modeling.messages ?? [] : [];
+  const messages = activeCardId ? focusedMessages : state.messages ?? [];
   const versions = state.versions ?? [];
   const activeCard = cards.find(card => card.id === state.active_card_id);
   const activeBranch = state.card_branches?.find(branch => branch.card_id === state.active_card_id);
   const technicalPlan = state.technical_plan;
   const recommendation = state.architecture_recommendation;
+  const sharedMemory: SharedProjectMemory = {
+    project_title:outline?.title ?? '', experience:outline?.experience ?? '', core_loop:outline?.core_loop ?? '',
+    scope:outline?.scope ?? '',
+    technical_plan:technicalPlan ? `${technicalPlan.engine} · ${technicalPlan.architecture_label} · ${technicalPlan.rationale}` : '',
+    active_card:activeCard ? `${activeCard.title}：${activeCard.description}` : '',
+  };
+  const sharedMemoryLabel = [versions.length ? `策划 v${versions.at(-1)?.number}` : outline?.title,
+    technicalPlan?.architecture_label, activeCard?.title].filter(Boolean).join(' · ');
+  const creationMode: WorldCreationMode = environmentOpen ? 'environment' : modeling?.source === 'create' ? 'model' : null;
   const workspaceDescription = activeCard?.id === 'world-3d'
     ? '场景、资产库、模型新建与导入、归一化、空间点位和摆放都在这个工作区完成。'
     : activeCard?.id === 'core-gameplay'
@@ -249,7 +278,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
     const text = draft.trim();
     if (environmentOpen) {
       setOutgoing(text); setDraft(''); setNotice('');
-      environmentBuild.mutate({text,requestId:crypto.randomUUID(),retryFailed:false});
+      environmentBuild.mutate({text,requestId:crypto.randomUUID(),retryFailed:false,sharedMemory});
       return;
     }
     if (activeCard && !modeling && workMode === 'develop') {
@@ -273,7 +302,14 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const openEnvironment = () => {
     if (!environment) { setNotice('当前宿主没有连接环境场景服务。'); return; }
     setEnvironmentOpen(true); setEnvironmentTurns([]); setEnvironmentFailed(null); setPreviewOpen(true);
+    onOpenSurface?.('environment');
     if (modeling) act('close_modeling');
+  };
+  const beginNewModel = () => {
+    if (!activeCard) return;
+    setEnvironmentOpen(false); setEnvironmentTurns([]); setEnvironmentFailed(null); setNotice('');
+    onOpenSurface?.('environment');
+    act('new_modeling', {card_id:activeCard.id,model_source:'create'});
   };
   const assetHostedExternally = !!modeling && surfaceRequest?.hosted === true && surfaceRequest.surface === 'modeling';
   const environmentHostedExternally = environmentOpen && surfaceRequest?.hosted === true && surfaceRequest.surface === 'environment';
@@ -291,14 +327,13 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         <button type="button" disabled={busy} onClick={() => act('clear_card')}>← 制作卡片</button>
         <div><strong>{activeCard.title}</strong><span>{workspaceDescription}</span></div>
         <nav aria-label="工作流操作">
-          {activeCard.id === 'world-3d' && onOpenSurface && !surfaceRequest?.hosted && <button type="button" onClick={() => onOpenSurface(modeling ? 'modeling' : 'environment')}>打开工作区</button>}
+          {activeCard.id === 'world-3d' && onOpenSurface && !surfaceRequest?.hosted && <button type="button" onClick={() => onOpenSurface('environment')}>打开工作区</button>}
           {activeBranch && <details><summary>Git 分支</summary><p>{activeBranch.branch}</p><p>{activeBranch.worktree_path}</p>
             <small>不会自动提交或合并。</small></details>}
         </nav>
       </section>}
-      {activeCard && !environmentOpen && <CardModelingEntry state={state} busy={busy || !!editing} onCommand={act} onOpenEnvironment={openEnvironment} />}
+      {activeCard && activeCard.id !== 'world-3d' && !environmentOpen && <CardModelingEntry state={state} busy={busy || !!editing} onCommand={act} onOpenEnvironment={openEnvironment} />}
       {activeCard && !technicalPlan && <p role="status" className="journey-architecture-missing">这个旧项目还没有明确游戏代码架构。返回制作卡片后选择架构，已有代码不会被重建或覆盖。</p>}
-      {environmentOpen && !messages.length && !outgoing && <div className="journey-empty journey-workspace-empty"><h2>继续构建 3D 世界</h2><p>可以在这里聊场景和资产，也可以直接在右侧新建、导入、编辑和摆放模型。</p></div>}
       {!messages.length && !outgoing && !modeling && !environmentOpen && !activeCard && <div className="journey-empty"><h2>你想做一个什么样的游戏？</h2><p>先聊 idea，等你说完，我们再一起对齐细节。</p></div>}
       {messages.map(message => <article key={message.id} className={`journey-message ${message.role}`}>
         {message.role === 'user' ? <p>{message.text}</p> : <MarkdownMessage text={message.text} />}
@@ -372,7 +407,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         <span className="journey-preview-actions"><button type="button" aria-expanded={previewOpen} onClick={() => setPreviewOpen(value => !value)}>{previewOpen ? '收起' : '展开'}</button></span></header>
       <div className="journey-model-preview-body" hidden={!previewOpen}>{sidePreview}</div>
     </aside>}
-    {notice && <p role="alert" className="journey-notice">{notice} {environmentFailed && <button onClick={() => {setOutgoing(environmentFailed.text);setDraft('');setNotice('');environmentBuild.mutate({text:environmentFailed.text,requestId:environmentFailed.requestId,retryFailed:true});}}>重试本次 AI 搭建</button>} <button onClick={() => { void query.refetch(); }}>重新读取（保留本地修改）</button>
+    {notice && <p role="alert" className="journey-notice">{notice} {environmentFailed && <button onClick={() => {setOutgoing(environmentFailed.text);setDraft('');setNotice('');environmentBuild.mutate({...environmentFailed,retryFailed:true});}}>重试本次 AI 搭建</button>} <button onClick={() => { void query.refetch(); }}>重新读取（保留本地修改）</button>
       {editing && <button onClick={async () => { if (window.confirm('放弃未保存的文档修改，重新读取已保存版本？')) { await query.refetch(); setEditing(null); editBase.current = null; setNotice(''); } }}>放弃本地文档修改</button>}
       {!editing && <button onClick={() => setNotice('')}>关闭提示 / 允许重试</button>}</p>}
     {activeCard && !modeling && !environmentOpen && workMode === 'develop' && <section className="journey-development-permissions" aria-label="开发执行范围">
@@ -384,6 +419,8 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         onChange={event => setAllowDependencyInstall(event.target.checked)} />允许在当前游戏工程内准备依赖</label>
       <small>发送后仍会先展示具体授权卡；取消运行权限时保留原有的仅源码修改流程。</small>
     </section>}
+    {activeCard?.id === 'world-3d' && <WorldCreationActions mode={creationMode} busy={busy}
+      memoryLabel={sharedMemoryLabel || '当前项目'} onNewModel={beginNewModel} onEnvironment={openEnvironment} />}
     <form className="unified-ai-composer journey-composer" onSubmit={event => { event.preventDefault(); send(); }}>
       <textarea ref={input} aria-label={environmentOpen ? '3D 世界对话' : modeling ? '模型生成对话' : activeCard ? `${activeCard.title}对话` : '策划对话'} disabled={!environmentOpen && modeling?.source === 'import'} placeholder={environmentOpen ? '描述要构建的世界、场景或资产；右侧可以直接新建、导入和摆放…' : modeling ? modeling.source === 'create' ? '描述模型、风格、尺寸和用途；也可以在上方加参考图…' : '请在右侧选择 GLB 或 FBX 文件' : activeCard ? workMode === 'develop' ? `让 Agent 实现「${activeCard.title}」的什么内容？` : `继续讨论「${activeCard.title}」…` : state.stage === 'idea' ? '聊聊你的 idea…' : '补充想法，或告诉我大纲和卡片要怎么改…'} value={draft} rows={1} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
       <div className="journey-composer-tools">{modelPicker(replying || prepareDevelopment.isPending)}

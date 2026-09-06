@@ -120,6 +120,7 @@ export interface components {
             expected_version: number;
             /** Prompt */
             prompt: string;
+            shared_memory?: components["schemas"]["SharedProjectMemory"] | null;
             /**
              * Retry Failed
              * @default false
@@ -316,6 +317,42 @@ export interface components {
             title: string;
             /** Expected Updated At */
             expected_updated_at: string;
+        };
+        /**
+         * SharedProjectMemory
+         * @description Read-only planning snapshot shared across focused production conversations.
+         */
+        SharedProjectMemory: {
+            /**
+             * Project Title
+             * @default
+             */
+            project_title: string;
+            /**
+             * Experience
+             * @default
+             */
+            experience: string;
+            /**
+             * Core Loop
+             * @default
+             */
+            core_loop: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /**
+             * Technical Plan
+             * @default
+             */
+            technical_plan: string;
+            /**
+             * Active Card
+             * @default
+             */
+            active_card: string;
         };
         /** TransformObjectRequest */
         TransformObjectRequest: {

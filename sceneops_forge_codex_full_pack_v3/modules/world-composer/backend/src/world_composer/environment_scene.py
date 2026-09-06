@@ -116,10 +116,21 @@ class AiEnvironmentPlan(EnvironmentModel):
     placements: list[AiPlacement] = Field(min_length=1, max_length=64)
 
 
+class SharedProjectMemory(EnvironmentModel):
+    """Read-only planning snapshot shared across focused production conversations."""
+    project_title: str = Field(default="", max_length=200)
+    experience: str = Field(default="", max_length=4000)
+    core_loop: str = Field(default="", max_length=4000)
+    scope: str = Field(default="", max_length=4000)
+    technical_plan: str = Field(default="", max_length=2000)
+    active_card: str = Field(default="", max_length=4000)
+
+
 class AiBuildRequest(EnvironmentModel):
     request_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,120}$")
     expected_version: int = Field(ge=0)
     prompt: str = Field(min_length=1, max_length=8000)
+    shared_memory: SharedProjectMemory | None = None
     retry_failed: bool = False
 
 
@@ -376,6 +387,7 @@ class EnvironmentSceneService:
                 "输出真实可执行的摆放清单。坐标单位为米、Y 轴向上；物体通常放在地面 Y=0。"
                 "不要生成代码、路径、文件操作或不存在的资产。新目标若是在整体重排场景，"
                 "replace_existing=true；若只是增加内容则为 false。最多 64 个对象。\n"
+                f"项目公共记忆：{request.shared_memory.model_dump_json() if request.shared_memory else '{}'}\n"
                 f"项目尺度：{scene.scale_profile.model_dump_json()}\n"
                 f"现有场景：{scene.model_dump_json()}\n资产库：{json.dumps(catalog, ensure_ascii=False)}\n"
                 f"用户目标：{request.prompt}"

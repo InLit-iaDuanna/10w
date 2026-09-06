@@ -6,6 +6,7 @@ export type EnvironmentObject = components['schemas']['EnvironmentObject'];
 export type EnvironmentTransform = components['schemas']['EnvironmentTransform'];
 export type ProjectAssetEntry = components['schemas']['ProjectAssetEntry'];
 export type AiBuildResult = components['schemas']['AiBuildResult'];
+export type SharedProjectMemory = components['schemas']['SharedProjectMemory'];
 
 export const environmentSceneKey = (projectId: string) => ['environment-scene', projectId] as const;
 export const environmentAssetsKey = (projectId: string) => ['project-assets', projectId] as const;
@@ -31,8 +32,9 @@ export const environmentSceneClient = {
     requestJson<EnvironmentScene>(`/api/environment-scenes/${encodeURIComponent(projectId)}/objects/${encodeURIComponent(objectId)}`, {
       method:'DELETE', body:{expected_version:expectedVersion},
     }),
-  aiBuild: (projectId: string, prompt: string, expectedVersion: number, requestId: string, retryFailed = false) =>
+  aiBuild: (projectId: string, prompt: string, expectedVersion: number, requestId: string,
+      sharedMemory: SharedProjectMemory, retryFailed = false) =>
     requestJson<AiBuildResult>(`/api/environment-scenes/${encodeURIComponent(projectId)}/ai-build`, {
-      body:{request_id:requestId,expected_version:expectedVersion,prompt,retry_failed:retryFailed},
+      body:{request_id:requestId,expected_version:expectedVersion,prompt,shared_memory:sharedMemory,retry_failed:retryFailed},
     }),
 };

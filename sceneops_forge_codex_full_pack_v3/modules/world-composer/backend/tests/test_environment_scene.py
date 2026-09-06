@@ -15,6 +15,7 @@ from world_composer import (
     EnvironmentSceneService,
     EnvironmentTransform,
     ManualPlacementRequest,
+    SharedProjectMemory,
     TransformObjectRequest,
 )
 
@@ -82,6 +83,12 @@ class EnvironmentSceneTests(unittest.IsolatedAsyncioTestCase):
                 request_id="request_1",
                 expected_version=2,
                 prompt="用两棵树围出道路入口",
+                shared_memory=SharedProjectMemory(
+                    project_title="像素末世",
+                    core_loop="探索、刷怪、升级",
+                    technical_plan="Three.js + Miniplex ECS",
+                    active_card="3D 世界与场景搭建",
+                ),
             )
             built = await service.ai_build("prj_game", request)
             retry = await service.ai_build("prj_game", request)
@@ -95,6 +102,9 @@ class EnvironmentSceneTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(retry.scene.version, 3)
             self.assertEqual(provider.calls, 1)
             self.assertIn("资产库", provider.assert_prompt)
+            self.assertIn("像素末世", provider.assert_prompt)
+            self.assertIn("探索、刷怪、升级", provider.assert_prompt)
+            self.assertIn("Three.js + Miniplex ECS", provider.assert_prompt)
             self.assertEqual(conflict.exception.code, "AI_BUILD_REQUEST_CONFLICT")
 
 

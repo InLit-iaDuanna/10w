@@ -10659,6 +10659,16 @@
             "minLength": 1,
             "title": "Prompt"
           },
+          "shared_memory": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SharedProjectMemory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "retry_failed": {
             "type": "boolean",
             "title": "Retry Failed",
@@ -30614,6 +30624,50 @@
           "error"
         ],
         "title": "Severity"
+      },
+      "SharedProjectMemory": {
+        "properties": {
+          "project_title": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Project Title",
+            "default": ""
+          },
+          "experience": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Experience",
+            "default": ""
+          },
+          "core_loop": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Core Loop",
+            "default": ""
+          },
+          "scope": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Scope",
+            "default": ""
+          },
+          "technical_plan": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Technical Plan",
+            "default": ""
+          },
+          "active_card": {
+            "type": "string",
+            "maxLength": 4000,
+            "title": "Active Card",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SharedProjectMemory",
+        "description": "Read-only planning snapshot shared across focused production conversations."
       },
       "SkinInfluence": {
         "properties": {

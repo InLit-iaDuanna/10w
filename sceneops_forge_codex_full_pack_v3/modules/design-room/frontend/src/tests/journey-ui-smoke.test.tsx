@@ -5,7 +5,7 @@ import { MarkdownMessage } from '../../../../../packages/core-ui/frontend/src/Ma
 import { PlanningQuestionCard } from '../PlanningQuestionCard';
 import { JourneyChangeReview } from '../JourneyChangeReview';
 import { CardModelingEntry } from '../CardModelingEntry';
-import { ExistingProjectAdoptionNotice } from '../PlanningJourney';
+import { ExistingProjectAdoptionNotice, WorldCreationActions } from '../PlanningJourney';
 import type { PlanningJourney } from '../journey-client';
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
@@ -54,6 +54,26 @@ test('model source entry uses explicit choices without another composer or fake 
     const back = [...host.querySelectorAll('button')].find(button => button.textContent === '返回 3D 世界')!;
     await act(async () => back.click());
     expect(environmentOpens).toBe(1);
+  } finally { await act(async () => root.unmount()); }
+});
+
+test('3D world actions sit outside the composer and keep shared project memory', async () => {
+  const host = document.createElement('div');
+  const root = createRoot(host);
+  const selected: string[] = [];
+  try {
+    await act(async () => root.render(<WorldCreationActions mode="environment" busy={false}
+      memoryLabel="策划 v1 · ECS · 3D 世界"
+      onNewModel={() => selected.push('model')}
+      onEnvironment={() => selected.push('environment')} />));
+    expect(host.textContent).toContain('＋ 新建模型');
+    expect(host.textContent).toContain('搭建世界');
+    expect(host.textContent).not.toContain('讨论');
+    expect(host.textContent).toContain('公共上下文 · 策划 v1 · ECS · 3D 世界');
+    const buttons = host.querySelectorAll('button');
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('true');
+    await act(async () => buttons[0].click());
+    expect(selected).toEqual(['model']);
   } finally { await act(async () => root.unmount()); }
 });
 

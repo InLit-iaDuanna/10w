@@ -5,6 +5,7 @@ from .environment_scene import (
     AiBuildResult,
     AiEnvironmentPlan,
     AiPlacement,
+    SharedProjectMemory,
     EnvironmentMessage,
     EnvironmentObject,
     EnvironmentScene,
@@ -19,7 +20,7 @@ from .environment_scene import (
 )
 
 __all__ = [
-    "AiBuildRequest", "AiBuildResult", "AiEnvironmentPlan", "AiPlacement",
+    "AiBuildRequest", "AiBuildResult", "AiEnvironmentPlan", "AiPlacement", "SharedProjectMemory",
     "EnvironmentMessage", "EnvironmentObject", "EnvironmentScene", "EnvironmentSceneError",
     "EnvironmentSceneService", "EnvironmentTransform", "WorldScaleProfile", "ManualPlacementRequest",
     "RemoveObjectRequest", "TransformObjectRequest", "create_environment_scene_router",

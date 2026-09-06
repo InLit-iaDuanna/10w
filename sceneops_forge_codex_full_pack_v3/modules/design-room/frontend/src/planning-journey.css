@@ -34,6 +34,14 @@
 .planning-journey .journey-composer { width:min(100%,760px); box-sizing:border-box; margin:10px auto 4px; flex:none; background:var(--surface-2,#292929); border:1px solid var(--border-default,#444); border-radius:18px; padding:10px 14px 8px; }
 .planning-journey.has-model-preview .journey-composer { width:min(calc(100% - var(--model-preview-width) - 24px),760px); margin-right:calc(var(--model-preview-width) + 16px); }
 .planning-journey .journey-composer:focus-within { border-color:var(--text-muted,#777); }
+.journey-creation-shortcuts { width:min(100%,760px); box-sizing:border-box; margin:10px auto 0; padding:0 2px; }
+.planning-journey.has-model-preview .journey-creation-shortcuts { width:min(calc(100% - var(--model-preview-width) - 24px),760px); margin-right:calc(var(--model-preview-width) + 16px); }
+.journey-creation-shortcuts + .journey-composer { margin-top:4px; }
+.journey-conversation-modes { display:flex; align-items:center; gap:6px; margin:0 0 4px; overflow-x:auto; }
+.journey-conversation-modes button { flex:none; border:1px solid transparent; border-radius:999px; background:transparent; color:var(--text-secondary,#aaa); padding:5px 10px; font:inherit; font-size:12px; }
+.journey-conversation-modes button:hover:not(:disabled) { background:var(--surface-3,#333); color:var(--text-primary,#f3f3f3); }
+.journey-conversation-modes button[aria-pressed="true"] { border-color:var(--border-strong,#666); background:var(--surface-3,#333); color:var(--text-primary,#f3f3f3); }
+.journey-shared-memory { display:block; color:var(--text-muted,#858585); font-size:11px; line-height:1.35; margin:0 0 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .planning-journey .journey-composer>textarea { display:block; width:100%; box-sizing:border-box; resize:none; background:transparent; color:inherit; border:0; border-radius:0; outline:none; box-shadow:none; padding:3px 0; font:inherit; font-size:14px; line-height:1.55; min-height:40px; max-height:144px; overflow-y:auto; }
 .planning-journey .journey-composer>textarea:focus-visible { outline:none; }
 .journey-composer-tools { display:flex; align-items:center; gap:10px; min-height:30px; }

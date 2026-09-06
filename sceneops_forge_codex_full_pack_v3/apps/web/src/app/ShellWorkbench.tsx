@@ -61,6 +61,12 @@ function createJourneySurfaceCoordinator() {
         ...(current.action ? {action:current.action} : {}), revision: ++revision };
       for (const listener of listeners) listener();
     },
+    clear() {
+      owner = null;
+      current = null;
+      revision += 1;
+      for (const listener of listeners) listener();
+    },
     snapshot: () => current,
     subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); },
   };
@@ -146,21 +152,40 @@ function createWorkbench(unified: boolean) {
               surfaceRequest={surfaceRequest}
               onOpenSurface={surface => {
                 const editorId = surface === 'environment' ? 'journey.environment' : 'journey.modeling';
-                void open(editorId, {mode:'split',direction:'right',relativeToInstanceId:props.instanceId,initialSize:440}).catch(report);
+                const surfaceInstance = Object.values(coordinator.snapshot().instances)
+                  .find(instance => instance.editorId === 'journey.environment' || instance.editorId === 'journey.modeling');
+                void (async () => {
+                  await open(editorId, surfaceInstance
+                    ? {mode:'tab',relativeToInstanceId:surfaceInstance.instanceId}
+                    : {mode:'split',direction:'right',relativeToInstanceId:props.instanceId,initialSize:440});
+                  if (surface === 'environment') {
+                    const modelingIds = Object.values(coordinator.snapshot().instances)
+                      .filter(instance => instance.editorId === 'journey.modeling')
+                      .map(instance => instance.instanceId);
+                    for (const instanceId of modelingIds) await execute('workbench.close_editor', {instanceId});
+                  }
+                })().catch(report);
               }}
               onCloseSurfaces={() => {
+                journeySurface.clear();
                 const ids = Object.values(coordinator.snapshot().instances)
                   .filter(instance => instance.editorId === 'journey.environment' || instance.editorId === 'journey.modeling')
                   .map(instance => instance.instanceId);
                 void (async () => { for (const instanceId of ids) await execute('workbench.close_editor', {instanceId}); })().catch(report);
               }}
               assets={{render: input => <CardAssetWorkflow {...input} />}}
-              environment={{render: input => <EnvironmentSceneWorkflow {...input} />, build: async input => {
+              environment={{render: input => <EnvironmentSceneWorkflow {...input} />, read: async projectId => {
+                const scene = await environmentSceneClient.get(projectId);
+                return {messages:(scene.history ?? []).map(message => ({...message,
+                  created_at:message.created_at ?? '1970-01-01T00:00:00.000Z',mode:'live' as const}))};
+              }, build: async input => {
                 const scene = await environmentSceneClient.get(input.projectId);
                 const result = await environmentSceneClient.aiBuild(input.projectId, input.text, scene.version,
-                  input.requestId, input.retryFailed);
+                  input.requestId, input.sharedMemory, input.retryFailed);
                 queryClient.setQueryData(environmentSceneKey(input.projectId), result.scene);
-                return {summary:result.summary,provider:result.provider,model:result.model};
+                return {summary:result.summary,provider:result.provider,model:result.model,
+                  messages:(result.scene.history ?? []).map(message => ({...message,
+                    created_at:message.created_at ?? '1970-01-01T00:00:00.000Z',mode:'live' as const}))};
               }}}
               development={{ prepare: async (projectId, cardId, goal, options) => {
                 await agentTasks.prepare({project_id:projectId,card_id:cardId,goal,task_profile:'card-development',execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
