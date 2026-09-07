@@ -69,16 +69,16 @@ class AgentRuntime:
     async def next_action(self, invocation, cancellation):
         from .task_models import AgentAction, NextActionInput
         from .prompting import next_action_instructions, next_action_prompt
+        from .skill_context import load_skill_context
         cancellation.raise_if_cancelled()
         data = NextActionInput.model_validate(invocation.inputs)
         selected = self.provider.settings()
         if (selected.provider, selected.model) != (data.expected_provider, data.expected_model):
             raise ValueError("当前模型配置与任务授权中的路由不一致，请重新审阅。")
-        capability_ids = {item['id'] for item in data.capabilities
-                          if isinstance(item, dict) and isinstance(item.get('id'), str)}
+        skill_context = load_skill_context(data)
         response = await self.provider.generate(next_action_prompt(data), model=data.expected_model,
             schema=AgentAction.model_json_schema(), purpose="agent-action",
-            instructions=next_action_instructions(capability_ids))
+            instructions=next_action_instructions(skill_context))
         cancellation.raise_if_cancelled()
         if (response.provider, response.model) != (data.expected_provider, data.expected_model):
             raise ValueError("实际模型响应与已授权路由不一致；本次输出不会执行。")
@@ -86,7 +86,7 @@ class AgentRuntime:
         return CapabilityResult(execution_mode="live", outputs=action.model_dump(mode="json"),
             evidence_refs=[f"agent-action:{invocation.id}"], evidence_types=["agent_action"],
             tokens=(response.usage or {}).get("total_tokens"), cost_usd=None,
-            logs=[f"{response.provider}/{response.model} · {response.latency_ms}ms"])
+            logs=[f"{response.provider}/{response.model} · {response.latency_ms}ms", *skill_context.logs])
 
 
 from .task_models import (AgentTaskRecord, AgentTaskList, AgentTaskEvents, AgentTaskEvent,

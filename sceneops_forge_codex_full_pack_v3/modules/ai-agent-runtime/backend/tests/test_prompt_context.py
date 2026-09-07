@@ -17,7 +17,6 @@ from sceneops_ai_agents.prompting import (
     ASSET_TOOL_GUIDANCE,
     CORE_SYSTEM_INSTRUCTION,
     DIRECTOR_ROLE_INSTRUCTION,
-    GAMEPLAY_ENGINEER_SKILL,
     PROTOTYPE_TOOL_GUIDANCE,
 )
 from sceneops_ai_agents.task_models import (
@@ -74,7 +73,10 @@ class PromptAssemblyTests(IsolatedAsyncioTestCase):
             self.assertEqual(provider.call["purpose"], "agent-action")
             self.assertIn(CORE_SYSTEM_INSTRUCTION, instructions)
             self.assertIn(DIRECTOR_ROLE_INSTRUCTION, instructions)
-            self.assertIn(GAMEPLAY_ENGINEER_SKILL, instructions)
+            from importlib.resources import files
+            skill = files("sceneops_ai_agents").joinpath(
+                "skills/sceneops-threejs-gameplay/SKILL.md").read_text(encoding="utf-8")
+            self.assertEqual(instructions.count(skill), 1)
             self.assertIn("对象/组件或 ECS", instructions)
             self.assertNotIn(ASSET_TOOL_GUIDANCE, provider.call["prompt"])
             self.assertNotIn(PROTOTYPE_TOOL_GUIDANCE, provider.call["prompt"])

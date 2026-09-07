@@ -10,6 +10,11 @@ This repository declares the following third-party Python dependencies for the c
 
 Tests use the Python and Node.js standard libraries and add no test-framework dependency.
 
+## Three.js 游戏制作知识（S1）
+
+从 [majidmanzarpour/threejs-game-skills](https://github.com/majidmanzarpour/threejs-game-skills/tree/e5f301d548bb18c530afbece78cd25082f4cda9c) 固定提交改写 Director、Gameplay、Debug、QA 方法，版权 © 2026 Majid Manzarpour，MIT。
+逐文件来源和改写说明见 `modules/ai-agent-runtime/backend/src/sceneops_ai_agents/skills/SOURCES.md`，完整许可随该目录 `LICENSE` 打包。未复制 scaffold、示例资产、外部生成脚本或依赖。
+
 ## 独立工作台工具链
 
 - React/ReactDOM 19.2.8：MIT；真实 UI。
