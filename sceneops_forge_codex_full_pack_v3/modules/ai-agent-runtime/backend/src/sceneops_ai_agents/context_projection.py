@@ -276,6 +276,7 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
         requests = task.observations.get('demo_goals')
         if isinstance(requests, list) and requests:
             result['active_demo_request'] = deepcopy(requests[-1])
+        result['selected_edit_target'] = deepcopy(task.observations.get('active_demo_target'))
     return result
 
 

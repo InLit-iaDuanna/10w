@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from sceneops_harness import ChangeSet, HarnessError, PipelineDefinition, PipelineStage, PipelineStep
 from .task_models import (ActionRecord, AgentAction, CreateCubeInput, VerificationRecord,
                           identifier, now)
+from .demo_continuation import demo_window_usage
 from .task_tools import INPUT_MODELS, MUTATIONS, TaskTools, contained
 from .production_models import ProductionStep
 from .production_catalog import module_for
@@ -44,7 +45,7 @@ def project_action(service, task, entry, *, run_id=None):
 def definition(task, step):
     remaining = max(0.01, (task.grant.expires_at - now()).total_seconds())
     budget = task.grant.budget.model_copy(update={"max_duration_seconds": remaining,
-        "max_metered_calls": max(0, task.grant.budget.max_metered_calls - task.model_calls_used)})
+        "max_metered_calls": max(0, task.grant.budget.max_metered_calls - demo_window_usage(task)['model_calls'])})
     # A model slot has already been reserved in the task aggregate, including this call.
     if step.capability_id == "agent.next_action":
         budget.max_metered_calls += 1
@@ -76,7 +77,7 @@ async def choose(service, task_id):
     if (settings.provider, settings.model) != (task.provider_id, task.provider_model):
         raise HarnessError("TASK_SCOPE_DENIED", "模型配置已改变，需要重新审阅任务授权。")
     def reserve(current):
-        if current.model_calls_used >= current.grant.budget.max_metered_calls:
+        if demo_window_usage(current)['model_calls'] >= current.grant.budget.max_metered_calls:
             raise HarnessError("CALL_BUDGET_EXCEEDED", "已达到包含规划的模型请求次数上限。")
         current.model_calls_used += 1
     task = service.records.update(task_id, reserve, "agent.model.reserved")
@@ -132,7 +133,7 @@ def record_action(service, task_id, action):
             if prior.attempts >= task.grant.budget.max_attempts_per_step and prior.state != "succeeded":
                 raise HarnessError("ACTION_LIMIT", "此动作已达到尝试上限。")
         else:
-            if len(task.actions) >= task.grant.budget.max_steps:
+            if demo_window_usage(task)['actions'] >= task.grant.budget.max_steps:
                 raise HarnessError("ACTION_LIMIT", "已达到任务步骤上限。")
             role = ("blender-specialist" if action.capability_id.startswith("blender.") else
                     "technical-artist" if action.capability_id.startswith(("environment.", "project.asset")) else
@@ -146,6 +147,8 @@ def record_action(service, task_id, action):
 
 def validate_action(service, task, entry):
     cap = entry.action.capability_id
+    from .demo_workbench import validate_target_action
+    validate_target_action(task, entry.action)
     if cap not in INPUT_MODELS or cap not in task.grant.capability_ids:
         raise HarnessError("TASK_SCOPE_DENIED", "所需动作未知或超出授权范围，需要新授权。")
     if set(entry.action.inputs) - set(INPUT_MODELS[cap].model_fields):
@@ -153,7 +156,7 @@ def validate_action(service, task, entry):
     INPUT_MODELS[cap].model_validate(entry.action.inputs)
     if cap.startswith('project.asset.') or cap in {
             'environment.object.place', 'environment.demo_object.transform',
-            'environment.key_door.configure', 'environment.object.remove'}:
+            'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}:
         prior_actions = [item for item in task.actions if item is not entry]
         asset_reads = [item for item in prior_actions
             if item.action.capability_id == 'project.assets.list' and item.state == 'succeeded']
@@ -252,7 +255,7 @@ def changeset(task, entry):
     content_source = entry.action.capability_id in {
         'project.asset.door.create', 'project.asset.door.update',
         'environment.object.place', 'environment.demo_object.transform',
-        'environment.key_door.configure', 'environment.object.remove'}
+        'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
     project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_content.'))
     base_version = (f"environment-scene:{task.project_id}:{entry.action.inputs['expected_version']}"
                     if scene_transform or (content_source and 'expected_version' in entry.action.inputs)
@@ -333,7 +336,7 @@ async def execute_action(service, task_id, action_id):
                 prior_compose = any(item is not action and item.action.capability_id == "unity.prototype.compose"
                                     and item.state == "succeeded" for item in current.actions)
                 if prior_compose:
-                    if current.repair_rounds_used >= current.grant.max_repair_rounds:
+                    if demo_window_usage(current)['repair_rounds'] >= current.grant.max_repair_rounds:
                         raise HarnessError("REPAIR_LIMIT", "已达到任务自动修复轮次上限。")
                     current.repair_rounds_used += 1
             action.attempts += 1

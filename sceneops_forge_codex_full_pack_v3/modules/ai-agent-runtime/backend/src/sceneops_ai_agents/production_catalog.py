@@ -30,6 +30,7 @@ CAPABILITY_MODULES = {
     'environment.demo_object.transform': 'world-logic',
     'environment.key_door.configure': 'world-logic',
     'environment.object.remove': 'world-logic',
+    'environment.asset.rebind': 'world-logic',
     'code.workspace.inspect': 'world-logic', 'code.file.read': 'world-logic',
     'code.file.write': 'world-logic',
 }

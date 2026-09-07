@@ -7,6 +7,8 @@ from sceneops_harness import HarnessError
 from .task_models import (AgentTaskEvents, AgentTaskList, AgentTaskRecord, AuthorizeAgentTask,
                           PrepareAgentTask, GameOperationRequest, GameProjectExecution, BrowserInteractionRequest)
 from .task_models import ContinueProjectDemoRequest
+from .demo_workbench_models import (DemoContentIndex, DemoContentSave, DemoContentSaved,
+    DemoPlayRequest, DemoPlaySession, DemoContinuationAuthorizationRequest)
 from .production_models import ProductionEvents, ProductionSnapshot
 
 
@@ -51,6 +53,26 @@ def create_agent_task_router(service):
     @router.post("/{task_id}/resume", response_model=AgentTaskRecord)
     async def resume(task_id: str):
         return await require_service().resume(task_id)
+
+    @router.get('/{task_id}/project-demo/content', response_model=DemoContentIndex)
+    def demo_content(task_id: str):
+        from .demo_workbench import content_index
+        return content_index(require_service(), task_id)
+
+    @router.post('/{task_id}/project-demo/content', response_model=DemoContentSaved)
+    def save_demo_content(task_id: str, body: DemoContentSave):
+        from .demo_workbench import save_content
+        return save_content(require_service(), task_id, body)
+
+    @router.post('/{task_id}/project-demo/play', response_model=DemoPlaySession)
+    async def play_demo_candidate(task_id: str, body: DemoPlayRequest):
+        from .demo_workbench import play_candidate
+        return await play_candidate(require_service(), task_id, body.candidate_id)
+
+    @router.post('/{task_id}/project-demo/continuation-authorization', response_model=AgentTaskRecord)
+    def prepare_demo_continuation(task_id: str, body: DemoContinuationAuthorizationRequest):
+        from .demo_continuation import prepare_demo_continuation
+        return prepare_demo_continuation(require_service(), task_id, body.request_id)
 
     @router.get('/{task_id}/game', response_model=GameProjectExecution)
     def game_status(task_id: str):

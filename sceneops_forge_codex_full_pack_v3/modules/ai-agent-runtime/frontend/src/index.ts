@@ -5,3 +5,5 @@ export { ProductionModuleView, ProductionNodeStatus } from './ProductionModuleVi
 export type { ProductionSelection } from './ProductionModuleView';
 export { useProduction, productionApi, productionKeys } from './production-client';
 export type { ProductionStep, ProductionArtifact, ProductionSnapshot } from './production-client';
+
+export { DemoWorkbench } from './DemoWorkbench';

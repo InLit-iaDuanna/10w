@@ -124,6 +124,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/project-demo/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Demo Content */
+        get: operations["demo_content_api_agent_tasks__task_id__project_demo_content_get"];
+        put?: never;
+        /** Save Demo Content */
+        post: operations["save_demo_content_api_agent_tasks__task_id__project_demo_content_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/project-demo/play": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Play Demo Candidate */
+        post: operations["play_demo_candidate_api_agent_tasks__task_id__project_demo_play_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/project-demo/continuation-authorization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Demo Continuation */
+        post: operations["prepare_demo_continuation_api_agent_tasks__task_id__project_demo_continuation_authorization_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/game": {
         parameters: {
             query?: never;
@@ -733,10 +785,205 @@ export interface components {
         };
         /** ContinueProjectDemoRequest */
         ContinueProjectDemoRequest: {
+            target?: components["schemas"]["DemoEditTarget"] | null;
             /** Request Id */
             request_id: string;
             /** Goal */
             goal: string;
+        };
+        /** DemoContentIndex */
+        DemoContentIndex: {
+            /** Project Id */
+            project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /** Scene Version */
+            scene_version: number;
+            /** Assets */
+            assets: components["schemas"]["ProjectAssetEntry"][];
+            /** Instances */
+            instances: components["schemas"]["EnvironmentObject"][];
+            /** Sources */
+            sources: components["schemas"]["DemoSourceEntry"][];
+            /** Unbuilt Changes */
+            unbuilt_changes: boolean;
+            /** Source Notice */
+            source_notice: string;
+        };
+        /** DemoContentSave */
+        DemoContentSave: {
+            target: components["schemas"]["DemoEditTarget"];
+            recipe?: components["schemas"]["DoorRecipe"] | null;
+            transform?: components["schemas"]["EnvironmentTransform"] | null;
+            /** Interaction Distance M */
+            interaction_distance_m?: number | null;
+            /** Open Angle Deg */
+            open_angle_deg?: number | null;
+            /** Required Key Asset Id */
+            required_key_asset_id?: string | null;
+        };
+        /** DemoContentSaved */
+        DemoContentSaved: {
+            content: components["schemas"]["DemoContentIndex"];
+            /** Affected Instance Ids */
+            affected_instance_ids: string[];
+            /** Notice */
+            notice: string;
+        };
+        /** DemoContinuationAuthorizationRequest */
+        DemoContinuationAuthorizationRequest: {
+            /** Request Id */
+            request_id: string;
+        };
+        /** DemoEditTarget */
+        DemoEditTarget: {
+            /** Project Id */
+            project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "asset" | "instance" | "behavior" | "source";
+            /** Id */
+            id: string;
+            /** Source Version */
+            source_version: number;
+            /** Viewed Candidate Id */
+            viewed_candidate_id?: string | null;
+            /** Expected Scene Version */
+            expected_scene_version?: number | null;
+            /** Expected Source Content */
+            expected_source_content?: string | null;
+        };
+        /** DemoPlayRequest */
+        DemoPlayRequest: {
+            /** Candidate Id */
+            candidate_id: string;
+        };
+        /** DemoPlaySession */
+        DemoPlaySession: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Sequence */
+            sequence: number;
+            /** Preview Url */
+            preview_url: string;
+        };
+        /** DemoSourceEntry */
+        DemoSourceEntry: {
+            /** Id */
+            id: string;
+            /** Latest Write Request Id */
+            latest_write_request_id: string;
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+            /** Source Version */
+            source_version: number;
+            /**
+             * Edit Mode
+             * @default source-agent
+             * @constant
+             */
+            edit_mode: "source-agent";
+        };
+        /** DoorMaterial */
+        DoorMaterial: {
+            /**
+             * Color Hex
+             * @default #6B4F3A
+             */
+            color_hex: string;
+            /**
+             * Roughness
+             * @default 0.75
+             */
+            roughness: number;
+            /**
+             * Metalness
+             * @default 0.05
+             */
+            metalness: number;
+        };
+        /**
+         * DoorRecipe
+         * @description Editable source for the first supported procedural asset.
+         */
+        DoorRecipe: {
+            /**
+             * Kind
+             * @default door-v1
+             * @constant
+             */
+            kind: "door-v1";
+            /**
+             * Seed
+             * @default 0
+             * @constant
+             */
+            seed: 0;
+            /**
+             * Width M
+             * @default 1.2
+             */
+            width_m: number;
+            /**
+             * Height M
+             * @default 2.2
+             */
+            height_m: number;
+            /**
+             * Thickness M
+             * @default 0.15
+             */
+            thickness_m: number;
+            material?: components["schemas"]["DoorMaterial"];
+        };
+        /** EnvironmentObject */
+        EnvironmentObject: {
+            /** Id */
+            id: string;
+            /** Asset Id */
+            asset_id: string;
+            /** Asset Version */
+            asset_version: number;
+            /** Asset Version Id */
+            asset_version_id?: string | null;
+            /** Source Asset Id */
+            source_asset_id: string;
+            /** Title */
+            title: string;
+            transform: components["schemas"]["EnvironmentTransform"];
+            behavior?: components["schemas"]["KeyDoorBehavior"] | null;
+        };
+        /** EnvironmentTransform */
+        EnvironmentTransform: {
+            /**
+             * Position M
+             * @default [
+             *       0,
+             *       0,
+             *       0
+             *     ]
+             */
+            position_m: [
+                number,
+                number,
+                number
+            ];
+            /**
+             * Rotation Y Deg
+             * @default 0
+             */
+            rotation_y_deg: number;
+            /**
+             * Scale
+             * @default 1
+             */
+            scale: number;
         };
         /** GameBuildCandidate */
         GameBuildCandidate: {
@@ -930,6 +1177,29 @@ export interface components {
          */
         ImpactScope: "object" | "module" | "scene" | "project" | "repository" | "release";
         JsonValue: unknown;
+        /** KeyDoorBehavior */
+        KeyDoorBehavior: {
+            /** Behavior Instance Id */
+            behavior_instance_id: string;
+            /**
+             * Definition Id
+             * @default KeyDoor@1
+             * @constant
+             */
+            definition_id: "KeyDoor@1";
+            /** Required Key Asset Id */
+            required_key_asset_id: string;
+            /**
+             * Interaction Distance M
+             * @default 2
+             */
+            interaction_distance_m: number;
+            /**
+             * Open Angle Deg
+             * @default 90
+             */
+            open_angle_deg: number;
+        };
         /** PrepareAgentTask */
         PrepareAgentTask: {
             /**
@@ -1143,11 +1413,117 @@ export interface components {
             /** Updated At */
             updated_at: string;
         };
+        /** ProjectAssetEntry */
+        ProjectAssetEntry: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Card Id */
+            card_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Source Asset Id */
+            source_asset_id: string;
+            /** Title */
+            title: string;
+            /** Source Title */
+            source_title?: string | null;
+            /** Modeling Session Id */
+            modeling_session_id?: string | null;
+            /**
+             * Source Type
+             * @enum {string}
+             */
+            source_type: "import" | "generated";
+            /**
+             * Category
+             * @default model
+             * @constant
+             */
+            category: "model";
+            /** Current Version */
+            current_version: number;
+            /** Versions */
+            versions: components["schemas"]["ProjectAssetVersion"][];
+            /** Created At */
+            created_at?: string;
+            /** Updated At */
+            updated_at?: string;
+        };
+        /** ProjectAssetVersion */
+        ProjectAssetVersion: {
+            /** Source Version */
+            source_version: number;
+            /** Asset Version Id */
+            asset_version_id?: string | null;
+            /**
+             * Source Kind
+             * @default file
+             * @enum {string}
+             */
+            source_kind: "file" | "procedural";
+            /** Dimensions M */
+            dimensions_m: [
+                number,
+                number,
+                number
+            ];
+            /** Vertex Count */
+            vertex_count: number;
+            /** Triangle Count */
+            triangle_count: number;
+            /** Blend Path */
+            blend_path?: string | null;
+            /** Preview Path */
+            preview_path?: string | null;
+            /** Fbx Path */
+            fbx_path?: string | null;
+            recipe?: components["schemas"]["DoorRecipe"] | null;
+            /** Runtime Artifacts */
+            runtime_artifacts?: components["schemas"]["RuntimeArtifactReference"][];
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "import" | "generate" | "normalize" | "calibrate" | "recipe-create" | "recipe-edit";
+            /**
+             * Model Rotation Quaternion Xyzw
+             * @default [
+             *       0,
+             *       0,
+             *       0,
+             *       1
+             *     ]
+             */
+            model_rotation_quaternion_xyzw: [
+                number,
+                number,
+                number,
+                number
+            ];
+            /** Saved At */
+            saved_at?: string;
+        };
         /**
          * RiskLevel
          * @enum {string}
          */
         RiskLevel: "low" | "medium" | "high" | "critical";
+        /** RuntimeArtifactReference */
+        RuntimeArtifactReference: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * Artifact Type
+             * @enum {string}
+             */
+            artifact_type: "render" | "collision" | "module";
+            /** Project Relative Path */
+            project_relative_path: string;
+            /** Export Name */
+            export_name?: string | null;
+        };
         /** RuntimeBudget */
         RuntimeBudget: {
             /**
@@ -1570,6 +1946,142 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    demo_content_api_agent_tasks__task_id__project_demo_content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoContentIndex"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_demo_content_api_agent_tasks__task_id__project_demo_content_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoContentSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoContentSaved"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    play_demo_candidate_api_agent_tasks__task_id__project_demo_play_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoPlayRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoPlaySession"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_demo_continuation_api_agent_tasks__task_id__project_demo_continuation_authorization_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoContinuationAuthorizationRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

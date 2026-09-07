@@ -3,10 +3,20 @@
   "version": "0.5.0",
   "private": true,
   "type": "module",
-  "exports": {".": "./src/index.ts"},
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@sceneops/api-client": "workspace:*",
     "@tanstack/react-query": "5.90.21",
     "react": "19.2.8"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "react-dom": "19.2.8",
+    "typescript": "6.0.3"
+  },
+  "scripts": {
+    "test:d4": "node --import ./src/tests/d4-setup.mjs --test src/tests/demo-content-editor.test.tsx"
   }
 }

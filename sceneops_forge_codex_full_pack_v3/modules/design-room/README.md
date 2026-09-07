@@ -101,3 +101,8 @@ fixtures 包含 Find My Way Home 的钥匙开门分支，以及 Warehouse Escape
 AI 建议记录 provider/model/request ID/live 来源，先通过原 `design.change.propose` 生成可查看前后差异的 ChangeSet；点击“批准并应用建议”才调用 `design.change.approve`，保留 base version 检查。批准后假设仍未确认，需要人工确认才能规划。设计/规划整体仍为隔离 mock，AI 来源的 live 不代表生产执行完成。
 
 验证：CLI 帮助导入及模型发现成功；一条本地适配器烟测通过（mock CLI transport，确认所选模型传入 argv 并验证结构化结果）；没有调用真实 AI 推理，其他测试 not run / pending approval。
+
+
+### D4 初版方向入口
+
+初版入口继续由宿主接入 `project-demo-agent`。摘要优先读取已有初版方向、结构化策划字段；没有策划时带入用户对话原文（界面明确为最多 1000 字的摘录），不调用模型进行导航，不使用钥匙门作为默认目标。视角、范围与架构没有可靠来源时保持空白，确认按钮要求用户补齐。已有技术方案的明确架构可以复用；任何带入值仍是可编辑、尚未确认的草稿。编辑后服务刷新不覆盖用户正在填写的摘要。详细策划、大纲版本与四卡入口保留在“高级路径”中。

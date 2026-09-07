@@ -24,7 +24,7 @@ import { createForgeShellRuntime } from '../shell/createForgeShellRuntime';
 import { conversationCommandBridge } from './conversationBridge';
 import './workbench.css';
 import { DebugPanel, installUiDiagnostics, recordUiError, recordUiEvent } from '../debug';
-import { AgentTaskActivity, AgentTaskTimeline, agentTasks, productionKeys, ProductionModuleView, ProductionNodeStatus } from '@sceneops/ai-agent-runtime';
+import { AgentTaskActivity, AgentTaskTimeline, DemoWorkbench, agentTasks, productionKeys, ProductionModuleView, ProductionNodeStatus } from '@sceneops/ai-agent-runtime';
 import { buildProjectAssetDraft, CardAssetWorkflow, importProjectAssetFile } from '@sceneops/asset-factory';
 import { EnvironmentSceneWorkflow, environmentSceneClient, environmentSceneKey } from '../../../../modules/world-composer/frontend/src/index';
 
@@ -227,7 +227,7 @@ function createWorkbench(unified: boolean) {
                   allow_model_image_input:options.allowModelImageInput});
                 await queryClient.invalidateQueries({queryKey:['agent-tasks']});
                 await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
-              }, renderProjectDemoTasks: projectId => <AgentTaskTimeline projectId={projectId} taskProfile={['project-demo-agent','project-demo']} />,
+              }, renderProjectDemoTasks: (projectId, onRunPresence) => <DemoWorkbench projectId={projectId} {...(onRunPresence ? {onRunPresence} : {})} />,
               renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}
               modelPicker={busy => <UnifiedModelPicker disabled={busy} compact />}
               onOpenProjects={() => void open('workspace.projects', {mode:'split',direction:'right'}).catch(report)}

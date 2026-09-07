@@ -276,3 +276,22 @@ class CodeWorkspace:
                 'project_id': task.project_id, 'workspace_id': task.grant.workspace_id,
                 'card_id': task.grant.card_id, 'branch': task.grant.branch,
                 'summary': '源码已写入并回读，待检查；未运行或编译。'}
+
+
+def source_file_versions(root):
+    """File revision metadata for a build's inputs, including user edits outside task tools."""
+    revisions = {}
+    root = Path(root)
+    for parent, directories, names in os.walk(root, followlinks=False):
+        directories[:] = sorted(name for name in directories if not name.startswith('.')
+            and name not in DENIED_DIRECTORIES and not (Path(parent) / name).is_symlink())
+        for name in sorted(names):
+            relative = (Path(parent) / name).relative_to(root).as_posix()
+            try:
+                source_path(relative)
+            except HarnessError:
+                continue
+            info = (root / relative).lstat()
+            if stat.S_ISREG(info.st_mode):
+                revisions[relative] = [info.st_size, info.st_mtime_ns, info.st_ctime_ns]
+    return revisions

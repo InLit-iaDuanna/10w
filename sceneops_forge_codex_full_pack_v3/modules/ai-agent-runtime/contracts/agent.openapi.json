@@ -365,6 +365,202 @@
         }
       }
     },
+    "/api/agent/tasks/{task_id}/project-demo/content": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Demo Content",
+        "operationId": "demo_content_api_agent_tasks__task_id__project_demo_content_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoContentIndex"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Save Demo Content",
+        "operationId": "save_demo_content_api_agent_tasks__task_id__project_demo_content_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoContentSave"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoContentSaved"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/play": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Play Demo Candidate",
+        "operationId": "play_demo_candidate_api_agent_tasks__task_id__project_demo_play_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoPlayRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoPlaySession"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/continuation-authorization": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Prepare Demo Continuation",
+        "operationId": "prepare_demo_continuation_api_agent_tasks__task_id__project_demo_continuation_authorization_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoContinuationAuthorizationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/tasks/{task_id}/game": {
       "get": {
         "tags": [
@@ -1969,6 +2165,16 @@
       },
       "ContinueProjectDemoRequest": {
         "properties": {
+          "target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemoEditTarget"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "request_id": {
             "type": "string",
             "pattern": "^[A-Za-z0-9_-]{1,120}$",
@@ -1988,6 +2194,497 @@
           "goal"
         ],
         "title": "ContinueProjectDemoRequest"
+      },
+      "DemoContentIndex": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "scene_version": {
+            "type": "integer",
+            "title": "Scene Version"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectAssetEntry"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/EnvironmentObject"
+            },
+            "type": "array",
+            "title": "Instances"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/DemoSourceEntry"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "unbuilt_changes": {
+            "type": "boolean",
+            "title": "Unbuilt Changes"
+          },
+          "source_notice": {
+            "type": "string",
+            "title": "Source Notice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "scene_version",
+          "assets",
+          "instances",
+          "sources",
+          "unbuilt_changes",
+          "source_notice"
+        ],
+        "title": "DemoContentIndex"
+      },
+      "DemoContentSave": {
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/DemoEditTarget"
+          },
+          "recipe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DoorRecipe"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "transform": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnvironmentTransform"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interaction_distance_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 20.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interaction Distance M"
+          },
+          "open_angle_deg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 180.0,
+                "minimum": -180.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Angle Deg"
+          },
+          "required_key_asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Key Asset Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "target"
+        ],
+        "title": "DemoContentSave"
+      },
+      "DemoContentSaved": {
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/DemoContentIndex"
+          },
+          "affected_instance_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Affected Instance Ids"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "affected_instance_ids",
+          "notice"
+        ],
+        "title": "DemoContentSaved"
+      },
+      "DemoContinuationAuthorizationRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,120}$",
+            "title": "Request Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id"
+        ],
+        "title": "DemoContinuationAuthorizationRequest"
+      },
+      "DemoEditTarget": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "asset",
+              "instance",
+              "behavior",
+              "source"
+            ],
+            "title": "Kind"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Source Version"
+          },
+          "viewed_candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Viewed Candidate Id"
+          },
+          "expected_scene_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Scene Version"
+          },
+          "expected_source_content": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 65536
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Source Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "kind",
+          "id",
+          "source_version"
+        ],
+        "title": "DemoEditTarget"
+      },
+      "DemoPlayRequest": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidate_id"
+        ],
+        "title": "DemoPlayRequest"
+      },
+      "DemoPlaySession": {
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "title": "Candidate Id"
+          },
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "preview_url": {
+            "type": "string",
+            "title": "Preview Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "sequence",
+          "preview_url"
+        ],
+        "title": "DemoPlaySession"
+      },
+      "DemoSourceEntry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "latest_write_request_id": {
+            "type": "string",
+            "title": "Latest Write Request Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "source_version": {
+            "type": "integer",
+            "title": "Source Version"
+          },
+          "edit_mode": {
+            "type": "string",
+            "const": "source-agent",
+            "title": "Edit Mode",
+            "default": "source-agent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "latest_write_request_id",
+          "path",
+          "content",
+          "source_version"
+        ],
+        "title": "DemoSourceEntry"
+      },
+      "DoorMaterial": {
+        "properties": {
+          "color_hex": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "title": "Color Hex",
+            "default": "#6B4F3A"
+          },
+          "roughness": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Roughness",
+            "default": 0.75
+          },
+          "metalness": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Metalness",
+            "default": 0.05
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DoorMaterial"
+      },
+      "DoorRecipe": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "door-v1",
+            "title": "Kind",
+            "default": "door-v1"
+          },
+          "seed": {
+            "type": "integer",
+            "const": 0,
+            "title": "Seed",
+            "default": 0
+          },
+          "width_m": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.2,
+            "title": "Width M",
+            "default": 1.2
+          },
+          "height_m": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.5,
+            "title": "Height M",
+            "default": 2.2
+          },
+          "thickness_m": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.02,
+            "title": "Thickness M",
+            "default": 0.15
+          },
+          "material": {
+            "$ref": "#/components/schemas/DoorMaterial"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DoorRecipe",
+        "description": "Editable source for the first supported procedural asset."
+      },
+      "EnvironmentObject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "asset_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Asset Version"
+          },
+          "asset_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Version Id"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "title": "Source Asset Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "transform": {
+            "$ref": "#/components/schemas/EnvironmentTransform"
+          },
+          "behavior": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KeyDoorBehavior"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "asset_id",
+          "asset_version",
+          "source_asset_id",
+          "title",
+          "transform"
+        ],
+        "title": "EnvironmentObject"
+      },
+      "EnvironmentTransform": {
+        "properties": {
+          "position_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Position M",
+            "default": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "rotation_y_deg": {
+            "type": "number",
+            "title": "Rotation Y Deg",
+            "default": 0.0
+          },
+          "scale": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.01,
+            "title": "Scale",
+            "default": 1.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EnvironmentTransform"
       },
       "GameBuildCandidate": {
         "properties": {
@@ -2576,6 +3273,47 @@
         "title": "ImpactScope"
       },
       "JsonValue": {},
+      "KeyDoorBehavior": {
+        "properties": {
+          "behavior_instance_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Behavior Instance Id"
+          },
+          "definition_id": {
+            "type": "string",
+            "const": "KeyDoor@1",
+            "title": "Definition Id",
+            "default": "KeyDoor@1"
+          },
+          "required_key_asset_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Required Key Asset Id"
+          },
+          "interaction_distance_m": {
+            "type": "number",
+            "maximum": 20.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Interaction Distance M",
+            "default": 2.0
+          },
+          "open_angle_deg": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Open Angle Deg",
+            "default": 90.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "behavior_instance_id",
+          "required_key_asset_id"
+        ],
+        "title": "KeyDoorBehavior"
+      },
       "PrepareAgentTask": {
         "properties": {
           "allow_model_image_input": {
@@ -3100,6 +3838,279 @@
         ],
         "title": "ProductionStep"
       },
+      "ProjectAssetEntry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Card Id"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "title": "Source Asset Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Title"
+          },
+          "modeling_session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modeling Session Id"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "import",
+              "generated"
+            ],
+            "title": "Source Type"
+          },
+          "category": {
+            "type": "string",
+            "const": "model",
+            "title": "Category",
+            "default": "model"
+          },
+          "current_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Current Version"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectAssetVersion"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Versions"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "source_asset_id",
+          "title",
+          "source_type",
+          "current_version",
+          "versions"
+        ],
+        "title": "ProjectAssetEntry"
+      },
+      "ProjectAssetVersion": {
+        "properties": {
+          "source_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Source Version"
+          },
+          "asset_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Version Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "file",
+              "procedural"
+            ],
+            "title": "Source Kind",
+            "default": "file"
+          },
+          "dimensions_m": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Dimensions M"
+          },
+          "vertex_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Vertex Count"
+          },
+          "triangle_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Triangle Count"
+          },
+          "blend_path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blend Path"
+          },
+          "preview_path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Path"
+          },
+          "fbx_path": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fbx Path"
+          },
+          "recipe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DoorRecipe"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "runtime_artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeArtifactReference"
+            },
+            "type": "array",
+            "title": "Runtime Artifacts"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "import",
+              "generate",
+              "normalize",
+              "calibrate",
+              "recipe-create",
+              "recipe-edit"
+            ],
+            "title": "Operation"
+          },
+          "model_rotation_quaternion_xyzw": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Model Rotation Quaternion Xyzw",
+            "default": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "saved_at": {
+            "type": "string",
+            "title": "Saved At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_version",
+          "dimensions_m",
+          "vertex_count",
+          "triangle_count",
+          "operation"
+        ],
+        "title": "ProjectAssetVersion"
+      },
       "RiskLevel": {
         "type": "string",
         "enum": [
@@ -3109,6 +4120,49 @@
           "critical"
         ],
         "title": "RiskLevel"
+      },
+      "RuntimeArtifactReference": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Id"
+          },
+          "artifact_type": {
+            "type": "string",
+            "enum": [
+              "render",
+              "collision",
+              "module"
+            ],
+            "title": "Artifact Type"
+          },
+          "project_relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Relative Path"
+          },
+          "export_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "project_relative_path"
+        ],
+        "title": "RuntimeArtifactReference"
       },
       "RuntimeBudget": {
         "properties": {

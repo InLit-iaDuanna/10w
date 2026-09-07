@@ -18,7 +18,7 @@ class AgentTaskRepository:
                           'code.project.build', 'code.preview.start', 'code.preview.stop'})
         mutations.update({'project.asset.door.create', 'project.asset.door.update',
                           'environment.object.place', 'environment.demo_object.transform',
-                          'environment.key_door.configure', 'environment.object.remove'})
+                          'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'})
         mutations.add('environment.object.transform')
         mutations.update({'code.project.build_test', 'code.browser.interact'})
         writes = [action for action in task.actions if action.action.capability_id in mutations]
@@ -136,6 +136,8 @@ class AgentTaskRepository:
             connection.execute('INSERT OR IGNORE INTO agent_project_workspaces VALUES(?,?,?)',
                                (task.project_id, task.grant.workspace_root, now().isoformat()))
         connection.execute("INSERT OR IGNORE INTO agent_project_claims VALUES(?,?,'active')", (task.project_id, task.id))
+        connection.execute("UPDATE agent_project_claims SET state='active' WHERE project_id=? AND task_id=?",
+                           (task.project_id, task.id))
 
     def owns_workspace(self, project_id, workspace_root):
         with self.connect() as connection:

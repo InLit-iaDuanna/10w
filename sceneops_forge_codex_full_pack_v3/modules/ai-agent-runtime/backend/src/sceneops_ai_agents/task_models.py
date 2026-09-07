@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 from sceneops_harness import ChangeSet, RuntimeBudget
+from .demo_workbench_models import DemoEditTarget
 
 
 def now():
@@ -37,7 +38,7 @@ PROJECT_DEMO_CAPABILITIES = ['code.demo_content.materialize', DEPENDENCY_CAPABIL
 PROJECT_DEMO_AGENT_SOURCE_CAPABILITIES = [
     'project.asset.door.create', 'project.asset.door.update',
     'environment.object.place', 'environment.demo_object.transform',
-    'environment.key_door.configure', 'environment.object.remove',
+    'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind',
 ]
 PROJECT_DEMO_AGENT_CAPABILITIES = [
     'agent.next_action', 'agent.history.read',
@@ -479,7 +480,15 @@ class RemoveDemoObjectInput(TaskModel):
     expected_version: int = Field(ge=0)
 
 
+class RebindDemoAssetInput(TaskModel):
+    asset_id: str
+    expected_version: int = Field(ge=0)
+    from_asset_version: int = Field(ge=1)
+    to_asset_version: int = Field(ge=1)
+
+
 class ContinueProjectDemoRequest(TaskModel):
+    target: DemoEditTarget | None = None
     request_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,120}$")
     goal: str = Field(min_length=1, max_length=8000)
 

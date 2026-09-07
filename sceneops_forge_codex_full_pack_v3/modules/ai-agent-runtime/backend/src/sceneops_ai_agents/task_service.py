@@ -331,8 +331,9 @@ class AgentTaskService:
                     or not grant.workspace_id or grant.card_id is not None or grant.branch is not None
                     or grant.workspace_root != task.authorization_card.workspace_root
                     or grant.execution_mode != 'typed-tools'
-                    or task.authorization_card.capability_ids != expected_capabilities
-                    or grant.capability_ids != expected_capabilities
+                    or task.authorization_card.capability_ids not in (expected_capabilities,
+                        [cap for cap in expected_capabilities if cap != 'environment.asset.rebind'])
+                    or grant.capability_ids != task.authorization_card.capability_ids
                     or grant.alignment_id != task.authorization_card.alignment_id
                     or grant.include_demo_assets != task.authorization_card.include_demo_assets
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
@@ -427,7 +428,10 @@ class AgentTaskService:
                     max_attempts_per_step=task.authorization_card.max_attempts_per_action,
                     max_duration_seconds=task.authorization_card.max_duration_seconds,
                     max_metered_calls=task.authorization_card.max_model_calls, usage_policy='bounded_calls')
-            task.status, task.reason = "queued", None
+            renewing = bool(task.observations.get('demo_pending_authorization'))
+            from .demo_continuation import apply_demo_continuation_window
+            apply_demo_continuation_window(task)
+            task.status, task.reason = ('review_required' if renewing else 'queued'), None
             if task.authorization_card.allow_browser_observation:
                 task.browser_authorization = BrowserObservationAuthorization(
                     task_id=task.id, project_id=task.project_id, workspace_id=task.grant.workspace_id,
@@ -673,9 +677,19 @@ class AgentTaskService:
         prior = next((item for item in goals if isinstance(item, dict)
                       and item.get('request_id') == request.request_id), None)
         if prior is not None:
-            if prior.get('goal') != request.goal.strip():
+            if (prior.get('goal') != request.goal.strip()
+                    or prior.get('target') != (request.target.model_dump(mode='json') if request.target else None)):
                 raise HarnessError('REQUEST_ID_CONFLICT', '同一追加请求 ID 不能更换目标。')
             return task
+        resolved_target = None
+        if request.target is not None:
+            from .demo_workbench import resolve_target
+            _, selected = resolve_target(self, task, request.target)
+            resolved_target = request.target.model_dump(mode='json')
+            if request.target.kind == 'source':
+                resolved_target['resolved_path'] = selected.path
+            elif request.target.kind == 'behavior':
+                resolved_target['resolved_object_id'] = selected.id
         if task.status not in ('completed', 'review_required') or task.owner_pid is not None:
             raise HarnessError('TASK_BUSY', '项目 Demo 正在执行，或当前状态不可追加目标。')
         queued = False
@@ -685,7 +699,8 @@ class AgentTaskService:
             prior = next((item for item in history if isinstance(item, dict)
                           and item.get('request_id') == request.request_id), None)
             if prior is not None:
-                if prior.get('goal') != request.goal.strip():
+                if (prior.get('goal') != request.goal.strip()
+                    or prior.get('target') != (request.target.model_dump(mode='json') if request.target else None)):
                     raise HarnessError('REQUEST_ID_CONFLICT', '同一追加请求 ID 不能更换目标。')
                 return
             if current.status not in ('completed', 'review_required') or current.owner_pid is not None:
@@ -696,9 +711,11 @@ class AgentTaskService:
             if not request.goal.strip():
                 raise HarnessError('TASK_GOAL_REQUIRED', '请输入追加目标。')
             current.goal = request.goal.strip()
+            current.observations['active_demo_target'] = resolved_target
             queued = True
             history.append({'request_id': request.request_id, 'goal': current.goal,
-                'kind': 'follow-up', 'accepted_at': now().isoformat()})
+                'kind': 'follow-up', 'target': request.target.model_dump(mode='json') if request.target else None,
+                'accepted_at': now().isoformat()})
             current.observations['active_goal_action_start'] = len(current.actions)
             current.status, current.reason, current.finished_at = 'queued', None, None
         task = self.records.update(task_id, queue, 'agent.project_demo.goal_added',
@@ -779,6 +796,12 @@ class AgentTaskService:
         return task
 
     def game_status(self, task_id):
+        task = self.get(task_id)
+        if task.grant is None and task.observations.get('demo_pending_authorization'):
+            from .demo_workbench import project_task
+            project_task(self, task_id)
+            historical = TaskGrant.model_validate(task.observations['demo_authorization_history'][-1]['grant'])
+            return self.game.snapshot(task.model_copy(update={'grant': historical}))
         return self.game.snapshot(self._game_task(task_id))
 
     async def game_operation(self, task_id, request: GameOperationRequest):

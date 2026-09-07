@@ -147,9 +147,11 @@ class GameProjectRuntime:
                 if action.action.capability_id in {
                     'project.asset.door.create', 'project.asset.door.update',
                     'environment.object.place', 'environment.demo_object.transform',
-                    'environment.key_door.configure', 'environment.object.remove'}
+                    'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
                 and action.state == 'succeeded' and action.effect_state == 'COMMITTED']
+            from .code_workspace import source_file_versions
             source_version = {**materialization.get('source_version', {}),
+                'source_file_versions': source_file_versions(run.workspace_root),
                 'code_write_requests': [action.request_id for action in writes],
                 'code_paths': sorted({action.action.inputs['path'] for action in writes}),
                 'content_action_ids': [action.action.action_id for action in content_actions],
@@ -426,13 +428,13 @@ class GameProjectRuntime:
         self._validate_output(expected.parent, required=True)
         return run
 
-    async def _start_preview(self, task, root, *, kind='delivery', key=None):
-        build = self._current_build(task, kind=kind)
-        self._validate_output(root, required=True)
+    async def _start_preview(self, task, root, *, kind='delivery', key=None, retained_build=None):
+        build = retained_build or self._current_build(task, kind=kind)
+        self._validate_output(Path(build.artifact_path).parent, required=True)
         workspace_id = self.workspace_id(task)
         key = key or self.key(task.project_id, workspace_id)
         active = self.previews.get(key)
-        if (active and active['process'].returncode is None and not active['run'].source_stale
+        if (active and active['process'].returncode is None and (retained_build is not None or not active['run'].source_stale)
                 and active['run'].build_run_id == build.id):
             return active['run']
         if active:
@@ -517,7 +519,13 @@ class GameProjectRuntime:
     async def stop_task_preview(self, task):
         key = self.key(task.project_id, self.workspace_id(task))
         async with self._lock(*key):
-            return await self._stop_active(key, status='stopped')
+            owned = [candidate_key for candidate_key, active in self.previews.items()
+                     if active['run'].project_id == task.project_id
+                     and active['run'].workspace_id == self.workspace_id(task)]
+            stopped = None
+            for candidate_key in owned:
+                stopped = await self._stop_active(candidate_key, status='stopped')
+            return stopped
 
     def snapshot(self, task):
         grant = task.grant

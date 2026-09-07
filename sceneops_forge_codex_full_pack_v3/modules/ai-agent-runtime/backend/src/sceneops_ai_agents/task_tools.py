@@ -8,7 +8,7 @@ from .task_models import (AgentAction, AssetInput, CreateCubeInput, CodexTaskInp
                           FinishInput, NextActionInput, ToolResult, now, PrototypeVerifyInput, CapabilityGapInput,
                           CodeReadInput, CodeWriteInput, HistoryReadInput, SceneTransformInput, BrowserInteractionRequest,
                           CreateDoorAssetInput, UpdateDoorAssetInput, PlaceDemoObjectInput,
-                          ConfigureKeyDoorInput, RemoveDemoObjectInput)
+                          ConfigureKeyDoorInput, RemoveDemoObjectInput, RebindDemoAssetInput)
 from .production_catalog import module_for
 from .output_manifest import OUTPUT_MANIFEST_INSTRUCTION, register_output_manifest
 from engine_unity import PrototypeSpec, PrototypePlayPayload
@@ -24,7 +24,7 @@ MUTATIONS.add('code.browser.observe')
 MUTATIONS.update({'code.browser.interact', 'code.project.build_test'})
 MUTATIONS.update({'project.asset.door.create', 'project.asset.door.update',
                   'environment.object.place', 'environment.demo_object.transform',
-                  'environment.key_door.configure', 'environment.object.remove'})
+                  'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'})
 INPUT_MODELS = {"blender.asset.create": CreateCubeInput, "blender.asset.export": AssetInput,
     "unity.asset.import": AssetInput, "blender.scene.inspect": EmptyActionInput,
     "unity.scene.inspect": EmptyActionInput, "agent.finish": FinishInput,
@@ -53,6 +53,7 @@ INPUT_MODELS.update({
     'environment.demo_object.transform': SceneTransformInput,
     'environment.key_door.configure': ConfigureKeyDoorInput,
     'environment.object.remove': RemoveDemoObjectInput,
+    'environment.asset.rebind': RebindDemoAssetInput,
 })
 
 
@@ -299,15 +300,25 @@ class TaskTools:
         elif invocation.capability_id in ('environment.object.place',
                                            'environment.demo_object.transform',
                                            'environment.key_door.configure',
-                                           'environment.object.remove'):
+                                           'environment.object.remove', 'environment.asset.rebind'):
             if self.service.environment_scenes is None or self.service.project_assets is None:
                 raise HarnessError('PROJECT_DEMO_NOT_CONNECTED', '项目资产或场景服务尚未连接。')
             from world_composer import (EnvironmentSceneError, EnvironmentTransform,
                 ManualPlacementRequest, RemoveObjectRequest, TransformObjectRequest,
-                UpdateKeyDoorBehaviorRequest)
+                UpdateKeyDoorBehaviorRequest, RebindAssetVersionRequest)
             try:
                 before = self.service.environment_scenes.get(task.project_id)
-                if invocation.capability_id == 'environment.object.place':
+                if invocation.capability_id == 'environment.asset.rebind':
+                    data = RebindDemoAssetInput.model_validate(invocation.inputs)
+                    asset = self.service.project_assets.get(task.project_id, data.asset_id)
+                    if asset.workspace_id != task.grant.workspace_id:
+                        raise HarnessError('TASK_SCOPE_DENIED', '共享资产不属于当前作品。')
+                    rebound = self.service.environment_scenes.rebind_asset_version(task.project_id,
+                        data.asset_id, RebindAssetVersionRequest(expected_version=data.expected_version,
+                            from_asset_version=data.from_asset_version, to_asset_version=data.to_asset_version))
+                    after, affected = rebound.scene, rebound.affected_object_ids
+                    operation = 'rebind-asset'
+                elif invocation.capability_id == 'environment.object.place':
                     data = PlaceDemoObjectInput.model_validate(invocation.inputs)
                     asset = self.service.project_assets.get(task.project_id, data.asset_id)
                     if asset.workspace_id != task.grant.workspace_id:
@@ -554,7 +565,7 @@ class TaskTools:
             current_actions = task.actions[start:]
             content_capabilities = {'project.asset.door.create', 'project.asset.door.update',
                 'environment.object.place', 'environment.demo_object.transform',
-                'environment.key_door.configure', 'environment.object.remove'}
+                'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
             source_actions = [entry for entry in current_actions
                 if entry.state == 'succeeded' and entry.action.capability_id in
                    (content_capabilities | {'code.file.write'})
