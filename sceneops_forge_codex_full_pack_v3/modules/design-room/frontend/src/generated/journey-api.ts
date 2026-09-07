@@ -230,7 +230,7 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "message" | "save_draft" | "start_grill" | "generate_outline" | "save_outline" | "confirm_version" | "confirm_stack" | "recommend_architecture" | "confirm_technical_plan" | "generate_cards" | "save_cards" | "accept_change" | "reject_change" | "select_card" | "clear_card" | "enable_git" | "choose_model_source" | "new_modeling" | "open_modeling" | "close_modeling";
+            operation: "message" | "save_draft" | "start_grill" | "generate_outline" | "save_outline" | "confirm_version" | "confirm_stack" | "recommend_architecture" | "confirm_technical_plan" | "generate_cards" | "save_cards" | "accept_change" | "reject_change" | "select_card" | "clear_card" | "enable_git" | "choose_model_source" | "new_modeling" | "open_modeling" | "close_modeling" | "confirm_demo_direction";
             /**
              * Text
              * @default
@@ -262,6 +262,12 @@ export interface components {
             code_architecture?: ("object-component" | "ecs") | null;
             /** Selection Method */
             selection_method?: ("manual" | "ai") | null;
+            /** Core Experience */
+            core_experience?: string | null;
+            /** Perspective Style */
+            perspective_style?: string | null;
+            /** Simplified Scope */
+            simplified_scope?: string | null;
         };
         /** JourneyMessage */
         JourneyMessage: {
@@ -394,6 +400,7 @@ export interface components {
              * @default 每次发送或生成通常调用一次所选模型；结构化结果校验失败时，系统会把错误原因告知同一模型并自动重试一次。费用未知，不自动切换提供方。
              */
             cost_notice: string;
+            initial_demo_direction?: components["schemas"]["InitialDemoDirection"] | null;
         };
         /** PlanningQuestion */
         PlanningQuestion: {
@@ -442,6 +449,36 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * InitialDemoDirection
+         * @description A confirmed first-demo scope; it is not a full GDD or production result.
+         */
+        InitialDemoDirection: {
+            /** Direction Id */
+            direction_id: string;
+            /** Core Experience */
+            core_experience: string;
+            /** Perspective Style */
+            perspective_style: string;
+            /**
+             * Target Platform
+             * @default web
+             * @constant
+             */
+            target_platform: "web";
+            /**
+             * Code Architecture
+             * @enum {string}
+             */
+            code_architecture: "object-component" | "ecs";
+            /** Simplified Scope */
+            simplified_scope: string;
+            /**
+             * Confirmed
+             * @default true
+             */
+            confirmed: boolean;
         };
     };
     responses: never;

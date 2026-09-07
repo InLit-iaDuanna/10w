@@ -138,3 +138,19 @@
 .journey-development-permissions { display: grid; gap: 6px; padding: 9px 14px; border-top: 1px solid var(--border-default); background: var(--surface-1); }
 .journey-development-permissions label { display: flex; align-items: center; gap: 7px; font-size: 12px; }
 .journey-development-permissions small { color: var(--text-muted); }
+
+.journey-execution-consent { display:grid; grid-template-columns:1fr auto; gap:12px 20px; width:100%; padding:16px 18px; border:1px solid var(--border-subtle); border-radius:16px; box-sizing:border-box; align-items:center; }
+.journey-execution-consent strong { font-size:13px; font-weight:550; }
+.journey-execution-consent p { margin:4px 0 0; font-size:12px; color:var(--text-muted); }
+.journey-execution-consent > button { border-radius:10px; }
+.journey-execution-consent > details { grid-column:1/-1; font-size:11px; color:var(--text-muted); }
+.journey-execution-consent summary { cursor:pointer; width:fit-content; }
+.journey-execution-consent small { display:block; padding-top:8px; line-height:1.6; }
+.journey-demo-direction { margin:18px 0; }
+.journey-demo-direction-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.journey-demo-direction-form label { display:grid; gap:5px; color:var(--text-muted); font-size:11px; }
+.journey-demo-direction-form label>input:not([type=radio]) { box-sizing:border-box; width:100%; padding:9px; color:var(--text-primary); background:var(--surface-1); border:1px solid var(--border-default); border-radius:8px; }
+.journey-demo-direction-form fieldset { grid-column:1/-1; display:flex; gap:16px; margin:0; padding:10px; border:1px solid var(--border-default); border-radius:10px; }
+.journey-demo-direction-form fieldset label { display:flex; align-items:center; gap:6px; color:var(--text-secondary); }
+.journey-demo-direction-form button { justify-self:start; }
+@media(max-width:680px) { .journey-execution-consent,.journey-demo-direction-form { grid-template-columns:1fr; } }

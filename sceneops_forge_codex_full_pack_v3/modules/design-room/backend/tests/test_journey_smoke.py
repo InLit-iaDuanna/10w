@@ -52,6 +52,60 @@ class FixtureProvider:
 
 
 class JourneySmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_short_demo_direction_creates_project_without_outline_cards_and_reopens(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root / 'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = FixtureProvider()
+            service = PlanningJourneyService(root / 'state.sqlite3', folders, provider)
+
+            with self.assertRaisesRegex(HTTPException, '确认第一版 Demo'):
+                service.project_demo_context(project.project_id)
+            state = await service.command(project.project_id, JourneyCommand(
+                request_id='confirm-short-direction', expected_revision=0,
+                operation='confirm_demo_direction', core_experience='找到钥匙并打开出口门',
+                perspective_style='第三人称俯视、低多边形森林',
+                simplified_scope='一个场景、一把钥匙、两扇共享木门',
+                code_architecture='ecs', selection_method='manual'))
+
+            self.assertTrue(state.initial_demo_direction.confirmed)
+            self.assertTrue(state.initial_demo_direction.direction_id.startswith('direction_'))
+            self.assertEqual(state.technical_plan.code_architecture, 'ecs')
+            self.assertEqual(state.technical_plan.scaffold.design_version, 1)
+            self.assertIsNone(state.outline)
+            self.assertEqual(state.versions, [])
+            self.assertEqual(state.cards, [])
+            self.assertEqual(provider.calls, 0)
+            game_root = Path(state.technical_plan.scaffold.root_path)
+            self.assertTrue((game_root / 'src/game/systems/movementSystem.ts').is_file())
+            direction_id = state.initial_demo_direction.direction_id
+            context = service.project_demo_context(project.project_id)
+            self.assertEqual(context['direction_id'], direction_id)
+            self.assertEqual(context['technical_plan']['ecs_library'], 'miniplex')
+
+            repeated = await service.command(project.project_id, JourneyCommand(
+                request_id='repeat-short-direction', expected_revision=state.revision,
+                operation='confirm_demo_direction', core_experience='找到钥匙并打开出口门',
+                perspective_style='第三人称俯视、低多边形森林',
+                simplified_scope='一个场景、一把钥匙、两扇共享木门',
+                code_architecture='ecs', selection_method='manual'))
+            self.assertEqual(repeated.initial_demo_direction.direction_id, direction_id)
+
+            changed = await service.command(project.project_id, JourneyCommand(
+                request_id='change-short-direction', expected_revision=repeated.revision,
+                operation='confirm_demo_direction', core_experience='找到钥匙并打开出口门',
+                perspective_style='第三人称俯视、低多边形森林',
+                simplified_scope='一个场景、一把钥匙、一扇出口门',
+                code_architecture='ecs', selection_method='manual'))
+            self.assertNotEqual(changed.initial_demo_direction.direction_id, direction_id)
+            self.assertEqual(changed.versions, [])
+            reopened = PlanningJourneyService(
+                root / 'state.sqlite3', folders, provider).get(project.project_id)
+            self.assertEqual(reopened.initial_demo_direction, changed.initial_demo_direction)
+            self.assertEqual(service.project_demo_context(project.project_id)['direction_id'],
+                             changed.initial_demo_direction.direction_id)
+
     async def test_recovered_project_imports_its_saved_conversation(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()

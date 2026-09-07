@@ -7,6 +7,7 @@ import { MarkdownMessage } from '../../../../packages/core-ui/frontend/src/index
 import { PlanningQuestionCard } from './PlanningQuestionCard';
 import { JourneyChangeReview } from './JourneyChangeReview';
 import { CardModelingEntry } from './CardModelingEntry';
+import { DemoExecutionRequest } from './DemoExecutionRequest';
 
 const architectureOptions = [
   {id:'object-component' as const,title:'对象／组件式',plain:'玩家、道具和场景对象各自管理行为，像搭积木一样逐步扩展。',
@@ -52,6 +53,8 @@ type Props = { projectId: string | null; fallback: ReactNode; modelPicker: (busy
   development?: { prepare: (projectId: string, cardId: string, goal: string,
       options: { allowGameExecution: boolean; allowDependencyInstall: boolean; allowBrowserObservation: boolean; allowBrowserInteraction: boolean;
         allowModelImageInput: boolean }) => Promise<void>;
+    prepareProjectDemo?: (projectId: string, directionId: string, goal: string) => Promise<void>;
+    renderProjectDemoTasks?: (projectId: string) => ReactNode;
     renderTasks: (projectId: string, cardId?: string, onContinue?: () => void) => ReactNode };
   assets?: { render: (input: {projectId:string;cardId:string;source:'import'|'create';sessionId:string;
     messages:{id:string;role:string;text:string;replyTo?:string;modelingBlock?:string}[]; observeConversation?: boolean;
@@ -87,6 +90,10 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const [editing, setEditing] = useState<'outline' | 'cards' | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [workMode, setWorkMode] = useState<'discuss' | 'develop'>('discuss');
+  const [directionDraft, setDirectionDraft] = useState({core_experience:'找到钥匙并打开出口门',
+    perspective_style:'第三人称俯视、低多边形', simplified_scope:'一个场景、一把钥匙、两扇共享门',
+    code_architecture:'object-component' as 'object-component'|'ecs'});
+  const [editingInitialDirection, setEditingInitialDirection] = useState(false);
   const [allowGameExecution, setAllowGameExecution] = useState(true);
   const [allowDependencyInstall, setAllowDependencyInstall] = useState(true);
   const [allowBrowserObservation, setAllowBrowserObservation] = useState(false);
@@ -180,6 +187,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         cardSelectionCapturingScroll.current = false;
       }
       if (input.operation === 'message') { setOutgoing(''); setDraft(current => current === input.text ? '' : current); }
+      if (input.operation === 'confirm_demo_direction') setEditingInitialDirection(false);
       if (['save_outline', 'save_cards', 'generate_outline', 'generate_cards'].includes(input.operation)) { setEditing(null); editBase.current = null; }
       if (input.operation === 'select_card' && input.card_id === 'world-3d') onOpenSurface?.('environment');
       if (input.operation === 'clear_card' || (input.operation === 'select_card' && input.card_id !== 'world-3d')) onCloseSurfaces?.();
@@ -313,6 +321,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const versions = state.versions ?? [];
   const activeCard = cards.find(card => card.id === state.active_card_id);
   const technicalPlan = state.technical_plan;
+  const initialDirection = state.initial_demo_direction;
   const recommendation = state.architecture_recommendation;
   const sharedMemory: SharedProjectMemory = {
     project_title:outline?.title ?? '', experience:outline?.experience ?? '', core_loop:outline?.core_loop ?? '',
@@ -382,6 +391,33 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   return <section className={`planning-journey${activeCard ? ' has-card-workspace' : ''}${activeCard?.id === 'world-3d' ? ' world-3d-workspace' : ''}${sidePreview && previewOpen ? ' has-model-preview' : ''}`} aria-label={activeCard ? `${activeCard.title}工作流` : '单人策划工作流'}>
     <header><div><strong>{activeCard?.title ?? '协作'}</strong><small>{activeCard ? '独立工作流' : `${stages.find(([id]) => id === state.stage)?.[1]}${versions.length ? ` · v${versions.length}` : ''}`}</small></div>{activeCard ? <button type="button" className="journey-header-back" disabled={busy} onClick={() => act('clear_card')} aria-label="返回制作卡片" title="返回制作卡片"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button> : <button type="button" onClick={onOpenProjects}>文件夹</button>}</header>
     <div className="journey-scroll" ref={transcript}>
+      {!activeCard && !modeling && !environmentOpen && <section className="journey-next journey-demo-direction" aria-label="第一版 Demo 方向">
+        <header><div><strong>先做一个可玩的初版</strong><p>确认五项短方向后，直接建立项目任务。详细策划和四张制作卡仍可继续使用。</p></div></header>
+        {initialDirection?.confirmed && !editingInitialDirection ? <>
+          <dl className="journey-tech-targets"><div><dt>核心体验</dt><dd>{initialDirection.core_experience}</dd></div>
+            <div><dt>视角与风格</dt><dd>{initialDirection.perspective_style}</dd></div>
+            <div><dt>目标平台</dt><dd>浏览器 Web</dd></div><div><dt>技术架构</dt><dd>{initialDirection.code_architecture === 'ecs' ? 'ECS · Miniplex' : '对象／组件式'}</dd></div>
+            <div><dt>简化范围</dt><dd>{initialDirection.simplified_scope}</dd></div></dl>
+          <button type="button" disabled={busy} onClick={() => {
+            setDirectionDraft({core_experience:initialDirection.core_experience,
+              perspective_style:initialDirection.perspective_style,
+              simplified_scope:initialDirection.simplified_scope,
+              code_architecture:initialDirection.code_architecture});
+            setEditingInitialDirection(true);
+          }}>修改初版方向</button>
+          {development?.prepareProjectDemo && <DemoExecutionRequest key={initialDirection.direction_id}
+            alignmentId={initialDirection.direction_id} mode="typed-tools"
+            prepare={() => development.prepareProjectDemo!(projectId, initialDirection.direction_id,
+              `制作项目第一版 Demo：${initialDirection.core_experience}。${initialDirection.perspective_style}；${initialDirection.simplified_scope}。`)} />}
+        </> : <form className="journey-demo-direction-form" onSubmit={event => {event.preventDefault();act('confirm_demo_direction', directionDraft);}}>
+          <label>核心体验<input value={directionDraft.core_experience} maxLength={1000} disabled={busy} onChange={event=>setDirectionDraft(value=>({...value,core_experience:event.target.value}))}/></label>
+          <label>视角与风格<input value={directionDraft.perspective_style} maxLength={1000} disabled={busy} onChange={event=>setDirectionDraft(value=>({...value,perspective_style:event.target.value}))}/></label>
+          <label>简化范围<input value={directionDraft.simplified_scope} maxLength={1000} disabled={busy} onChange={event=>setDirectionDraft(value=>({...value,simplified_scope:event.target.value}))}/></label>
+          <fieldset><legend>技术架构</legend>{architectureOptions.map(option=><label key={option.id}><input type="radio" name="initial-architecture" value={option.id}
+            checked={directionDraft.code_architecture===option.id} disabled={busy} onChange={()=>setDirectionDraft(value=>({...value,code_architecture:option.id}))}/>{option.title}</label>)}</fieldset>
+          <button className="primary" type="submit" disabled={busy || !directionDraft.core_experience.trim() || !directionDraft.perspective_style.trim() || !directionDraft.simplified_scope.trim()}>确认初版方向</button>
+        </form>}
+      </section>}
       {activeCard && activeCard.id !== 'world-3d' && !environmentOpen && <CardModelingEntry state={state} busy={busy || !!editing} onCommand={act} onOpenEnvironment={openEnvironment} />}
       {activeCard && !technicalPlan && <p role="status" className="journey-architecture-missing">这个旧项目还没有明确游戏代码架构。返回制作卡片后选择架构，已有代码不会被重建或覆盖。</p>}
       {!messages.length && !outgoing && !modeling && !environmentOpen && !activeCard && <div className="journey-empty"><h2>你想做一个什么样的游戏？</h2><p>先聊 idea，等你说完，我们再一起对齐细节。</p></div>}
@@ -445,12 +481,12 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         return <p key={version.number}>v{version.number} · {version.outline.title} · {new Date(version.confirmed_at).toLocaleString()}<br/>
           <small>{git ? `${git.tag} · ${git.commit.slice(0, 10)}` : '旧版记录尚未建立 Git 提交'}</small></p>;
       })}{!state.git_versions?.length && <button type="button" disabled={busy} onClick={() => act('enable_git')}>将已确认版本纳入 Git</button>}</details>}
-      {development?.renderTasks(projectId)}
       </>}
       {activeCard && development?.renderTasks(projectId, activeCard.id, () => {
         setWorkMode('develop');
         requestAnimationFrame(() => input.current?.focus());
       })}
+      {!activeCard && initialDirection?.confirmed && development?.renderProjectDemoTasks?.(projectId)}
     </div>
     {sidePreview && <aside className="journey-model-preview-pane" data-open={previewOpen} aria-label={environmentOpen ? '环境场景预览' : '实时模型预览'}>
       <header><div><strong>{environmentOpen ? '3D 世界' : modeling?.source === 'create' ? '模型生成' : '模型导入'}</strong><small>Three.js</small></div>

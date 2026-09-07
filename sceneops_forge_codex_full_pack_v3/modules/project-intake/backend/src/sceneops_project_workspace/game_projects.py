@@ -364,7 +364,8 @@ class GameProjects:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(content.encode("utf-8"))
 
-    def initialize(self, project_id: str, selection: dict, design_version: int) -> dict:
+    def initialize(self, project_id: str, selection: dict, design_version: int,
+                   *, commit_baseline: bool = True) -> dict:
         root = self._root(project_id)
         project = self.repository.get_folder_project(project_id)
         metadata = self.repository._real_directory(root / ".sceneops", create=True)
@@ -382,6 +383,8 @@ class GameProjects:
                 return scaffold
             if recorded_version != design_version:
                 raise GameProjectError("游戏工程基线绑定了其他策划版本，请先建立明确迁移任务。")
+            if not commit_baseline:
+                return scaffold
             self._materialize_files(root, template_files(selection["code_architecture"]))
             baseline = self._commit_baseline(project_id, current, recorded_version)
             return {**scaffold, "baseline_commit": baseline}
@@ -414,6 +417,8 @@ class GameProjects:
         if scaffold["initialization_status"] != "generated":
             return scaffold
         self._materialize_files(root, files)
+        if not commit_baseline:
+            return scaffold
         baseline = self._commit_baseline(project_id, record, design_version)
         return {**scaffold, "baseline_commit": baseline}
 

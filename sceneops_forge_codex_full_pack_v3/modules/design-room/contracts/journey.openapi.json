@@ -631,7 +631,8 @@
               "choose_model_source",
               "new_modeling",
               "open_modeling",
-              "close_modeling"
+              "close_modeling",
+              "confirm_demo_direction"
             ],
             "title": "Operation"
           },
@@ -784,6 +785,42 @@
               }
             ],
             "title": "Selection Method"
+          },
+          "core_experience": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Core Experience"
+          },
+          "perspective_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perspective Style"
+          },
+          "simplified_scope": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simplified Scope"
           }
         },
         "additionalProperties": false,
@@ -1183,6 +1220,16 @@
             "type": "string",
             "title": "Cost Notice",
             "default": "每次发送或生成通常调用一次所选模型；结构化结果校验失败时，系统会把错误原因告知同一模型并自动重试一次。费用未知，不自动切换提供方。"
+          },
+          "initial_demo_direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InitialDemoDirection"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -1338,6 +1385,63 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "InitialDemoDirection": {
+        "properties": {
+          "direction_id": {
+            "type": "string",
+            "pattern": "^direction_[a-f0-9]{32}$",
+            "title": "Direction Id"
+          },
+          "core_experience": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Core Experience"
+          },
+          "perspective_style": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Perspective Style"
+          },
+          "target_platform": {
+            "type": "string",
+            "const": "web",
+            "title": "Target Platform",
+            "default": "web"
+          },
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "simplified_scope": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Simplified Scope"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "direction_id",
+          "core_experience",
+          "perspective_style",
+          "code_architecture",
+          "simplified_scope"
+        ],
+        "title": "InitialDemoDirection",
+        "description": "A confirmed first-demo scope; it is not a full GDD or production result."
       }
     }
   }

@@ -8,7 +8,7 @@ from typing import Protocol
 from uuid import uuid4
 from pydantic import JsonValue
 from .git_projects import GitProjects
-from .game_projects import GameProjects
+from .game_projects import GameProjectError, GameProjects
 
 from .models import (FolderEntry, FolderListing, FolderProject, FolderProjectIdentityInspection,
     ModuleDocument, ModuleId, Project, ProjectIdentity, SampleId, StructuredDesignArtifact)
@@ -53,7 +53,10 @@ class WorkspaceRepository(Protocol):
         card_branches: list[dict], baseline: dict | None = None) -> None: ...
     def open_card_worktree(self, project_id: str, card_id: str, title: str, card: dict | None = None) -> dict: ...
     def get_card_worktree(self, project_id: str, card_id: str) -> dict: ...
-    def initialize_game_project(self, project_id: str, selection: dict, design_version: int) -> dict: ...
+    def open_project_demo_workspace(self, project_id: str) -> dict: ...
+    def get_project_demo_workspace(self, project_id: str, workspace_id: str | None = None) -> dict: ...
+    def initialize_game_project(self, project_id: str, selection: dict, design_version: int,
+                                *, commit_baseline: bool = True) -> dict: ...
 
 
 class SqliteWorkspaceRepository:
@@ -90,6 +93,11 @@ class SqliteWorkspaceRepository:
                     design_version INTEGER NOT NULL,
                     commit_id TEXT NOT NULL,
                     index_synced INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS workspace_project_demo_workspaces (
+                    workspace_id TEXT PRIMARY KEY,
+                    project_id TEXT NOT NULL UNIQUE REFERENCES workspace_projects(project_id),
+                    workspace_root TEXT NOT NULL UNIQUE,
                     created_at TEXT NOT NULL);
             """)
             columns = {row[1] for row in connection.execute("PRAGMA table_info(workspace_git_versions)")}
@@ -345,8 +353,47 @@ class SqliteWorkspaceRepository:
     def get_card_worktree(self, project_id, card_id):
         return GitProjects(self).get_card(project_id, card_id)
 
-    def initialize_game_project(self, project_id, selection, design_version):
-        return GameProjects(self).initialize(project_id, selection, design_version)
+    def open_project_demo_workspace(self, project_id):
+        """Register the project's real game root as the durable Demo workspace."""
+        project = self.get_folder_project(project_id)
+        root = self._safe_existing_directory(Path(project.root_path))
+        marker, package = root / ".sceneops" / "game-architecture.json", root / "package.json"
+        if marker.is_symlink() or package.is_symlink() or not marker.is_file() or not package.is_file():
+            raise GameProjectError("请先确认初版技术方向并创建游戏工程。")
+        with self.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT * FROM workspace_project_demo_workspaces WHERE project_id=?", (project_id,)
+            ).fetchone()
+            if row is None:
+                workspace_id = "demo_ws_" + uuid4().hex
+                created_at = datetime.now(timezone.utc).isoformat()
+                connection.execute(
+                    "INSERT INTO workspace_project_demo_workspaces VALUES (?,?,?,?)",
+                    (workspace_id, project_id, str(root), created_at),
+                )
+                row = connection.execute(
+                    "SELECT * FROM workspace_project_demo_workspaces WHERE workspace_id=?", (workspace_id,)
+                ).fetchone()
+        if row["workspace_root"] != str(root):
+            raise FolderProjectIdentityConflict("项目目录已改变，Demo 工作区需要重新核对。")
+        return dict(row)
+
+    def get_project_demo_workspace(self, project_id, workspace_id=None):
+        project = self.get_folder_project(project_id)
+        root = self._safe_existing_directory(Path(project.root_path))
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM workspace_project_demo_workspaces WHERE project_id=?", (project_id,)
+            ).fetchone()
+        if (row is None or (workspace_id is not None and row["workspace_id"] != workspace_id)
+                or row["workspace_root"] != str(root)):
+            raise FolderProjectIdentityConflict("Demo 工作区登记与当前项目不一致。")
+        return dict(row)
+
+    def initialize_game_project(self, project_id, selection, design_version, *, commit_baseline=True):
+        return GameProjects(self).initialize(project_id, selection, design_version,
+                                             commit_baseline=commit_baseline)
 
     def set_project_kind(self, project_id, project_kind):
         with self.connect() as connection:

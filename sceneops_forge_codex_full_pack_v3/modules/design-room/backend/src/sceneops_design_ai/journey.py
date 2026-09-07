@@ -13,7 +13,8 @@ from sceneops_ai_provider import ProviderService
 from sceneops_project_workspace import GameProjectError, GitProjectError
 from .journey_models import (PlanningJourney, JourneyCommand, JourneyMessage, JourneyVersion,
     Outline, CardProposal, CompactCardProposal, GrillReply, AlignmentSummaryReply, JourneyStreamEvent, RevisionReply,
-    GitVersion, CardBranch, ArchitectureRecommendation, GameTechnicalPlan, GameProjectScaffold, COST_NOTICE)
+    GitVersion, CardBranch, ArchitectureRecommendation, InitialDemoDirection, GameTechnicalPlan,
+    GameProjectScaffold, COST_NOTICE)
 from .journey_changes import propose_change, resolve_change
 from .card_modeling import active_modeling, modeling_block_for_turn, modeling_command, modeling_prompt
 
@@ -84,6 +85,35 @@ class PlanningJourneyService:
 
     def development_context(self, project_id, card_id):
         return self._development_context(self.get(project_id), card_id)
+
+    def project_demo_context(self, project_id):
+        state = self.get(project_id)
+        direction = state.initial_demo_direction
+        if direction is None or not direction.confirmed or state.technical_plan is None:
+            raise HTTPException(409, '请先确认第一版 Demo 方向和技术方案。')
+        return {
+            'direction_id': direction.direction_id,
+            'direction': direction.model_dump(mode='json'),
+            'technical_plan': state.technical_plan.model_dump(mode='json'),
+            'planning_revision': state.revision,
+            'notice': '已确认的初版方向快照；它不是完整策划冻结，也不会自行授权执行。',
+        }
+
+    @staticmethod
+    def _technical_selection(state, code_architecture, selection_method):
+        recommendation = state.architecture_recommendation
+        if selection_method == 'ai':
+            if recommendation is None or recommendation.code_architecture != code_architecture:
+                raise HTTPException(409, 'AI 推荐已变化或尚未完成，请重新查看；也可以手动选择。')
+            rationale, tradeoffs = recommendation.rationale, recommendation.tradeoffs
+        else:
+            defaults = ARCHITECTURE_DEFAULTS[code_architecture]
+            rationale, tradeoffs = defaults['rationale'], defaults['tradeoffs']
+        return {'target_platform': 'web', 'engine': 'threejs',
+            'code_architecture': code_architecture,
+            'architecture_label': ARCHITECTURE_DEFAULTS[code_architecture]['label'],
+            'selection_method': selection_method, 'rationale': rationale,
+            'tradeoffs': tradeoffs, 'ecs_library': 'miniplex' if code_architecture == 'ecs' else None}
 
     def get(self, project_id):
         folder = self.folders.get_folder_project(project_id)
@@ -339,6 +369,39 @@ class PlanningJourneyService:
             reply = GrillReply.model_validate_json(result.text)
             state.messages.append(JourneyMessage(id=uuid4().hex, role='assistant', text=reply.text, question=reply.question,
                 created_at=timestamp(), provider=result.provider, model=result.model))
+        elif op == 'confirm_demo_direction':
+            fields = (command.core_experience, command.perspective_style,
+                      command.simplified_scope, command.code_architecture)
+            if any(not isinstance(value, str) or not value.strip() for value in fields):
+                raise HTTPException(422, '请填写核心体验、视角与风格、初版简化范围，并选择代码架构。')
+            if (state.technical_plan is not None
+                    and state.technical_plan.code_architecture != command.code_architecture):
+                raise HTTPException(409, '游戏工程已有代码架构；更换架构需要建立明确迁移任务。')
+            selection_method = command.selection_method or 'manual'
+            selection = self._technical_selection(state, command.code_architecture, selection_method)
+            values = {
+                'core_experience': command.core_experience.strip(),
+                'perspective_style': command.perspective_style.strip(),
+                'target_platform': 'web',
+                'code_architecture': command.code_architecture,
+                'simplified_scope': command.simplified_scope.strip(),
+                'confirmed': True,
+            }
+            current = state.initial_demo_direction
+            unchanged = current is not None and current.model_dump(
+                exclude={'direction_id'}) == values
+            if state.technical_plan is None:
+                try:
+                    scaffold = self.folders.initialize_game_project(
+                        state.project_id, selection, 1, commit_baseline=False)
+                except (GameProjectError, GitProjectError) as error:
+                    raise HTTPException(409, str(error)) from error
+                state.technical_plan = GameTechnicalPlan(**selection,
+                    scaffold=GameProjectScaffold.model_validate(scaffold), selected_at=timestamp())
+            state.initial_demo_direction = InitialDemoDirection(
+                direction_id=current.direction_id if unchanged else 'direction_' + uuid4().hex,
+                **values)
+            state.stack = 'threejs'
         elif op == 'generate_outline':
             if state.stage not in ('grill', 'outline'): raise HTTPException(409, '先开始对齐，再生成大纲。')
             result = await self.generate(state, '根据已讨论内容生成结构化策划大纲。未得到用户确认的推断必须放在 assumptions 中。只返回 schema JSON。', Outline)

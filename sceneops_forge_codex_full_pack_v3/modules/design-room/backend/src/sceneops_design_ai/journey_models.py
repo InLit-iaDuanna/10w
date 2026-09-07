@@ -121,6 +121,17 @@ class ArchitectureRecommendation(JourneyModel):
     tradeoffs: list[str] = Field(min_length=1, max_length=4)
 
 
+class InitialDemoDirection(JourneyModel):
+    """A confirmed first-demo scope; it is not a full GDD or production result."""
+    direction_id: str = Field(pattern=r'^direction_[a-f0-9]{32}$')
+    core_experience: str = Field(min_length=1, max_length=8000)
+    perspective_style: str = Field(min_length=1, max_length=4000)
+    target_platform: Literal['web'] = 'web'
+    code_architecture: Literal['object-component', 'ecs']
+    simplified_scope: str = Field(min_length=1, max_length=8000)
+    confirmed: bool = True
+
+
 class GameProjectScaffold(JourneyModel):
     root_path: str
     initialization_status: Literal['generated', 'existing']
@@ -198,6 +209,7 @@ class PlanningJourney(JourneyModel):
     outline: Outline | None = None
     versions: list[JourneyVersion] = Field(default_factory=list)
     stack: Literal['threejs'] | None = None
+    initial_demo_direction: InitialDemoDirection | None = None
     technical_plan: GameTechnicalPlan | None = None
     architecture_recommendation: ArchitectureRecommendation | None = None
     cards: list[ProductionCard] = Field(default_factory=list)
@@ -216,6 +228,7 @@ class JourneyCommand(JourneyModel):
     request_id: str = Field(pattern=r'^[a-zA-Z0-9_-]{1,100}$')
     expected_revision: int = Field(ge=0)
     operation: Literal['message', 'save_draft', 'start_grill', 'generate_outline', 'save_outline',
+        'confirm_demo_direction',
         'confirm_version', 'confirm_stack', 'recommend_architecture', 'confirm_technical_plan',
         'generate_cards', 'save_cards',
         'accept_change', 'reject_change', 'select_card', 'clear_card', 'enable_git',
@@ -231,6 +244,9 @@ class JourneyCommand(JourneyModel):
     model_source: Literal['import', 'create'] | None = None
     modeling_id: str | None = None
     context_draft: str | None = Field(default=None, max_length=16000)
+    core_experience: str | None = Field(default=None, max_length=8000)
+    perspective_style: str | None = Field(default=None, max_length=4000)
+    simplified_scope: str | None = Field(default=None, max_length=8000)
     code_architecture: Literal['object-component', 'ecs'] | None = None
     selection_method: Literal['manual', 'ai'] | None = None
 
