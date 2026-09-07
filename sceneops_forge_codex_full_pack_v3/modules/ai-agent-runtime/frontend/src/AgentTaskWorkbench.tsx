@@ -20,6 +20,9 @@ const ACTIONS: Record<string, string> = {
   'code.dependencies.prepare': '准备游戏工程依赖', 'code.project.status': '读取工程运行状态',
   'code.project.check': 'TypeScript 检查', 'code.project.build': '构建游戏',
   'code.preview.start': '启动本地预览', 'code.preview.stop': '停止本地预览',
+  'project.assets.list': '读取项目资产与版本',
+  'environment.scene.read': '读取当前场景与对象',
+  'environment.object.transform': '修改对象变换并回读',
 };
 const busy = (task: AgentTask) => ['queued', 'running'].includes(task.status);
 
@@ -87,9 +90,23 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
   const fullAccess = card.execution_mode === 'codex-full-access';
   const activity = task.observations.codex_activity;
   const grantExpired = !!task.grant && Date.parse(task.grant.expires_at) <= Date.now();
+  const sceneSelection = task.observations.scene_selection;
+  const sceneObservation = task.observations.environment_scene;
+  const selectedSceneObjectIds = sceneSelection && typeof sceneSelection === 'object'
+    && 'selected_scene_object_ids' in sceneSelection && Array.isArray(sceneSelection.selected_scene_object_ids)
+    ? sceneSelection.selected_scene_object_ids.filter((value): value is string => typeof value === 'string') : [];
+  const observedSceneVersion = sceneObservation && typeof sceneObservation === 'object'
+    && 'scene_version' in sceneObservation && typeof sceneObservation.scene_version === 'number'
+    ? sceneObservation.scene_version : null;
+  useEffect(() => {
+    if (card.task_profile === 'environment-scene' && observedSceneVersion != null) {
+      void cache.invalidateQueries({queryKey:['environment-scene', task.project_id]});
+    }
+  }, [cache, card.task_profile, observedSceneVersion, task.project_id]);
   const restart = useMutation({ mutationFn: () => agentTasks.prepare({ goal: task.goal, execution_mode: card.execution_mode, allow_image_generation: card.allow_image_generation, allow_playtest:false,
     allow_game_execution: card.allow_game_execution, allow_dependency_install: card.allow_dependency_install, task_profile: card.task_profile,
-    ...(card.card_id ? { project_id: task.project_id, card_id: card.card_id } : {}) }),
+    ...(card.card_id ? { project_id: task.project_id, card_id: card.card_id } : {}),
+    ...(card.task_profile === 'environment-scene' ? {project_id:task.project_id,selected_scene_object_ids:selectedSceneObjectIds} : {}) }),
     onSuccess: () => cache.invalidateQueries({ queryKey: ['agent-tasks'] }) });
   return <article className="agent-task-card" data-state={task.status}>
     <header><strong>{task.goal}</strong><span role="status">{LABELS[task.status] ?? task.status}</span></header>
@@ -99,7 +116,9 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
       <p>模型：{task.provider_model ?? 'CLI 默认模型'} · {task.provider_id}</p>
       {card.card_id && <p>卡片：{card.card_id} · 分支：{card.branch}</p>}
       {card.card_id && task.observations.card_context != null && <details><summary>查看本次开发采用的策划快照</summary><pre>{JSON.stringify(task.observations.card_context, null, 2)}</pre></details>}
-      <p>{card.cost_notice}</p>{!fullAccess && card.task_profile !== 'card-development' && <p>允许自动准备本任务工程及自有插件、打开专用 Blender/Unity 会话；不修改其他工程、不购买或激活服务。</p>}
+      <p>{card.cost_notice}</p>{card.task_profile === 'environment-scene'
+        ? <p>选中对象只是任务上下文；确认后才授权修改卡片中列出的对象变换。场景数据修改不代表运行游戏已更新。</p>
+        : !fullAccess && card.task_profile !== 'card-development' && <p>允许自动准备本任务工程及自有插件、打开专用 Blender/Unity 会话；不修改其他工程、不购买或激活服务。</p>}
       <button disabled={action.isPending} onClick={() => action.mutate('authorize')}>{fullAccess ? '确认完全权限风险并开始 · 费用未知' : '确认范围并开始 · 接受费用可能未知'}</button>
     </section>}
     {task.reason && <p className="agent-task-reason" role="alert">{task.reason}</p>}
@@ -111,6 +130,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
       <small>{record.action.rationale}</small>{record.reason && <p>{record.reason}</p>}
       {record.verification_result && <p>{record.verification_result.verdict === 'PASS' ? '该版本验收通过' : record.verification_result.verdict === 'FAIL' ? '该版本验收失败' : '证据不完整'} · {record.verification_result.project_revision}</p>}
       {record.action.capability_id === 'code.file.write' && record.result && <CodeWriteEvidence result={record.result} />}
+      {record.action.capability_id === 'environment.object.transform' && record.result && <SceneTransformEvidence result={record.result} />}
     </li>)}</ol>
     <footer>
       {(busy(task) || ['awaiting_authorization', 'blocked'].includes(task.status)) && <button disabled={action.isPending || task.cancel_requested} onClick={() => action.mutate('cancel')}>{task.cancel_requested ? '正在停止…' : '停止任务'}</button>}
@@ -192,6 +212,24 @@ function CodeWriteEvidence({ result }: { result: unknown }) {
   const diff = 'diff' in evidence && typeof evidence.diff === 'string' ? evidence.diff : null;
   return <details><summary>文件变更 · {String(evidence.path)}</summary>
     {diff ? <pre>{diff}</pre> : <pre>{JSON.stringify(evidence, null, 2)}</pre>}</details>;
+}
+
+function SceneTransformEvidence({ result }: { result: unknown }) {
+  if (!result || typeof result !== 'object' || !('evidence' in result)) return null;
+  const evidence = result.evidence;
+  if (!evidence || typeof evidence !== 'object' || !('object' in evidence)) return null;
+  const object = evidence.object;
+  if (!object || typeof object !== 'object' || !('transform' in object)) return null;
+  const transform = object.transform;
+  if (!transform || typeof transform !== 'object') return null;
+  const position = 'position_m' in transform && Array.isArray(transform.position_m)
+    ? transform.position_m.join(', ') : '未知';
+  const rotation = 'rotation_y_deg' in transform ? String(transform.rotation_y_deg) : '未知';
+  const scale = 'scale' in transform ? String(transform.scale) : '未知';
+  const version = 'scene_version' in evidence ? String(evidence.scene_version) : '未知';
+  return <details><summary>场景 v{version} · 已回读实际变换</summary>
+    <p>位置 [{position}] m · Y 旋转 {rotation}° · 缩放 {scale}</p>
+    <small>仅项目场景数据；未验证运行中的游戏。</small></details>;
 }
 
 export function activityLabel(value: unknown): string {

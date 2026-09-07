@@ -64,6 +64,19 @@ class RequestIdentityContractTests(TestCase):
             record_action(service, task.id, changed)
         self.assertEqual(caught.exception.code, 'REQUEST_ID_CONFLICT')
 
+    def test_same_action_id_can_retry_identical_inputs_without_replacing_audit_rationale(self):
+        task = self.task()
+        service = SimpleNamespace(records=RecordFixture(task), production=ProductionFixture())
+        original = self.action('inspect')
+        record_action(service, task.id, original)
+        task.actions[0].state = 'failed'
+        retry = original.model_copy(update={'rationale': 'Retry after required context became available'})
+
+        record_action(service, task.id, retry)
+
+        self.assertEqual(len(task.actions), 1)
+        self.assertEqual(task.actions[0].action.rationale, 'Inspect independently')
+
     def test_legacy_mutation_effect_is_unknown_and_step_default_is_conservative(self):
         record = ActionRecord.model_validate({'action': {'action_id': 'compose',
             'capability_id': 'unity.prototype.compose', 'rationale': 'legacy', 'inputs': {}},

@@ -26,6 +26,9 @@ TASK_CAPABILITIES.extend(['agent.history.read', 'agent.report_blocked'])
 PROTOTYPE_CAPABILITIES.extend(['agent.history.read', 'agent.report_blocked'])
 CODE_CAPABILITIES = ['agent.next_action', 'code.workspace.inspect', 'code.file.read',
                      'code.file.write', 'agent.history.read', 'agent.finish', 'agent.report_blocked']
+ENVIRONMENT_SCENE_CAPABILITIES = ['agent.next_action', 'project.assets.list',
+    'environment.scene.read', 'environment.object.transform', 'agent.history.read',
+    'agent.finish', 'agent.report_blocked']
 GAME_EXECUTION_CAPABILITIES = ['code.project.status', 'code.project.check', 'code.project.build',
                                'code.preview.start', 'code.preview.stop']
 DEPENDENCY_CAPABILITY = 'code.dependencies.prepare'
@@ -38,7 +41,8 @@ def card_code_capabilities(value):
         if value.allow_dependency_install:
             capabilities.insert(4, DEPENDENCY_CAPABILITY)
     return capabilities
-TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development']
+TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development',
+                      'environment-scene']
 ExecutionMode = Literal["typed-tools", "codex-full-access"]
 EffectState = Literal["NONE", "STAGED", "APPLIED", "COMMITTED", "UNKNOWN"]
 VerificationExecutionStatus = Literal["COMPLETED", "FAILED", "CANCELLED", "INTERRUPTED"]
@@ -80,6 +84,7 @@ class PrepareAgentTask(TaskModel):
     allow_game_execution: bool = False
     allow_dependency_install: bool = False
     task_profile: TaskProfile = 'asset-exchange'
+    selected_scene_object_ids: list[str] = Field(default_factory=list, max_length=16)
 
     @model_validator(mode='after')
     def card_scope(self):
@@ -90,10 +95,20 @@ class PrepareAgentTask(TaskModel):
                 raise ValueError('卡片代码开发不包含图片生成或游测执行。')
             if self.allow_dependency_install and not self.allow_game_execution:
                 raise ValueError('依赖准备只能与游戏工程执行权限一起授权。')
+        elif self.task_profile == 'environment-scene':
+            if not self.project_id or self.execution_mode != 'typed-tools':
+                raise ValueError('环境场景编辑需要当前项目和 typed-tools 权限。')
+            if len(self.selected_scene_object_ids) != 1:
+                raise ValueError('环境场景编辑需要且只接受一个已选场景对象。')
+            if (self.card_id is not None or self.allow_playtest or self.allow_image_generation
+                    or self.allow_game_execution or self.allow_dependency_install):
+                raise ValueError('环境场景编辑不包含卡片开发、图片生成、工程执行或游测。')
         elif self.allow_game_execution or self.allow_dependency_install:
             raise ValueError('游戏工程执行权限仅用于 card-development。')
         elif self.card_id is not None:
             raise ValueError('card_id 仅用于 card-development。')
+        elif self.selected_scene_object_ids:
+            raise ValueError('选中场景对象上下文仅用于 environment-scene 任务。')
         return self
 
 
@@ -115,6 +130,7 @@ class AuthorizationCard(TaskModel):
     allow_dependency_install: bool = False
     task_profile: TaskProfile = 'asset-exchange'
     capability_ids: list[str] = Field(default_factory=lambda: list(TASK_CAPABILITIES))
+    scene_write_object_ids: list[str] = Field(default_factory=list, max_length=16)
     max_model_calls: int | None = 8
     max_cli_invocations: int | None = None
     max_duration_seconds: int = 1200
@@ -154,6 +170,7 @@ class TaskGrant(TaskModel):
     allow_game_execution: bool = False
     allow_dependency_install: bool = False
     capability_ids: list[str]
+    scene_write_object_ids: list[str] = Field(default_factory=list, max_length=16)
     max_repair_rounds: int = Field(default=2, ge=0, le=2)
     actor_id: str = "usr_local_workspace"
     budget: RuntimeBudget = Field(default_factory=lambda: RuntimeBudget(max_steps=32,
@@ -179,6 +196,17 @@ class NextActionInput(TaskModel):
     expected_provider: str
     expected_model: str
     input_schemas: dict[str, JsonValue] = Field(default_factory=dict)
+
+
+SceneCoordinate = Annotated[float, Field(ge=-10000, le=10000, allow_inf_nan=False)]
+
+
+class SceneTransformInput(TaskModel):
+    object_id: str = Field(pattern=r"^sobj_[A-Za-z0-9_-]{1,160}$")
+    expected_version: int = Field(ge=0)
+    position_m: tuple[SceneCoordinate, SceneCoordinate, SceneCoordinate]
+    rotation_y_deg: float = Field(ge=-360000, le=360000, allow_inf_nan=False)
+    scale: float = Field(gt=0.01, le=100, allow_inf_nan=False)
 
 
 class CreateCubeInput(TaskModel):
@@ -307,6 +335,7 @@ class ActionRecord(TaskModel):
             "unity.prototype.verify", "codex.task.execute",
             "code.dependencies.prepare", "code.project.check", "code.project.build",
             "code.preview.start", "code.preview.stop",
+            "environment.object.transform",
         }
         migrated["effect_state"] = "UNKNOWN" if mutating and state != "planned" else "NONE"
         return migrated

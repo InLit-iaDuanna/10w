@@ -5,7 +5,7 @@ from pathlib import Path
 from sceneops_harness import CapabilityDefinition, CapabilityRegistry, CapabilityResult, HarnessError, RetryPolicy
 from .task_models import (AgentAction, AssetInput, CreateCubeInput, CodexTaskInput, EmptyActionInput,
                           FinishInput, NextActionInput, ToolResult, now, PrototypeVerifyInput, CapabilityGapInput,
-                          CodeReadInput, CodeWriteInput, HistoryReadInput)
+                          CodeReadInput, CodeWriteInput, HistoryReadInput, SceneTransformInput)
 from .production_catalog import module_for
 from .output_manifest import OUTPUT_MANIFEST_INSTRUCTION, register_output_manifest
 from engine_unity import PrototypeSpec, PrototypePlayPayload
@@ -16,6 +16,7 @@ MUTATIONS.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prot
 MUTATIONS.add('code.file.write')
 MUTATIONS.update({'code.dependencies.prepare', 'code.project.check', 'code.project.build',
                   'code.preview.start', 'code.preview.stop'})
+MUTATIONS.add('environment.object.transform')
 INPUT_MODELS = {"blender.asset.create": CreateCubeInput, "blender.asset.export": AssetInput,
     "unity.asset.import": AssetInput, "blender.scene.inspect": EmptyActionInput,
     "unity.scene.inspect": EmptyActionInput, "agent.finish": FinishInput,
@@ -30,6 +31,9 @@ INPUT_MODELS.update({'code.workspace.inspect': EmptyActionInput,
 INPUT_MODELS.update({capability: EmptyActionInput for capability in
     ('code.dependencies.prepare', 'code.project.status', 'code.project.check', 'code.project.build',
      'code.preview.start', 'code.preview.stop')})
+INPUT_MODELS.update({'project.assets.list': EmptyActionInput,
+                     'environment.scene.read': EmptyActionInput,
+                     'environment.object.transform': SceneTransformInput})
 
 
 def contained(path, root):
@@ -45,6 +49,7 @@ class TaskTools:
         self.sessions = {}
         self.session_states = {}
         self.blocked_tool = None
+        self.safe_failures = {}
 
     def registry(self):
         registry = CapabilityRegistry()
@@ -145,6 +150,59 @@ class TaskTools:
             evidence = await self.finish(task)
         elif invocation.capability_id == 'agent.report_blocked':
             evidence = {'tool': 'capability_gap', 'code': 'BLOCKED_CAPABILITY_GAP', **invocation.inputs}
+        elif invocation.capability_id == 'project.assets.list':
+            if self.service.project_assets is None:
+                raise HarnessError('PROJECT_ASSETS_NOT_CONNECTED', '项目资产查询服务尚未连接。')
+            assets = self.service.project_assets.list(task.project_id)
+            evidence = {'tool': 'project_assets', 'mode': 'live', 'effect_state': 'NONE',
+                        'project_id': task.project_id,
+                        'assets': [item.model_dump(mode='json') for item in assets]}
+        elif invocation.capability_id == 'environment.scene.read':
+            if self.service.environment_scenes is None:
+                raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目环境场景服务尚未连接。')
+            try:
+                scene = self.service.environment_scenes.get(task.project_id)
+            except Exception as error:
+                from world_composer import EnvironmentSceneError
+                if isinstance(error, EnvironmentSceneError):
+                    raise HarnessError(error.code, str(error)) from error
+                raise
+            evidence = {'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'NONE',
+                        'scene': scene.model_dump(mode='json'),
+                        'notice': '这是项目场景数据，不代表运行中的游戏状态。'}
+        elif invocation.capability_id == 'environment.object.transform':
+            if self.service.environment_scenes is None:
+                raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目环境场景服务尚未连接。')
+            from world_composer import (EnvironmentSceneError, EnvironmentTransform,
+                                        TransformObjectRequest)
+            data = SceneTransformInput.model_validate(invocation.inputs)
+            try:
+                before_scene = self.service.environment_scenes.get(task.project_id)
+                before_object = next((item for item in before_scene.objects
+                                      if item.id == data.object_id), None)
+                if before_object is None:
+                    raise EnvironmentSceneError('SCENE_OBJECT_NOT_FOUND', '场景对象不存在。', status_code=404)
+                request = TransformObjectRequest(expected_version=data.expected_version,
+                    transform=EnvironmentTransform(position_m=data.position_m,
+                        rotation_y_deg=data.rotation_y_deg, scale=data.scale))
+                self.service.environment_scenes.transform_object(task.project_id, data.object_id, request)
+                readback = self.service.environment_scenes.get(task.project_id)
+                changed = next((item for item in readback.objects if item.id == data.object_id), None)
+                if changed is None or changed.transform != request.transform:
+                    raise HarnessError('ACTION_UNCERTAIN', '场景写入后读回与请求不一致，需要人工核查。')
+            except EnvironmentSceneError as error:
+                self.safe_failures[invocation.run_id] = {
+                    'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'NONE',
+                    'code': error.code, 'reason': str(error), 'project_id': task.project_id,
+                }
+                raise HarnessError(error.code, str(error)) from error
+            evidence = {'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'COMMITTED',
+                        'operation': 'transform', 'project_id': task.project_id,
+                        'before_version': before_scene.version, 'scene_version': readback.version,
+                        'before_object': before_object.model_dump(mode='json'),
+                        'object': changed.model_dump(mode='json'),
+                        'notice': ('本任务唯一一次对象变换已写入并即时读回；下一步读取最新场景核对，'
+                                   '不要再次执行相对变换。没有验证运行中的游戏。')}
         elif invocation.capability_id == 'code.project.status':
             snapshot = self.service.game.snapshot(task)
             evidence = {'tool': 'game_project', 'mode': 'live', 'effect_state': 'NONE',
@@ -265,6 +323,35 @@ class TaskTools:
 
     async def finish(self, task):
         task = self.service.check_grant(self.task_id, "agent.finish")
+        if task.authorization_card.task_profile == 'environment-scene':
+            if self.service.environment_scenes is None:
+                raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目环境场景服务尚未连接。')
+            transforms = [entry for entry in task.actions
+                if entry.action.capability_id == 'environment.object.transform'
+                and entry.state == 'succeeded']
+            if not transforms:
+                raise HarnessError('VERIFICATION_INCOMPLETE', '当前任务还没有成功修改已授权场景对象。')
+            latest = transforms[-1]
+            latest_index = task.actions.index(latest)
+            readbacks = [entry for entry in task.actions[latest_index + 1:]
+                if entry.action.capability_id == 'environment.scene.read'
+                and entry.state == 'succeeded']
+            if not readbacks:
+                raise HarnessError('VERIFICATION_INCOMPLETE', '场景修改后必须再次读取最新场景再完成。')
+            scene = self.service.environment_scenes.get(task.project_id)
+            data = SceneTransformInput.model_validate(latest.action.inputs)
+            changed = next((item for item in scene.objects if item.id == data.object_id), None)
+            expected = (tuple(data.position_m), data.rotation_y_deg, data.scale)
+            actual = ((tuple(changed.transform.position_m), changed.transform.rotation_y_deg,
+                       changed.transform.scale) if changed else None)
+            if actual != expected:
+                raise HarnessError('VERIFICATION_INCOMPLETE',
+                    '当前场景已变化或对象不存在；历史结果不能代替最新场景状态。')
+            return {'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'NONE',
+                'delivery_status': 'scene_updated', 'project_id': task.project_id,
+                'scene_version': scene.version, 'object': changed.model_dump(mode='json'),
+                'verified': True, 'game_runtime_updated': False,
+                'summary': '项目场景对象变换已写入并从最新场景回读；未验证运行中的游戏。'}
         if task.authorization_card.task_profile == 'card-development':
             code = self.service.code.finish(task)
             if not task.authorization_card.allow_game_execution:

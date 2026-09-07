@@ -29,9 +29,10 @@ function currentVersion(asset: ProjectAssetEntry, selected: number | undefined) 
     ?? asset.versions.at(-1)!;
 }
 
-export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset}: {
+export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset, onAgentEdit}: {
   projectId: string; aiBusy?: boolean; onCreateAsset?: (source: AssetSource) => void;
   onImportAsset?: (file: File) => Promise<ProjectAssetEntry>;
+  onAgentEdit?: (goal: string, selectedSceneObjectId: string) => Promise<void>;
 }) {
   const cache = useQueryClient();
   const splitRoot = useRef<HTMLElement>(null);
@@ -51,6 +52,8 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
   const [error, setError] = useState('');
   const [dropActive, setDropActive] = useState(false);
   const [dropNotice, setDropNotice] = useState('');
+  const [agentGoal, setAgentGoal] = useState('');
+  const [agentNotice, setAgentNotice] = useState('');
   const [draft, setDraft] = useState<TransformDraft>({x:'0',y:'0',z:'0',rotation:'0',scale:'1'});
   const scene = sceneQuery.data;
   const objects = scene?.objects ?? [];
@@ -115,9 +118,21 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     setAssetName(value.title);
     setError('');
   }, onError:error => setError(error.message)});
+  const agentEdit = useMutation({mutationFn:async () => {
+    if (!onAgentEdit || !selectedSceneObject) throw new Error('请先选择一个场景对象。');
+    const goal = agentGoal.trim();
+    if (!goal) throw new Error('请输入要让 Agent 完成的变换。');
+    await onAgentEdit(goal, selectedSceneObject.id);
+  }, onSuccess:() => {
+    setAgentGoal('');
+    setAgentNotice('授权卡已准备；请在主对话的 Agent 执行流中确认范围。');
+    setError('');
+  }, onError:error => {setAgentNotice('');setError(error.message);}});
   const onSceneSelect = useCallback((id:string|null) => {
     setSelectedAssetId(null);
     setAddingAsset(false);
+    setAgentGoal('');
+    setAgentNotice('');
     setSelectedSceneId(id);
   }, []);
 
@@ -125,6 +140,8 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     setSelectedSceneId(null);
     setSelectedAssetId(null);
     setAddingAsset(false);
+    setAgentGoal('');
+    setAgentNotice('');
   }, [projectId]);
   useEffect(() => {
     setDropActive(false);
@@ -146,7 +163,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
 
   if (sceneQuery.isPending || assetsQuery.isPending) return <p role="status" className="environment-loading">读取项目资产库与场景…</p>;
   if (sceneQuery.error || assetsQuery.error || !scene) return <p role="alert" className="environment-error">{(sceneQuery.error ?? assetsQuery.error)?.message ?? '场景读取失败'} <button onClick={() => {void sceneQuery.refetch();void assetsQuery.refetch();}}>重试</button></p>;
-  const busy = placed.isPending || dropped.isPending || transformed.isPending || removed.isPending || renamed.isPending || aiBusy;
+  const busy = placed.isPending || dropped.isPending || transformed.isPending || removed.isPending || renamed.isPending || agentEdit.isPending || aiBusy;
   const profile = scene.scale_profile ?? {unit:'meter' as const,up_axis:'Y' as const,handedness:'right' as const,
     grid_step_m:1,reference_human_height_m:1.8,default_object_spacing_m:3};
   const beginAsset = (source: AssetSource) => {
@@ -188,6 +205,14 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
         <div className="environment-transform-grid">
           {([['x','X'],['y','Y'],['z','Z'],['rotation','旋转 Y°'],['scale','缩放']] as const).map(([key,label]) => <label key={key}>{label}<input type="number" step={key === 'rotation' ? 5 : .1} value={draft[key]} disabled={busy} onChange={event => setDraft(current => ({...current,[key]:event.target.value}))}/></label>)}
         </div><button className="primary" disabled={busy} onClick={() => transformed.mutate()}>应用变换</button>
+        {onAgentEdit && <form className="environment-agent-edit" onSubmit={event => {event.preventDefault();agentEdit.mutate();}}>
+          <label>让主 Agent 修改这个对象<textarea rows={2} maxLength={8000} value={agentGoal} disabled={busy}
+            placeholder="例如：把世界坐标 X 增加 1 米，保持旋转和缩放不变。"
+            onChange={event => {setAgentGoal(event.target.value);setAgentNotice('');}}/></label>
+          <div><small>当前选择只作为任务上下文；确认授权卡后才允许写入这个对象。</small>
+            <button type="submit" disabled={busy || !agentGoal.trim()}>准备 Agent 授权</button></div>
+          {agentNotice && <p role="status">{agentNotice}</p>}
+        </form>}
       </section> : selectedAsset && assetVersion ? <section className="environment-asset-editor" aria-label={`${selectedAsset.title} 资产编辑`}>
         <header><button type="button" className="asset-back" onClick={() => setSelectedAssetId(null)}>← 资产库</button><span>v{assetVersion.source_version}</span></header>
         <div className="asset-editor-body">

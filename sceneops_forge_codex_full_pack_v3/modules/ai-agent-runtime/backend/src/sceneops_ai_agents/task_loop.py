@@ -7,7 +7,7 @@ from .task_models import (ActionRecord, AgentAction, CreateCubeInput, Verificati
 from .task_tools import INPUT_MODELS, MUTATIONS, TaskTools, contained
 from .production_models import ProductionStep
 from .production_catalog import module_for
-from .context_projection import project_action_history, task_context_summary
+from .context_projection import project_action_history, project_observations, task_context_summary
 
 
 def project_action(service, task, entry, *, run_id=None):
@@ -51,6 +51,22 @@ def definition(task, step):
         stages=[PipelineStage(id="action", title="单动作执行", steps=[step])], budget=budget, execution_mode="live")
 
 
+def next_action_inputs(task, runtime):
+    capabilities = [cap.model_dump(mode="json") for cap in runtime.registry.list()
+                    if cap.id != "agent.next_action"]
+    capability_ids = {item["id"] for item in capabilities}
+    can_read_history = "agent.history.read" in capability_ids
+    inputs = {"goal": task.goal,
+        "context_summary": task_context_summary(task, can_read_history=can_read_history),
+        "observations": project_observations(task, can_read_history=can_read_history),
+        "expected_provider": task.provider_id, "expected_model": task.provider_model,
+        "history": project_action_history(task.actions, can_read_history=can_read_history),
+        "capabilities": capabilities}
+    inputs['input_schemas'] = {cap.id: INPUT_MODELS[cap.id].model_json_schema()
+        for cap in runtime.registry.list() if cap.id in INPUT_MODELS}
+    return inputs
+
+
 async def choose(service, task_id):
     task = service.check_grant(task_id, "agent.next_action")
     settings = service.provider.settings()
@@ -62,12 +78,7 @@ async def choose(service, task_id):
         current.model_calls_used += 1
     task = service.records.update(task_id, reserve, "agent.model.reserved")
     runtime = service.runtimes[task_id]
-    inputs = {"goal": task.goal, "context_summary": task_context_summary(task),
-        "observations": task.observations,
-        "expected_provider": task.provider_id, "expected_model": task.provider_model,
-        "history": project_action_history(task.actions),
-        "capabilities": [cap.model_dump(mode="json") for cap in runtime.registry.list() if cap.id != "agent.next_action"]}
-    inputs['input_schemas'] = {cap.id: INPUT_MODELS[cap.id].model_json_schema() for cap in runtime.registry.list() if cap.id in INPUT_MODELS}
+    inputs = next_action_inputs(task, runtime)
     step = PipelineStep(id="decide", title="观察并选择下一动作", capability_id="agent.next_action", inputs=inputs)
     run = runtime.submit(definition(task, step), service.authority(task), f"{task.id}_model_{task.model_calls_used}")
     def link(current):
@@ -91,7 +102,8 @@ async def choose(service, task_id):
 def record_action(service, task_id, action):
     def record(task):
         prior = next((entry for entry in task.actions if entry.action.action_id == action.action_id), None)
-        if prior and prior.action != action:
+        if prior and (prior.action.capability_id != action.capability_id
+                      or prior.action.inputs != action.inputs):
             raise HarnessError("REQUEST_ID_CONFLICT", "动作 ID 已对应其他内容，不能替换已审阅请求。")
         if prior:
             if prior.state in ("running", "uncertain"):
@@ -102,6 +114,7 @@ def record_action(service, task_id, action):
             if len(task.actions) >= task.grant.budget.max_steps:
                 raise HarnessError("ACTION_LIMIT", "已达到任务步骤上限。")
             role = ("blender-specialist" if action.capability_id.startswith("blender.") else
+                    "technical-artist" if action.capability_id.startswith(("environment.", "project.assets.")) else
                     "unity-engineer" if action.capability_id.startswith(("unity.", "code.")) else
                     "reviewer" if action.capability_id == "agent.finish" else "producer")
             task.actions.append(ActionRecord(action=action, assigned_role=role))
@@ -110,13 +123,49 @@ def record_action(service, task_id, action):
     return action.action_id
 
 
-def validate_action(task, entry):
+def validate_action(service, task, entry):
     cap = entry.action.capability_id
     if cap not in INPUT_MODELS or cap not in task.grant.capability_ids:
         raise HarnessError("TASK_SCOPE_DENIED", "所需动作未知或超出授权范围，需要新授权。")
     if set(entry.action.inputs) - set(INPUT_MODELS[cap].model_fields):
         raise HarnessError("TASK_SCOPE_DENIED", "动作包含未授权参数；路径和权限不能由模型指定，需要重新审阅。")
     INPUT_MODELS[cap].model_validate(entry.action.inputs)
+    if cap == 'environment.object.transform':
+        data = INPUT_MODELS[cap].model_validate(entry.action.inputs)
+        prior_transform = next((item for item in task.actions if item is not entry
+            and item.action.capability_id == cap and item.state == 'succeeded'), None)
+        if prior_transform:
+            raise HarnessError('SCENE_TRANSFORM_LIMIT',
+                '本次授权只允许一次成功对象变换；写入已完成，请读取最新场景并完成任务。')
+        if data.object_id not in task.grant.scene_write_object_ids:
+            raise HarnessError('TASK_SCOPE_DENIED', '场景对象不在本次明确确认的写入范围内。')
+        if service.environment_scenes is None:
+            raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目环境场景服务尚未连接。')
+        scene = service.environment_scenes.get(task.project_id)
+        if scene.version != data.expected_version:
+            raise HarnessError('SCENE_VERSION_CONFLICT', '场景已更新，请重新读取后再调整。')
+        if not any(item.id == data.object_id for item in scene.objects):
+            raise HarnessError('SCENE_OBJECT_NOT_FOUND', '当前场景中没有该对象；不能猜测其他 ID。')
+        # A failed, no-effect action may be retried after the agent gathers the
+        # missing read context.  The record keeps its original audit position,
+        # so execution context is every other completed action, not merely the
+        # records that were inserted before it.
+        prior_actions = [item for item in task.actions if item is not entry]
+        if not any(item.action.capability_id == 'project.assets.list'
+                   and item.state == 'succeeded' for item in prior_actions):
+            raise HarnessError('PROJECT_ASSET_CONTEXT_REQUIRED',
+                '修改场景前必须先读取当前项目资产及版本。')
+        scene_reads = [item for item in prior_actions
+            if item.action.capability_id == 'environment.scene.read'
+            and item.state == 'succeeded']
+        latest_read = scene_reads[-1] if scene_reads else None
+        read_scene = ((latest_read.result or {}).get('evidence', {}).get('scene', {})
+                      if latest_read else {})
+        if (read_scene.get('version') != data.expected_version
+                or not any(item.get('id') == data.object_id
+                           for item in read_scene.get('objects', []))):
+            raise HarnessError('SCENE_CONTEXT_REQUIRED',
+                '修改场景前必须读取同一版本的当前场景并确认目标对象。')
     if cap == 'unity.prototype.compose':
         prior = next((item for item in task.actions if item.action.capability_id == cap and item.state == 'succeeded'), None)
         if prior:
@@ -136,19 +185,60 @@ def validate_action(task, entry):
             TaskTools.export_for(task, entry.action.inputs["asset_id"])
 
 
+def record_scene_precondition_rejection(service, task_id, action_id, error):
+    def rejected(current):
+        action = next(item for item in current.actions if item.action.action_id == action_id)
+        action.state, action.reason, action.effect_state = 'failed', str(error), 'NONE'
+        action.result = {'evidence': {'tool': 'environment_scene', 'mode': 'live',
+            'effect_state': 'NONE', 'code': error.code, 'reason': str(error),
+            'project_id': current.project_id}}
+        current.current_run_id = None
+    rejected_task = service.records.update(task_id, rejected,
+        'agent.action.precondition_rejected', {'action_id': action_id, 'code': error.code})
+    project_action(service, rejected_task, next(item for item in rejected_task.actions
+        if item.action.action_id == action_id))
+
+
 def changeset(task, entry):
     tool = entry.action.capability_id.split(".")[0]
     full_access = entry.action.capability_id == "codex.task.execute"
     code_write = entry.action.capability_id == 'code.file.write'
+    scene_transform = entry.action.capability_id == 'environment.object.transform'
     project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.'))
-    return ChangeSet(change_set_id=identifier("chg"), base_version=f"agent-task:{task.id}",
+    base_version = (f"environment-scene:{task.project_id}:{entry.action.inputs['expected_version']}"
+                    if scene_transform else f"agent-task:{task.id}")
+    object_ids = ([entry.action.inputs['object_id']] if scene_transform else
+        [task.project_id] if code_write or project_operation or full_access
+            or entry.action.capability_id.startswith('unity.prototype.') else
+        [entry.action.inputs["asset_id"]])
+    previous_values = ({"scene_version": entry.action.inputs['expected_version'],
+                        "selected_object": task.observations.get('scene_selection', {})}
+                       if scene_transform else
+        {"path": entry.action.inputs['path'], "content": entry.action.inputs['expected_content']}
+            if code_write else
+        {"task_owned_readback": task.observations.get(
+            'game_project' if project_operation else "codex_prechange" if full_access else tool, {})})
+    return ChangeSet(change_set_id=identifier("chg"), base_version=base_version,
         target={"module_id": "ai-agent-runtime", "integration_id": tool,
-                "object_ids": [task.project_id] if code_write or project_operation or full_access or entry.action.capability_id.startswith('unity.prototype.') else [entry.action.inputs["asset_id"]]},
-        previous_values={"path": entry.action.inputs['path'], "content": entry.action.inputs['expected_content']} if code_write else {"task_owned_readback": task.observations.get('game_project' if project_operation else "codex_prechange" if full_access else tool, {})},
+                "object_ids": object_ids},
+        previous_values=previous_values,
         proposed_values=entry.action.inputs, rationale=entry.action.rationale,
-        expected_result="源码写入后回读实际内容；不运行或编译，待用户审阅。" if code_write else "Codex 完成目标后返回待审阅结果；不声称独立验收。" if full_access else "仅授权独立工作区内的类型化动作，并由工具即时读回核验。",
-        impact_scope="project" if full_access or project_operation else "object", risk="high" if full_access else "low", validation_plan=["比对精确前文并回读当前源码；人工审阅差异"] if code_write else ["记录固定工程操作的退出码、日志、产物与本地预览状态"] if project_operation else ["人工核对任务产物及 CLI 执行摘要"] if full_access else ["读回当前对象身份、尺寸、路径及 console"],
-        rollback_plan=["停止任务专有会话，保留独立工程和产物供审阅；不自动删除或覆盖"],
+        expected_result=("项目场景对象变换保存为新版本并读回；不声称运行中的游戏已更新。"
+                         if scene_transform else
+            "源码写入后回读实际内容；不运行或编译，待用户审阅。" if code_write else
+            "Codex 完成目标后返回待审阅结果；不声称独立验收。" if full_access else
+            "仅授权独立工作区内的类型化动作，并由工具即时读回核验。"),
+        impact_scope="project" if full_access or project_operation else "object",
+        risk="high" if full_access else "low",
+        validation_plan=(["读取保存后的最新场景版本，核对对象 ID、位置、旋转和缩放"]
+            if scene_transform else
+            ["比对精确前文并回读当前源码；人工审阅差异"] if code_write else
+            ["记录固定工程操作的退出码、日志、产物与本地预览状态"] if project_operation else
+            ["人工核对任务产物及 CLI 执行摘要"] if full_access else
+            ["读回当前对象身份、尺寸、路径及 console"]),
+        rollback_plan=(["不自动覆盖后续场景版本；如需恢复，基于最新版本建立明确的新变换任务"]
+            if scene_transform else
+            ["停止任务专有会话，保留独立工程和产物供审阅；不自动删除或覆盖"]),
         approval_requirements=[{"permission": "harness:approve", "minimum_decisions": 1, "allowed_actor_types": ["user"]}],
         created_by={"type": "agent", "id": "agt_" + entry.assigned_role.replace("-", "_")}, created_at=now())
 
@@ -161,7 +251,13 @@ async def execute_action(service, task_id, action_id):
         return False
     if entry.state in ("running", "uncertain") or entry.effect_state in ("APPLIED", "COMMITTED", "UNKNOWN"):
         raise HarnessError("ACTION_UNCERTAIN", "此动作可能正在执行或已经产生外部效果，不能自动重放。")
-    validate_action(task, entry)
+    try:
+        validate_action(service, task, entry)
+    except HarnessError as error:
+        if error.code in ('SCENE_VERSION_CONFLICT', 'SCENE_OBJECT_NOT_FOUND', 'SCENE_TRANSFORM_LIMIT',
+                          'PROJECT_ASSET_CONTEXT_REQUIRED', 'SCENE_CONTEXT_REQUIRED'):
+            record_scene_precondition_rejection(service, task_id, action_id, error)
+        raise
     def reserve(current):
         action = next(item for item in current.actions if item.action.action_id == action_id)
         transport_resend = action.state == "blocked" and action.effect_state in ("NONE", "STAGED")
@@ -214,7 +310,17 @@ async def execute_action(service, task_id, action_id):
         run = await runtime.start(task.project_id, run.id, service.authority(task))
     if run.state == "awaiting_approval":
         authorized = service.check_grant(task_id, entry.action.capability_id)
-        validate_action(authorized, next(item for item in authorized.actions if item.action.action_id == action_id))
+        try:
+            validate_action(service, authorized, next(item for item in authorized.actions
+                if item.action.action_id == action_id))
+        except HarnessError as error:
+            if error.code not in ('SCENE_VERSION_CONFLICT', 'SCENE_OBJECT_NOT_FOUND',
+                                  'SCENE_TRANSFORM_LIMIT', 'PROJECT_ASSET_CONTEXT_REQUIRED',
+                                  'SCENE_CONTEXT_REQUIRED'):
+                raise
+            runtime.cancel(task.project_id, run.id, service.authority(authorized))
+            record_scene_precondition_rejection(service, task_id, action_id, error)
+            return False
         runtime.approve(task.project_id, run.id, action_id, service.authority(authorized))
         service.records.update(task_id, lambda current: None, "agent.action.grant_applied",
             {"action_id": action_id, "grant_id": task.grant.id, "approved_by": task.grant.actor_id,
@@ -223,6 +329,8 @@ async def execute_action(service, task_id, action_id):
     result = run.step_runs[0].result
     pending = service.tools[task_id].blocked_tool is not None
     evidence = result.outputs.get("evidence") if result and isinstance(result.outputs, dict) else None
+    if evidence is None:
+        evidence = service.tools[task_id].safe_failures.pop(run.id, None)
     code_recovered = False
     if entry.action.capability_id == 'code.file.write' and run.state != 'completed':
         effect, recovered = service.code.reconcile(service.get(task_id), entry)
@@ -241,7 +349,7 @@ async def execute_action(service, task_id, action_id):
         action.state = ("uncertain" if completed_mutation_without_commit else
                         "failed" if completed_mutation_without_effect else
                         "succeeded" if run.state == "completed" or code_recovered else
-                        "failed" if entry.action.capability_id == 'code.file.write' and reported_effect == 'NONE' else
+                        "failed" if entry.action.capability_id in MUTATIONS and reported_effect == 'NONE' else
                         "blocked" if pending else
                         "uncertain" if entry.action.capability_id in MUTATIONS else "failed")
         action.reason, action.result = run.reason, result.outputs if result else None
@@ -277,10 +385,13 @@ async def execute_action(service, task_id, action_id):
             production_ready = (action.result or {}).get('evidence', {}).get('delivery_status') == 'production_ready'
             code_written = (action.result or {}).get('evidence', {}).get('delivery_status') == 'code_written'
             build_ready = (action.result or {}).get('evidence', {}).get('delivery_status') == 'build_ready'
+            scene_updated = (action.result or {}).get('evidence', {}).get('delivery_status') == 'scene_updated'
             current.status = 'review_required' if production_ready or code_written or build_ready else 'completed'
             current.reason = ('类型检查和构建已通过，本地预览正在运行；待浏览器与玩法验收。' if build_ready else
                 '源码已写入并回读，待检查；未运行或编译。' if code_written else
                 '制作与编译检查完成，待用户手动试玩；未执行自动游测。' if production_ready else None)
+            if scene_updated:
+                current.reason = '项目场景对象变换已写入并回读；未验证运行中的游戏。'
             current.finished_at = now()
         elif entry.action.capability_id == "codex.task.execute" and run.state == "completed":
             current.status, current.reason, current.finished_at = "review_required", "Codex 已结束，请检查实际产物；未独立验收。", now()
@@ -293,7 +404,9 @@ async def execute_action(service, task_id, action_id):
     if run.state == "cancelled":
         import asyncio
         raise asyncio.CancelledError()
-    if entry.action.capability_id == 'code.file.write' and final_entry.effect_state in ('NONE', 'COMMITTED'):
+    if entry.action.capability_id in MUTATIONS and final_entry.effect_state == 'NONE':
+        return False
+    if entry.action.capability_id == 'code.file.write' and final_entry.effect_state == 'COMMITTED':
         return False
     if run.state != "completed" and entry.action.capability_id in MUTATIONS:
         raise HarnessError("ACTION_UNCERTAIN", run.reason or "外部写入结果不确定，需要检查。")
@@ -331,6 +444,27 @@ async def execute_task(service, task_id):
         try:
             if await execute_action(service, task_id, action_id):
                 return
+            # A scene write followed by a newly executed scene read already has
+            # all of the evidence needed by the existing finish verifier.  Close
+            # that bounded task deterministically instead of spending another
+            # model call asking whether to finish (or risking a duplicate write).
+            current = service.get(task_id)
+            if (current.authorization_card.task_profile == 'environment-scene'
+                    and action.capability_id == 'environment.scene.read'):
+                readback = next(item for item in current.actions
+                    if item.action.action_id == action_id)
+                transforms = [item for item in current.actions
+                    if item.action.capability_id == 'environment.object.transform'
+                    and item.state == 'succeeded']
+                if (readback.state == 'succeeded' and transforms
+                        and current.actions.index(readback) > current.actions.index(transforms[-1])):
+                    finish = AgentAction(action_id=identifier('scene_finish'),
+                        capability_id='agent.finish',
+                        rationale='根据成功变换后的实时场景回读完成本次有界任务。',
+                        inputs={'summary': '项目场景对象变换已写入并从最新场景回读。'})
+                    finish_id = record_action(service, task_id, finish)
+                    if await execute_action(service, task_id, finish_id):
+                        return
         except (ValidationError, HarnessError) as error:
             if isinstance(error, HarnessError) and error.code in ("TASK_SCOPE_DENIED", "TASK_GRANT_INVALID", "ACTION_UNCERTAIN", "ACTION_LIMIT", "REPAIR_LIMIT", "REQUEST_ID_CONFLICT"):
                 raise

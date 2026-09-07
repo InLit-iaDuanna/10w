@@ -22,6 +22,8 @@ ASSET_TOOL_GUIDANCE = """基础资产路径只支持能力清单所表达的有�
 
 PROTOTYPE_TOOL_GUIDANCE = """固定原型路径先按实际能力组合有界参数，再读取场景结果并交付检查。只有能力清单明确包含玩法验证时才执行自动游测；未授权游测不妨碍如实交付已完成的制作与编译结果。"""
 
+ENVIRONMENT_TOOL_GUIDANCE = """项目环境任务先读取当前项目资产与最新场景，用任务上下文中的选中对象 ID 定位对象。对象选择只是上下文，只有能力清单中的 environment.object.transform 和已确认对象范围才允许写入。修改时提交刚读取的 expected_version 和完整变换，未要求变化的坐标、旋转与缩放保持原值。每个环境场景任务只允许一次成功变换；写入后必须读取当前场景核对，不得再次按相对描述重复修改。对象不存在或版本冲突时重新读取，不猜 ID、不强行覆盖。这里修改的是项目场景数据，不能据此声称运行中的游戏已更新。"""
+
 
 def next_action_instructions(skill_context) -> str:
     blocks = [CORE_SYSTEM_INSTRUCTION, DIRECTOR_ROLE_INSTRUCTION]
@@ -30,6 +32,7 @@ def next_action_instructions(skill_context) -> str:
     blocks.extend(skill_context.blocks)
     blocks.append(STRUCTURED_ACTION_PROTOCOL)
     return "\n\n".join(blocks)
+
 
 def next_action_prompt(data) -> str:
     capability_ids = {item["id"] for item in data.capabilities if isinstance(item.get("id"), str)}
@@ -42,6 +45,8 @@ def next_action_prompt(data) -> str:
         guidance.append(ASSET_TOOL_GUIDANCE)
     if any(capability.startswith("unity.prototype.") for capability in capability_ids):
         guidance.append(PROTOTYPE_TOOL_GUIDANCE)
+    if any(capability.startswith(("project.assets.", "environment.")) for capability in capability_ids):
+        guidance.append(ENVIRONMENT_TOOL_GUIDANCE)
     blocks = ["根据下面的目标、当前上下文、真实观测、历史引用和能力合同选择下一动作。"]
     if guidance:
         blocks.append("\n\n".join(guidance))

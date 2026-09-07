@@ -188,7 +188,15 @@ function createWorkbench(unified: boolean) {
                 return result;
               }}}
               environment={{render: input => <EnvironmentSceneWorkflow {...input}
-                onImportAsset={file => importProjectAssetFile(input.projectId, 'world-3d', file)} />, read: async projectId => {
+                onImportAsset={file => importProjectAssetFile(input.projectId, 'world-3d', file)}
+                onAgentEdit={async (goal, selectedSceneObjectId) => {
+                  await agentTasks.prepare({project_id:input.projectId,goal,task_profile:'environment-scene',
+                    execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
+                    allow_game_execution:false,allow_dependency_install:false,
+                    selected_scene_object_ids:[selectedSceneObjectId]});
+                  await queryClient.invalidateQueries({queryKey:['agent-tasks']});
+                  await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(input.projectId)});
+                }} />, read: async projectId => {
                 const scene = await environmentSceneClient.get(projectId);
                 return {messages:(scene.history ?? []).map(message => ({...message,
                   created_at:message.created_at ?? '1970-01-01T00:00:00.000Z',mode:'live' as const}))};
@@ -267,7 +275,16 @@ function createWorkbench(unified: boolean) {
       return <CurrentWorldTool projectId={props.context.projectId}
         renderModel={input => <CardAssetWorkflow {...input} />}
         renderEnvironment={() => <EnvironmentSceneWorkflow projectId={props.context.projectId!} onCreateAsset={createAsset}
-          onImportAsset={file => importProjectAssetFile(props.context.projectId!, 'world-3d', file)}/>}/>;
+          onImportAsset={file => importProjectAssetFile(props.context.projectId!, 'world-3d', file)}
+          onAgentEdit={async (goal, selectedSceneObjectId) => {
+            const projectId = props.context.projectId!;
+            await agentTasks.prepare({project_id:projectId,goal,task_profile:'environment-scene',
+              execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
+              allow_game_execution:false,allow_dependency_install:false,
+              selected_scene_object_ids:[selectedSceneObjectId]});
+            await queryClient.invalidateQueries({queryKey:['agent-tasks']});
+            await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
+          }}/>}/>;
     }}}});
   }
   workspaces.register(HOME_PRESET);

@@ -153,7 +153,8 @@ def create_app() -> FastAPI:
             harness.runtime.recover_interrupted(project.project_id)
         app.add_event_handler("shutdown", harness.close)
         agent_tasks = AgentTaskService(database, repository, data_dir,
-            card_context=journey.development_context if journey else None)
+            provider=provider, card_context=journey.development_context if journey else None,
+            project_assets=project_assets, environment_scenes=environment_scenes)
         app.include_router(create_agent_task_router(agent_tasks))
         app.include_router(create_production_router(agent_tasks))
         app.state.agent_tasks = agent_tasks

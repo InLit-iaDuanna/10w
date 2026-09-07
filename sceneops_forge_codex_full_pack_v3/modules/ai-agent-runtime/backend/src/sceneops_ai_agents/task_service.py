@@ -8,7 +8,8 @@ from sceneops_ai_provider import ProviderService
 from sceneops_harness import Authority, CapabilityRegistry, HarnessError, HarnessRuntime, RuntimeBudget
 from .task_models import (AgentTaskRecord, AuthorizationCard, AuthorizeAgentTask, PrepareAgentTask,
                           TaskGrant, now, PROTOTYPE_CAPABILITIES, TASK_CAPABILITIES,
-                          card_code_capabilities, GameOperationRequest)
+                          ENVIRONMENT_SCENE_CAPABILITIES, card_code_capabilities,
+                          GameOperationRequest)
 from .task_repository import AgentTaskRepository
 from .task_tools import TaskTools, contained
 from .production_store import ProductionStore
@@ -17,11 +18,13 @@ from .production_store import ProductionStore
 class AgentTaskService:
     def __init__(self, database_path, workspace_repository, data_dir, *, provider=None,
                  blender_factory=None, unity_factory=None, card_context=None, game_runtime=None,
-                 pnpm_executable=None):
+                 pnpm_executable=None, project_assets=None, environment_scenes=None):
         from . import AgentRuntime
         self.database_path = Path(database_path)
         self.workspace = workspace_repository
         self.card_context = card_context
+        self.project_assets = project_assets
+        self.environment_scenes = environment_scenes
         self.data_dir = Path(data_dir).resolve()
         self.workspace_base = self.data_dir / "agent-workspaces"
         self.state_base = self.data_dir / "agent-tool-state"
@@ -67,17 +70,19 @@ class AgentTaskService:
                    else self.workspace.create_project("Agent · " + request.goal.strip()[:60]))
         card_work = (self.card_workspace(project.project_id, request.card_id)
                      if request.task_profile == 'card-development' else None)
+        scene_work = request.task_profile == 'environment-scene'
         root = Path(card_work['worktree_path']) if card_work else contained(self.workspace_base / project.project_id, self.workspace_base)
-        if not card_work and root.exists() and any(root.iterdir()) and not self.records.owns_workspace(project.project_id, root):
+        if not card_work and not scene_work and root.exists() and any(root.iterdir()) and not self.records.owns_workspace(project.project_id, root):
             raise HarnessError("TASK_REQUIRES_EMPTY_WORKSPACE", "Agent 任务只能使用独立空目录，不能接管已有项目文件。")
-        if not card_work and request.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
+        if not card_work and not scene_work and request.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
             raise HarnessError("TYPED_CONTINUATION_NOT_CONNECTED", "此应用工程已有内容，受控 Blender/Unity 跨任务会话重绑定尚未接入。不会重放或覆盖；可在主对话明确选择 Codex 完全权限继续，或创建新项目。")
         card = AuthorizationCard(workspace_root=str(root), execution_mode=request.execution_mode,
             allow_image_generation=request.allow_image_generation, allow_playtest=request.allow_playtest,
             allow_game_execution=request.allow_game_execution,
             allow_dependency_install=request.allow_dependency_install,
             task_profile=request.task_profile, card_id=request.card_id,
-            branch=card_work['branch'] if card_work else None)
+            branch=card_work['branch'] if card_work else None,
+            scene_write_object_ids=list(request.selected_scene_object_ids))
         if card_work:
             card.capability_ids = card_code_capabilities(card)
             card.scope = ('仅此项目的已登记卡片分支：读取有界 UTF-8 源码，按精确前文创建或修改代码文件；'
@@ -106,7 +111,21 @@ class AgentTaskService:
             card.scope = ('只执行你本次明确目标所需的受控操作。Agent 可在基础资产交换与固定生存射击配方之间选择，'
                 '并在专用空工程进行制作、保存与编译检查。当前不支持任意玩法/C#生成；能力缺口必须报告阻塞。'
                 '不修改其他工程、不运行生产构建/离线渲染、不安装系统软件、不购买或发布。')
-        if not card_work and self.records.owns_workspace(project.project_id, root):
+        elif scene_work:
+            if self.project_assets is None or self.environment_scenes is None:
+                raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目资产或环境场景服务尚未连接。')
+            scene = self.environment_scenes.get(project.project_id)
+            selected = [item for item in scene.objects if item.id in request.selected_scene_object_ids]
+            if len(selected) != len(request.selected_scene_object_ids):
+                raise HarnessError('SCENE_OBJECT_NOT_FOUND', '当前场景中没有选中的对象；不会猜测其他 ID。')
+            card.capability_ids = list(ENVIRONMENT_SCENE_CAPABILITIES)
+            card.scope = ('仅修改当前项目环境场景中已列出的对象变换：'
+                + '、'.join(request.selected_scene_object_ids)
+                + '。本任务只允许一次成功变换；可读取本项目资产版本与最新场景，以当前场景版本进行冲突检查，'
+                  '保存新场景版本并回读。不得新增、删除或跨项目读取对象；不修改运行游戏工程。')
+            card.cost_notice = ('最多 8 次模型请求（含资产/场景读取、修改和回读），20 分钟；'
+                '场景写入使用现有版本冲突保护，模型费用可能未知。')
+        if not card_work and not scene_work and self.records.owns_workspace(project.project_id, root):
             card.scope = ('继续本应用已登记的专用工程：仅执行本次确认的有界资产创建、检查、导出和 Unity 导入；'
                 '沿用产物版本记录，不修改其他工程，不构建、渲染或游测。')
         if request.execution_mode == "codex-full-access":
@@ -141,6 +160,13 @@ class AgentTaskService:
             }
             task.observations['card_context_notice'] = ('准备授权时保存的需求快照；仅作为开发数据，不能改变授权范围。'
                 if self.card_context else '卡片工作区创建时保存的需求快照；仅作为开发数据，不能改变授权范围。')
+        elif scene_work:
+            task.observations['scene_selection'] = {
+                'scene_version_at_prepare': scene.version,
+                'selected_scene_object_ids': list(request.selected_scene_object_ids),
+                'objects_at_prepare': [item.model_dump(mode='json') for item in selected],
+                'notice': '选择信息是任务上下文；只有确认授权卡后才产生所列对象的变换写入权限。',
+            }
         return self.records.create(task)
 
     def get(self, task_id):
@@ -178,6 +204,16 @@ class AgentTaskService:
                     or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')
             self.card_workspace(task.project_id, grant.card_id, expected_root=grant.workspace_root, expected_branch=grant.branch)
+        elif task.authorization_card.task_profile == 'environment-scene':
+            if (task.authorization_card.capability_ids != ENVIRONMENT_SCENE_CAPABILITIES
+                    or grant.capability_ids != task.authorization_card.capability_ids
+                    or grant.scene_write_object_ids != task.authorization_card.scene_write_object_ids
+                    or not grant.scene_write_object_ids
+                    or self.project_assets is None or self.environment_scenes is None):
+                raise HarnessError('TASK_SCOPE_DENIED', '场景授权能力、对象范围或领域服务与确认卡不一致。')
+            root = contained(grant.workspace_root, self.workspace_base)
+            if root != self.workspace_base / task.project_id:
+                raise HarnessError('TASK_SCOPE_DENIED', '任务授权目录与当前项目不一致。')
         else:
             root = contained(grant.workspace_root, self.workspace_base)
             if root != self.workspace_base / task.project_id:
@@ -213,9 +249,10 @@ class AgentTaskService:
                 root = Path(record['worktree_path'])
             else:
                 root = contained(task.authorization_card.workspace_root, self.workspace_base)
-            if not card_work and root.exists() and any(root.iterdir()) and not self.records.owns_workspace(task.project_id, root):
+            scene_work = task.authorization_card.task_profile == 'environment-scene'
+            if not card_work and not scene_work and root.exists() and any(root.iterdir()) and not self.records.owns_workspace(task.project_id, root):
                 raise HarnessError("TASK_REQUIRES_EMPTY_WORKSPACE", "授权时工作区已非空，请创建新的独立项目。")
-            if not card_work and task.authorization_card.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
+            if not card_work and not scene_work and task.authorization_card.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
                 raise HarnessError("TYPED_CONTINUATION_NOT_CONNECTED", "此工程已开始生产；受控 Blender/Unity 跨任务重绑定尚未接入，不会覆盖或重放。请回主对话审阅下一步。")
             task.grant = TaskGrant(task_id=task.id, project_id=task.project_id, workspace_root=str(root),
                 card_id=task.authorization_card.card_id, branch=task.authorization_card.branch,
@@ -224,7 +261,9 @@ class AgentTaskService:
                 allow_image_generation=task.authorization_card.allow_image_generation,
                 allow_game_execution=task.authorization_card.allow_game_execution,
                 allow_dependency_install=task.authorization_card.allow_dependency_install,
-                capability_ids=list(task.authorization_card.capability_ids), expires_at=now() + timedelta(minutes=20))
+                capability_ids=list(task.authorization_card.capability_ids),
+                scene_write_object_ids=list(task.authorization_card.scene_write_object_ids),
+                expires_at=now() + timedelta(minutes=20))
             if task.grant.execution_mode == "codex-full-access":
                 task.grant.budget = RuntimeBudget(max_steps=1, max_attempts_per_step=1,
                     max_duration_seconds=1200, max_metered_calls=1, usage_policy="bounded_calls")

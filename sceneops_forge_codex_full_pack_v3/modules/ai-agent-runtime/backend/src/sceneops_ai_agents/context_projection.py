@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from typing import Any
 
 from sceneops_harness import HarnessError
@@ -49,11 +50,18 @@ def _compact_json(value: Any, reference: str, *, depth: int = 0) -> Any:
     return value
 
 
-def project_action_history(actions) -> list[dict]:
-    """Project useful action/result links without replaying source bodies or long logs."""
+def project_action_history(actions, *, can_read_history: bool = True) -> list[dict]:
+    """Project useful action/result links without breaking historical grants."""
     history = []
     for entry in actions:
         action = entry.action.model_dump(mode="json")
+        if not can_read_history:
+            projected = {"action": action, "state": entry.state,
+                         "effect_state": entry.effect_state, "reason": entry.reason}
+            if entry.result is not None:
+                projected["result"] = deepcopy(entry.result)
+            history.append(projected)
+            continue
         references = {}
         if entry.action.capability_id == "code.file.write":
             for field in ("expected_content", "content"):
@@ -76,11 +84,47 @@ def project_action_history(actions) -> list[dict]:
     return history
 
 
-def task_context_summary(task) -> dict:
+def project_observations(task, *, can_read_history: bool) -> dict:
+    """Keep the latest exact tool result and reference superseded large results."""
+    observations = deepcopy(task.observations)
+    if not can_read_history:
+        return observations
+    sources = {}
+    for index, entry in enumerate(task.actions):
+        evidence = entry.result.get("evidence") if isinstance(entry.result, dict) else None
+        tool = evidence.get("tool") if isinstance(evidence, dict) else None
+        if isinstance(tool, str):
+            sources[tool] = (index, entry)
+    latest_index = len(task.actions) - 1
+    for key, value in list(observations.items()):
+        source = sources.get(key)
+        if source is None or source[0] == latest_index:
+            continue
+        if len(json.dumps(value, ensure_ascii=False, default=str)) <= 2000:
+            continue
+        reference = action_result_reference(source[1].action.action_id)
+        observations[key] = {
+            "result_reference": reference,
+            "summary": _compact_json(value, reference),
+            "notice": "该旧工具结果已由后续动作取代；需要精确正文时读取 result_reference。",
+        }
+    return observations
+
+
+def task_context_summary(task, *, can_read_history: bool = True) -> dict:
     """Short handoff facts; current authority and capabilities remain runtime-owned."""
     latest = task.actions[-1] if task.actions else None
-    unresolved = next((entry for entry in reversed(task.actions)
-                       if entry.state in ("running", "failed", "uncertain", "blocked")), None)
+    latest_non_success = next((entry for entry in reversed(task.actions)
+        if entry.state in ("running", "failed", "uncertain", "blocked")), None)
+    current_issue = None
+    if task.status in ("blocked", "failed", "needs_approval", "interrupted", "cancel_pending"):
+        current_issue = {"task_status": task.status, "reason": task.reason,
+                         "evidence_basis": "任务当前终态或阻塞状态"}
+    elif latest and latest.state in ("running", "uncertain", "blocked"):
+        current_issue = {"action_id": latest.action.action_id,
+                         "capability_id": latest.action.capability_id,
+                         "state": latest.state, "reason": latest.reason,
+                         "evidence_basis": "最近动作的当前状态"}
     return {
         "task_id": task.id,
         "project_id": task.project_id,
@@ -90,11 +134,14 @@ def task_context_summary(task) -> dict:
         "latest_action": ({"action_id": latest.action.action_id,
                            "capability_id": latest.action.capability_id,
                            "state": latest.state} if latest else None),
-        "unresolved_action": ({"action_id": unresolved.action.action_id,
-                               "capability_id": unresolved.action.capability_id,
-                               "state": unresolved.state,
-                               "reason": unresolved.reason} if unresolved else None),
-        "history_policy": "完整记录仍在任务存储中；正文和长结果通过 task-action 引用按需读取。",
+        "latest_non_success_action": ({"action_id": latest_non_success.action.action_id,
+                                       "capability_id": latest_non_success.action.capability_id,
+                                       "state": latest_non_success.state,
+                                       "reason": latest_non_success.reason} if latest_non_success else None),
+        "current_issue": current_issue,
+        "history_policy": ("完整记录仍在任务存储中；正文和长结果通过 task-action 引用按需读取。"
+                           if can_read_history else
+                           "当前授权没有历史读取能力；必要的历史输入和结果以内联兼容模式提供。"),
     }
 
 

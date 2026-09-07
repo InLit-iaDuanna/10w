@@ -12952,7 +12952,8 @@
               "asset-exchange",
               "survival-prototype",
               "auto",
-              "card-development"
+              "card-development",
+              "environment-scene"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -12963,6 +12964,14 @@
             },
             "type": "array",
             "title": "Capability Ids"
+          },
+          "scene_write_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Scene Write Object Ids"
           },
           "max_model_calls": {
             "anyOf": [
@@ -25262,10 +25271,19 @@
               "asset-exchange",
               "survival-prototype",
               "auto",
-              "card-development"
+              "card-development",
+              "environment-scene"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
+          },
+          "selected_scene_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Selected Scene Object Ids"
           }
         },
         "additionalProperties": false,
@@ -31657,6 +31675,14 @@
             },
             "type": "array",
             "title": "Capability Ids"
+          },
+          "scene_write_object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Scene Write Object Ids"
           },
           "max_repair_rounds": {
             "type": "integer",

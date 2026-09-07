@@ -436,9 +436,11 @@ export interface components {
              * @default asset-exchange
              * @enum {string}
              */
-            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development";
+            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene";
             /** Capability Ids */
             capability_ids?: string[];
+            /** Scene Write Object Ids */
+            scene_write_object_ids?: string[];
             /**
              * Max Model Calls
              * @default 8
@@ -700,7 +702,9 @@ export interface components {
              * @default asset-exchange
              * @enum {string}
              */
-            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development";
+            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene";
+            /** Selected Scene Object Ids */
+            selected_scene_object_ids?: string[];
         };
         /** ProductionArtifact */
         ProductionArtifact: {
@@ -931,6 +935,8 @@ export interface components {
             allow_dependency_install: boolean;
             /** Capability Ids */
             capability_ids: string[];
+            /** Scene Write Object Ids */
+            scene_write_object_ids?: string[];
             /**
              * Max Repair Rounds
              * @default 2

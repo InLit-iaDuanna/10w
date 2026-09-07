@@ -18,6 +18,9 @@ CAPABILITY_MODULES = {
     'unity.prototype.verify': 'ai-playtest',
     'agent.report_blocked': 'project-planning',
     'agent.history.read': 'project-planning',
+    'project.assets.list': 'concept-assets',
+    'environment.scene.read': 'world-logic',
+    'environment.object.transform': 'world-logic',
     'code.workspace.inspect': 'world-logic', 'code.file.read': 'world-logic',
     'code.file.write': 'world-logic',
 }
@@ -34,7 +37,7 @@ def module_catalog():
         'unity-build': '已接入资产导入和场景回读；不能据此视为开发包构建已接通。',
         'version-review': '当前支持基础交换任务的身份与尺寸检查；完整版本交付仍待接入。',
         'integration-ops': '显示实际 CLI 活动与已有工具连接记录；连接成功与业务验收分别记录。',
-        'world-logic': '已接入固定生存配方，以及已登记卡片分支内的有界源码读写；源码交付须审阅，未运行或编译。',
+        'world-logic': '已接入项目环境场景对象的版本化变换与回读、固定生存配方，以及已登记卡片分支内的有界源码读写；场景数据更新不代表运行游戏已同步。',
         'ai-playtest': '已接入该配方的正式共享输入、真实帧确定性验证；不是通用视觉 AI 游测。',
     }
     return [ProductionModule(id=key, title=title,
