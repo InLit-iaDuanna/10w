@@ -8936,6 +8936,100 @@
           }
         }
       }
+    },
+    "/api/agent/tasks/{task_id}/game/interaction": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Interact",
+        "operationId": "interact_api_agent_tasks__task_id__game_interaction_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserInteractionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameProjectExecution"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/game/interaction/revoke": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Revoke Interaction",
+        "operationId": "revoke_interaction_api_agent_tasks__task_id__game_interaction_revoke_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10714,6 +10808,16 @@
             "title": "Finished At"
           },
           "browser_authorization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrowserObservationAuthorization"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "browser_interaction_authorization": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/BrowserObservationAuthorization"
@@ -13123,6 +13227,11 @@
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
+            "default": false
+          },
+          "allow_browser_interaction": {
+            "type": "boolean",
+            "title": "Allow Browser Interaction",
             "default": false
           }
         },
@@ -19458,9 +19567,12 @@
               "prepare",
               "check",
               "build",
+              "build_test",
               "preview_start",
+              "preview_test",
               "preview_stop",
-              "observe"
+              "observe",
+              "interact"
             ],
             "title": "Operation"
           },
@@ -19627,6 +19739,15 @@
             },
             "type": "array",
             "title": "Artifact Ids"
+          },
+          "build_kind": {
+            "type": "string",
+            "enum": [
+              "delivery",
+              "test"
+            ],
+            "title": "Build Kind",
+            "default": "delivery"
           }
         },
         "additionalProperties": false,
@@ -19649,6 +19770,7 @@
               "prepare",
               "check",
               "build",
+              "build_test",
               "preview_start",
               "preview_stop",
               "observe"
@@ -19737,6 +19859,26 @@
             "default": false
           },
           "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "test_build": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interaction": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/GameExecutionRun"
@@ -25440,6 +25582,11 @@
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
+            "default": false
+          },
+          "allow_browser_interaction": {
+            "type": "boolean",
+            "title": "Allow Browser Interaction",
             "default": false
           }
         },
@@ -31875,6 +32022,11 @@
             "type": "boolean",
             "title": "Allow Browser Observation",
             "default": false
+          },
+          "allow_browser_interaction": {
+            "type": "boolean",
+            "title": "Allow Browser Interaction",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -36427,6 +36579,78 @@
           "expires_at"
         ],
         "title": "BrowserObservationAuthorization"
+      },
+      "BrowserInteractionRequest": {
+        "properties": {
+          "check": {
+            "type": "string",
+            "enum": [
+              "input-readback",
+              "movement-collection",
+              "current-input"
+            ],
+            "title": "Check",
+            "default": "input-readback"
+          },
+          "state_id": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "State Id",
+            "default": "start"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/BrowserKeyStep"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Steps"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "steps"
+        ],
+        "title": "BrowserInteractionRequest"
+      },
+      "BrowserKeyStep": {
+        "properties": {
+          "keys": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "ArrowUp",
+                "ArrowDown",
+                "ArrowLeft",
+                "ArrowRight",
+                "w",
+                "a",
+                "s",
+                "d",
+                "Space",
+                "Enter"
+              ]
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Keys"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "maximum": 2000.0,
+            "minimum": 16.0,
+            "title": "Duration Ms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "duration_ms"
+        ],
+        "title": "BrowserKeyStep"
       }
     }
   }

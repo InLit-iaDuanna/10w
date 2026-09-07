@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .git_projects import GitProjects
+from .test_adapter_files import test_adapter_files
 
 
 class GameProjectError(ValueError):
@@ -36,6 +37,7 @@ def _shared_files(*, ecs: bool) -> dict[str, str]:
         "devDependencies": {"@types/three": "0.183.1", "typescript": "6.0.3", "vite": "8.0.0"},
     }
     return {
+        **test_adapter_files(),
         "README.md": """# SceneOps game project
 
 This is the playable game project created from the technical plan selected in Design Room.
@@ -100,12 +102,15 @@ new Game(host).start()
     const length = Math.hypot(x, z) || 1
     return { x: x / length, z: z / length }
   }
+  reset() { this.pressed.clear() }
 }
 """,
         "src/game/components/ScoreCounter.ts": """export class ScoreCounter {
   private value = 0
   constructor(private readonly output: HTMLElement) { this.render() }
   collect() { this.value += 1; this.render() }
+  reset() { this.value = 0; this.render() }
+  current() { return this.value }
   private render() { this.output.textContent = String(this.value) }
 }
 """,
@@ -141,15 +146,18 @@ import { InputController } from './components/InputController'
 import { ScoreCounter } from './components/ScoreCounter'
 import { Collectible } from './objects/Collectible'
 import { Player } from './objects/Player'
+import { createTestAdapter } from './sceneops-test'
 
 export class Game {
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true })
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100)
-  private readonly player = new Player(new InputController())
+  private readonly input = new InputController()
+  private readonly player = new Player(this.input)
   private readonly collectibles = [[-4,-2],[0,2],[4,-1]].map(([x,z]) => new Collectible(x, z))
   private readonly score = new ScoreCounter(document.querySelector<HTMLElement>('#score')!)
   private last = performance.now()
+  private test?: ReturnType<typeof createTestAdapter>
 
   constructor(private readonly host: HTMLElement) {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); this.host.append(this.renderer.domElement)
@@ -159,14 +167,37 @@ export class Game {
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 12), new THREE.MeshStandardMaterial({ color: 0x334155 }))
     floor.rotation.x = -Math.PI / 2; this.scene.add(floor); this.camera.position.set(0, 10, 11); this.camera.lookAt(0, 0, 0)
     window.addEventListener('resize', () => this.resize()); this.resize()
+    if (import.meta.env.MODE === 'sceneops-test') {
+      const spawn = this.player.mesh.position.clone()
+      const spawns = this.collectibles.map(item => item.mesh.position.clone())
+      this.test = createTestAdapter(() => {
+        this.input.reset(); this.player.mesh.position.copy(spawn); this.score.reset()
+        this.collectibles.forEach((item, index) => {
+          item.mesh.position.copy(spawns[index]); item.collected = false; item.mesh.visible = true
+        })
+        this.last = performance.now()
+        this.host.dataset.playerX = spawn.x.toFixed(3); this.host.dataset.playerZ = spawn.z.toFixed(3)
+      }, () => ({
+        player: { x: this.player.mesh.position.x, y: this.player.mesh.position.y, z: this.player.mesh.position.z },
+        score: this.score.current(),
+        collectibles: this.collectibles.map((item, index) => ({
+          id: `collectible-${index + 1}`, x: item.mesh.position.x, y: item.mesh.position.y, z: item.mesh.position.z,
+          collected: item.collected, visible: item.mesh.visible,
+        })),
+      }))
+      window.__sceneopsTest = this.test.protocol
+    }
   }
   start() { requestAnimationFrame(time => this.update(time)) }
   private update(time: number) {
     const delta = Math.min((time - this.last) / 1000, 0.05); this.last = time
-    this.player.update(delta)
+    if (!this.test?.paused) {
+      this.player.update(delta)
+      this.collectibles.forEach(item => { if (item.tryCollect(this.player.mesh.position)) this.score.collect() })
+      this.test?.recordFrame(delta)
+    }
     this.host.dataset.playerX = this.player.mesh.position.x.toFixed(3)
     this.host.dataset.playerZ = this.player.mesh.position.z.toFixed(3)
-    this.collectibles.forEach(item => { if (item.tryCollect(this.player.mesh.position)) this.score.collect() })
     this.renderer.render(this.scene, this.camera); requestAnimationFrame(next => this.update(next))
   }
   private resize() {
@@ -192,7 +223,8 @@ import * as THREE from 'three'
 import { createGameWorld } from './game/world'
 import { inputSystem } from './game/systems/inputSystem'
 import { movementSystem } from './game/systems/movementSystem'
-import { collectionSystem } from './game/systems/collectionSystem'
+import { collectionSystem, resetScore, currentScore } from './game/systems/collectionSystem'
+import { createTestAdapter } from './game/sceneops-test'
 
 const host = document.querySelector<HTMLDivElement>('#app')
 const score = document.querySelector<HTMLElement>('#score')
@@ -209,9 +241,36 @@ const keys = new Set<string>(); addEventListener('keydown', e => keys.add(e.key.
 const resize = () => { const width=gameHost.clientWidth,height=gameHost.clientHeight; renderer.setSize(width,height,false); camera.aspect=width/Math.max(height,1); camera.updateProjectionMatrix() }
 addEventListener('resize', resize); resize()
 let last = performance.now()
+let test: ReturnType<typeof createTestAdapter> | undefined
+if (import.meta.env.MODE === 'sceneops-test') {
+  const [player] = game.world.with('player', 'position', 'velocity')
+  const spawn = player.position.clone()
+  const items = [...game.world.with('collectible', 'position', 'mesh')]
+  const spawns = items.map(item => item.position.clone())
+  test = createTestAdapter(() => {
+    keys.clear(); player.position.copy(spawn); player.velocity.set(0, 0, 0); resetScore(scoreOutput)
+    items.forEach((item, index) => {
+      item.position.copy(spawns[index]); item.mesh.visible = true
+      if (!game.world.has(item)) game.world.add(item)
+      scene.add(item.mesh)
+    })
+    last = performance.now()
+    gameHost.dataset.playerX = spawn.x.toFixed(3); gameHost.dataset.playerZ = spawn.z.toFixed(3)
+  }, () => ({
+    player: { x: player.position.x, y: player.position.y, z: player.position.z }, score: currentScore(),
+    collectibles: items.map((item, index) => ({
+      id: `collectible-${index + 1}`, x: item.position.x, y: item.position.y, z: item.position.z,
+      collected: !game.world.has(item), visible: item.mesh.parent === scene && item.mesh.visible,
+    })),
+  }))
+  window.__sceneopsTest = test.protocol
+}
 function frame(time: number) {
   const delta = Math.min((time-last)/1000, 0.05); last=time
-  inputSystem(game.world, keys); movementSystem(game.world, delta); collectionSystem(game.world, scoreOutput)
+  if (!test?.paused) {
+    inputSystem(game.world, keys); movementSystem(game.world, delta); collectionSystem(game.world, scoreOutput)
+    test?.recordFrame(delta)
+  }
   const [player] = game.world.with('player','position'); if (player) { gameHost.dataset.playerX=player.position.x.toFixed(3); gameHost.dataset.playerZ=player.position.z.toFixed(3) }
   renderer.render(scene, camera); requestAnimationFrame(frame)
 }
@@ -262,6 +321,8 @@ export function movementSystem(world: World<Entity>, delta: number) {
 import type { Entity } from '../world'
 
 let points = 0
+export function resetScore(output: HTMLElement) { points = 0; output.textContent = '0' }
+export function currentScore() { return points }
 export function collectionSystem(world: World<Entity>, output: HTMLElement) {
   const [player] = world.with('player','position')
   if (!player) return

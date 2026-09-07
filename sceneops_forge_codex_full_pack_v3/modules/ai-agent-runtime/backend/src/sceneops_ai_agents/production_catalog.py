@@ -10,6 +10,8 @@ MODULE_TITLES = {
 }
 CAPABILITY_MODULES = {
     'code.browser.observe': 'ai-playtest',
+    'code.browser.interact': 'ai-playtest',
+    'code.project.build_test': 'ai-playtest',
     'agent.next_action': 'project-planning', 'agent.finish': 'version-review',
     'blender.asset.create': 'concept-assets', 'blender.asset.export': 'concept-assets',
     'blender.scene.inspect': 'concept-assets', 'unity.asset.import': 'unity-build',

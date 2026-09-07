@@ -69,11 +69,12 @@ class GameProjectRuntime:
                  run.operation, run.model_dump_json(), now().isoformat()))
         return run
 
-    def _latest(self, project_id, card_id, operation):
+    def _latest(self, project_id, card_id, operation, *, task_id=None):
         with self.records.connect() as connection:
             row = connection.execute('''SELECT body FROM game_project_runs
-                WHERE project_id=? AND card_id=? AND operation=? ORDER BY rowid DESC LIMIT 1''',
-                (project_id, card_id, operation)).fetchone()
+                WHERE project_id=? AND card_id=? AND operation=? AND (? IS NULL OR task_id=?)
+                ORDER BY rowid DESC LIMIT 1''',
+                (project_id, card_id, operation, task_id, task_id)).fetchone()
         return GameExecutionRun.model_validate_json(row[0]) if row else None
 
     @staticmethod
@@ -191,7 +192,8 @@ class GameProjectRuntime:
                 run = await self._stop_preview(task, root)
             else:
                 run = GameExecutionRun(operation=operation, project_id=task.project_id,
-                    card_id=grant.card_id, task_id=task.id, workspace_root=str(root), branch=grant.branch)
+                    card_id=grant.card_id, task_id=task.id, workspace_root=str(root), branch=grant.branch,
+                    build_kind='test' if operation == 'build_test' else 'delivery')
                 self._save(run)
                 try:
                     if operation == 'prepare':
@@ -217,14 +219,15 @@ class GameProjectRuntime:
                         elif operation == 'check':
                             code = await self._command(run, [self.pnpm_executable, 'exec', 'tsc', '--noEmit'])
                             passed = code == 0
-                        elif operation == 'build':
+                        elif operation in ('build', 'build_test'):
                             self._validate_vite_config()
                             self._validate_output(root, required=False)
                             check_code = await self._command(run, [self.pnpm_executable, 'exec', 'tsc', '--noEmit'])
                             code = check_code
                             if check_code == 0:
                                 code = await self._command(run, [self.pnpm_executable, 'exec', 'vite', 'build',
-                                                                 '--config', str(self.vite_config)])
+                                    '--config', str(self.vite_config), '--mode',
+                                    'sceneops-test' if operation == 'build_test' else 'production'])
                             output = self._validate_output(root, required=code == 0)
                             passed = code == 0
                             if passed:
@@ -254,29 +257,32 @@ class GameProjectRuntime:
                 self._save(run)
             return self.evidence(task, run)
 
-    def _current_build(self, task):
-        run = self._latest(task.project_id, task.grant.card_id, 'build')
+    def _current_build(self, task, *, kind='delivery'):
+        run = self._latest(task.project_id, task.grant.card_id, 'build_test' if kind == 'test' else 'build')
         if not run or run.status != 'succeeded' or not run.passed or run.source_stale:
-            raise HarnessError('CURRENT_BUILD_REQUIRED', '请先让当前源码通过构建，再启动预览。')
+            raise HarnessError('TEST_BUILD_REQUIRED' if kind == 'test' else 'CURRENT_BUILD_REQUIRED',
+                '请先让当前源码通过对应类型的构建，再启动预览。')
+        if run.build_kind != kind:
+            raise HarnessError('BUILD_KIND_MISMATCH', '构建类型与检查范围不一致。')
         expected = self.data_dir / 'builds' / run.id / 'dist'
         if run.artifact_path != str(expected):
             raise HarnessError('CURRENT_BUILD_REQUIRED', '旧构建没有独立输出版本，请重新构建。')
         self._validate_output(expected.parent, required=True)
         return run
 
-    async def _start_preview(self, task, root):
-        build = self._current_build(task)
+    async def _start_preview(self, task, root, *, kind='delivery', key=None):
+        build = self._current_build(task, kind=kind)
         self._validate_output(root, required=True)
-        key = self.key(task.project_id, task.grant.card_id)
+        key = key or self.key(task.project_id, task.grant.card_id)
         active = self.previews.get(key)
         if (active and active['process'].returncode is None and not active['run'].source_stale
                 and active['run'].build_run_id == build.id):
             return active['run']
         if active:
             await self._stop_active(key, status='stopped')
-        run = GameExecutionRun(operation='preview_start', project_id=task.project_id,
+        run = GameExecutionRun(operation='preview_test' if kind == 'test' else 'preview_start', project_id=task.project_id,
             card_id=task.grant.card_id, task_id=task.id, workspace_root=str(root), branch=task.grant.branch,
-            build_run_id=build.id)
+            build_run_id=build.id, build_kind=kind)
         self._save(run)
         script = Path(__file__).with_name('preview_server.py').resolve()
         try:
@@ -369,6 +375,8 @@ class GameProjectRuntime:
             dependency=self._latest(task.project_id, grant.card_id, 'prepare'),
             check=self._latest(task.project_id, grant.card_id, 'check'),
             build=self._latest(task.project_id, grant.card_id, 'build'),
+            test_build=self._latest(task.project_id, grant.card_id, 'build_test', task_id=task.id),
+            interaction=self._latest(task.project_id, grant.card_id, 'interact', task_id=task.id),
             observation=self._latest(task.project_id, grant.card_id, 'observe'),
             preview=(active['run'] if active and active['process'].returncode is None
                      else self._latest(task.project_id, grant.card_id, 'preview_start')))
@@ -385,9 +393,9 @@ class GameProjectRuntime:
                                       (str(workspace_root),)).fetchall()
             for run_id, body in rows:
                 run = GameExecutionRun.model_validate_json(body)
-                if run.operation in ('check', 'build', 'observe') and run.status == 'succeeded':
+                if run.operation in ('check', 'build', 'build_test', 'observe', 'interact') and run.status == 'succeeded':
                     run.status, run.source_stale = 'stale', True
-                elif run.operation == 'preview_start' and run.status == 'running':
+                elif run.operation in ('preview_start', 'preview_test') and run.status == 'running':
                     run.source_stale = True
                 else:
                     continue

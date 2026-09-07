@@ -4,6 +4,7 @@ import { agentTasks, agentTaskKeys, type AgentTask, type GameProjectExecution } 
 import { useProduction, productionKeys } from './production-client';
 import './agent-task.css';
 import { BrowserObservationPanel } from './BrowserObservationPanel';
+import { BrowserInteractionPanel } from './BrowserInteractionPanel';
 
 const LABELS: Record<string, string> = {
   awaiting_authorization: '等待任务授权', queued: '排队中', running: 'Agent 执行中',
@@ -108,6 +109,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
   const restart = useMutation({ mutationFn: () => agentTasks.prepare({ goal: task.goal, execution_mode: card.execution_mode, allow_image_generation: card.allow_image_generation, allow_playtest:false,
     allow_game_execution: card.allow_game_execution, allow_dependency_install: card.allow_dependency_install, task_profile: card.task_profile,
     allow_browser_observation: card.allow_browser_observation,
+    allow_browser_interaction: card.allow_browser_interaction,
     ...(card.card_id ? { project_id: task.project_id, card_id: card.card_id } : {}),
     ...(card.task_profile === 'environment-scene' ? {project_id:task.project_id,selected_scene_object_ids:selectedSceneObjectIds} : {}) }),
     onSuccess: () => cache.invalidateQueries({ queryKey: ['agent-tasks'] }) });
@@ -129,6 +131,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
     {fullAccess && task.observations.codex != null && <details><summary>查看 Codex 结果与执行摘要</summary><pre>{JSON.stringify(task.observations.codex, null, 2)}</pre></details>}
     {card.allow_game_execution && task.grant && <GameRuntimePanel task={task} />}
     {card.allow_game_execution && task.grant && <BrowserObservationPanel task={task} />}
+    {card.allow_game_execution && task.grant && <BrowserInteractionPanel task={task} />}
     <ol className="agent-action-tree">{task.actions.map(record => <li key={record.request_id} data-state={record.state}>
       <strong>{ACTIONS[record.action.capability_id] ?? record.action.capability_id}</strong><span>{record.state === 'succeeded' ? '已执行' : record.state === 'running' ? '执行中' : record.state}</span>
       <small>{record.action.rationale}</small>{record.reason && <p>{record.reason}</p>}

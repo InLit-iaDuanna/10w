@@ -142,6 +142,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/game/interaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Interact */
+        post: operations["interact_api_agent_tasks__task_id__game_interaction_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/game/interaction/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Interaction */
+        post: operations["revoke_interaction_api_agent_tasks__task_id__game_interaction_revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/events": {
         parameters: {
             query?: never;
@@ -331,6 +365,7 @@ export interface components {
         };
         /** AgentTaskRecord */
         AgentTaskRecord: {
+            browser_interaction_authorization?: components["schemas"]["BrowserObservationAuthorization"] | null;
             browser_authorization?: components["schemas"]["BrowserObservationAuthorization"] | null;
             /** Id */
             id?: string;
@@ -433,6 +468,11 @@ export interface components {
         /** AuthorizationCard */
         AuthorizationCard: {
             /**
+             * Allow Browser Interaction
+             * @default false
+             */
+            allow_browser_interaction: boolean;
+            /**
              * Allow Browser Observation
              * @default false
              */
@@ -534,6 +574,29 @@ export interface components {
              */
             accept_full_access: boolean;
         };
+        /** BrowserInteractionRequest */
+        BrowserInteractionRequest: {
+            /**
+             * Check
+             * @default input-readback
+             * @enum {string}
+             */
+            check: "input-readback" | "movement-collection" | "current-input";
+            /**
+             * State Id
+             * @default start
+             */
+            state_id: string;
+            /** Steps */
+            steps: components["schemas"]["BrowserKeyStep"][];
+        };
+        /** BrowserKeyStep */
+        BrowserKeyStep: {
+            /** Keys */
+            keys?: ("ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight" | "w" | "a" | "s" | "d" | "Space" | "Enter")[];
+            /** Duration Ms */
+            duration_ms: number;
+        };
         /** BrowserObservationAuthorization */
         BrowserObservationAuthorization: {
             /** Task Id */
@@ -620,6 +683,12 @@ export interface components {
         };
         /** GameExecutionRun */
         GameExecutionRun: {
+            /**
+             * Build Kind
+             * @default delivery
+             * @enum {string}
+             */
+            build_kind: "delivery" | "test";
             /** Build Run Id */
             build_run_id?: string | null;
             /** Preview Run Id */
@@ -636,7 +705,7 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop" | "observe";
+            operation: "prepare" | "check" | "build" | "build_test" | "preview_start" | "preview_test" | "preview_stop" | "observe" | "interact";
             /**
              * Status
              * @default running
@@ -693,10 +762,12 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop" | "observe";
+            operation: "prepare" | "check" | "build" | "build_test" | "preview_start" | "preview_stop" | "observe";
         };
         /** GameProjectExecution */
         GameProjectExecution: {
+            test_build?: components["schemas"]["GameExecutionRun"] | null;
+            interaction?: components["schemas"]["GameExecutionRun"] | null;
             observation?: components["schemas"]["GameExecutionRun"] | null;
             /** Project Id */
             project_id: string;
@@ -739,6 +810,11 @@ export interface components {
         JsonValue: unknown;
         /** PrepareAgentTask */
         PrepareAgentTask: {
+            /**
+             * Allow Browser Interaction
+             * @default false
+             */
+            allow_browser_interaction: boolean;
             /**
              * Allow Browser Observation
              * @default false
@@ -979,6 +1055,11 @@ export interface components {
         };
         /** TaskGrant */
         TaskGrant: {
+            /**
+             * Allow Browser Interaction
+             * @default false
+             */
+            allow_browser_interaction: boolean;
             /**
              * Allow Browser Observation
              * @default false
@@ -1394,6 +1475,72 @@ export interface operations {
         };
     };
     revoke_observation_api_agent_tasks__task_id__game_observation_revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    interact_api_agent_tasks__task_id__game_interaction_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserInteractionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameProjectExecution"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_interaction_api_agent_tasks__task_id__game_interaction_revoke_post: {
         parameters: {
             query?: never;
             header?: never;

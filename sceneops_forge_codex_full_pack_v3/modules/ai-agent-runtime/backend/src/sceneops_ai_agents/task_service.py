@@ -84,6 +84,7 @@ class AgentTaskService:
             allow_dependency_install=request.allow_dependency_install,
             task_profile=request.task_profile, card_id=request.card_id,
             allow_browser_observation=request.allow_browser_observation,
+            allow_browser_interaction=request.allow_browser_interaction,
             branch=card_work['branch'] if card_work else None,
             scene_write_object_ids=list(request.selected_scene_object_ids))
         if card_work:
@@ -104,6 +105,8 @@ class AgentTaskService:
                         '网络访问仅用于工程声明的依赖。')
                 else:
                     card.scope += ' 本次未授权安装依赖；依赖缺失时 Agent 必须报告。'
+            if card.allow_browser_interaction:
+                card.scope += ' 本次允许测试构建、独立浏览器状态重置、暂停/恢复、有限键盘输入、诊断回读与截图；不包含任意脚本或外部访问，期限与本次授权相同，取消时撤销。'
             if card.allow_browser_observation:
                 card.scope += (' 本次允许用独立浏览器执行当前登记构建，采集 current-view 截图和浏览器错误；'
                     '只访问该构建预览，不使用用户会话、不自动操作角色、不做视觉模型评审。'
@@ -209,6 +212,7 @@ class AgentTaskService:
                     or grant.capability_ids != task.authorization_card.capability_ids
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
                     or grant.allow_browser_observation != task.authorization_card.allow_browser_observation
+                    or grant.allow_browser_interaction != task.authorization_card.allow_browser_interaction
                     or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')
             self.card_workspace(task.project_id, grant.card_id, expected_root=grant.workspace_root, expected_branch=grant.branch)
@@ -269,6 +273,7 @@ class AgentTaskService:
                 allow_image_generation=task.authorization_card.allow_image_generation,
                 allow_game_execution=task.authorization_card.allow_game_execution,
                 allow_browser_observation=task.authorization_card.allow_browser_observation,
+                allow_browser_interaction=task.authorization_card.allow_browser_interaction,
                 allow_dependency_install=task.authorization_card.allow_dependency_install,
                 capability_ids=list(task.authorization_card.capability_ids),
                 scene_write_object_ids=list(task.authorization_card.scene_write_object_ids),
@@ -284,6 +289,11 @@ class AgentTaskService:
             task.status, task.reason = "queued", None
             if task.authorization_card.allow_browser_observation:
                 task.browser_authorization = BrowserObservationAuthorization(
+                    task_id=task.id, project_id=task.project_id, workspace_root=str(root),
+                    card_id=task.grant.card_id, branch=task.grant.branch,
+                    expires_at=task.grant.expires_at)
+            if task.authorization_card.allow_browser_interaction:
+                task.browser_interaction_authorization = BrowserObservationAuthorization(
                     task_id=task.id, project_id=task.project_id, workspace_root=str(root),
                     card_id=task.grant.card_id, branch=task.grant.branch,
                     expires_at=task.grant.expires_at)
@@ -390,6 +400,8 @@ class AgentTaskService:
             current.cancel_requested = True
             if current.browser_authorization:
                 current.browser_authorization.revoked = True
+            if current.browser_interaction_authorization:
+                current.browser_interaction_authorization.revoked = True
             if current.grant:
                 current.grant.revoked = True
             pending = current.owner_pid is not None or task_id in self.tools or current.observations.get('cleanup_uncertain')
@@ -532,6 +544,8 @@ class AgentTaskService:
             await self.observe_game(task_id)
             return self.game_status(task_id)
         task = self._game_task(task_id, manual_operation=True)
+        if request.operation == 'build_test':
+            self.browser_task(task_id, interaction=True)
         if request.operation == 'prepare' and not task.authorization_card.allow_dependency_install:
             raise HarnessError('DEPENDENCY_INSTALL_NOT_AUTHORIZED', '此任务未授权准备工程依赖。')
         evidence = await self.game.execute(task, request.operation)
@@ -541,35 +555,38 @@ class AgentTaskService:
             {'operation': request.operation, 'run_id': evidence['run']['id']})
         return self.game.snapshot(task)
 
-    def browser_task(self, task_id):
+    def browser_task(self, task_id, *, interaction=False):
         task = self._game_task(task_id)
         grant, card = task.grant, task.authorization_card
-        authorization = task.browser_authorization
+        authorization = task.browser_interaction_authorization if interaction else task.browser_authorization
+        allowed = (card.allow_browser_interaction and grant.allow_browser_interaction) if interaction else (card.allow_browser_observation and grant.allow_browser_observation)
+        capability = 'code.browser.interact' if interaction else 'code.browser.observe'
         if authorization and (authorization.revoked or task.cancel_requested or authorization.expires_at <= now()):
             raise HarnessError('BROWSER_AUTHORIZATION_EXPIRED', '浏览器执行需要未过期、未撤销的当前任务授权。')
-        if (not authorization or not card.allow_browser_observation or not grant.allow_browser_observation
-                or 'code.browser.observe' not in grant.capability_ids
+        if (not authorization or not allowed
+                or capability not in grant.capability_ids
                 or grant.capability_ids != card.capability_ids
                 or (authorization.task_id, authorization.project_id, authorization.workspace_root,
                     authorization.card_id, authorization.branch) != (task.id, task.project_id,
                     card.workspace_root, card.card_id, card.branch)
                 or (grant.workspace_root, grant.card_id, grant.branch) != (card.workspace_root, card.card_id, card.branch)):
-            raise HarnessError('BROWSER_NOT_AUTHORIZED', '此授权未包含独立浏览器执行与截图；请准备明确包含该范围的新任务。')
+            scope = '测试构建、状态控制与有限键盘输入' if interaction else '独立浏览器执行与截图'
+            raise HarnessError('BROWSER_NOT_AUTHORIZED', f'此授权未包含{scope}；请准备明确包含该范围的新任务。')
         return task
 
-    async def observe_game(self, task_id, *, active_agent=False):
-        task = self.browser_task(task_id)
+    async def observe_game(self, task_id, *, active_agent=False, interaction=None):
+        task = self.browser_task(task_id, interaction=interaction is not None)
         if not active_agent:
             self._game_task(task_id, manual_operation=True)
         if task_id in self.browser_jobs:
             raise HarnessError('BROWSER_BUSY', '本任务已有浏览器检查正在运行。')
         from .browser_observation import observe
-        job = asyncio.create_task(observe(self, task))
+        job = asyncio.create_task(observe(self, task, **({'interaction': interaction} if interaction is not None else {})))
         self.browser_jobs[task_id] = job
         try:
             evidence = await job
             self.records.update(task_id, lambda current: current.observations.update(
-                {'browser_observation': evidence}), 'agent.browser.observed', {'run_id': evidence['run']['id']})
+                {'browser_interaction' if interaction is not None else 'browser_observation': evidence}), 'agent.browser.observed', {'run_id': evidence['run']['id']})
             return evidence
         finally:
             self.browser_jobs.pop(task_id, None)
@@ -581,10 +598,11 @@ class AgentTaskService:
             job.cancel()
         return {'cancel_requested': job is not None}
 
-    def revoke_browser_authorization(self, task_id):
+    def revoke_browser_authorization(self, task_id, *, interaction=False):
         def revoke(task):
-            if task.browser_authorization:
-                task.browser_authorization.revoked = True
+            authorization = task.browser_interaction_authorization if interaction else task.browser_authorization
+            if authorization:
+                authorization.revoked = True
         task = self.records.update(task_id, revoke, 'agent.browser.authorization_revoked')
         self.cancel_browser_observation(task_id)
         return task

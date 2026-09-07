@@ -212,7 +212,8 @@ function createWorkbench(unified: boolean) {
               development={{ prepare: async (projectId, cardId, goal, options) => {
                 await agentTasks.prepare({project_id:projectId,card_id:cardId,goal,task_profile:'card-development',execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
                   allow_game_execution:options.allowGameExecution,allow_dependency_install:options.allowDependencyInstall,
-                  allow_browser_observation:options.allowBrowserObservation});
+                  allow_browser_observation:options.allowBrowserObservation,
+                  allow_browser_interaction:options.allowBrowserInteraction});
                 await queryClient.invalidateQueries({queryKey:['agent-tasks']});
                 await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
               }, renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}

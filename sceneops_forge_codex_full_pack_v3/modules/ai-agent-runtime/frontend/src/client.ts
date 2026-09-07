@@ -9,8 +9,8 @@ export type AgentTask = Required<components['schemas']['AgentTaskRecord']> & {
 };
 type TaskList = Omit<components['schemas']['AgentTaskList'], 'tasks'> & { tasks: AgentTask[] };
 type TaskEvents = components['schemas']['AgentTaskEvents'];
-type Prepare = Omit<components['schemas']['PrepareAgentTask'], 'allow_browser_observation'>
-  & Partial<Pick<components['schemas']['PrepareAgentTask'], 'allow_browser_observation'>>;
+type Prepare = Omit<components['schemas']['PrepareAgentTask'], 'allow_browser_observation' | 'allow_browser_interaction'>
+  & Partial<Pick<components['schemas']['PrepareAgentTask'], 'allow_browser_observation' | 'allow_browser_interaction'>>;
 type Authorize = components['schemas']['AuthorizeAgentTask'];
 export type GameProjectExecution = components['schemas']['GameProjectExecution'];
 type GameOperation = components['schemas']['GameOperationRequest']['operation'];
@@ -37,6 +37,10 @@ export const agentTasks = {
     `${root}/${encodeURIComponent(id)}/game/observation/cancel`, {body:{}}),
   revokeObservation: (id: string) => requestJson<AgentTask>(
     `${root}/${encodeURIComponent(id)}/game/observation/revoke`, {body:{}}),
+  interact: (id: string, body: components['schemas']['BrowserInteractionRequest']) => requestJson<GameProjectExecution>(
+    `${root}/${encodeURIComponent(id)}/game/interaction`, {body}),
+  revokeInteraction: (id: string) => requestJson<AgentTask>(
+    `${root}/${encodeURIComponent(id)}/game/interaction/revoke`, {body:{}}),
   events: (id: string, after: number, signal?: AbortSignal) => requestJson<TaskEvents>(`${root}/${encodeURIComponent(id)}/events?after=${after}`, signal ? { signal } : {}),
   allEvents: async (id: string, signal?: AbortSignal): Promise<TaskEvents> => {
     const events: NonNullable<TaskEvents['events']> = [];

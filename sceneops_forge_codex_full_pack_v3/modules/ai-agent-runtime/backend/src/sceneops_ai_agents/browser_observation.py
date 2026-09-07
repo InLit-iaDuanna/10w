@@ -25,9 +25,9 @@ def build_files(root):
     return result
 
 
-def target(runtime, task):
-    build = runtime._current_build(task)
-    active = runtime.previews.get(runtime.key(task.project_id, task.grant.card_id))
+def target(runtime, task, *, kind='delivery', preview_key=None):
+    build = runtime._current_build(task, kind=kind)
+    active = runtime.previews.get(preview_key or runtime.key(task.project_id, task.grant.card_id))
     if not active or active['process'].returncode is not None:
         raise HarnessError('CURRENT_PREVIEW_REQUIRED', '当前卡片没有运行中的已登记预览。')
     preview = active['run']
@@ -43,7 +43,7 @@ def target(runtime, task):
     return build, preview
 
 
-async def capture(runtime, url, screenshot):
+async def capture(runtime, url, screenshot, *, interaction=None):
     node = shutil.which('node')
     if not node:
         return {'status': 'failed', 'failure_code': 'BROWSER_UNAVAILABLE', 'reason': 'Node runtime missing.'}
@@ -58,6 +58,8 @@ async def capture(runtime, url, screenshot):
     try:
         payload = {'url': url, 'screenshot_path': str(screenshot),
             'playwright_module': os.environ.get('SCENEOPS_PLAYWRIGHT_MODULE')}
+        if interaction is not None:
+            payload['interaction'] = interaction.model_dump(mode='json')
         output, error = await asyncio.wait_for(process.communicate(json.dumps(payload).encode()), timeout=30)
         if process.returncode or not output:
             return {'status': 'failed', 'failure_code': 'BROWSER_PROCESS_FAILED',
@@ -81,32 +83,41 @@ async def capture(runtime, url, screenshot):
             runtime.processes.pop(str(screenshot), None)
 
 
-async def observe(service, task):
+async def observe(service, task, *, interaction=None):
     runtime = service.game
-    run = GameExecutionRun(operation='observe', project_id=task.project_id,
+    interactive = interaction is not None
+    kind = 'test' if interactive and interaction.check != 'current-input' else 'delivery'
+    capability = 'code.browser.interact' if interactive else 'code.browser.observe'
+    title = '受控输入与状态回读' if interactive else '观察当前构建'
+    run = GameExecutionRun(operation='interact' if interactive else 'observe', build_kind=kind, project_id=task.project_id,
         card_id=task.grant.card_id, task_id=task.id,
         workspace_root=task.grant.workspace_root, branch=task.grant.branch)
     step_id = f'{task.id}:{run.id}'
     directory = runtime.data_dir / 'observations' / task.id / run.id
+    preview_key = (task.project_id, task.grant.card_id, run.id) if kind == 'test' else None
     service.production.upsert_step(ProductionStep(id=step_id, project_id=task.project_id,
-        task_id=task.id, module_id='ai-playtest', title='观察当前构建',
-        capability_id='code.browser.observe', state='running', mode='live',
+        task_id=task.id, module_id='ai-playtest', title=title,
+        capability_id=capability, state='running', mode='live',
         run_id=run.id, effect_state='NONE', updated_at=now().isoformat()))
     runtime._save(run)
     try:
         async with asyncio.timeout(35), runtime._lock(task.project_id, task.grant.card_id):
-            service.browser_task(task.id)
-            build, preview = target(runtime, task)
+            service.browser_task(task.id, interaction=interactive)
+            if preview_key:
+                await runtime._start_preview(task, Path(task.grant.workspace_root), kind=kind, key=preview_key)
+            build, preview = target(runtime, task, kind=kind, preview_key=preview_key)
             run.build_run_id, run.preview_run_id, run.preview_url = build.id, preview.id, preview.preview_url
             runtime._save(run)
             output = Path(build.artifact_path)
             before = build_files(output)
             directory.mkdir(parents=True, exist_ok=False)
             screenshot = directory / 'current-view.png'
-            result = await capture(runtime, preview.preview_url, screenshot)
+            result = await capture(runtime, preview.preview_url, screenshot, **({'interaction': interaction} if interactive else {}))
+            if interactive:
+                result['request'] = interaction.model_dump(mode='json')
             run.observation = result
-            service.browser_task(task.id)
-            current_build, current_preview = target(runtime, task)
+            service.browser_task(task.id, interaction=interactive)
+            current_build, current_preview = target(runtime, task, kind=kind, preview_key=preview_key)
             if (current_build.id, current_preview.id, build_files(output)) != (build.id, preview.id, before):
                 raise HarnessError('BUILD_CHANGED_DURING_OBSERVATION', '检查期间构建发生变化，结果不能作为当前证据。')
             run.status = result['status']
@@ -127,12 +138,20 @@ async def observe(service, task):
     except Exception as error:
         run.status, run.passed, run.failure_code, run.log = 'failed', False, 'BROWSER_PROCESS_FAILED', str(error)[:2000]
     finally:
+        if preview_key:
+            cleanup = asyncio.create_task(runtime._stop_active(preview_key, status='stopped'))
+            while not cleanup.done():
+                try:
+                    await asyncio.shield(cleanup)
+                except asyncio.CancelledError:
+                    pass
+            cleanup.result()
         run.finished_at = now()
         runtime._save(run)
         service.production.upsert_step(ProductionStep(id=step_id, project_id=task.project_id,
-            task_id=task.id, module_id='ai-playtest', title='观察当前构建',
-            capability_id='code.browser.observe', state='completed' if run.passed else 'failed',
+            task_id=task.id, module_id='ai-playtest', title=title,
+            capability_id=capability, state='completed' if run.passed else 'failed',
             mode='live', run_id=run.id, effect_state='NONE', artifact_ids=run.artifact_ids,
             reason=run.failure_code, updated_at=now().isoformat()))
-    return {'tool': 'browser_observation', 'mode': 'live', 'effect_state': 'COMMITTED',
+    return {'tool': 'browser_interaction' if interactive else 'browser_observation', 'mode': 'live', 'effect_state': 'COMMITTED',
         'run': run.model_dump(mode='json'), 'gameplay_verified': False, 'visual_reviewed': False}

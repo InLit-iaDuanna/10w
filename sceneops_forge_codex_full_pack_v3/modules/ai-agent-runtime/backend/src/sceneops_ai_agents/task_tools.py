@@ -5,7 +5,7 @@ from pathlib import Path
 from sceneops_harness import CapabilityDefinition, CapabilityRegistry, CapabilityResult, HarnessError, RetryPolicy
 from .task_models import (AgentAction, AssetInput, CreateCubeInput, CodexTaskInput, EmptyActionInput,
                           FinishInput, NextActionInput, ToolResult, now, PrototypeVerifyInput, CapabilityGapInput,
-                          CodeReadInput, CodeWriteInput, HistoryReadInput, SceneTransformInput)
+                          CodeReadInput, CodeWriteInput, HistoryReadInput, SceneTransformInput, BrowserInteractionRequest)
 from .production_catalog import module_for
 from .output_manifest import OUTPUT_MANIFEST_INSTRUCTION, register_output_manifest
 from engine_unity import PrototypeSpec, PrototypePlayPayload
@@ -18,6 +18,7 @@ MUTATIONS.update({'code.dependencies.prepare', 'code.project.check', 'code.proje
                   'code.preview.start', 'code.preview.stop'})
 MUTATIONS.add('environment.object.transform')
 MUTATIONS.add('code.browser.observe')
+MUTATIONS.update({'code.browser.interact', 'code.project.build_test'})
 INPUT_MODELS = {"blender.asset.create": CreateCubeInput, "blender.asset.export": AssetInput,
     "unity.asset.import": AssetInput, "blender.scene.inspect": EmptyActionInput,
     "unity.scene.inspect": EmptyActionInput, "agent.finish": FinishInput,
@@ -28,6 +29,8 @@ INPUT_MODELS.update({'unity.prototype.compose': PrototypeSpec, 'unity.prototype.
 INPUT_MODELS['agent.report_blocked'] = CapabilityGapInput
 INPUT_MODELS['agent.history.read'] = HistoryReadInput
 INPUT_MODELS['code.browser.observe'] = EmptyActionInput
+INPUT_MODELS['code.browser.interact'] = BrowserInteractionRequest
+INPUT_MODELS['code.project.build_test'] = EmptyActionInput
 INPUT_MODELS.update({'code.workspace.inspect': EmptyActionInput,
                      'code.file.read': CodeReadInput, 'code.file.write': CodeWriteInput})
 INPUT_MODELS.update({capability: EmptyActionInput for capability in
@@ -161,6 +164,9 @@ class TaskTools:
                         'assets': [item.model_dump(mode='json') for item in assets]}
         elif invocation.capability_id == 'code.browser.observe':
             evidence = await self.service.observe_game(task.id, active_agent=True)
+        elif invocation.capability_id == 'code.browser.interact':
+            evidence = await self.service.observe_game(task.id, active_agent=True,
+                interaction=BrowserInteractionRequest.model_validate(invocation.inputs))
         elif invocation.capability_id == 'environment.scene.read':
             if self.service.environment_scenes is None:
                 raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目环境场景服务尚未连接。')
@@ -211,12 +217,14 @@ class TaskTools:
             snapshot = self.service.game.snapshot(task)
             evidence = {'tool': 'game_project', 'mode': 'live', 'effect_state': 'NONE',
                         'project': snapshot.model_dump(mode='json')}
-        elif invocation.capability_id in ('code.dependencies.prepare', 'code.project.check', 'code.project.build',
+        elif invocation.capability_id in ('code.dependencies.prepare', 'code.project.check', 'code.project.build', 'code.project.build_test',
                                           'code.preview.start', 'code.preview.stop'):
             if invocation.capability_id == 'code.dependencies.prepare' and not task.grant.allow_dependency_install:
                 raise HarnessError('DEPENDENCY_INSTALL_NOT_AUTHORIZED', '此任务未授权准备工程依赖。')
+            if invocation.capability_id == 'code.project.build_test':
+                self.service.browser_task(task.id, interaction=True)
             operation = {'code.dependencies.prepare': 'prepare', 'code.project.check': 'check',
-                         'code.project.build': 'build', 'code.preview.start': 'preview_start',
+                         'code.project.build': 'build', 'code.project.build_test': 'build_test', 'code.preview.start': 'preview_start',
                          'code.preview.stop': 'preview_stop'}[invocation.capability_id]
             evidence = await self.service.game.execute(task, operation)
         elif invocation.capability_id.startswith('code.'):

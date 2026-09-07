@@ -50,7 +50,7 @@ type Props = { projectId: string | null; fallback: ReactNode; modelPicker: (busy
   onSurfaceActionHandled?: (id:string) => void;
   onCloseSurfaces?: () => void;
   development?: { prepare: (projectId: string, cardId: string, goal: string,
-      options: { allowGameExecution: boolean; allowDependencyInstall: boolean; allowBrowserObservation: boolean }) => Promise<void>;
+      options: { allowGameExecution: boolean; allowDependencyInstall: boolean; allowBrowserObservation: boolean; allowBrowserInteraction: boolean }) => Promise<void>;
     renderTasks: (projectId: string, cardId?: string, onContinue?: () => void) => ReactNode };
   assets?: { render: (input: {projectId:string;cardId:string;source:'import'|'create';sessionId:string;
     messages:{id:string;role:string;text:string;replyTo?:string;modelingBlock?:string}[]; observeConversation?: boolean;
@@ -89,6 +89,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
   const [allowGameExecution, setAllowGameExecution] = useState(true);
   const [allowDependencyInstall, setAllowDependencyInstall] = useState(true);
   const [allowBrowserObservation, setAllowBrowserObservation] = useState(false);
+  const [allowBrowserInteraction, setAllowBrowserInteraction] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [environmentOpen, setEnvironmentOpen] = useState(false);
   const [environmentTurns, setEnvironmentTurns] = useState<JourneyMessage[]>([]);
@@ -103,6 +104,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
       return development.prepare(projectId, cardId, goal, {
         allowGameExecution, allowDependencyInstall: allowGameExecution && allowDependencyInstall,
         allowBrowserObservation: allowGameExecution && allowBrowserObservation,
+        allowBrowserInteraction: allowGameExecution && allowBrowserInteraction,
       });
     },
     onSuccess: async (_task, variables) => {
@@ -463,6 +465,8 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
         onChange={event => setAllowDependencyInstall(event.target.checked)} />允许在当前游戏工程内准备依赖</label>
       <label><input type="checkbox" checked={allowBrowserObservation} disabled={busy || !allowGameExecution}
         onChange={event => setAllowBrowserObservation(event.target.checked)} />允许独立浏览器运行当前构建并采集截图与错误</label>
+      <label><input type="checkbox" checked={allowBrowserInteraction} disabled={busy || !allowGameExecution}
+        onChange={event => setAllowBrowserInteraction(event.target.checked)} />允许测试构建、状态重置及有限键盘输入检查（独立范围）</label>
       <small>发送后仍会先展示具体授权卡；取消运行权限时保留原有的仅源码修改流程。</small>
     </section>}
     {activeCard?.id === 'world-3d' && <WorldCreationActions mode={creationMode} busy={busy}

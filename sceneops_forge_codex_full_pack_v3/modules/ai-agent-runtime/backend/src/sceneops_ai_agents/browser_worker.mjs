@@ -1,6 +1,7 @@
 // Private product worker. Input is assembled by the server, never by a model.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
+import { installClock, interact } from './browser_interaction.mjs';
 
 const require = createRequire(import.meta.url);
 const input = JSON.parse(fs.readFileSync(0, 'utf8'));
@@ -10,7 +11,14 @@ const result = { status: 'failed', failure_code: null, loaded: false,
   diagnostics: null, diagnostics_status: 'missing', mode: 'live' };
 const add = (key, text) => { if (result[key].length < 100) result[key].push(String(text).slice(0, 2000)); };
 let browser;
+let page;
+const heldKeys = new Set();
+const releaseKeys = async () => {
+  for (const key of heldKeys) await page.keyboard.up(key).catch(() => {});
+  heldKeys.clear();
+};
 process.once('SIGTERM', async () => {
+  await releaseKeys();
   if (browser) await browser.close();
   process.exit(0);
 });
@@ -23,7 +31,8 @@ try {
   result.browser_version = browser.version();
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 },
     serviceWorkers: 'block', acceptDownloads: false, permissions: [] });
-  const page = await context.newPage();
+  page = await context.newPage();
+  if (input.interaction) await installClock(page);
   const origin = new URL(input.url).origin;
   const policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
   // No route continues to Chromium's network stack. Redirects are fetched without
@@ -61,10 +70,11 @@ try {
   page.on('console', message => { if (message.type() === 'error') add('console_errors', message.text()); });
   page.on('pageerror', error => add('page_errors', error.message));
   page.on('requestfailed', request => add('network_errors', `${request.url()} ${request.failure()?.errorText}`));
-  const response = await page.goto(input.url, { waitUntil: 'domcontentloaded', timeout: 12000 });
+  const response = await page.goto(input.url, { waitUntil: input.interaction ? 'load' : 'domcontentloaded', timeout: 12000 });
   result.loaded = !!response && response.ok() && new URL(page.url()).origin === origin;
   if (!result.loaded) throw Object.assign(new Error('Build document failed to load.'), { code: 'BROWSER_LOAD_FAILED' });
-  await page.waitForTimeout(1000);
+  if (input.interaction) await interact(page, input.interaction, result, heldKeys);
+  else await page.waitForTimeout(1000);
   if (new URL(page.url()).origin !== origin) {
     throw Object.assign(new Error('Page left the registered preview.'), { code: 'BROWSER_LOAD_FAILED' });
   }
@@ -76,11 +86,16 @@ try {
   await page.screenshot({ path: input.screenshot_path, timeout: 5000 });
   result.screenshot_collected = true;
   result.status = 'succeeded';
+  if (input.interaction && !result.behavior_checks_verified) {
+    result.status = 'failed';
+    result.failure_code = 'BROWSER_BEHAVIOR_CHECK_FAILED';
+  }
 } catch (error) {
   result.failure_code = error.code || (error.message.includes("Executable doesn't exist")
     ? 'BROWSER_UNAVAILABLE' : error.name === 'TimeoutError' ? 'BROWSER_TIMEOUT' : 'BROWSER_LOAD_FAILED');
   result.reason = String(error.message).slice(0, 2000);
 } finally {
+  await releaseKeys();
   if (browser) await browser.close();
 }
 process.stdout.write(JSON.stringify(result));

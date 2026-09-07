@@ -40,6 +40,8 @@ def card_code_capabilities(value):
         capabilities[4:4] = GAME_EXECUTION_CAPABILITIES
         if value.allow_browser_observation:
             capabilities.insert(4, 'code.browser.observe')
+        if value.allow_browser_interaction:
+            capabilities[4:4] = ['code.project.build_test', 'code.browser.interact']
         if value.allow_dependency_install:
             capabilities.insert(4, DEPENDENCY_CAPABILITY)
     return capabilities
@@ -77,6 +79,7 @@ class VerificationRecord(TaskModel):
 
 
 class PrepareAgentTask(TaskModel):
+    allow_browser_interaction: bool = False
     allow_browser_observation: bool = False
     goal: str = Field(min_length=1, max_length=8000)
     project_id: str | None = None
@@ -91,6 +94,8 @@ class PrepareAgentTask(TaskModel):
 
     @model_validator(mode='after')
     def card_scope(self):
+        if self.allow_browser_interaction and (self.task_profile != 'card-development' or not self.allow_game_execution):
+            raise ValueError('浏览器输入检查需要卡片工程运行授权。')
         if self.allow_browser_observation and (self.task_profile != 'card-development' or not self.allow_game_execution):
             raise ValueError('浏览器观察需要卡片工程运行授权。')
         if self.task_profile == 'card-development':
@@ -124,6 +129,7 @@ class AuthorizeAgentTask(TaskModel):
 
 
 class AuthorizationCard(TaskModel):
+    allow_browser_interaction: bool = False
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("card"))
     workspace_root: str
@@ -165,6 +171,7 @@ class AuthorizationCard(TaskModel):
 
 
 class TaskGrant(TaskModel):
+    allow_browser_interaction: bool = False
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("grant"))
     task_id: str
@@ -233,15 +240,35 @@ class EmptyActionInput(TaskModel):
     pass
 
 
-GameOperation = Literal['prepare', 'check', 'build', 'preview_start', 'preview_stop', 'observe']
+GameOperation = Literal['prepare', 'check', 'build', 'build_test', 'preview_start', 'preview_test', 'preview_stop', 'observe', 'interact']
 GameRunStatus = Literal['running', 'succeeded', 'failed', 'stale', 'stopped', 'interrupted']
 
 
 class GameOperationRequest(TaskModel):
-    operation: GameOperation
+    operation: Literal['prepare', 'check', 'build', 'build_test', 'preview_start', 'preview_stop', 'observe']
+
+
+class BrowserKeyStep(TaskModel):
+    keys: list[Literal['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'Space', 'Enter']] = Field(default_factory=list, max_length=2)
+    duration_ms: int = Field(ge=16, le=2000)
+
+
+class BrowserInteractionRequest(TaskModel):
+    check: Literal['input-readback', 'movement-collection', 'current-input'] = 'input-readback'
+    state_id: str = Field(default='start', min_length=1, max_length=80)
+    steps: list[BrowserKeyStep] = Field(min_length=1, max_length=8)
+
+    @model_validator(mode='after')
+    def bounded_time(self):
+        if sum(step.duration_ms for step in self.steps) > 8000:
+            raise ValueError('输入序列的受控时间总计不得超过8000毫秒。')
+        if self.check == 'movement-collection' and (len(self.steps) < 4 or self.steps[1].keys):
+            raise ValueError('移动收集检查至少需要移动、松键、离开和再次经过四段输入。')
+        return self
 
 
 class GameExecutionRun(TaskModel):
+    build_kind: Literal['delivery', 'test'] = 'delivery'
     build_run_id: str | None = None
     preview_run_id: str | None = None
     observation: dict[str, JsonValue] | None = None
@@ -267,6 +294,8 @@ class GameExecutionRun(TaskModel):
 
 
 class GameProjectExecution(TaskModel):
+    test_build: GameExecutionRun | None = None
+    interaction: GameExecutionRun | None = None
     observation: GameExecutionRun | None = None
     project_id: str
     card_id: str
@@ -364,6 +393,7 @@ class BrowserObservationAuthorization(TaskModel):
 
 
 class AgentTaskRecord(TaskModel):
+    browser_interaction_authorization: BrowserObservationAuthorization | None = None
     browser_authorization: BrowserObservationAuthorization | None = None
     id: str = Field(default_factory=lambda: identifier("task"))
     project_id: str
