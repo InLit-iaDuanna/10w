@@ -57,6 +57,8 @@ class WorkspaceRepository(Protocol):
     def get_project_demo_workspace(self, project_id: str, workspace_id: str | None = None) -> dict: ...
     def initialize_game_project(self, project_id: str, selection: dict, design_version: int,
                                 *, commit_baseline: bool = True) -> dict: ...
+    def preview_demo_runtime_upgrade(self, project_id: str, workspace_id: str) -> dict: ...
+    def apply_demo_runtime_upgrade(self, project_id: str, workspace_id: str, preview: dict) -> dict: ...
     def materialize_demo_content(self, project_id: str, workspace_id: str, manifest: dict) -> dict: ...
 
 
@@ -395,6 +397,14 @@ class SqliteWorkspaceRepository:
     def initialize_game_project(self, project_id, selection, design_version, *, commit_baseline=True):
         return GameProjects(self).initialize(project_id, selection, design_version,
                                              commit_baseline=commit_baseline)
+
+    def preview_demo_runtime_upgrade(self, project_id, workspace_id):
+        from .runtime_upgrade import DemoRuntimeUpgrade
+        return DemoRuntimeUpgrade(self).preview(project_id, workspace_id)
+
+    def apply_demo_runtime_upgrade(self, project_id, workspace_id, preview):
+        from .runtime_upgrade import DemoRuntimeUpgrade
+        return DemoRuntimeUpgrade(self).apply(project_id, workspace_id, preview)
 
     def materialize_demo_content(self, project_id, workspace_id, manifest):
         return GameProjects(self).materialize_demo_content(project_id, workspace_id, manifest)

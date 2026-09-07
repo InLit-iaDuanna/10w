@@ -10,6 +10,54 @@ def source_path(host, candidate):
     return contained(host.root, candidate + ".blend")
 
 
+def file_revision(path):
+    try:
+        stat = path.stat()
+    except FileNotFoundError:
+        return None
+    return {"mtime_ns": stat.st_mtime_ns, "size": stat.st_size,
+            "inode": stat.st_ino, "device": stat.st_dev}
+
+
+def remember_source(host, target):
+    host.source_revision = file_revision(target)
+    host.source_revision_path = str(target)
+
+
+def source_state(host):
+    candidate = bpy.context.scene.get("sceneops_candidate_id")
+    target = source_path(host, candidate) if candidate else None
+    known = target is not None and getattr(host, "source_revision_path", None) == str(target)
+    current = file_revision(target) if target else None
+    return {"memory_dirty": bool(bpy.data.is_dirty), "disk_revision": current,
+            "loaded_revision": getattr(host, "source_revision", None) if known else None,
+            "disk_changed": current != getattr(host, "source_revision", None) if known else bool(current)}
+
+
+def synchronize_source(host, command):
+    """Optimistic binary revision check; never merge two independently edited scenes."""
+    target = source_path(host, command["candidate_id"])
+    state = source_state(host)
+    if not state["disk_changed"]:
+        return
+    if state["memory_dirty"]:
+        raise ValueError("BLENDER_SOURCE_CONFLICT: disk and unsaved editor both changed; preserve both and resolve before export")
+    if state["disk_revision"] is None:
+        raise ValueError("BLENDER_SOURCE_CONFLICT: registered source was removed")
+    revision = state["disk_revision"]
+    bpy.ops.wm.open_mainfile(filepath=str(target))
+    for scene in bpy.data.scenes:
+        scene.render.use_freestyle = False
+        scene.use_nodes = False
+    if (bpy.context.scene.get("sceneops_candidate_id") != command["candidate_id"]
+            or not members(command["asset_id"])
+            or any(obj.get("asset_id") not in (None, command["asset_id"]) for obj in bpy.context.scene.objects)):
+        raise ValueError("BLENDER_SOURCE_CONFLICT: saved source identity differs from registered candidate")
+    if file_revision(target) != revision:
+        raise ValueError("BLENDER_SOURCE_CONFLICT: saved source changed while reopening")
+    remember_source(host, target)
+
+
 def members(asset_id):
     return [obj for obj in bpy.context.scene.objects if obj.get("asset_id") == asset_id]
 
@@ -20,8 +68,10 @@ def save(host, command):
         raise ValueError("BLENDER_SOURCE_CONFLICT: another source is open")
     if bpy.context.scene.get("sceneops_exported"):
         raise ValueError("BLENDER_SOURCE_CONFLICT: exported candidate is immutable; copy to a new candidate")
+    synchronize_source(host, command)
     identify_scene(command["asset_id"])
     bpy.ops.wm.save_as_mainfile(filepath=str(target), compress=False)
+    remember_source(host, target)
     (host.state / "active_source.json").write_text(json.dumps({"candidate_id": command["candidate_id"]}))
     return target
 
@@ -102,6 +152,7 @@ def dispatch_source(host, command):
         bpy.ops.wm.open_mainfile(filepath=str(target))
         if not members(command["asset_id"]):
             raise ValueError("registered source asset identity differs")
+        remember_source(host, target)
         prior_candidate = bpy.context.scene.get("sceneops_candidate_id")
         bpy.context.scene["sceneops_candidate_id"] = command["candidate_id"]
         if prior_candidate != command["candidate_id"]:
@@ -115,6 +166,9 @@ def dispatch_source(host, command):
             raise ValueError("BLENDER_SOURCE_CONFLICT: another source is open")
         if bpy.context.scene.get("sceneops_exported"):
             raise ValueError("BLENDER_SOURCE_CONFLICT: candidate already exported")
+        synchronize_source(host, command)
+        if bpy.context.scene.get("sceneops_exported"):
+            raise ValueError("BLENDER_SOURCE_CONFLICT: saved candidate already exported")
         if operation == "edit_nodes":
             selected = []
             for edit in command["edits"]:
@@ -154,8 +208,11 @@ def dispatch_source(host, command):
                     bpy.ops.export_scene.gltf(filepath=str(output), export_format="GLB", use_selection=True, export_extras=True, export_yup=True)
                 else:
                     bpy.ops.export_scene.fbx(filepath=str(output), use_selection=True, use_custom_props=True)
+            if file_revision(target) != host.source_revision:
+                raise ValueError("BLENDER_SOURCE_CONFLICT: saved source changed during export")
             bpy.context.scene["sceneops_exported"] = True
             bpy.ops.wm.save_as_mainfile(filepath=str(target), compress=False)
+            remember_source(host, target)
     result = {"blend_path": str(target), "candidate_id": command["candidate_id"]}
     if operation == "export_source":
         result.update({fmt + "_path": str(target.with_suffix("." + fmt)) for fmt in command["formats"]})

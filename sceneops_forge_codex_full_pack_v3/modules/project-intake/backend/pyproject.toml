@@ -10,3 +10,6 @@ dependencies = ["fastapi>=0.128,<1", "pydantic>=2.12,<3"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sceneops_project_workspace = ["runtime_v1_sources.json", "runtime_v1_targets.json"]

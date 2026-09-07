@@ -49,7 +49,7 @@ def prepare_demo_continuation(service, task_id, request_id, *, allow_blender_edi
             return
         if pending:
             raise HarnessError('AUTHORIZATION_CARD_CHANGED', '已有待确认的继续授权，请先审阅该授权卡。')
-        _require_renewable(task, extend_blender=allow_blender_edit and not task.authorization_card.allow_blender_edit)
+        _require_renewable(task, extend_blender=allow_blender_edit and (not task.authorization_card.allow_blender_edit or 'code.demo_runtime.upgrade' not in task.authorization_card.capability_ids))
         from .demo_tasks import validate_project_demo_alignment
         context = service.project_demo_context(task.project_id) if service.project_demo_context else {}
         validate_project_demo_alignment(task.grant.alignment_id, context)
@@ -63,8 +63,8 @@ def prepare_demo_continuation(service, task_id, request_id, *, allow_blender_edi
         })
         task.authorization_card = task.authorization_card.model_copy(update={
             'allow_blender_edit': task.authorization_card.allow_blender_edit or allow_blender_edit,
-            'scope': task.authorization_card.scope + (' 另允许在隔离 Blender 会话编辑所选资产、保存原生源和 GLB、更新所选共享引用。'
-                if allow_blender_edit and not task.authorization_card.allow_blender_edit else ''),
+            'scope': task.authorization_card.scope + (' 另允许在隔离 Blender 会话编辑所选资产、保存原生源和 GLB、更新所选共享引用，并通过版本化三方合并升级现有作品加载代码。'
+                if allow_blender_edit and (not task.authorization_card.allow_blender_edit or 'code.demo_runtime.upgrade' not in task.authorization_card.capability_ids) else ''),
             'id': identifier('card'), 'max_model_calls': 28, 'max_duration_seconds': 1800,
             'cost_notice': '本次继续新增最多 28 次模型请求、32 个动作、30 分钟；历史用量保留，费用和 token 可能未知。',
         })

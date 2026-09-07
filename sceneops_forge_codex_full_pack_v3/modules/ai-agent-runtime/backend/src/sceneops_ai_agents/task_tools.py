@@ -60,7 +60,10 @@ INPUT_MODELS.update({
 from .blender_content_models import BlenderBeginInput, BlenderEditInput, BlenderPublishInput
 INPUT_MODELS.update({'blender.asset.begin': BlenderBeginInput, 'blender.asset.edit': BlenderEditInput,
                      'blender.asset.publish': BlenderPublishInput})
-MUTATIONS.update({'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'})
+MUTATIONS.update({'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'code.demo_runtime.upgrade'})
+from .demo_runtime_upgrade import DemoRuntimeUpgradeInput
+INPUT_MODELS['code.demo_runtime.preview'] = EmptyActionInput
+INPUT_MODELS['code.demo_runtime.upgrade'] = DemoRuntimeUpgradeInput
 
 
 def contained(path, root):
@@ -183,6 +186,12 @@ class TaskTools:
         cancellation.raise_if_cancelled()
         if invocation.dry_run:
             evidence = {"dry_run": True, "proposed_values": invocation.inputs, "workspace_root": task.grant.workspace_root}
+        elif invocation.capability_id == 'code.demo_runtime.preview':
+            from .demo_runtime_upgrade import preview_runtime_upgrade
+            evidence = preview_runtime_upgrade(self.service, task)
+        elif invocation.capability_id == 'code.demo_runtime.upgrade':
+            from .demo_runtime_upgrade import apply_runtime_upgrade
+            evidence = apply_runtime_upgrade(self.service, task, invocation.inputs['preview_id'])
         elif invocation.capability_id in ('blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'):
             from .blender_content import dispatch
             evidence = await dispatch(self, invocation, cancellation)
@@ -587,7 +596,7 @@ class TaskTools:
             if not isinstance(start, int) or start < 0 or start > len(task.actions):
                 raise HarnessError('VERIFICATION_INCOMPLETE', '当前追加目标的动作边界不可读取。')
             current_actions = task.actions[start:]
-            content_capabilities = {'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'project.asset.door.create', 'project.asset.door.update',
+            content_capabilities = {'code.demo_runtime.upgrade', 'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'project.asset.door.create', 'project.asset.door.update',
                 'environment.object.place', 'environment.demo_object.transform',
                 'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
             source_actions = [entry for entry in current_actions

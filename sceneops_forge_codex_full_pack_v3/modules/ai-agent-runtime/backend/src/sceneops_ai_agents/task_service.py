@@ -204,6 +204,8 @@ class AgentTaskService:
             card.scope += ' 本次不执行自动游测、不自动进入 Play Mode；制作与编译检查后交由用户手动试玩。'
         if card.allow_image_generation:
             card.scope += " 本任务另含原生 GPT 图片生成权限，复用 Codex 登录；仅登记真实图片文件，账户不支持时受阻，不改用付费 API。"
+        if card.allow_blender_edit:
+            card.scope += ' 本次另允许 Blender 原生资产编辑，并按版本化三方合并升级登记工程的运行加载代码，保留不冲突的自定义修改。'
         task = AgentTaskRecord(project_id=project.project_id, goal=request.goal.strip(),
             authorization_card=card,
             provider_id=settings.provider, provider_model=settings.model)
@@ -334,7 +336,8 @@ class AgentTaskService:
                     or grant.workspace_root != task.authorization_card.workspace_root
                     or grant.execution_mode != 'typed-tools'
                     or task.authorization_card.capability_ids not in (expected_capabilities,
-                        [cap for cap in expected_capabilities if cap != 'environment.asset.rebind'])
+                        [cap for cap in expected_capabilities if cap != 'environment.asset.rebind'],
+                        [cap for cap in expected_capabilities if not cap.startswith('code.demo_runtime.')])
                     or grant.capability_ids != task.authorization_card.capability_ids
                     or grant.alignment_id != task.authorization_card.alignment_id
                     or grant.include_demo_assets != task.authorization_card.include_demo_assets

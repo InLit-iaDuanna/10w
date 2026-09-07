@@ -81,3 +81,9 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 新对象／组件式与 ECS 模板通过 `createDemoAsset` 异步加载 `runtime_artifacts` 中 render 文件，路径为 `public/...glb`。文件源不会退回 DoorRecipe。GLB 采用米、Y 向上，节点 extras 保留稳定 `sceneops_id` 与 `sceneops_role`（frame、leaf、hinge）；唯一 hinge 必须包含 leaf，frame 不得属于铰链子树。场景实例身份保存在外层 Group，不覆盖源节点身份。开门只旋转铰链；碰撞按各 Mesh 变换后的几何包围盒计算，门框保持阻挡，不会把整个门框空洞作为一个实心盒子。
 
 加载错误显示“模型加载失败”，旧的配方专用用户工程在物化文件资产前返回 `LEGACY_RUNTIME_REQUIRES_EDIT`，需通过代码任务接入加载器；物化器不覆盖用户行为文件。`demo_content_glb_smoke.mjs` 用实际二进制 GLB 验证加载、偏置铰链、固定门框和碰撞；该确定性几何夹具不是 Blender 或浏览器实测证据。
+
+旧生成工程现在可调用公开仓库服务 `preview_demo_runtime_upgrade(project_id, workspace_id)`，再在有效的源码写入授权下调用 `apply_demo_runtime_upgrade(project_id, workspace_id, preview)`。预览返回 `migration_version`、`architecture`、`status`（ready/current/conflict）、`files`（path/previous/proposed）及 `conflicts`；应用成功返回 applied/current。这里只迁移登记工作区内固定的消费者源码，随后仍需物化当前 Demo 内容以提供 GLB 加载模块。调用方负责将预览纳入现有 ChangeSet 与授权审计。
+
+`runtime_v1_sources.json` 是 Git 版本 514648b 中两个生成模板的迁移祖先源码，不是校验基线。Git 三方合并保留不重叠的用户修改；重叠修改返回冲突供代码任务解决。预览不写工程；应用重新计算预览，拒绝过时或篡改提案和符号链接，不覆盖冲突。该路径不依赖用户工程存在初始化提交，也不会创建提交。升级与后续 Demo 物化是独立步骤，调用方须完成二者后再启动游戏验证。
+
+迁移目标同样作为 `runtime_v1_targets.json` 保存，来自 abb0f41 的消费者源码，因此以后新工程模板的变化不会改变此迁移版本。写入每个文件前重新核对原文；失败补偿只恢复仍等于本次写入结果的文件，保留执行期间其他编辑者的新内容。

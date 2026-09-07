@@ -13,6 +13,7 @@ CAPABILITY_MODULES = {
     'code.browser.interact': 'ai-playtest',
     'code.project.build_test': 'ai-playtest',
     'agent.next_action': 'project-planning', 'agent.finish': 'version-review',
+    'code.demo_runtime.preview': 'concept-assets', 'code.demo_runtime.upgrade': 'concept-assets',
     'blender.asset.begin': 'concept-assets', 'blender.asset.edit': 'concept-assets',
     'blender.asset.publish': 'concept-assets', 'blender.asset.create': 'concept-assets', 'blender.asset.export': 'concept-assets',
     'blender.scene.inspect': 'concept-assets', 'unity.asset.import': 'unity-build',

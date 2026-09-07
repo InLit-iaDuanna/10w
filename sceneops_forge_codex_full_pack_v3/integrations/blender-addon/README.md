@@ -139,3 +139,16 @@ PYTHONPATH=integrations/blender-addon/src python3 integrations/blender-addon/scr
 `grant_content=True` 将新会话内容限制在 `workspace/blender/<grant_id>`；授权 ID 经原协议
 验证，新授权使用独立状态目录和新会话，再从已登记源复制候选。旧会话不能更换授权。
 `smoke_source_roundtrip.py --headless --grant-content` 实际验证新授权独立目录重开已有源。
+
+原生源同步：会话在打开和保存候选后记录文件的 `mtime_ns / size / inode / device`。
+`inspect().source_state` 回读 `memory_dirty`（Blender 原生未保存状态）、`disk_revision`、
+`loaded_revision`、`disk_changed`。保存、类型化编辑和导出先检查磁盘版本；独立 Blender
+保存了同一候选且当前内存无未保存修改时，重新打开该候选并核对候选与资产身份，再继续。
+双方都改变时返回 `BLENDER_SOURCE_CONFLICT`，保留磁盘和当前未保存内存，等待冲突解决。
+不接受额外源路径或用户脚本，也不改变授权、主线程和系统沙箱边界。
+
+这是文件元数据上的乐观并发检查，不是二进制合并或跨进程文件锁；不能识别刻意保留全部
+元数据的外部改写，也不能保证检查与保存之间没有并发写入。不要同时在两个编辑器保存。
+`smoke_source_roundtrip.py --headless --grant-content` 包含独立沙箱 Blender 保存后的自动
+重读，以及 `fixture_source_conflict.py` 的真实 Blender 双方修改冲突检查。两者明确为开发
+夹具模拟，不作为用户在 GUI 中手工操作的证据。

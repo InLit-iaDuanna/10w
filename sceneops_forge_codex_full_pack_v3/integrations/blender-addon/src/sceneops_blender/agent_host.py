@@ -42,6 +42,8 @@ class AgentHost:
             scene = contained(self.root, identifier(json.loads(active.read_text())["candidate_id"]) + ".blend")
         if scene.exists():
             bpy.ops.wm.open_mainfile(filepath=str(scene))
+            from agent_source import remember_source
+            remember_source(self, scene)
         else:
             bpy.ops.object.select_all(action="SELECT")
             bpy.ops.object.delete(use_global=False)
@@ -87,7 +89,8 @@ class AgentHost:
         points = [obj.matrix_world @ Vector(corner) for obj in bpy.context.scene.objects if obj.type == "MESH" for corner in obj.bound_box]
         dimensions_y_up = ([max(p[i] for p in points) - min(p[i] for p in points) for i in (0, 2, 1)] if points else [0, 0, 0])
         artifacts = [str(path) for path in sorted(self.root.glob("*")) if path.suffix in (".blend", ".fbx", ".glb", ".json") and path.is_file()]
-        return {"mode": "live", "session_id": self.config["session_id"], "status": "connected",
+        from agent_source import source_state
+        return {"source_state": source_state(self), "mode": "live", "session_id": self.config["session_id"], "status": "connected",
                 "workspace_root": self.config["workspace_root"], "content_root": str(self.root), "tool_version": bpy.app.version_string,
                 "pid": os.getpid(), "objects": objects, "artifacts": artifacts,
                 "dimensions_m": dimensions_y_up, "coordinate_space": "gltf_y_up",

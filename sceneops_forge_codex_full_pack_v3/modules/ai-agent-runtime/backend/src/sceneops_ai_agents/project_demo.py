@@ -158,6 +158,24 @@ async def run_project_demo(service, task_id, *, initialize_fixture: bool | None 
     update_number = 1 + sum(item.action.capability_id == "code.demo_content.materialize"
                             for item in task.actions)
     prefix = f"demo_update_{update_number}"
+    if 'code.demo_runtime.upgrade' in task.grant.capability_ids:
+        preview_action = f"{prefix}_runtime_preview"
+        record_action(service, task_id, AgentAction(action_id=preview_action,
+            capability_id='code.demo_runtime.preview', rationale='读取现有作品运行加载代码的版本化升级差异。', inputs={}))
+        await execute_action(service, task_id, preview_action)
+        recorded = next(a for a in service.get(task_id).actions if a.action.action_id == preview_action)
+        preview = (recorded.result or {}).get('evidence', {})
+        if preview.get('status') == 'conflict':
+            raise HarnessError('DEMO_RUNTIME_UPGRADE_CONFLICT', '运行代码升级存在冲突，原源码和旧可玩版本保留。')
+        if preview.get('status') == 'ready':
+            upgrade_action = f"{prefix}_runtime_upgrade"
+            record_action(service, task_id, AgentAction(action_id=upgrade_action,
+                capability_id='code.demo_runtime.upgrade', rationale='在已授权源码范围内三方合并运行加载升级，保留自定义代码。',
+                inputs={'preview_id':preview['preview_id']}))
+            await execute_action(service, task_id, upgrade_action)
+            result = next(a for a in service.get(task_id).actions if a.action.action_id == upgrade_action)
+            if (result.result or {}).get('evidence', {}).get('status') not in ('applied', 'current'):
+                raise HarnessError('DEMO_RUNTIME_UPGRADE_CONFLICT', '运行代码升级没有完成，原成果保留。')
     steps = [
         (f"{prefix}_materialize", "code.demo_content.materialize", "把当前资产、场景实例与行为参数物化到登记游戏工程。"),
     ]

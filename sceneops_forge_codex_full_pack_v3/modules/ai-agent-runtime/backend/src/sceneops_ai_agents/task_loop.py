@@ -257,7 +257,7 @@ def changeset(task, entry):
         'project.asset.door.create', 'project.asset.door.update',
         'environment.object.place', 'environment.demo_object.transform',
         'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
-    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_content.'))
+    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_content.', 'code.demo_runtime.'))
     base_version = (f"environment-scene:{task.project_id}:{entry.action.inputs['expected_version']}"
                     if scene_transform or (content_source and 'expected_version' in entry.action.inputs)
                     else f"agent-task:{task.id}")
@@ -282,11 +282,18 @@ def changeset(task, entry):
             if code_write else
         {"task_owned_readback": task.observations.get(
             'game_project' if project_operation else "codex_prechange" if full_access else tool, {})})
+    proposed_values = entry.action.inputs
+    if entry.action.capability_id == 'code.demo_runtime.upgrade':
+        preview = task.observations.get('runtime_upgrade_previews', {}).get(entry.action.inputs['preview_id'])
+        if preview is None:
+            raise HarnessError('TASK_SCOPE_DENIED', '当前任务没有此运行代码升级提案。')
+        previous_values = {item['path']:item['previous'] for item in preview['files']}
+        proposed_values = {item['path']:item['proposed'] for item in preview['files']}
     return ChangeSet(change_set_id=identifier("chg"), base_version=base_version,
         target={"module_id": "ai-agent-runtime", "integration_id": tool,
                 "object_ids": object_ids},
         previous_values=previous_values,
-        proposed_values=entry.action.inputs, rationale=entry.action.rationale,
+        proposed_values=proposed_values, rationale=entry.action.rationale,
         expected_result=("项目场景对象变换保存为新版本并读回；不声称运行中的游戏已更新。"
                          if scene_transform else
             "源码写入后回读实际内容；不运行或编译，待用户审阅。" if code_write else

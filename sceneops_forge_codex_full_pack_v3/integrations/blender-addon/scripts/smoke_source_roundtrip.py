@@ -31,28 +31,45 @@ try:
     document = json.loads(raw[20:20 + struct.unpack_from("<I", raw, 12)[0]])
     assert {x.get("extras", {}).get("sceneops_role") for x in document["nodes"]} >= {"frame", "leaf", "hinge"}
     copied = session.register_source("candidate_two", exported["blend_path"])
+    session.open_source(**args("open_two_before_external", "candidate_two", "begin"))
+    session.save_source(**args("save_two_before_external", "candidate_two"))
     fixture = Path(__file__).with_name("fixture_add_manual_handle.py").resolve()
     subprocess.run(["/usr/bin/sandbox-exec", "-f", str(root / "state" / "sandbox.sb"),
         str(session.executable), "--background", "--factory-startup", "--disable-autoexec",
         "--python", str(fixture), "--", copied], check=True, timeout=60,
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
-    session.open_source(**args("open_two", "candidate_two", "begin"))
-    second = session.edit_nodes(**args("edit_two", "candidate_two"), edits=[dict(node_id="node_frame", base_color=[0.1, 0.2, 0.8, 1])])
-    session.open_source(**args("reopen_two", "candidate_two", "begin"))
+    stale = session.inspect()
+    assert stale["source_state"]["disk_changed"] and not stale["source_state"]["memory_dirty"]
+    assert not any(obj["name"] == "Developer simulated manual handle" for obj in stale["objects"])
+    synchronized = session.export_source(**args("export_external_saved", "candidate_two", "publish"))
+    assert any(obj["name"] == "Developer simulated manual handle" for obj in synchronized["objects"])
+    assert not synchronized["source_state"]["disk_changed"]
+    session.register_source("candidate_three", synchronized["blend_path"])
+    session.open_source(**args("open_two", "candidate_three", "begin"))
+    second = session.edit_nodes(**args("edit_two", "candidate_three"), edits=[dict(node_id="node_frame", base_color=[0.1, 0.2, 0.8, 1])])
+    session.open_source(**args("reopen_two", "candidate_three", "begin"))
     leaf2 = next(x for x in session.inspect()["objects"] if x["sceneops_role"] == "leaf")
     assert abs(leaf2["dimensions_m"][1] - 0.19) < 1e-5 and leaf2["base_color"][0] > 0.79
-    final = session.export_source(**args("export_two", "candidate_two", "publish"))
+    final = session.export_source(**args("export_two", "candidate_three", "publish"))
     handle = next(obj for obj in final["objects"] if obj["name"] == "Developer simulated manual handle")
     assert handle["sceneops_id"] and handle["asset_id"] == "asset_door"
     handle_id = handle["sceneops_id"]
-    session.open_source(**args("reopen_final", "candidate_two", "begin"))
+    session.open_source(**args("reopen_final", "candidate_three", "begin"))
     assert next(obj for obj in session.inspect()["objects"] if obj["sceneops_id"] == handle_id)
     final_raw = Path(final["glb_path"]).read_bytes()
     final_doc = json.loads(final_raw[20:20 + struct.unpack_from("<I", final_raw, 12)[0]])
     assert any(node.get("extras", {}).get("sceneops_id") == handle_id for node in final_doc["nodes"])
 
-    evidence = dict(mode="live", initial=initial, first=first, exported=exported, final=final, checks=["native_save_reopen", "second_candidate_preserves_first_edit", "stable_semantic_nodes", "glb_header_and_nodes", "export_idempotency", "sandbox_outside_denied", "developer_simulated_manual_geometry_preserved"])
+    conflict_source = session.register_source("candidate_conflict", final["blend_path"])
+    session.open_source(**args("open_conflict", "candidate_conflict", "begin"))
+    session.save_source(**args("save_conflict", "candidate_conflict"))
+    subprocess.run(["/usr/bin/sandbox-exec", "-f", str(root / "state" / "sandbox.sb"),
+        str(session.executable), "--background", "--factory-startup", "--disable-autoexec",
+        "--python-exit-code", "1", "--python", str(Path(__file__).with_name("fixture_source_conflict.py").resolve()),
+        "--", conflict_source], check=True, timeout=60, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    conflict = json.loads((Path(conflict_source).parent / "fixture_conflict_evidence.json").read_text())
+    evidence = dict(conflict=conflict, synchronized=synchronized, mode="live", initial=initial, first=first, exported=exported, final=final, checks=["native_save_reopen", "second_candidate_preserves_first_edit", "stable_semantic_nodes", "glb_header_and_nodes", "export_idempotency", "sandbox_outside_denied", "developer_simulated_manual_geometry_preserved", "external_saved_source_auto_reload", "disk_and_memory_conflict_preserves_both"])
     if "--grant-content" in sys.argv:
         original_source = final["blend_path"]
         session.stop()

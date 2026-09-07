@@ -72,7 +72,7 @@ def project_demo_agent_capabilities(value):
     if value.allow_browser_interaction:
         capabilities.extend(['code.project.build_test', 'code.browser.interact'])
     if value.allow_blender_edit:
-        capabilities.extend(['blender.scene.inspect', 'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'])
+        capabilities.extend(['blender.scene.inspect', 'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'code.demo_runtime.preview', 'code.demo_runtime.upgrade'])
     return capabilities
 
 
