@@ -84,12 +84,13 @@ def _failure(stdout: bytes, stderr: bytes) -> CodexFailure:
 def _arguments(model: str = 'cli-default', *, full_access: bool = False,
                reasoning_effort: str = 'low', authorized_scope: str | None = None,
                allow_image_generation: bool = False,
-               image_paths: tuple[Path, ...] = ()) -> list[str]:
+               image_paths: tuple[Path, ...] = (), system_prompt: str | None = None) -> list[str]:
     if reasoning_effort != 'low':
         raise CodexFailure('CODEX_REASONING_INVALID', '当前 Codex 执行使用 low 轻量推理。')
     if full_access and (not isinstance(authorized_scope, str) or not authorized_scope.strip()):
         raise CodexFailure('CODEX_SCOPE_REQUIRED', 'Codex 完整权限执行缺少服务端授权范围。')
-    instructions = AGENT_PROMPT + '\n服务端授权范围：' + authorized_scope if full_access else SYSTEM_PROMPT
+    instructions = (AGENT_PROMPT + '\n服务端授权范围：' + authorized_scope
+                    if full_access else system_prompt or SYSTEM_PROMPT)
     if full_access and allow_image_generation:
         instructions += ('\n本次授权允许使用 Codex 原生图像生成。将实际生成的图像复制或保存到任务目录，'
                          '不删除原始文件；账户不支持时明确报告，不改用其他 API、账户或插件。')
@@ -339,7 +340,7 @@ def _structured_result(envelope: dict, schema: dict) -> dict:
 
 async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict | None = None,
                       timeout: float = 120, on_event: EventCallback | None = None,
-                      image_paths: tuple[Path, ...] = ()) -> dict:
+                      image_paths: tuple[Path, ...] = (), system_prompt: str | None = None) -> dict:
     deadline = time.monotonic() + timeout
     if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}', model):
         raise CodexFailure('CODEX_MODEL_INVALID', 'Codex 模型标识无效，请重新选择或填写。')
@@ -356,7 +357,9 @@ async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict |
         if code or stdout.strip() != SUPPORTED_VERSION:
             raise CodexFailure('CODEX_VERSION_UNSUPPORTED',
                 '当前适配器需要 Codex CLI 0.144.1；其他版本尚未验证无工具配置，请检查安装版本。')
-        stdout, stderr, code = await _run(executable, _arguments(model, image_paths=image_paths), directory, prompt.encode(),
+        stdout, stderr, code = await _run(executable,
+                                         _arguments(model, image_paths=image_paths,
+                                                    system_prompt=system_prompt), directory, prompt.encode(),
                                          deadline - time.monotonic(), on_chat_event=on_event)
     if code:
         raise _failure(stdout, stderr)

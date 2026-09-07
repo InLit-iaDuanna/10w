@@ -22,10 +22,10 @@ TASK_CAPABILITIES = ["agent.next_action", "blender.asset.create", "blender.scene
                      "blender.asset.export", "unity.asset.import", "unity.scene.inspect", "agent.finish"]
 PROTOTYPE_CAPABILITIES = ["agent.next_action", "unity.prototype.compose", "unity.prototype.inspect",
     "unity.prototype.play", "unity.prototype.capture", "unity.prototype.verify", "agent.finish"]
-TASK_CAPABILITIES.append('agent.report_blocked')
-PROTOTYPE_CAPABILITIES.append('agent.report_blocked')
+TASK_CAPABILITIES.extend(['agent.history.read', 'agent.report_blocked'])
+PROTOTYPE_CAPABILITIES.extend(['agent.history.read', 'agent.report_blocked'])
 CODE_CAPABILITIES = ['agent.next_action', 'code.workspace.inspect', 'code.file.read',
-                     'code.file.write', 'agent.finish', 'agent.report_blocked']
+                     'code.file.write', 'agent.history.read', 'agent.finish', 'agent.report_blocked']
 GAME_EXECUTION_CAPABILITIES = ['code.project.status', 'code.project.check', 'code.project.build',
                                'code.preview.start', 'code.preview.stop']
 DEPENDENCY_CAPABILITY = 'code.dependencies.prepare'
@@ -172,6 +172,7 @@ class AgentAction(TaskModel):
 
 class NextActionInput(TaskModel):
     goal: str
+    context_summary: dict[str, JsonValue] = Field(default_factory=dict)
     observations: dict[str, JsonValue]
     history: list[dict[str, JsonValue]]
     capabilities: list[dict[str, JsonValue]]
@@ -252,6 +253,11 @@ class CodeWriteInput(CodeReadInput):
 class CapabilityGapInput(TaskModel):
     reason: str = Field(min_length=1, max_length=1500)
     needed_capabilities: list[str] = Field(default_factory=list, max_length=10)
+
+
+class HistoryReadInput(TaskModel):
+    reference: str = Field(pattern=(r"^task-action://[A-Za-z0-9_-]{1,100}/"
+                                    r"(?:input/(?:expected_content|content)|result)$"))
 
 
 class PrototypeVerifyInput(TaskModel):

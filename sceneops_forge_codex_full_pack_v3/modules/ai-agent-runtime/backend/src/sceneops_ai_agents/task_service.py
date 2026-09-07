@@ -168,9 +168,12 @@ class AgentTaskService:
             raise HarnessError("TASK_SCOPE_DENIED", "执行权限与已确认授权卡不一致。")
         if task.authorization_card.task_profile == 'card-development':
             expected_capabilities = card_code_capabilities(task.authorization_card)
+            legacy_capabilities = [item for item in expected_capabilities if item != 'agent.history.read']
             if (grant.card_id != task.authorization_card.card_id or grant.branch != task.authorization_card.branch
                     or grant.workspace_root != task.authorization_card.workspace_root
-                    or grant.execution_mode != 'typed-tools' or grant.capability_ids != expected_capabilities
+                    or grant.execution_mode != 'typed-tools'
+                    or task.authorization_card.capability_ids not in (expected_capabilities, legacy_capabilities)
+                    or grant.capability_ids != task.authorization_card.capability_ids
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
                     or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')

@@ -307,3 +307,9 @@ The product is complete only when:
 - Follow the confirmed folder → solo collaboration → idea → explicit grill-me → outline v1 → Three.js → production proposal journey. Keep the current UI a minimal Codex-like single conversation; do not expand per-step feature pages yet.
 - Delegate only when necessary. New development subagent work must use `gpt-6-astra` with `low` reasoning. This overrides older model/delegation preferences below.
 - Multi-user collaboration and downstream 3D editing remain deferred. Preserve old projects and implementation data while simplifying presentation.
+
+# Current Harness development conventions (2026-09-07)
+
+- Repository `.codex/agents`, `.agents/skills`, `SUBAGENTS`, prompts and templates configure development work only. A product Agent, skill, delegation or review exists only when a product runtime entry actually loads it and records the corresponding invocation and result.
+- Preserve the existing typed execution, authorization, Git worktree and recovery mechanisms. Ordinary in-repository implementation is not required to add a new ChangeSet, dry-run, checksum, frozen contract, baseline or release gate. Keep existing security controls; add a new gate only at an irreversible, cross-system, security or formal release boundary with a concrete failure scenario.
+- Agent-first means the product carries context and continues within a valid authorization. Do not add a mandatory manual page or approval for every new capability, and do not merge missing information, missing tools, missing connections, insufficient authorization and missing user decisions into one generic approval state.

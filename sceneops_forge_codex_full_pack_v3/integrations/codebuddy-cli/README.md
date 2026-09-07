@@ -2,7 +2,7 @@
 
 `sceneops_codebuddy` 是统一 provider、设计与概念兼容适配器共用的唯一 CLI 进程实现。
 公开 `MODEL_IDS`、`available()`、`complete(prompt, model='cli-default')`、
-`invoke_json(prompt, model='cli-default', schema=None)` 与 `CodeBuddyFailure`。
+`invoke_json(prompt, model='cli-default', schema=None, system_prompt=None)` 与 `CodeBuddyFailure`。
 
 安装：应用的统一后端 requirements 包含此本地包；独立模块环境需先安装
 `pip install -e integrations/codebuddy-cli`。本机另需安装并登录 `codebuddy`。
@@ -11,7 +11,7 @@
 默认模型不传 `--model`，显式选择才传。请求用参数数组及 stdin，输出为 JSON；
 120 秒超时，取消或超时终止子进程组，3 秒未退出再强制停止。无自动重试或 Mock 降级。
 CLI 从临时空目录启动；禁用工具，启用严格空 MCP，禁止会话持久化；保持默认宿主权限，
-不使用 bypass、跳权限参数或 Bridge。使用应用专用 `--system-prompt`，避免默认编码代理提示与纯建议/纯 JSON 回复冲突。
+不使用 bypass、跳权限参数或 Bridge。统一 provider 可传入由产品用途选择的 `system_prompt`；适配器只负责禁用工具并承载可信指令，不从用户正文推断任务身份。直接调用未传入时仍使用只读默认指令。
 
 CLI 2.144.0 的 JSON 输出实测为消息数组，读取其中唯一的末尾 `result`，不把 reasoning 或中间消息当作回复；同时保留单个结果对象兼容。
 

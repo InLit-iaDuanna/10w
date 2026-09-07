@@ -9,7 +9,8 @@ CodeBuddy Code CLI；也可由用户明确切换到官方 Codex CLI，或支持 
 
 ```python
 service = ProviderService(database_path, secrets_path=None)
-result = await service.generate(prompt, model=None, schema=None, purpose='chat', on_event=None)
+result = await service.generate(prompt, model=None, schema=None, purpose='chat', on_event=None,
+                                instructions=None)
 text = await service.complete(prompt, model=None, schema=None, purpose='chat')
 value = await service.structured(prompt, schema, model=None, purpose='planning')
 settings = service.settings()
@@ -22,6 +23,8 @@ probe = await service.check_connection(provider, model, base_url=None, api_key=N
 `generate()` 返回独立的 `ProviderCompletion(text, provider, model, latency_ms, usage,
 structured)`，不会用共享 `last_result` 串联并发请求。服务端没有使用量时 `usage` 为 `None`，
 不伪造 token 或费用。`complete()` 和 `structured()` 是兼容委托。
+
+`purpose` 现在参与可信产品指令选择：聊天、建议和规划保持只读，`agent-action` 允许模型在调用者给出的能力合同中选择下一项应用动作，但模型本身仍没有工具权限。需要叠加角色或按需技能的产品运行时可传入服务端构造的 `instructions`；三种 provider transport 只承载该指令，不从用户消息推断业务身份、授权或预算。
 
 `generate` 可接收异步 `on_event(event)`；事件只有 `type` 与 `text`，类型是
 `text_delta`、`reasoning_delta` 或 `status`。逐事件等待回调，调用方可在模型结束前推送到客户端；

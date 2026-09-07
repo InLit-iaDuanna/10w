@@ -7,6 +7,7 @@ from .task_models import (ActionRecord, AgentAction, CreateCubeInput, Verificati
 from .task_tools import INPUT_MODELS, MUTATIONS, TaskTools, contained
 from .production_models import ProductionStep
 from .production_catalog import module_for
+from .context_projection import project_action_history, task_context_summary
 
 
 def project_action(service, task, entry, *, run_id=None):
@@ -61,10 +62,10 @@ async def choose(service, task_id):
         current.model_calls_used += 1
     task = service.records.update(task_id, reserve, "agent.model.reserved")
     runtime = service.runtimes[task_id]
-    inputs = {"goal": task.goal, "observations": task.observations,
+    inputs = {"goal": task.goal, "context_summary": task_context_summary(task),
+        "observations": task.observations,
         "expected_provider": task.provider_id, "expected_model": task.provider_model,
-        "history": [{"action": entry.action.model_dump(mode="json"), "state": entry.state,
-                     "reason": entry.reason} for entry in task.actions],
+        "history": project_action_history(task.actions),
         "capabilities": [cap.model_dump(mode="json") for cap in runtime.registry.list() if cap.id != "agent.next_action"]}
     inputs['input_schemas'] = {cap.id: INPUT_MODELS[cap.id].model_json_schema() for cap in runtime.registry.list() if cap.id in INPUT_MODELS}
     step = PipelineStep(id="decide", title="观察并选择下一动作", capability_id="agent.next_action", inputs=inputs)

@@ -31,7 +31,7 @@ def _image_url(path: Path) -> str:
 
 
 def _chat_payload(prompt: str, model: str, schema: dict | None,
-                  image_paths: list[Path]) -> dict[str, Any]:
+                  image_paths: list[Path], system_prompt: str) -> dict[str, Any]:
     user_content: str | list[dict[str, Any]] = prompt
     if image_paths:
         user_content = [{'type': 'text', 'text': prompt}]
@@ -40,7 +40,7 @@ def _chat_payload(prompt: str, model: str, schema: dict | None,
     payload: dict[str, Any] = {
         'model': model,
         'messages': [
-            {'role': 'system', 'content': SYSTEM_PROMPT},
+            {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_content},
         ],
     }
@@ -53,7 +53,7 @@ def _chat_payload(prompt: str, model: str, schema: dict | None,
 
 
 def _responses_payload(prompt: str, model: str, schema: dict | None,
-                       image_paths: list[Path]) -> dict[str, Any]:
+                       image_paths: list[Path], system_prompt: str) -> dict[str, Any]:
     input_value: str | list[dict[str, Any]] = prompt
     if image_paths:
         content: list[dict[str, Any]] = [{'type': 'input_text', 'text': prompt}]
@@ -62,7 +62,7 @@ def _responses_payload(prompt: str, model: str, schema: dict | None,
         input_value = [{'role': 'user', 'content': content}]
     payload: dict[str, Any] = {
         'model': model,
-        'instructions': SYSTEM_PROMPT,
+        'instructions': system_prompt,
         'input': input_value,
         'store': False,
     }
@@ -77,10 +77,11 @@ def _responses_payload(prompt: str, model: str, schema: dict | None,
 
 
 def build_payload(api_protocol: ApiProtocol, prompt: str, model: str,
-                  schema: dict | None, image_paths: list[Path]) -> dict[str, Any]:
+                  schema: dict | None, image_paths: list[Path],
+                  system_prompt: str = SYSTEM_PROMPT) -> dict[str, Any]:
     if api_protocol == 'responses':
-        return _responses_payload(prompt, model, schema, image_paths)
-    return _chat_payload(prompt, model, schema, image_paths)
+        return _responses_payload(prompt, model, schema, image_paths, system_prompt)
+    return _chat_payload(prompt, model, schema, image_paths, system_prompt)
 
 
 def _raise_for_status(response: httpx.Response, api_protocol: ApiProtocol | None = None) -> None:
@@ -153,9 +154,9 @@ def _structured(text: str, schema: dict | None) -> dict | None:
 async def generate_completion(*, base_url: str, api_key: str, api_protocol: ApiProtocol,
                               prompt: str, model: str, schema: dict | None,
                               image_paths: list[Path], timeout: float,
-                              on_event=None) -> ProviderCompletion:
+                              on_event=None, system_prompt: str = SYSTEM_PROMPT) -> ProviderCompletion:
     endpoint = base_url + ('/responses' if api_protocol == 'responses' else '/chat/completions')
-    payload = build_payload(api_protocol, prompt, model, schema, image_paths)
+    payload = build_payload(api_protocol, prompt, model, schema, image_paths, system_prompt)
     started = time.monotonic()
     if on_event is not None:
         from .openai_stream import stream_completion

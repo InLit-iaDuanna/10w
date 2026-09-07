@@ -86,16 +86,17 @@ def _parse_output(stdout: bytes, stderr: bytes = b'') -> dict:
         raise _failure_from_output(json.dumps(result).encode(), stderr, None)
     return result
 
-def _arguments(model: str, schema: dict | None, *, streaming: bool = False) -> list[str]:
+def _arguments(model: str, schema: dict | None, *, streaming: bool = False,
+               system_prompt: str | None = None) -> list[str]:
     # Use one tool-free reply for both modes. Application-owned JSON Schema
     # validation avoids the CLI's agentic StructuredOutput/StopHook lifecycle.
-    system_prompt = SYSTEM_PROMPT
+    instructions = system_prompt or SYSTEM_PROMPT
     if schema is not None:
-        system_prompt += ('本次回复必须是符合请求末尾应用输出合同的单个 JSON 对象。'
+        instructions += ('本次回复必须是符合请求末尾应用输出合同的单个 JSON 对象。'
             '不得输出 Markdown 围栏、解释前后缀或 Schema 本身，不调用 StructuredOutput 或任何其他工具。')
     arguments = ['--print', '--output-format', 'json', '--tools', '', '--strict-mcp-config',
         '--mcp-config', '{"mcpServers":{}}', '--no-session-persistence', '--permission-mode',
-        'default', '--max-turns', '1', '--system-prompt', system_prompt]
+        'default', '--max-turns', '1', '--system-prompt', instructions]
     if model != 'cli-default':
         arguments += ['--model', model]
     if streaming:
@@ -183,7 +184,8 @@ def _structured_result(result: dict, schema: dict) -> dict:
 
 async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict | None = None,
                       timeout: int = 120,
-                      on_event: Callable[[dict], Awaitable[None]] | None = None) -> dict:
+                      on_event: Callable[[dict], Awaitable[None]] | None = None,
+                      system_prompt: str | None = None) -> dict:
     if model != 'cli-default' and model not in MODEL_IDS:
         raise CodeBuddyFailure('CLI_MODEL_INVALID', '所选模型不在允许列表中，请重新选择。')
     executable = shutil.which('codebuddy')
@@ -194,7 +196,8 @@ async def invoke_json(prompt: str, model: str = 'cli-default', *, schema: dict |
         prompt += ('\n\n应用输出合同：只返回下面 JSON Schema 的数据实例，第一字符为 {，最后字符为 }。'
             '不要使用 Markdown 代码块，不要新增合同以外的字段。\n'
             + json.dumps(schema, ensure_ascii=False))
-    arguments = _arguments(model, schema, streaming=on_event is not None)
+    arguments = _arguments(model, schema, streaming=on_event is not None,
+                           system_prompt=system_prompt)
     with tempfile.TemporaryDirectory(prefix='sceneops-codebuddy-') as directory:
         try:
             process = await asyncio.create_subprocess_exec(executable, *arguments, cwd=directory,

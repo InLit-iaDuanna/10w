@@ -5,7 +5,7 @@ from pathlib import Path
 from sceneops_harness import CapabilityDefinition, CapabilityRegistry, CapabilityResult, HarnessError, RetryPolicy
 from .task_models import (AgentAction, AssetInput, CreateCubeInput, CodexTaskInput, EmptyActionInput,
                           FinishInput, NextActionInput, ToolResult, now, PrototypeVerifyInput, CapabilityGapInput,
-                          CodeReadInput, CodeWriteInput)
+                          CodeReadInput, CodeWriteInput, HistoryReadInput)
 from .production_catalog import module_for
 from .output_manifest import OUTPUT_MANIFEST_INSTRUCTION, register_output_manifest
 from engine_unity import PrototypeSpec, PrototypePlayPayload
@@ -24,6 +24,7 @@ INPUT_MODELS.update({'unity.prototype.compose': PrototypeSpec, 'unity.prototype.
     'unity.prototype.play': PrototypePlayPayload, 'unity.prototype.capture': EmptyActionInput,
     'unity.prototype.verify': PrototypeVerifyInput})
 INPUT_MODELS['agent.report_blocked'] = CapabilityGapInput
+INPUT_MODELS['agent.history.read'] = HistoryReadInput
 INPUT_MODELS.update({'code.workspace.inspect': EmptyActionInput,
                      'code.file.read': CodeReadInput, 'code.file.write': CodeWriteInput})
 INPUT_MODELS.update({capability: EmptyActionInput for capability in
@@ -135,6 +136,11 @@ class TaskTools:
         cancellation.raise_if_cancelled()
         if invocation.dry_run:
             evidence = {"dry_run": True, "proposed_values": invocation.inputs, "workspace_root": task.grant.workspace_root}
+        elif invocation.capability_id == 'agent.history.read':
+            from .context_projection import read_history_reference
+            reference = invocation.inputs['reference']
+            evidence = {'tool': 'history', 'mode': 'live', 'effect_state': 'NONE',
+                        'reference': reference, 'value': read_history_reference(task, reference)}
         elif invocation.capability_id == "agent.finish":
             evidence = await self.finish(task)
         elif invocation.capability_id == 'agent.report_blocked':

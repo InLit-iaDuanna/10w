@@ -17,6 +17,7 @@ CAPABILITY_MODULES = {
     'unity.prototype.play': 'ai-playtest', 'unity.prototype.capture': 'ai-playtest',
     'unity.prototype.verify': 'ai-playtest',
     'agent.report_blocked': 'project-planning',
+    'agent.history.read': 'project-planning',
     'code.workspace.inspect': 'world-logic', 'code.file.read': 'world-logic',
     'code.file.write': 'world-logic',
 }
