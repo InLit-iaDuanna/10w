@@ -253,6 +253,7 @@ def changeset(task, entry):
     code_write = entry.action.capability_id == 'code.file.write'
     scene_transform = entry.action.capability_id == 'environment.object.transform'
     content_source = entry.action.capability_id in {
+        'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish',
         'project.asset.door.create', 'project.asset.door.update',
         'environment.object.place', 'environment.demo_object.transform',
         'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}

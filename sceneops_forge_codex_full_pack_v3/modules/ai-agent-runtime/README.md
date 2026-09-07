@@ -71,3 +71,11 @@ PYTHONPATH=modules/ai-agent-runtime/backend/src:modules/ai-model-router/backend/
 # 卡片源码开发增量
 
 `PrepareAgentTask` 支持 `task_profile='card-development'` 和必需的 `project_id/card_id`，只允许 typed-tools。通过 workspace 公开只读登记接口绑定实际worktree，不接管任意路径。新增 `code.workspace.inspect`、`code.file.read`、`code.file.write`，写入仍经原Harness ChangeSet和授权。源码结果以 `code_written / review_required` 交付，不宣称运行/编译通过。上下文回调由宿主注入，避免模块内部导入。测试和限制见根 `CARD_CODE_DEVELOPMENT.md`。
+
+## Blender 原生资产往返
+
+D4 内容入口增加「用 Blender 编辑」与「保存 Blender 源并同步导出」。旧授权保持原范围；「准备 Blender 编辑授权」通过原有限续授卡显式加入原生编辑和读取能力。Agent 使用相同的 `blender.asset.begin/edit/publish` 类型化动作与 Harness 审批、预算、任务占用；模型不提供文件路径或脚本。默认 Agent 无头、手工入口可见，完成回流后只关闭专用编辑会话。
+
+`.blend` 候选从当前资产版本创建；程序化配方仅首轮转换，后续重开真实源。原配方版本保留，新版本不再显示无损配方编辑控件。导出、不可变文件保存、资产登记和引用应用分别记录。共享引用可按 `object_ids` 指定；部分应用冲突保留已保存源，通过当前场景版本继续应用，不再造资产版本。人工候选不能被模型编辑或发布，未知结果保留占用。
+
+原生源的版本、真实工具与模型、Shell 证据及未完成验收见根目录 `BLENDER_NATIVE_ROUNDTRIP.md`。已有自定义游戏代码需要明确接入文件加载器；不自动改写普通行为源码。

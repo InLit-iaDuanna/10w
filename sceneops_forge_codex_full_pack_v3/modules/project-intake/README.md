@@ -75,3 +75,9 @@ fixtures：`findMyWayHomeNewProject` 覆盖新项目；`warehouseEscapeScanRepor
 - `create_design_snapshot(project_id, payload, version)` 排他创建 `.sceneops/design/snapshots/vN.json`。同版本、同结构化 JSON 的重试返回已有快照，不同内容会冲突且绝不覆盖。
 
 调用方不能提供相对路径。存储拒绝相对目录、目录链上的符号链接、已有项目子目录和不安全的 SceneOps 元数据目录；不会改写所选父目录中的任意已有内容。
+
+## Blender GLB Demo 运行合同
+
+新对象／组件式与 ECS 模板通过 `createDemoAsset` 异步加载 `runtime_artifacts` 中 render 文件，路径为 `public/...glb`。文件源不会退回 DoorRecipe。GLB 采用米、Y 向上，节点 extras 保留稳定 `sceneops_id` 与 `sceneops_role`（frame、leaf、hinge）；唯一 hinge 必须包含 leaf，frame 不得属于铰链子树。场景实例身份保存在外层 Group，不覆盖源节点身份。开门只旋转铰链；碰撞按各 Mesh 变换后的几何包围盒计算，门框保持阻挡，不会把整个门框空洞作为一个实心盒子。
+
+加载错误显示“模型加载失败”，旧的配方专用用户工程在物化文件资产前返回 `LEGACY_RUNTIME_REQUIRES_EDIT`，需通过代码任务接入加载器；物化器不覆盖用户行为文件。`demo_content_glb_smoke.mjs` 用实际二进制 GLB 验证加载、偏置铰链、固定门框和碰撞；该确定性几何夹具不是 Blender 或浏览器实测证据。

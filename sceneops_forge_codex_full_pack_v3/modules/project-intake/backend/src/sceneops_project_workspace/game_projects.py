@@ -94,7 +94,7 @@ import { Game } from './game/Game'
 
 const host = document.querySelector<HTMLDivElement>('#app')
 if (!host) throw new Error('Missing #app host')
-new Game(host).start()
+Game.create(host).then(game => game.start()).catch(error => { document.querySelector<HTMLElement>('#prompt')!.textContent = `模型加载失败：${String(error)}` })
 """,
         "src/game/components/InputController.ts": """export class InputController {
   private readonly pressed = new Set<string>()
@@ -152,28 +152,27 @@ export class Collectible {
 }
 """,
         "src/game/objects/KeyDoor.ts": """import * as THREE from 'three'
-import { createDoorMesh, keyDoorCanOpen, type DemoAsset, type DemoObject } from '../sceneops-demo-content'
+import { createDemoAsset, setDemoDoorOpen, keyDoorCanOpen, type DemoAsset, type DemoObject } from '../sceneops-demo-content'
 
 export class KeyDoor {
-  readonly mesh: THREE.Mesh
+  readonly mesh: THREE.Object3D
   opened = false
-  private readonly closedRotation: number
-  constructor(readonly source: DemoObject, asset: DemoAsset & { recipe: NonNullable<DemoAsset['recipe']> }) {
-    this.mesh = createDoorMesh(asset.recipe)
+  static async create(source: DemoObject, asset: DemoAsset) { return new KeyDoor(source, await createDemoAsset(asset)) }
+  constructor(readonly source: DemoObject, mesh: THREE.Object3D) {
+    this.mesh = mesh
     const {position_m,rotation_y_deg,scale} = source.transform
     this.mesh.position.set(...position_m); this.mesh.scale.setScalar(scale)
     this.mesh.rotation.y = THREE.MathUtils.degToRad(rotation_y_deg)
-    this.closedRotation = this.mesh.rotation.y
     this.mesh.name = source.id; this.mesh.userData.sceneops_id = source.id
   }
   distanceTo(player: THREE.Vector3) { const at=this.mesh.position.clone(); at.y=player.y; return at.distanceTo(player) }
   tryOpen(player: THREE.Vector3, inventory: ReadonlySet<string>) {
     const behavior = this.source.behavior
     if (!behavior || this.opened || !keyDoorCanOpen(player, this.mesh, inventory, behavior)) return false
-    this.opened = true; this.mesh.rotation.y = this.closedRotation + THREE.MathUtils.degToRad(behavior.open_angle_deg)
+    this.opened = true; setDemoDoorOpen(this.mesh, THREE.MathUtils.degToRad(behavior.open_angle_deg))
     return true
   }
-  reset() { this.opened = false; this.mesh.rotation.y = this.closedRotation }
+  reset() { this.opened = false; setDemoDoorOpen(this.mesh, 0) }
 }
 """,
         "src/game/Game.ts": """import * as THREE from 'three'
@@ -184,7 +183,7 @@ import { Player } from './objects/Player'
 import { KeyDoor } from './objects/KeyDoor'
 import { createTestAdapter } from './sceneops-test'
 import { createDemoScenery } from './sceneops-demo-assets'
-import { demoContent, type DemoAsset } from './sceneops-demo-content'
+import { demoContent, demoAssetBlocksPlayer } from './sceneops-demo-content'
 
 export class Game {
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -195,15 +194,18 @@ export class Game {
   private readonly collectibles = [[-4,-2],[0,2],[4,-1]].map(([x,z]) => new Collectible(x, z))
   private readonly score = new ScoreCounter(document.querySelector<HTMLElement>('#score')!)
   private readonly prompt = document.querySelector<HTMLElement>('#prompt')!
-  private readonly doors = demoContent.objects.flatMap(source => {
-    const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
-    if (!asset?.recipe) return []
-    return [new KeyDoor(source, asset as DemoAsset & { recipe: NonNullable<DemoAsset['recipe']> })]
-  })
+  static async create(host: HTMLElement) {
+    const doors = await Promise.all(demoContent.objects.map(source => {
+      const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
+      if (!asset) throw new Error(`资产版本缺失：${source.asset_id}`)
+      return KeyDoor.create(source, asset)
+    }))
+    return new Game(host, doors)
+  }
   private last = performance.now()
   private test?: ReturnType<typeof createTestAdapter>
 
-  constructor(private readonly host: HTMLElement) {
+  constructor(private readonly host: HTMLElement, private readonly doors: KeyDoor[]) {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); this.host.append(this.renderer.domElement)
     this.scene.background = new THREE.Color(0x111827)
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.2), this.player.mesh, createDemoScenery(), ...this.doors.map(item => item.mesh))
@@ -239,7 +241,9 @@ export class Game {
   private update(time: number) {
     const delta = Math.min((time - this.last) / 1000, 0.05); this.last = time
     if (!this.test?.paused) {
+      const previous = this.player.mesh.position.clone()
       this.player.update(delta)
+      if (this.doors.some(door => demoAssetBlocksPlayer(door.mesh, this.player.mesh.position))) this.player.mesh.position.copy(previous)
       this.collectibles.forEach(item => { if (item.tryCollect(this.player.mesh.position)) this.score.collect() })
       const keyItem = this.doors.find(item => item.source.behavior)?.source.behavior?.required_key_asset_id
       const inventory = new Set(this.score.current() > 0 && keyItem ? [keyItem] : [])
@@ -279,6 +283,9 @@ import { collectionSystem, resetScore, currentScore } from './game/systems/colle
 import { createTestAdapter } from './game/sceneops-test'
 import { createDemoScenery } from './game/sceneops-demo-assets'
 import { doorSystem } from './game/systems/doorSystem'
+import { setDemoDoorOpen } from './game/sceneops-demo-content'
+
+async function start() {
 
 const host = document.querySelector<HTMLDivElement>('#app')
 const score = document.querySelector<HTMLElement>('#score')
@@ -290,7 +297,7 @@ const scene = new THREE.Scene(); scene.background = new THREE.Color(0x111827)
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100); camera.position.set(0, 10, 11); camera.lookAt(0, 0, 0)
 scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.2), createDemoScenery())
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 12), new THREE.MeshStandardMaterial({ color: 0x334155 })); floor.rotation.x = -Math.PI / 2; scene.add(floor)
-const game = createGameWorld(scene)
+const game = await createGameWorld(scene)
 const input = { keys: new Set<string>(), interactRequested: false }
 addEventListener('keydown', e => {
   input.keys.add(e.key.toLowerCase())
@@ -313,7 +320,7 @@ if (import.meta.env.MODE === 'sceneops-test') {
       if (!game.world.has(item)) game.world.add(item)
       scene.add(item.mesh)
     })
-    for (const door of game.world.with('keyDoor','mesh')) { door.keyDoor.open=false; door.mesh.rotation.y=door.keyDoor.closedRotation }
+    for (const door of game.world.with('keyDoor','mesh')) { door.keyDoor.open=false; setDemoDoorOpen(door.mesh, 0) }
     document.querySelector<HTMLElement>('#prompt')!.textContent=''
     last = performance.now()
     gameHost.dataset.playerX = spawn.x.toFixed(3); gameHost.dataset.playerZ = spawn.z.toFixed(3)
@@ -340,11 +347,13 @@ function frame(time: number) {
   renderer.render(scene, camera); requestAnimationFrame(frame)
 }
 requestAnimationFrame(frame)
+}
+start().catch(error => { document.querySelector<HTMLElement>('#prompt')!.textContent = `模型加载失败：${String(error)}` })
 """,
         "src/game/world.ts": """import { World } from 'miniplex'
 import * as THREE from 'three'
 import { createCharacter, createCollectible } from './sceneops-demo-assets'
-import { createDoorMesh, demoContent, type KeyDoorBehavior } from './sceneops-demo-content'
+import { createDemoAsset, demoContent, type KeyDoorBehavior } from './sceneops-demo-content'
 
 export type Entity = {
   position?: THREE.Vector3
@@ -357,7 +366,7 @@ export type Entity = {
   sceneObjectId?: string
   keyDoor?: { behavior: KeyDoorBehavior; closedRotation: number; open: boolean }
 }
-export function createGameWorld(scene: THREE.Scene) {
+export async function createGameWorld(scene: THREE.Scene) {
   const world = new World<Entity>()
   const playerMesh = createCharacter('player'); scene.add(playerMesh)
   world.add({player:true,position:playerMesh.position,velocity:new THREE.Vector3(),mesh:playerMesh,inventory:new Set<string>()})
@@ -367,8 +376,8 @@ export function createGameWorld(scene: THREE.Scene) {
   }
   for (const source of demoContent.objects) {
     const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
-    if (!asset?.recipe) continue
-    const mesh = createDoorMesh(asset.recipe), {position_m,rotation_y_deg,scale} = source.transform
+    if (!asset) throw new Error(`资产版本缺失：${source.asset_id}`)
+    const mesh = await createDemoAsset(asset), {position_m,rotation_y_deg,scale} = source.transform
     mesh.position.set(...position_m); mesh.scale.setScalar(scale); mesh.rotation.y=THREE.MathUtils.degToRad(rotation_y_deg)
     mesh.name=source.id; mesh.userData.sceneops_id=source.id; scene.add(mesh)
     world.add({sceneObjectId:source.id,position:mesh.position,mesh,
@@ -393,13 +402,16 @@ export function inputSystem(world: World<Entity>, input: InputState) {
   return interact
 }
 """,
-        "src/game/systems/movementSystem.ts": """import type { World } from 'miniplex'
+        "src/game/systems/movementSystem.ts": """import { demoAssetBlocksPlayer } from '../sceneops-demo-content'
+import type { World } from 'miniplex'
 import type { Entity } from '../world'
 
 export function movementSystem(world: World<Entity>, delta: number) {
   for (const entity of world.with('position','velocity')) {
+    const previous = entity.position.clone()
     entity.position.addScaledVector(entity.velocity, delta)
     entity.position.x = Math.max(-8, Math.min(8, entity.position.x)); entity.position.z = Math.max(-5, Math.min(5, entity.position.z))
+    if ([...world.with('sceneObjectId','mesh')].some(door => demoAssetBlocksPlayer(door.mesh, entity.position))) entity.position.copy(previous)
   }
 }
 """,
@@ -420,7 +432,7 @@ export function collectionSystem(world: World<Entity>, output: HTMLElement) {
         "src/game/systems/doorSystem.ts": """import * as THREE from 'three'
 import type { World } from 'miniplex'
 import type { Entity } from '../world'
-import { keyDoorCanOpen } from '../sceneops-demo-content'
+import { keyDoorCanOpen, setDemoDoorOpen } from '../sceneops-demo-content'
 
 export function doorSystem(world: World<Entity>, interact: boolean, prompt: HTMLElement) {
   const [player] = world.with('player','position','inventory')
@@ -433,7 +445,7 @@ export function doorSystem(world: World<Entity>, interact: boolean, prompt: HTML
       message = player.inventory.has(door.behavior.required_key_asset_id) ? '按空格或 Enter 开门' : '需要钥匙'
     }
     if (interact && !door.open && keyDoorCanOpen(player.position, entity.mesh, player.inventory, door.behavior)) {
-      door.open = true; entity.mesh.rotation.y = door.closedRotation + THREE.MathUtils.degToRad(door.behavior.open_angle_deg)
+      door.open = true; setDemoDoorOpen(entity.mesh, THREE.MathUtils.degToRad(door.behavior.open_angle_deg))
     }
   }
   prompt.textContent = message
@@ -460,6 +472,12 @@ class GameProjects:
         root = self.repository._safe_existing_directory(Path(workspace["workspace_root"]))
         if manifest.get("project_id") != project_id or manifest.get("workspace_id") != workspace_id:
             raise GameProjectError("Demo 内容版本不属于当前项目工作区。")
+        if any(asset.get("source_kind") in {"blender", "file"} for asset in manifest.get("assets", [])):
+            consumers = [root / "src/game/objects/KeyDoor.ts", root / "src/game/world.ts"]
+            existing = [path for path in consumers if path.exists()]
+            if not existing or any(path.is_symlink() or not path.is_file()
+                    or "createDemoAsset" not in path.read_text(encoding="utf-8") for path in existing):
+                raise GameProjectError("LEGACY_RUNTIME_REQUIRES_EDIT：当前游戏尚未接入 GLB 加载；请修改现有运行代码后重新更新 Demo，用户行为源码保持不变。")
         source = root / "src" / "game" / "sceneops-demo-content.ts"
         metadata = self.repository._real_directory(root / ".sceneops", create=True)
         record = metadata / "demo-content.json"

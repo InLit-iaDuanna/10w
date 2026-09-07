@@ -137,7 +137,7 @@ class RuntimeArtifactReference(ProjectAssetModel):
 class ProjectAssetVersion(ProjectAssetModel):
     source_version: int = Field(ge=1)
     asset_version_id: Optional[str] = Field(default=None, min_length=1)
-    source_kind: Literal["file", "procedural"] = "file"
+    source_kind: Literal["file", "procedural", "blender"] = "file"
     dimensions_m: tuple[float, float, float]
     vertex_count: int = Field(ge=0)
     triangle_count: int = Field(ge=0)
@@ -145,9 +145,11 @@ class ProjectAssetVersion(ProjectAssetModel):
     preview_path: Optional[str] = Field(default=None, min_length=1)
     fbx_path: Optional[str] = Field(default=None, min_length=1)
     recipe: Optional[DoorRecipe] = None
+    parent_source_version: Optional[int] = Field(default=None, ge=1)
+    node_ids: dict[str, str] = Field(default_factory=dict)
     runtime_artifacts: list[RuntimeArtifactReference] = Field(default_factory=list)
     operation: Literal[
-        "import", "generate", "normalize", "calibrate", "recipe-create", "recipe-edit"
+        "import", "generate", "normalize", "calibrate", "recipe-create", "recipe-edit", "blender-edit"
     ]
     model_rotation_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY
     saved_at: str = Field(default_factory=_now)
@@ -164,6 +166,16 @@ class ProjectAssetVersion(ProjectAssetModel):
                 raise ValueError("file asset versions require blend, preview, and fbx paths")
             if self.recipe is not None:
                 raise ValueError("file asset versions cannot contain a procedural recipe")
+        elif self.source_kind == "blender":
+            if not self.asset_version_id or not self.blend_path or not self.preview_path:
+                raise ValueError("Blender versions require a stable version ID, blend source and GLB")
+            if (self.recipe is not None or self.parent_source_version is None
+                    or self.parent_source_version >= self.source_version):
+                raise ValueError("Blender source must preserve its parent version, not an editable recipe")
+            if not all(math.isfinite(v) and v > 0 for v in self.dimensions_m):
+                raise ValueError("Blender dimensions must be finite and positive")
+            if not any(a.artifact_type == "render" for a in self.runtime_artifacts):
+                raise ValueError("Blender source requires its derived runtime artifact")
         else:
             if self.asset_version_id is None:
                 raise ValueError("procedural asset versions require a stable asset_version_id")
@@ -206,6 +218,7 @@ class ProjectAssetRegistration(ProjectAssetModel):
     source_type: Literal["import", "generated"]
     modeling_session_id: str | None = Field(default=None, max_length=160)
     version: ProjectAssetVersion
+    expected_version: Optional[int] = Field(default=None, ge=1)
 
     @model_validator(mode="after")
     def validate_scope(self):
@@ -299,8 +312,13 @@ class SqliteProjectAssetRepository:
             ).fetchall()
         return [ProjectAssetEntry.model_validate_json(row["payload"]) for row in rows]
 
-    def save(self, entry: ProjectAssetEntry) -> None:
+    def save(self, entry: ProjectAssetEntry, *, expected_current_version: int | None = None) -> None:
         with self._connect() as connection:
+            if expected_current_version is not None:
+                connection.execute("BEGIN IMMEDIATE")
+                row = connection.execute("SELECT payload FROM project_asset_catalog WHERE id=?", (entry.id,)).fetchone()
+                if row is None or ProjectAssetEntry.model_validate_json(row["payload"]).current_version != expected_current_version:
+                    raise ValueError("资产版本已被其他编辑更新，请重新读取。")
             connection.execute(
                 """INSERT INTO project_asset_catalog(id,project_id,source_asset_id,payload,updated_at)
                    VALUES(?,?,?,?,?)
@@ -359,6 +377,11 @@ class ProjectAssetCatalogService:
                             request.version.model_dump(exclude={"saved_at"})):
                         raise ValueError("该源版本已登记且内容不一致，不能覆盖资产库版本。")
                     return SaveProjectAssetResult(entry=existing, version_created=False)
+                if (request.expected_version is not None
+                        and existing.current_version != request.expected_version):
+                    raise ValueError("资产版本已更新；新源保留，请重新读取后应用。")
+                if request.version.source_version <= existing.current_version:
+                    raise ValueError("新版本必须晚于当前版本。")
                 updated = existing.model_copy(update={
                     "source_title": request.title,
                     "modeling_session_id": existing.modeling_session_id or request.modeling_session_id,
@@ -366,7 +389,7 @@ class ProjectAssetCatalogService:
                     "versions": [*existing.versions, request.version],
                     "updated_at": _now(),
                 })
-                self.repository.save(updated)
+                self.repository.save(updated, expected_current_version=existing.current_version)
                 return SaveProjectAssetResult(entry=updated, version_created=True)
             used = {item.title for item in self.repository.list(request.project_id)}
             entry = ProjectAssetEntry(
@@ -417,7 +440,7 @@ class ProjectAssetCatalogService:
                 "versions": [*entry.versions, version],
                 "updated_at": _now(),
             })
-            self.repository.save(updated)
+            self.repository.save(updated, expected_current_version=entry.current_version)
             return SaveProjectAssetResult(entry=updated, version_created=True)
 
 

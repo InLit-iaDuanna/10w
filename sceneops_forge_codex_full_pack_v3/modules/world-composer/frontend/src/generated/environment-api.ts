@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/environment-scenes/behavior-definitions/key-door": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Key Door Behavior Definition */
+        get: operations["getKeyDoorBehaviorDefinition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/environment-scenes/{project_id}": {
         parameters: {
             query?: never;
@@ -56,75 +73,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/environment-scenes/{project_id}/ai-build": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Ai Build */
-        post: operations["buildEnvironmentWithAi"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/project-assets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Assets */
-        get: operations["listProjectAssets"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/project-assets/{entry_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Asset */
-        get: operations["getProjectAsset"];
-        /** Rename Asset */
-        put: operations["renameProjectAsset"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/environment-scenes/behavior-definitions/key-door": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Key Door Behavior Definition */
-        get: operations["getKeyDoorBehaviorDefinition"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/environment-scenes/{project_id}/objects/{object_id}/key-door": {
         parameters: {
             query?: never;
@@ -159,6 +107,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/environment-scenes/{project_id}/ai-build": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ai Build */
+        post: operations["buildEnvironmentWithAi"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/project-assets/recipe-definitions/door-v1": {
         parameters: {
             query?: never;
@@ -168,6 +133,23 @@ export interface paths {
         };
         /** Get Door Recipe Definition */
         get: operations["getDoorRecipeDefinition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/project-assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: operations["listProjectAssets"];
         put?: never;
         post?: never;
         delete?: never;
@@ -187,6 +169,24 @@ export interface paths {
         put?: never;
         /** Update Recipe */
         post: operations["updateProjectAssetRecipe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/project-assets/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Asset */
+        get: operations["getProjectAsset"];
+        /** Rename Asset */
+        put: operations["renameProjectAsset"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -226,307 +226,6 @@ export interface components {
              * @default false
              */
             reused: boolean;
-        };
-        /** EnvironmentMessage */
-        EnvironmentMessage: {
-            /** Id */
-            id: string;
-            /**
-             * Role
-             * @enum {string}
-             */
-            role: "user" | "assistant";
-            /** Text */
-            text: string;
-            /** Created At */
-            created_at?: string;
-            /** Provider */
-            provider?: string | null;
-            /** Model */
-            model?: string | null;
-        };
-        /** EnvironmentObject */
-        EnvironmentObject: {
-            /** Id */
-            id: string;
-            /** Asset Id */
-            asset_id: string;
-            /** Asset Version */
-            asset_version: number;
-            /** Asset Version Id */
-            asset_version_id?: string | null;
-            /** Source Asset Id */
-            source_asset_id: string;
-            /** Title */
-            title: string;
-            transform: components["schemas"]["EnvironmentTransform"];
-            behavior?: components["schemas"]["KeyDoorBehavior"] | null;
-        };
-        /** EnvironmentScene */
-        EnvironmentScene: {
-            /** Scene Id */
-            scene_id: string;
-            /** Project Id */
-            project_id: string;
-            /** Version */
-            version: number;
-            /** Objects */
-            objects?: components["schemas"]["EnvironmentObject"][];
-            /** History */
-            history?: components["schemas"]["EnvironmentMessage"][];
-            scale_profile?: components["schemas"]["WorldScaleProfile"];
-            /**
-             * Mode
-             * @default live
-             * @constant
-             */
-            mode: "live";
-            /** Updated At */
-            updated_at?: string;
-        };
-        /** EnvironmentTransform */
-        EnvironmentTransform: {
-            /**
-             * Position M
-             * @default [
-             *       0,
-             *       0,
-             *       0
-             *     ]
-             */
-            position_m: [
-                number,
-                number,
-                number
-            ];
-            /**
-             * Rotation Y Deg
-             * @default 0
-             */
-            rotation_y_deg: number;
-            /**
-             * Scale
-             * @default 1
-             */
-            scale: number;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /** ManualPlacementRequest */
-        ManualPlacementRequest: {
-            /** Expected Version */
-            expected_version: number;
-            /** Asset Id */
-            asset_id: string;
-            /** Asset Version */
-            asset_version?: number | null;
-            /** Position M */
-            position_m?: [
-                number,
-                number,
-                number
-            ] | null;
-        };
-        /** ProjectAssetEntry */
-        ProjectAssetEntry: {
-            /** Id */
-            id: string;
-            /** Project Id */
-            project_id: string;
-            /** Card Id */
-            card_id?: string | null;
-            /** Workspace Id */
-            workspace_id?: string | null;
-            /** Source Asset Id */
-            source_asset_id: string;
-            /** Title */
-            title: string;
-            /** Source Title */
-            source_title?: string | null;
-            /** Modeling Session Id */
-            modeling_session_id?: string | null;
-            /**
-             * Source Type
-             * @enum {string}
-             */
-            source_type: "import" | "generated";
-            /**
-             * Category
-             * @default model
-             * @constant
-             */
-            category: "model";
-            /** Current Version */
-            current_version: number;
-            /** Versions */
-            versions: components["schemas"]["ProjectAssetVersion"][];
-            /** Created At */
-            created_at?: string;
-            /** Updated At */
-            updated_at?: string;
-        };
-        /** ProjectAssetVersion */
-        ProjectAssetVersion: {
-            /** Source Version */
-            source_version: number;
-            /** Asset Version Id */
-            asset_version_id?: string | null;
-            /**
-             * Source Kind
-             * @default file
-             * @enum {string}
-             */
-            source_kind: "file" | "procedural";
-            /** Dimensions M */
-            dimensions_m: [
-                number,
-                number,
-                number
-            ];
-            /** Vertex Count */
-            vertex_count: number;
-            /** Triangle Count */
-            triangle_count: number;
-            /** Blend Path */
-            blend_path?: string | null;
-            /** Preview Path */
-            preview_path?: string | null;
-            /** Fbx Path */
-            fbx_path?: string | null;
-            recipe?: components["schemas"]["DoorRecipe"] | null;
-            /** Runtime Artifacts */
-            runtime_artifacts?: components["schemas"]["RuntimeArtifactReference"][];
-            /**
-             * Operation
-             * @enum {string}
-             */
-            operation: "import" | "generate" | "normalize" | "calibrate" | "recipe-create" | "recipe-edit";
-            /**
-             * Model Rotation Quaternion Xyzw
-             * @default [
-             *       0,
-             *       0,
-             *       0,
-             *       1
-             *     ]
-             */
-            model_rotation_quaternion_xyzw: [
-                number,
-                number,
-                number,
-                number
-            ];
-            /** Saved At */
-            saved_at?: string;
-        };
-        /** RemoveObjectRequest */
-        RemoveObjectRequest: {
-            /** Expected Version */
-            expected_version: number;
-        };
-        /** RenameProjectAssetRequest */
-        RenameProjectAssetRequest: {
-            /** Title */
-            title: string;
-            /** Expected Updated At */
-            expected_updated_at: string;
-        };
-        /**
-         * SharedProjectMemory
-         * @description Read-only planning snapshot shared across focused production conversations.
-         */
-        SharedProjectMemory: {
-            /**
-             * Project Title
-             * @default
-             */
-            project_title: string;
-            /**
-             * Experience
-             * @default
-             */
-            experience: string;
-            /**
-             * Core Loop
-             * @default
-             */
-            core_loop: string;
-            /**
-             * Scope
-             * @default
-             */
-            scope: string;
-            /**
-             * Technical Plan
-             * @default
-             */
-            technical_plan: string;
-            /**
-             * Active Card
-             * @default
-             */
-            active_card: string;
-        };
-        /** TransformObjectRequest */
-        TransformObjectRequest: {
-            /** Expected Version */
-            expected_version: number;
-            transform: components["schemas"]["EnvironmentTransform"];
-        };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
-        };
-        /**
-         * WorldScaleProfile
-         * @description Project-wide spatial conventions shared by assets and scene assembly.
-         */
-        WorldScaleProfile: {
-            /**
-             * Unit
-             * @default meter
-             * @constant
-             */
-            unit: "meter";
-            /**
-             * Up Axis
-             * @default Y
-             * @constant
-             */
-            up_axis: "Y";
-            /**
-             * Handedness
-             * @default right
-             * @constant
-             */
-            handedness: "right";
-            /**
-             * Grid Step M
-             * @default 1
-             */
-            grid_step_m: number;
-            /**
-             * Reference Human Height M
-             * @default 1.8
-             */
-            reference_human_height_m: number;
-            /**
-             * Default Object Spacing M
-             * @default 3
-             */
-            default_object_spacing_m: number;
         };
         /** AssetVersionRebindResult */
         AssetVersionRebindResult: {
@@ -620,6 +319,94 @@ export interface components {
             /** Parameters */
             parameters: components["schemas"]["RecipeParameterDescriptor"][];
         };
+        /** EnvironmentMessage */
+        EnvironmentMessage: {
+            /** Id */
+            id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Text */
+            text: string;
+            /** Created At */
+            created_at?: string;
+            /** Provider */
+            provider?: string | null;
+            /** Model */
+            model?: string | null;
+        };
+        /** EnvironmentObject */
+        EnvironmentObject: {
+            /** Id */
+            id: string;
+            /** Asset Id */
+            asset_id: string;
+            /** Asset Version */
+            asset_version: number;
+            /** Asset Version Id */
+            asset_version_id?: string | null;
+            /** Source Asset Id */
+            source_asset_id: string;
+            /** Title */
+            title: string;
+            transform: components["schemas"]["EnvironmentTransform"];
+            behavior?: components["schemas"]["KeyDoorBehavior"] | null;
+        };
+        /** EnvironmentScene */
+        EnvironmentScene: {
+            /** Scene Id */
+            scene_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Version */
+            version: number;
+            /** Objects */
+            objects?: components["schemas"]["EnvironmentObject"][];
+            /** History */
+            history?: components["schemas"]["EnvironmentMessage"][];
+            scale_profile?: components["schemas"]["WorldScaleProfile"];
+            /**
+             * Mode
+             * @default live
+             * @constant
+             */
+            mode: "live";
+            /** Updated At */
+            updated_at?: string;
+        };
+        /** EnvironmentTransform */
+        EnvironmentTransform: {
+            /**
+             * Position M
+             * @default [
+             *       0,
+             *       0,
+             *       0
+             *     ]
+             */
+            position_m: [
+                number,
+                number,
+                number
+            ];
+            /**
+             * Rotation Y Deg
+             * @default 0
+             */
+            rotation_y_deg: number;
+            /**
+             * Scale
+             * @default 1
+             */
+            scale: number;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** KeyDoorBehavior */
         KeyDoorBehavior: {
             /** Behavior Instance Id */
@@ -654,8 +441,123 @@ export interface components {
             /** Parameters */
             parameters: components["schemas"]["BehaviorParameterDescriptor"][];
         };
+        /** ManualPlacementRequest */
+        ManualPlacementRequest: {
+            /** Expected Version */
+            expected_version: number;
+            /** Asset Id */
+            asset_id: string;
+            /** Asset Version */
+            asset_version?: number | null;
+            /** Position M */
+            position_m?: [
+                number,
+                number,
+                number
+            ] | null;
+        };
+        /** ProjectAssetEntry */
+        ProjectAssetEntry: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Card Id */
+            card_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
+            /** Source Asset Id */
+            source_asset_id: string;
+            /** Title */
+            title: string;
+            /** Source Title */
+            source_title?: string | null;
+            /** Modeling Session Id */
+            modeling_session_id?: string | null;
+            /**
+             * Source Type
+             * @enum {string}
+             */
+            source_type: "import" | "generated";
+            /**
+             * Category
+             * @default model
+             * @constant
+             */
+            category: "model";
+            /** Current Version */
+            current_version: number;
+            /** Versions */
+            versions: components["schemas"]["ProjectAssetVersion"][];
+            /** Created At */
+            created_at?: string;
+            /** Updated At */
+            updated_at?: string;
+        };
+        /** ProjectAssetVersion */
+        ProjectAssetVersion: {
+            /** Source Version */
+            source_version: number;
+            /** Asset Version Id */
+            asset_version_id?: string | null;
+            /**
+             * Source Kind
+             * @default file
+             * @enum {string}
+             */
+            source_kind: "file" | "procedural" | "blender";
+            /** Dimensions M */
+            dimensions_m: [
+                number,
+                number,
+                number
+            ];
+            /** Vertex Count */
+            vertex_count: number;
+            /** Triangle Count */
+            triangle_count: number;
+            /** Blend Path */
+            blend_path?: string | null;
+            /** Preview Path */
+            preview_path?: string | null;
+            /** Fbx Path */
+            fbx_path?: string | null;
+            recipe?: components["schemas"]["DoorRecipe"] | null;
+            /** Parent Source Version */
+            parent_source_version?: number | null;
+            /** Node Ids */
+            node_ids?: {
+                [key: string]: string;
+            };
+            /** Runtime Artifacts */
+            runtime_artifacts?: components["schemas"]["RuntimeArtifactReference"][];
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "import" | "generate" | "normalize" | "calibrate" | "recipe-create" | "recipe-edit" | "blender-edit";
+            /**
+             * Model Rotation Quaternion Xyzw
+             * @default [
+             *       0,
+             *       0,
+             *       0,
+             *       1
+             *     ]
+             */
+            model_rotation_quaternion_xyzw: [
+                number,
+                number,
+                number,
+                number
+            ];
+            /** Saved At */
+            saved_at?: string;
+        };
         /** RebindAssetVersionRequest */
         RebindAssetVersionRequest: {
+            /** Object Ids */
+            object_ids?: string[] | null;
             /** Expected Version */
             expected_version: number;
             /** From Asset Version */
@@ -686,6 +588,18 @@ export interface components {
             /** Maximum */
             maximum?: number | null;
         };
+        /** RemoveObjectRequest */
+        RemoveObjectRequest: {
+            /** Expected Version */
+            expected_version: number;
+        };
+        /** RenameProjectAssetRequest */
+        RenameProjectAssetRequest: {
+            /** Title */
+            title: string;
+            /** Expected Updated At */
+            expected_updated_at: string;
+        };
         /** RuntimeArtifactReference */
         RuntimeArtifactReference: {
             /** Artifact Id */
@@ -705,6 +619,48 @@ export interface components {
             entry: components["schemas"]["ProjectAssetEntry"];
             /** Version Created */
             version_created: boolean;
+        };
+        /**
+         * SharedProjectMemory
+         * @description Read-only planning snapshot shared across focused production conversations.
+         */
+        SharedProjectMemory: {
+            /**
+             * Project Title
+             * @default
+             */
+            project_title: string;
+            /**
+             * Experience
+             * @default
+             */
+            experience: string;
+            /**
+             * Core Loop
+             * @default
+             */
+            core_loop: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /**
+             * Technical Plan
+             * @default
+             */
+            technical_plan: string;
+            /**
+             * Active Card
+             * @default
+             */
+            active_card: string;
+        };
+        /** TransformObjectRequest */
+        TransformObjectRequest: {
+            /** Expected Version */
+            expected_version: number;
+            transform: components["schemas"]["EnvironmentTransform"];
         };
         /** UpdateKeyDoorBehaviorRequest */
         UpdateKeyDoorBehaviorRequest: {
@@ -731,6 +687,58 @@ export interface components {
             /** Runtime Artifacts */
             runtime_artifacts?: components["schemas"]["RuntimeArtifactReference"][];
         };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /**
+         * WorldScaleProfile
+         * @description Project-wide spatial conventions shared by assets and scene assembly.
+         */
+        WorldScaleProfile: {
+            /**
+             * Unit
+             * @default meter
+             * @constant
+             */
+            unit: "meter";
+            /**
+             * Up Axis
+             * @default Y
+             * @constant
+             */
+            up_axis: "Y";
+            /**
+             * Handedness
+             * @default right
+             * @constant
+             */
+            handedness: "right";
+            /**
+             * Grid Step M
+             * @default 1
+             */
+            grid_step_m: number;
+            /**
+             * Reference Human Height M
+             * @default 1.8
+             */
+            reference_human_height_m: number;
+            /**
+             * Default Object Spacing M
+             * @default 3
+             */
+            default_object_spacing_m: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -740,6 +748,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getKeyDoorBehaviorDefinition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeyDoorBehaviorDefinition"];
+                };
+            };
+        };
+    };
     getEnvironmentScene: {
         parameters: {
             query?: {
@@ -880,162 +908,6 @@ export interface operations {
             };
         };
     };
-    buildEnvironmentWithAi: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                project_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AiBuildRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AiBuildResult"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    listProjectAssets: {
-        parameters: {
-            query: {
-                project_id: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectAssetEntry"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    getProjectAsset: {
-        parameters: {
-            query: {
-                project_id: string;
-            };
-            header?: never;
-            path: {
-                entry_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectAssetEntry"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    renameProjectAsset: {
-        parameters: {
-            query: {
-                project_id: string;
-            };
-            header?: never;
-            path: {
-                entry_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RenameProjectAssetRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectAssetEntry"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    getKeyDoorBehaviorDefinition: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["KeyDoorBehaviorDefinition"];
-                };
-            };
-        };
-    };
     updateEnvironmentKeyDoorBehavior: {
         parameters: {
             query?: never;
@@ -1108,6 +980,41 @@ export interface operations {
             };
         };
     };
+    buildEnvironmentWithAi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiBuildRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiBuildResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     getDoorRecipeDefinition: {
         parameters: {
             query?: never;
@@ -1124,6 +1031,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DoorRecipeDefinition"];
+                };
+            };
+        };
+    };
+    listProjectAssets: {
+        parameters: {
+            query: {
+                project_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAssetEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1152,6 +1090,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveProjectAssetResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getProjectAsset: {
+        parameters: {
+            query: {
+                project_id: string;
+            };
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAssetEntry"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    renameProjectAsset: {
+        parameters: {
+            query: {
+                project_id: string;
+            };
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameProjectAssetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAssetEntry"];
                 };
             };
             /** @description Validation Error */

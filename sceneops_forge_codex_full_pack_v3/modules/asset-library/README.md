@@ -96,3 +96,7 @@ remain separate.
 ## 独立工作台整合
 
 资产库在 `apps/labs/concept-assets/` Web 中可搜索与检查，使用公开 AssetLibraryService 和原发布验证。该入口隔离 mock 数据，重启重置；启动和最小烟测结果见入口 README，原全量测试本轮 not run / pending approval。
+
+### 原生 Blender 源
+
+项目版本增加 `source_kind='blender'`、`parent_source_version`、`node_ids` 和 `operation='blender-edit'`。这一源类型保留实际 `.blend` 与 GLB 路径，FBX 可空，不携带可编辑 DoorRecipe。旧 `file` 类型要求不变。`register_version(expected_version=...)` 在登记时核对旧版本，并通过 SQLite 事务检查防止另一服务覆盖较新目录版本；同一版本的相同内容仍幂等。

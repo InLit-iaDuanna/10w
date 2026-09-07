@@ -32,7 +32,13 @@ def sandbox_profile(workspace: Path, state: Path, executable: Path, source: Path
 
 
 class BlenderAgentSession:
-    def __init__(self, workspace_root: Path, state_root: Path, *, executable: Path | None = None):
+    def __init__(self, workspace_root: Path, state_root: Path, *, executable: Path | None = None, headless: bool = False, grant_content: bool = False):
+        if type(headless) is not bool:
+            raise ValueError("headless must be boolean")
+        if type(grant_content) is not bool:
+            raise ValueError("grant_content must be boolean")
+        self.grant_content = grant_content
+        self.headless = headless
         self.workspace_root = Path(workspace_root).resolve()
         self.content_root = self.workspace_root / "blender"
         self.state_root = Path(state_root).resolve()
@@ -49,6 +55,8 @@ class BlenderAgentSession:
             raise ValueError("grant does not cover this workspace")
         if self._binding is not None and self._binding != binding:
             raise ValueError("a tool session cannot change task grant")
+        if self.grant_content:
+            self.content_root = self.workspace_root / "blender" / binding["grant_id"]
         self._binding = binding
 
     def start(self) -> dict:
@@ -87,7 +95,7 @@ class BlenderAgentSession:
         if not self.executable.is_file() or not Path("/usr/bin/sandbox-exec").is_file():
             raise RuntimeError("BLENDER_SANDBOX_UNAVAILABLE: Blender or macOS sandbox-exec is unavailable")
         self.workspace_root.mkdir(parents=True, exist_ok=True)
-        self.content_root.mkdir(exist_ok=True)
+        self.content_root.mkdir(parents=True, exist_ok=True)
         self.state_root.mkdir(parents=True, exist_ok=True, mode=0o700)
         os.chmod(self.state_root, 0o700)
         for name in ("tmp", "config", "cache"):
@@ -110,7 +118,7 @@ class BlenderAgentSession:
                    BLENDER_USER_CONFIG=str(self.state_root / "config"), XDG_CACHE_HOME=str(self.state_root / "cache"))
         with (self.state_root / "blender.log").open("ab") as log:
             self._process = subprocess.Popen(["/usr/bin/sandbox-exec", "-f", str(self.state_root / "sandbox.sb"),
-                str(self.executable), "--factory-startup", "--disable-autoexec", "--python", str(bootstrap), "--", str(metadata)],
+                str(self.executable), *(["--background"] if self.headless else []), "--factory-startup", "--disable-autoexec", "--python", str(bootstrap), "--", str(metadata)],
                 cwd=self.content_root, env=env, stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
         (self.state_root / "process.pid").write_text(str(self._process.pid))
         deadline = time.monotonic() + 90
@@ -158,15 +166,54 @@ class BlenderAgentSession:
     def export_asset(self, *, request_id, asset_id, authorization: dict, dry_run=False) -> dict:
         return self._mutation(dict(operation="export_asset", request_id=request_id, asset_id=asset_id, authorization=authorization), dry_run)
 
+    def register_source(self, candidate_id, source_path):
+        """Service-only staging of a registered source; never exposed to the model."""
+        from .agent_protocol import identifier
+        import shutil
+        identifier(candidate_id)
+        source = Path(source_path).resolve(strict=True)
+        if source.suffix != ".blend" or not source.is_relative_to(self.workspace_root):
+            raise ValueError("registered source must be a workspace .blend")
+        target = self.content_root / (candidate_id + ".blend")
+        if target.resolve() != target or target.exists():
+            raise ValueError("source candidate already exists or escapes content root")
+        self.content_root.mkdir(parents=True, exist_ok=True)
+        with target.open("xb") as output, source.open("rb") as source_file:
+            shutil.copyfileobj(source_file, output)
+        return str(target)
+
+    def bootstrap_door(self, *, request_id, asset_id, candidate_id, node_ids, recipe, authorization, dry_run=False):
+        return self._mutation(dict(operation="bootstrap_door", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, node_ids=node_ids, recipe=recipe, authorization=authorization), dry_run)
+
+    def open_source(self, *, request_id, asset_id, candidate_id, authorization, dry_run=False):
+        return self._mutation(dict(operation="open_source", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, authorization=authorization), dry_run)
+
+    def edit_nodes(self, *, request_id, asset_id, candidate_id, edits, authorization, dry_run=False):
+        return self._mutation(dict(operation="edit_nodes", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, edits=edits, authorization=authorization), dry_run)
+
+    def save_source(self, *, request_id, asset_id, candidate_id, authorization, dry_run=False):
+        return self._mutation(dict(operation="save_source", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, authorization=authorization), dry_run)
+
+    def export_source(self, *, request_id, asset_id, candidate_id, authorization, formats=None, dry_run=False):
+        return self._mutation(dict(operation="export_source", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, formats=["glb"] if formats is None else formats, authorization=authorization), dry_run)
+
     def _mutation(self, command, dry_run):
         validate_command(command, self._binding or {})
         if type(dry_run) is not bool:
             raise ValueError("dry_run must be boolean")
         if dry_run:
             outputs = ["scene.blend"] if command["operation"] == "create_asset" else [command["asset_id"] + suffix for suffix in (".fbx", ".identity.json")]
+            if "candidate_id" in command:
+                outputs = [command["candidate_id"] + "." + fmt for fmt in command.get("formats", ["blend"])]
             return {"mode": "planned", "operation": command["operation"], "request_id": command["request_id"],
                     "would_write": [str(self.content_root / name) for name in outputs]}
         return self._request(command)
+
+    def request_status(self, request_id):
+        return self._request(dict(operation="request_status", request_id=request_id))
+
+    def cancel_request(self, request_id):
+        return self._request(dict(operation="cancel_request", request_id=request_id))
 
     def stop(self) -> None:
         if self._connection is not None:

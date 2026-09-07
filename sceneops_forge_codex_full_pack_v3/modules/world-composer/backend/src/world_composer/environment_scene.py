@@ -143,6 +143,7 @@ class UpdateKeyDoorBehaviorRequest(EnvironmentModel):
 
 
 class RebindAssetVersionRequest(EnvironmentModel):
+    object_ids: list[str] | None = None
     expected_version: int = Field(ge=0)
     from_asset_version: int = Field(ge=1)
     to_asset_version: int = Field(ge=1)
@@ -406,11 +407,14 @@ class EnvironmentSceneService:
             self._asset_version(project_id, asset_id, request.from_asset_version)
             affected = [item.id for item in scene.objects
                         if item.asset_id == entry.id
-                        and item.asset_version == request.from_asset_version]
+                        and item.asset_version == request.from_asset_version
+                        and (request.object_ids is None or item.id in request.object_ids)]
             if not affected:
                 raise EnvironmentSceneError(
                     "ASSET_VERSION_NOT_REFERENCED", "当前场景没有引用待更新的资产版本。"
                 )
+            if request.object_ids is not None and set(request.object_ids) != set(affected):
+                raise EnvironmentSceneError("SCENE_OBJECT_NOT_FOUND", "指定实例与当前资产版本引用不一致。")
             affected_set = set(affected)
             objects = [item.model_copy(update={
                 "asset_version": target.source_version,

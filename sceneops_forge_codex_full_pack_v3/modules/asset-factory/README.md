@@ -113,3 +113,7 @@ unless an executable is explicitly configured.
 `apps/labs/concept-assets/README.md` 提供一条命令启动的 Web/API。新增公开 `ConceptAssetHandoff`、`asset_spec_from_concept`、`ConceptAssetLab`、`LabAction`、`LabSnapshot`、`create_lab_router`；工厂声明依赖 concept-lab，消费其公开批准草稿，不导入模块内部文件。前端公开 `ConceptAssetsWorkbench`，实际调用原领域服务。所有外部适配器固定 mock，未启动 Blender 或渲染。本轮测试仅见入口烟测记录；原测试套件 not run / pending approval。
 
 统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。
+
+### Web 原生源回流
+
+公开 `preserve_native_source` 检查原生源与自包含 GLB，将成功候选复制到登记工作区的 `assets/blender` 与 `public/sceneops-assets`。不可变产物不指向正在编辑的文件；相同候选可重读，不覆盖不同已有内容。源路径由任务与资产目录解析，模型不能直接调用文件保存函数。流程不强制生成 FBX。

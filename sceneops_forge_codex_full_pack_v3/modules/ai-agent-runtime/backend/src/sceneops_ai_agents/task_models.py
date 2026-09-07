@@ -58,6 +58,8 @@ def project_demo_capabilities(value):
         capabilities.append('code.browser.observe')
     if value.allow_browser_interaction:
         capabilities.extend(['code.project.build_test', 'code.browser.interact'])
+    if value.allow_blender_edit:
+        capabilities.extend(['blender.scene.inspect', 'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'])
     return capabilities
 
 
@@ -69,6 +71,8 @@ def project_demo_agent_capabilities(value):
         capabilities.append('code.browser.observe')
     if value.allow_browser_interaction:
         capabilities.extend(['code.project.build_test', 'code.browser.interact'])
+    if value.allow_blender_edit:
+        capabilities.extend(['blender.scene.inspect', 'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'])
     return capabilities
 
 
@@ -121,6 +125,7 @@ class PrepareAgentTask(TaskModel):
     allow_browser_interaction: bool = False
     include_demo_assets: bool = False
     alignment_id: str | None = Field(default=None, pattern=r'^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$')
+    allow_blender_edit: bool = False
     allow_browser_observation: bool = False
     goal: str = Field(min_length=1, max_length=8000)
     project_id: str | None = None
@@ -196,6 +201,7 @@ class AuthorizationCard(TaskModel):
     allow_browser_interaction: bool = False
     include_demo_assets: bool = False
     alignment_id: str | None = Field(default=None, pattern=r'^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$')
+    allow_blender_edit: bool = False
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("card"))
     workspace_root: str
@@ -244,6 +250,7 @@ class TaskGrant(TaskModel):
     allow_browser_interaction: bool = False
     include_demo_assets: bool = False
     alignment_id: str | None = Field(default=None, pattern=r'^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$')
+    allow_blender_edit: bool = False
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("grant"))
     task_id: str

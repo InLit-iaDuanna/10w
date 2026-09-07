@@ -57,6 +57,12 @@ INPUT_MODELS.update({
 })
 
 
+from .blender_content_models import BlenderBeginInput, BlenderEditInput, BlenderPublishInput
+INPUT_MODELS.update({'blender.asset.begin': BlenderBeginInput, 'blender.asset.edit': BlenderEditInput,
+                     'blender.asset.publish': BlenderPublishInput})
+MUTATIONS.update({'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'})
+
+
 def contained(path, root):
     path, root = Path(path).absolute(), Path(root).absolute()
     if not path.is_relative_to(root) or path.resolve() != path:
@@ -101,10 +107,16 @@ class TaskTools:
             await asyncio.gather(work, return_exceptions=True)
             raise
 
-    async def session(self, tool):
+    async def session(self, tool, *, headless=False):
         task = self.service.check_grant(self.task_id)
+        if (tool == 'blender' and tool in self.sessions
+                and getattr(self.sessions[tool], 'headless', False) != headless):
+            await self.sync(self.sessions[tool], 'stop')
+            self.sessions.pop(tool)
+            self.session_states.pop(tool, None)
         if tool not in self.sessions:
             factory = self.service.blender_factory if tool == "blender" else self.service.unity_factory
+            configured_factory = factory is not None
             if factory is None:
                 if tool == "blender":
                     from sceneops_blender import BlenderAgentSession
@@ -112,8 +124,17 @@ class TaskTools:
                 else:
                     from engine_unity import UnityAgentSession
                     factory = UnityAgentSession
-            root = contained(task.grant.workspace_root, self.service.workspace_base)
-            session = factory(root, self.service.state_base / task.id / tool)
+            root = (Path(self.service.project_demo_workspace(task.project_id, task.grant.workspace_id,
+                expected_root=task.grant.workspace_root)['workspace_root'])
+                if task.authorization_card.task_profile in ('project-demo', 'project-demo-agent')
+                else contained(task.grant.workspace_root, self.service.workspace_base))
+            native_demo = tool == 'blender' and task.authorization_card.task_profile in ('project-demo', 'project-demo-agent')
+            state_root = self.service.state_base / task.id / tool
+            if native_demo:
+                state_root = state_root / task.grant.id
+            session = (factory(root, state_root, headless=headless, grant_content=native_demo)
+                if tool == 'blender' and not configured_factory else
+                factory(root, self.service.state_base / task.id / tool))
             session.bind_authorization(self.binding(task))
             self.sessions[tool] = session
             try:
@@ -162,6 +183,9 @@ class TaskTools:
         cancellation.raise_if_cancelled()
         if invocation.dry_run:
             evidence = {"dry_run": True, "proposed_values": invocation.inputs, "workspace_root": task.grant.workspace_root}
+        elif invocation.capability_id in ('blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish'):
+            from .blender_content import dispatch
+            evidence = await dispatch(self, invocation, cancellation)
         elif invocation.capability_id == 'agent.history.read':
             from .context_projection import read_history_reference
             reference = invocation.inputs['reference']
@@ -563,7 +587,7 @@ class TaskTools:
             if not isinstance(start, int) or start < 0 or start > len(task.actions):
                 raise HarnessError('VERIFICATION_INCOMPLETE', '当前追加目标的动作边界不可读取。')
             current_actions = task.actions[start:]
-            content_capabilities = {'project.asset.door.create', 'project.asset.door.update',
+            content_capabilities = {'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'project.asset.door.create', 'project.asset.door.update',
                 'environment.object.place', 'environment.demo_object.transform',
                 'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
             source_actions = [entry for entry in current_actions

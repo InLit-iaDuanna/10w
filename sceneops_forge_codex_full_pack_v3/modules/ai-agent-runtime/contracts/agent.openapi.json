@@ -457,6 +457,58 @@
         }
       }
     },
+    "/api/agent/tasks/{task_id}/project-demo/blender": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Blender Content",
+        "operationId": "blender_content_api_agent_tasks__task_id__project_demo_blender_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlenderManualRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/tasks/{task_id}/project-demo/play": {
       "post": {
         "tags": [
@@ -1674,6 +1726,11 @@
             ],
             "title": "Alignment Id"
           },
+          "allow_blender_edit": {
+            "type": "boolean",
+            "title": "Allow Blender Edit",
+            "default": false
+          },
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
@@ -1865,6 +1922,45 @@
           "accept_unknown_cost"
         ],
         "title": "AuthorizeAgentTask"
+      },
+      "BlenderManualRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,120}$",
+            "title": "Request Id"
+          },
+          "target": {
+            "$ref": "#/components/schemas/DemoEditTarget"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "begin",
+              "publish"
+            ],
+            "title": "Operation"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "target",
+          "operation"
+        ],
+        "title": "BlenderManualRequest"
       },
       "BrowserInteractionRequest": {
         "properties": {
@@ -2349,6 +2445,11 @@
       },
       "DemoContinuationAuthorizationRequest": {
         "properties": {
+          "allow_blender_edit": {
+            "type": "boolean",
+            "title": "Allow Blender Edit",
+            "default": false
+          },
           "request_id": {
             "type": "string",
             "pattern": "^[A-Za-z0-9_-]{1,120}$",
@@ -3343,6 +3444,11 @@
             ],
             "title": "Alignment Id"
           },
+          "allow_blender_edit": {
+            "type": "boolean",
+            "title": "Allow Blender Edit",
+            "default": false
+          },
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
@@ -3972,7 +4078,8 @@
             "type": "string",
             "enum": [
               "file",
-              "procedural"
+              "procedural",
+              "blender"
             ],
             "title": "Source Kind",
             "default": "file"
@@ -4050,6 +4157,25 @@
               }
             ]
           },
+          "parent_source_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Source Version"
+          },
+          "node_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Node Ids"
+          },
           "runtime_artifacts": {
             "items": {
               "$ref": "#/components/schemas/RuntimeArtifactReference"
@@ -4065,7 +4191,8 @@
               "normalize",
               "calibrate",
               "recipe-create",
-              "recipe-edit"
+              "recipe-edit",
+              "blender-edit"
             ],
             "title": "Operation"
           },
@@ -4248,6 +4375,11 @@
               }
             ],
             "title": "Alignment Id"
+          },
+          "allow_blender_edit": {
+            "type": "boolean",
+            "title": "Allow Blender Edit",
+            "default": false
           },
           "allow_browser_observation": {
             "type": "boolean",

@@ -94,3 +94,5 @@ __all__ += ["ConceptAssetHandoff", "asset_spec_from_concept", "build_workflow_pl
             "ModelPlanContent", "ModelPlanRequest",
             "NormalizeRequest", "PrimitivePart", "SaveToLibraryRequest",
             "CardAssetService", "create_card_asset_router"]
+
+from .native_source import inspect_native_glb, preserve_native_source

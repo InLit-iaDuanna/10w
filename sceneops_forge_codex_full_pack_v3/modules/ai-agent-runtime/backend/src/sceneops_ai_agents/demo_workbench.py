@@ -162,7 +162,7 @@ def validate_target_action(task, action):
     if not isinstance(target, dict):
         return
     cap, inputs = action.capability_id, action.inputs
-    source_caps = {'code.file.write', 'project.asset.door.create', 'project.asset.door.update',
+    source_caps = {'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'blender.asset.create', 'blender.asset.export', 'code.file.write', 'project.asset.door.create', 'project.asset.door.update',
         'environment.object.place', 'environment.demo_object.transform',
         'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
     if cap not in source_caps:
@@ -176,7 +176,7 @@ def validate_target_action(task, action):
     elif kind == 'behavior':
         allowed = cap == 'environment.key_door.configure' and inputs.get('object_id') == target.get('resolved_object_id')
     elif kind == 'asset':
-        allowed = cap in ('project.asset.door.update', 'environment.asset.rebind') and inputs.get('asset_id') == target['id']
+        allowed = cap in ('blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'project.asset.door.update', 'environment.asset.rebind') and inputs.get('asset_id') == target['id']
     if not allowed:
         raise HarnessError('TASK_SCOPE_DENIED', '本次只允许修改选中内容；不能因选中一个对象而修改其他源。')
 

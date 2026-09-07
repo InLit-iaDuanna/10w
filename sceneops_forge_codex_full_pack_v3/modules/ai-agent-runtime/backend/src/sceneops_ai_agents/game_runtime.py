@@ -145,6 +145,7 @@ class GameProjectRuntime:
                 and action.state == 'succeeded' and action.effect_state == 'COMMITTED']
             content_actions = [action for action in task.actions
                 if action.action.capability_id in {
+                    'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish',
                     'project.asset.door.create', 'project.asset.door.update',
                     'environment.object.place', 'environment.demo_object.transform',
                     'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}

@@ -105,6 +105,7 @@ class AgentTaskService:
             allow_dependency_install=request.allow_dependency_install,
             task_profile=request.task_profile, card_id=request.card_id,
             workspace_id=demo_work['workspace_id'] if demo_work else request.card_id if card_work else None,
+            allow_blender_edit=request.allow_blender_edit,
             allow_browser_observation=request.allow_browser_observation,
             allow_browser_interaction=request.allow_browser_interaction,
             allow_model_image_input=request.allow_model_image_input,
@@ -317,6 +318,7 @@ class AgentTaskService:
                     or task.authorization_card.capability_ids not in (expected_capabilities, legacy_capabilities)
                     or grant.capability_ids != task.authorization_card.capability_ids
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
+                    or grant.allow_blender_edit != task.authorization_card.allow_blender_edit
                     or grant.allow_browser_observation != task.authorization_card.allow_browser_observation
                     or grant.allow_browser_interaction != task.authorization_card.allow_browser_interaction
                     or grant.allow_model_image_input != task.authorization_card.allow_model_image_input
@@ -337,6 +339,7 @@ class AgentTaskService:
                     or grant.alignment_id != task.authorization_card.alignment_id
                     or grant.include_demo_assets != task.authorization_card.include_demo_assets
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
+                    or grant.allow_blender_edit != task.authorization_card.allow_blender_edit
                     or grant.allow_browser_observation != task.authorization_card.allow_browser_observation
                     or grant.allow_browser_interaction != task.authorization_card.allow_browser_interaction
                     or grant.allow_model_image_input != task.authorization_card.allow_model_image_input
@@ -413,6 +416,7 @@ class AgentTaskService:
                 allow_game_execution=task.authorization_card.allow_game_execution,
                 include_demo_assets=task.authorization_card.include_demo_assets,
                 alignment_id=task.authorization_card.alignment_id,
+                allow_blender_edit=task.authorization_card.allow_blender_edit,
                 allow_browser_observation=task.authorization_card.allow_browser_observation,
                 allow_browser_interaction=task.authorization_card.allow_browser_interaction,
                 allow_model_image_input=task.authorization_card.allow_model_image_input,
@@ -444,7 +448,14 @@ class AgentTaskService:
                     workspace_root=str(root),
                     card_id=task.grant.card_id, branch=task.grant.branch,
                     expires_at=task.grant.expires_at)
+        renewing = bool(self.get(task_id).observations.get('demo_pending_authorization'))
         task = self.records.update(task_id, grant, "agent.task.authorized")
+        if renewing:
+            previous_tools = self.tools.pop(task_id, None)
+            if previous_tools:
+                for session in previous_tools.sessions.values():
+                    session.stop()
+            self.runtimes.pop(task_id, None)
         if task.status == "queued" and task_id not in self.jobs:
             self.tools[task_id] = TaskTools(self, task_id)
             self.runtimes[task_id] = HarnessRuntime(self.database_path, self.tools[task_id].registry())
@@ -673,6 +684,9 @@ class AgentTaskService:
         validate_project_demo_alignment(task.grant.alignment_id, context)
         self.project_demo_workspace(task.project_id, task.grant.workspace_id,
                                     expected_root=task.grant.workspace_root)
+        if any(v['owner'] == 'manual' and v['status'] in ('opening', 'editing')
+               for v in task.observations.get('blender_candidates', {}).values()):
+            raise HarnessError('BLENDER_SOURCE_BUSY', '请先完成手工 Blender 保存回流，再让 Agent 修改。')
         goals = task.observations.get('demo_goals', [])
         prior = next((item for item in goals if isinstance(item, dict)
                       and item.get('request_id') == request.request_id), None)

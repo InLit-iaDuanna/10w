@@ -74,5 +74,6 @@ class DemoPlaySession(BaseModel):
 
 
 class DemoContinuationAuthorizationRequest(BaseModel):
+    allow_blender_edit: bool = False
     model_config = ConfigDict(extra='forbid')
     request_id: str = Field(pattern=r'^[A-Za-z0-9_-]{1,120}$')

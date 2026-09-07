@@ -10,9 +10,12 @@ from .task_models import AgentTaskEvent, AgentTaskEvents, AgentTaskRecord, now
 class AgentTaskRepository:
     @staticmethod
     def safe_to_release(task):
+        if any(v['status'] in ('opening', 'editing', 'exported', 'saved')
+               for v in task.observations.get('blender_candidates', {}).values()):
+            return False
         if task.observations.get('cleanup_uncertain') is True:
             return False
-        mutations = {'blender.asset.create', 'blender.asset.export', 'unity.asset.import', 'codex.task.execute'}
+        mutations = {'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish', 'blender.asset.create', 'blender.asset.export', 'unity.asset.import', 'codex.task.execute'}
         mutations.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prototype.capture', 'unity.prototype.verify'})
         mutations.update({'code.demo_content.materialize', 'code.file.write', 'code.dependencies.prepare', 'code.project.check',
                           'code.project.build', 'code.preview.start', 'code.preview.stop'})

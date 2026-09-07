@@ -14,9 +14,12 @@ def demo_window_usage(task):
     }
 
 
-def _require_renewable(task):
+def _require_renewable(task, *, extend_blender=False):
     if task.authorization_card.task_profile != 'project-demo-agent' or task.grant is None:
         raise HarnessError('PROJECT_DEMO_AGENT_REQUIRED', '仅已有真实制作任务可申请有限继续授权。')
+    if any(v['status'] in ('opening', 'editing', 'exported', 'saved')
+           for v in task.observations.get('blender_candidates', {}).values()):
+        raise HarnessError('BLENDER_SOURCE_BUSY', '现有 Blender 候选尚未完成回流，请先核查保存结果。')
     if (task.owner_pid is not None or task.pending_action_id is not None
             or task.cancel_requested or task.observations.get('cleanup_uncertain')
             or task.status not in ('completed', 'review_required', 'needs_approval', 'failed')):
@@ -29,11 +32,11 @@ def _require_renewable(task):
     expired = task.grant.expires_at is not None and task.grant.expires_at <= now()
     exhausted = (usage['model_calls'] >= task.grant.budget.max_metered_calls
                  or usage['actions'] >= task.grant.budget.max_steps)
-    if not expired and not exhausted and not task.grant.revoked:
+    if not expired and not exhausted and not task.grant.revoked and not extend_blender:
         raise HarnessError('CONTINUATION_NOT_REQUIRED', '当前授权尚有可用预算，请沿现有任务继续。')
 
 
-def prepare_demo_continuation(service, task_id, request_id):
+def prepare_demo_continuation(service, task_id, request_id, *, allow_blender_edit=False):
     """Prepare a reviewable replacement card; no model, source write, or execution."""
     def prepare(task):
         window = task.observations.get('demo_authorization_window', {})
@@ -46,7 +49,7 @@ def prepare_demo_continuation(service, task_id, request_id):
             return
         if pending:
             raise HarnessError('AUTHORIZATION_CARD_CHANGED', '已有待确认的继续授权，请先审阅该授权卡。')
-        _require_renewable(task)
+        _require_renewable(task, extend_blender=allow_blender_edit and not task.authorization_card.allow_blender_edit)
         from .demo_tasks import validate_project_demo_alignment
         context = service.project_demo_context(task.project_id) if service.project_demo_context else {}
         validate_project_demo_alignment(task.grant.alignment_id, context)
@@ -59,9 +62,14 @@ def prepare_demo_continuation(service, task_id, request_id):
             'window': dict(window),
         })
         task.authorization_card = task.authorization_card.model_copy(update={
+            'allow_blender_edit': task.authorization_card.allow_blender_edit or allow_blender_edit,
+            'scope': task.authorization_card.scope + (' 另允许在隔离 Blender 会话编辑所选资产、保存原生源和 GLB、更新所选共享引用。'
+                if allow_blender_edit and not task.authorization_card.allow_blender_edit else ''),
             'id': identifier('card'), 'max_model_calls': 28, 'max_duration_seconds': 1800,
             'cost_notice': '本次继续新增最多 28 次模型请求、32 个动作、30 分钟；历史用量保留，费用和 token 可能未知。',
         })
+        from .task_models import project_demo_agent_capabilities
+        task.authorization_card.capability_ids = project_demo_agent_capabilities(task.authorization_card)
         task.observations['demo_pending_authorization'] = {
             'request_id': request_id, 'authorization_card_id': task.authorization_card.id,
             'model_calls_start': task.model_calls_used, 'actions_start': len(task.actions),

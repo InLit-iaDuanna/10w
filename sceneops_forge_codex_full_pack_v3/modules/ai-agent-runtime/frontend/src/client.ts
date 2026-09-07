@@ -10,7 +10,7 @@ export type AgentTask = Required<components['schemas']['AgentTaskRecord']> & {
 type TaskList = Omit<components['schemas']['AgentTaskList'], 'tasks'> & { tasks: AgentTask[] };
 type TaskEvents = components['schemas']['AgentTaskEvents'];
 type OptionalPrepareField = 'allow_browser_observation' | 'allow_browser_interaction'
-  | 'allow_model_image_input' | 'include_demo_assets';
+  | 'allow_model_image_input' | 'include_demo_assets' | 'allow_blender_edit';
 type Prepare = Omit<components['schemas']['PrepareAgentTask'], OptionalPrepareField>
   & Partial<Pick<components['schemas']['PrepareAgentTask'], OptionalPrepareField>>;
 type Authorize = components['schemas']['AuthorizeAgentTask'];
@@ -25,6 +25,7 @@ export const agentTaskKeys = {
 };
 const root = '/api/agent/tasks';
 export const agentTasks = {
+  blenderContent: (id: string, body: components['schemas']['BlenderManualRequest']) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/project-demo/blender`, {body}),
   requestDemoContinuation: (id: string, body: components['schemas']['DemoContinuationAuthorizationRequest']) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/project-demo/continuation-authorization`, {body}),
   content: (id: string, signal?: AbortSignal) => requestJson<components['schemas']['DemoContentIndex']>(`${root}/${encodeURIComponent(id)}/project-demo/content`, signal ? {signal} : {}),
   saveContent: (id: string, body: components['schemas']['DemoContentSave']) => requestJson<components['schemas']['DemoContentSaved']>(`${root}/${encodeURIComponent(id)}/project-demo/content`, {body}),

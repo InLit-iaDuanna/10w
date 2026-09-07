@@ -30,10 +30,16 @@ class AgentHost:
         self.state = Path(config["state_root"]).resolve()
         self.requests = queue.Queue(maxsize=32)
         self.stopping = False
+        self.request_states = {}
+        self.request_lock = threading.Lock()
         self.journal = sqlite3.connect(self.state / "requests.sqlite3")
         self.journal.execute("CREATE TABLE IF NOT EXISTS requests (request_id TEXT PRIMARY KEY, command TEXT NOT NULL, result TEXT)")
         self.probe = self._probe_isolation()
         scene = contained(self.root, "scene.blend")
+        active = self.state / "active_source.json"
+        if active.exists():
+            from agent_protocol import identifier
+            scene = contained(self.root, identifier(json.loads(active.read_text())["candidate_id"]) + ".blend")
         if scene.exists():
             bpy.ops.wm.open_mainfile(filepath=str(scene))
         else:
@@ -60,21 +66,45 @@ class AgentHost:
     def inspect(self):
         bpy.context.view_layer.update()
         objects = [{"asset_id": obj.get("asset_id"), "sceneops_id": obj.get("sceneops_id"),
-                    "name": obj.name, "type": obj.type, "dimensions_m": list(obj.dimensions),
+                    "name": obj.name, "type": obj.type, "sceneops_role": obj.get("sceneops_role"),
+                    "parent_id": obj.parent.get("sceneops_id") if obj.parent else None,
+                    "base_color": list(obj.active_material.diffuse_color) if obj.type == "MESH" and obj.active_material else None, "dimensions_m": list(obj.dimensions),
                     "coordinate_space": "blender_z_up", "location_m": list(obj.location)}
                    for obj in bpy.context.scene.objects]
-        artifacts = [str(path) for path in sorted(self.root.glob("*")) if path.suffix in (".blend", ".fbx", ".json") and path.is_file()]
+        vertex_count = triangle_count = 0
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        for obj in bpy.context.scene.objects:
+            if obj.type == "MESH":
+                evaluated = obj.evaluated_get(depsgraph)
+                mesh = evaluated.to_mesh()
+                try:
+                    mesh.calc_loop_triangles()
+                    vertex_count += len(mesh.vertices)
+                    triangle_count += len(mesh.loop_triangles)
+                finally:
+                    evaluated.to_mesh_clear()
+        from mathutils import Vector
+        points = [obj.matrix_world @ Vector(corner) for obj in bpy.context.scene.objects if obj.type == "MESH" for corner in obj.bound_box]
+        dimensions_y_up = ([max(p[i] for p in points) - min(p[i] for p in points) for i in (0, 2, 1)] if points else [0, 0, 0])
+        artifacts = [str(path) for path in sorted(self.root.glob("*")) if path.suffix in (".blend", ".fbx", ".glb", ".json") and path.is_file()]
         return {"mode": "live", "session_id": self.config["session_id"], "status": "connected",
                 "workspace_root": self.config["workspace_root"], "content_root": str(self.root), "tool_version": bpy.app.version_string,
                 "pid": os.getpid(), "objects": objects, "artifacts": artifacts,
-                "capabilities": sorted(set(self.config["binding"]["allowed_capabilities"]) & {"blender.scene.inspect", "blender.asset.create", "blender.asset.export"}),
-                "isolation": self.probe, "scene_path": bpy.data.filepath}
+                "dimensions_m": dimensions_y_up, "coordinate_space": "gltf_y_up",
+                "vertex_count": vertex_count, "triangle_count": triangle_count,
+                "node_count": len(objects), "mesh_count": sum(obj.type == "MESH" for obj in bpy.context.scene.objects),
+                "capabilities": sorted(set(self.config["binding"]["allowed_capabilities"]) & {"blender.scene.inspect", "blender.asset.create", "blender.asset.export", "blender.asset.begin", "blender.asset.edit", "blender.asset.publish"}),
+                "isolation": self.probe, "scene_path": bpy.data.filepath,
+                "current_candidate_id": bpy.context.scene.get("sceneops_candidate_id")}
 
     def dispatch(self, command):
         validate_command(command, self.config["binding"])
         operation = command["operation"]
         if operation == "inspect":
             return self.inspect()
+        if operation == "request_status":
+            row = self.journal.execute("SELECT result FROM requests WHERE request_id=?", (command["request_id"],)).fetchone()
+            return {"mode": "live", "session_id": self.config["session_id"], "request_id": command["request_id"], "status": ("completed" if row[0] else "result_unknown") if row else self.request_states.get(command["request_id"], "not_found"), "result": json.loads(row[0]) if row and row[0] else None}
         if operation == "stop":
             self.stopping = True
             return {"mode": "live", "session_id": self.config["session_id"], "status": "stopped"}
@@ -87,14 +117,20 @@ class AgentHost:
                 result = json.loads(prior[1])
                 result.update(session_id=self.config["session_id"], mode="cached", deduplicated=True)
                 return result
+            raise RuntimeError("BLENDER_RESULT_UNKNOWN: prior request has no completed result; inspect before recovery")
         else:
             with self.journal:
                 self.journal.execute("INSERT INTO requests(request_id, command) VALUES (?, ?)", (command["request_id"], serialized))
+        extra = {}
         if operation == "create_asset":
             self.create_asset(command)
-        else:
+        elif operation == "export_asset":
             self.export_asset(command)
+        else:
+            from agent_source import dispatch_source
+            extra = dispatch_source(self, command)
         result = self.inspect()
+        result.update(extra)
         result.update(request_id=command["request_id"], asset_id=command["asset_id"], deduplicated=False)
         if operation == "export_asset":
             result.update(fbx_path=str(contained(self.root, command["asset_id"] + ".fbx")),
@@ -152,7 +188,16 @@ class AgentHost:
         except queue.Empty:
             return 0.05
         try:
+            request_id = command.get("request_id")
+            with self.request_lock:
+                if self.request_states.get(request_id) == "cancelled":
+                    raise RuntimeError("BLENDER_REQUEST_CANCELLED: cancelled before execution")
+                if request_id and command["operation"] != "request_status":
+                    self.request_states[request_id] = "running"
             response.put({"ok": True, "result": self.dispatch(command)})
+            if request_id and command["operation"] != "request_status":
+                with self.request_lock:
+                    self.request_states[request_id] = "completed"
         except Exception as error:
             response.put({"ok": False, "error": str(error)})
         if self.stopping:
@@ -175,6 +220,17 @@ def serve(metadata):
                 if set(payload) != {"token", "command"} or not isinstance(payload["token"], str) or not hmac.compare_digest(payload["token"], host.config["token"]):
                     raise ValueError("session authentication failed")
                 validate_command(payload["command"], host.config["binding"])
+                command = payload["command"]
+                request_id = command.get("request_id")
+                with host.request_lock:
+                    if command["operation"] == "cancel_request":
+                        state = host.request_states.get(request_id, "not_found")
+                        if state == "queued":
+                            host.request_states[request_id] = state = "cancelled"
+                        self.wfile.write(json.dumps({"ok": True, "result": {"mode": "live", "session_id": host.config["session_id"], "request_id": request_id, "status": state}}).encode() + b"\n")
+                        return
+                    if request_id and command["operation"] != "request_status":
+                        host.request_states.setdefault(request_id, "queued")
                 response = queue.Queue(maxsize=1)
                 host.requests.put_nowait((payload["command"], response))
                 result = response.get(timeout=55)
@@ -185,4 +241,11 @@ def serve(metadata):
     server = socketserver.ThreadingTCPServer(("127.0.0.1", host.config["port"]), Handler)
     server.daemon_threads = True
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    bpy.app.timers.register(host.tick, first_interval=0.1, persistent=True)
+    if bpy.app.background:
+        import time
+        while not host.stopping:
+            host.tick()
+            time.sleep(0.05)
+        server.shutdown()
+    else:
+        bpy.app.timers.register(host.tick, first_interval=0.1, persistent=True)

@@ -9,6 +9,7 @@ from .task_models import (AgentTaskEvents, AgentTaskList, AgentTaskRecord, Autho
 from .task_models import ContinueProjectDemoRequest
 from .demo_workbench_models import (DemoContentIndex, DemoContentSave, DemoContentSaved,
     DemoPlayRequest, DemoPlaySession, DemoContinuationAuthorizationRequest)
+from .blender_content_models import BlenderManualRequest
 from .production_models import ProductionEvents, ProductionSnapshot
 
 
@@ -64,6 +65,11 @@ def create_agent_task_router(service):
         from .demo_workbench import save_content
         return save_content(require_service(), task_id, body)
 
+    @router.post('/{task_id}/project-demo/blender', response_model=AgentTaskRecord)
+    async def blender_content(task_id: str, body: BlenderManualRequest):
+        from .blender_manual import execute_manual
+        return await execute_manual(require_service(), task_id, body)
+
     @router.post('/{task_id}/project-demo/play', response_model=DemoPlaySession)
     async def play_demo_candidate(task_id: str, body: DemoPlayRequest):
         from .demo_workbench import play_candidate
@@ -72,7 +78,7 @@ def create_agent_task_router(service):
     @router.post('/{task_id}/project-demo/continuation-authorization', response_model=AgentTaskRecord)
     def prepare_demo_continuation(task_id: str, body: DemoContinuationAuthorizationRequest):
         from .demo_continuation import prepare_demo_continuation
-        return prepare_demo_continuation(require_service(), task_id, body.request_id)
+        return prepare_demo_continuation(require_service(), task_id, body.request_id, allow_blender_edit=body.allow_blender_edit)
 
     @router.get('/{task_id}/game', response_model=GameProjectExecution)
     def game_status(task_id: str):

@@ -9,7 +9,7 @@ import type { components } from '../generated/agent-api';
 
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
 const content:components['schemas']['DemoContentIndex']={project_id:'p1',workspace_id:'w1',scene_version:3,assets:[],instances:[],sources:[{id:'write-1',latest_write_request_id:'write-1',path:'src/puzzle.ts',content:'export const answer=1;',source_version:2,edit_mode:'source-agent'}],unbuilt_changes:true,source_notice:'源与试玩独立'};
-const task={id:'task-1'} as AgentTask;
+const task={id:'task-1',observations:{},authorization_card:{allow_blender_edit:false}} as AgentTask;
 
 test('source target uses recorded identity and source text rather than client path',()=>{
  const entry=demoEntries(content,'candidate-old')[0]!;

@@ -47,7 +47,7 @@ function DemoProject({task}:{task:AgentTask}) {
   },onSuccess:result=>{setOpened({id:result.candidate_id,sequence:result.sequence,window:result.page});setRemembered(result.candidate_id);localStorage.setItem(sessionKey,result.candidate_id);}});
   const [popupError,setPopupError]=useState('');
   const [renewalId,setRenewalId]=useState(()=>crypto.randomUUID());
-  const renewal=useMutation({mutationFn:()=>agentTasks.requestDemoContinuation(task.id,{request_id:renewalId}),onSuccess:()=>{setRenewalId(crypto.randomUUID());return cache.invalidateQueries({queryKey:['agent-tasks']});}});
+  const renewal=useMutation({mutationFn:()=>agentTasks.requestDemoContinuation(task.id,{request_id:renewalId,allow_blender_edit:false}),onSuccess:()=>{setRenewalId(crypto.randomUUID());return cache.invalidateQueries({queryKey:['agent-tasks']});}});
   const consent=useMutation({mutationFn:()=>agentTasks.authorize(task.id,{authorization_card_id:task.authorization_card.id,accept_unknown_cost:true,accept_full_access:false}),onSuccess:()=>cache.invalidateQueries({queryKey:['agent-tasks']})});
   const pendingConsent=task.status==='awaiting_authorization' && !!task.observations.demo_pending_authorization;
   const candidate=game.data?.current_playable_candidate;

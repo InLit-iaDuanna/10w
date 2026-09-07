@@ -89,6 +89,8 @@ def load_skill_context(data) -> SkillContext:
     if data.context_summary.get('task_profile') == 'project-demo-agent':
         paths.extend(['sceneops-demo-composer/SKILL.md',
                       'sceneops-editable-content/SKILL.md'])
+    if any(item["id"].startswith("blender.asset.") for item in data.capabilities):
+        paths.append("sceneops-blender-technical-artist/SKILL.md")
     paths.extend(f"sceneops-threejs-{name}/SKILL.md" for name in selected)
     if "gameplay" in selected and TIMING.search(data.goal):
         paths.append("sceneops-threejs-gameplay/references/time-and-state.md")

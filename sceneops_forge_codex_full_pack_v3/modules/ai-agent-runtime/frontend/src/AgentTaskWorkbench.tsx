@@ -136,6 +136,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
     <header><strong>{task.goal}</strong><span role="status">{LABELS[task.status] ?? task.status}</span></header>
     <small>{fullAccess ? `CLI 启动 ${task.cli_invocations_used}/1 · 内部模型次数未知` : `模型调用 ${task.model_calls_used}/${card.max_model_calls}`} · 费用{task.cost_usd == null ? '未知' : `$${task.cost_usd.toFixed(4)}`} · {task.project_id}</small>
     {task.status === 'awaiting_authorization' && <section className="agent-authorization" aria-label="任务授权范围">
+      {card.allow_blender_edit && <p>允许在隔离 Blender 会话编辑所选资产，保存原生源与 GLB，更新共享引用。</p>}
       <p>{card.scope}</p><p>专用工作目录：<code>{card.workspace_root}</code></p>
       <p>模型：{task.provider_model ?? 'CLI 默认模型'} · {task.provider_id}</p>
       {card.card_id && <p>卡片：{card.card_id} · 分支：{card.branch}</p>}

@@ -142,6 +142,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/project-demo/blender": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Blender Content */
+        post: operations["blender_content_api_agent_tasks__task_id__project_demo_blender_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/project-demo/play": {
         parameters: {
             query?: never;
@@ -571,6 +588,11 @@ export interface components {
             /** Alignment Id */
             alignment_id?: string | null;
             /**
+             * Allow Blender Edit
+             * @default false
+             */
+            allow_blender_edit: boolean;
+            /**
              * Allow Browser Observation
              * @default false
              */
@@ -673,6 +695,19 @@ export interface components {
              * @default false
              */
             accept_full_access: boolean;
+        };
+        /** BlenderManualRequest */
+        BlenderManualRequest: {
+            /** Request Id */
+            request_id: string;
+            target: components["schemas"]["DemoEditTarget"];
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "begin" | "publish";
+            /** Candidate Id */
+            candidate_id?: string | null;
         };
         /** BrowserInteractionRequest */
         BrowserInteractionRequest: {
@@ -832,6 +867,11 @@ export interface components {
         };
         /** DemoContinuationAuthorizationRequest */
         DemoContinuationAuthorizationRequest: {
+            /**
+             * Allow Blender Edit
+             * @default false
+             */
+            allow_blender_edit: boolean;
             /** Request Id */
             request_id: string;
         };
@@ -1220,6 +1260,11 @@ export interface components {
             /** Alignment Id */
             alignment_id?: string | null;
             /**
+             * Allow Blender Edit
+             * @default false
+             */
+            allow_blender_edit: boolean;
+            /**
              * Allow Browser Observation
              * @default false
              */
@@ -1462,7 +1507,7 @@ export interface components {
              * @default file
              * @enum {string}
              */
-            source_kind: "file" | "procedural";
+            source_kind: "file" | "procedural" | "blender";
             /** Dimensions M */
             dimensions_m: [
                 number,
@@ -1480,13 +1525,19 @@ export interface components {
             /** Fbx Path */
             fbx_path?: string | null;
             recipe?: components["schemas"]["DoorRecipe"] | null;
+            /** Parent Source Version */
+            parent_source_version?: number | null;
+            /** Node Ids */
+            node_ids?: {
+                [key: string]: string;
+            };
             /** Runtime Artifacts */
             runtime_artifacts?: components["schemas"]["RuntimeArtifactReference"][];
             /**
              * Operation
              * @enum {string}
              */
-            operation: "import" | "generate" | "normalize" | "calibrate" | "recipe-create" | "recipe-edit";
+            operation: "import" | "generate" | "normalize" | "calibrate" | "recipe-create" | "recipe-edit" | "blender-edit";
             /**
              * Model Rotation Quaternion Xyzw
              * @default [
@@ -1582,6 +1633,11 @@ export interface components {
             include_demo_assets: boolean;
             /** Alignment Id */
             alignment_id?: string | null;
+            /**
+             * Allow Blender Edit
+             * @default false
+             */
+            allow_blender_edit: boolean;
             /**
              * Allow Browser Observation
              * @default false
@@ -2020,6 +2076,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DemoContentSaved"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    blender_content_api_agent_tasks__task_id__project_demo_blender_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlenderManualRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
                 };
             };
             /** @description Validation Error */

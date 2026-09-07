@@ -158,3 +158,5 @@ npm run typecheck --prefix modules/world-composer/frontend
 界面已支持对象选择、对象批注与视角恢复、场景关系编辑和 ChangeSet 展示。GLB 解码、真实 DCC/Unity 写回、正式 Shell 注册、其他八类批注界面的完整交互仍不在本次入口范围；原算法继续保留。完整测试与新增后端回归均 `not run / pending approval`。
 
 统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。
+
+共享版本更新 `RebindAssetVersionRequest.object_ids` 可选指定实例子集；省略则保持原来的全部当前引用语义。指定身份必须属于待更新资产版本；更新只替换资产引用与显示来源，保留实例身份、变换和 KeyDoor。
