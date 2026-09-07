@@ -9,6 +9,7 @@ MODULE_TITLES = {
     'version-review': '版本与交付', 'integration-ops': '集成与运维',
 }
 CAPABILITY_MODULES = {
+    'code.browser.observe': 'ai-playtest',
     'agent.next_action': 'project-planning', 'agent.finish': 'version-review',
     'blender.asset.create': 'concept-assets', 'blender.asset.export': 'concept-assets',
     'blender.scene.inspect': 'concept-assets', 'unity.asset.import': 'unity-build',

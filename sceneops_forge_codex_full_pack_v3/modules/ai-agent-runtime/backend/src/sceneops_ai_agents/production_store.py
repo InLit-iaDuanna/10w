@@ -139,6 +139,17 @@ class ProductionStore:
                 or not path.is_relative_to(root) or '..' in path.parts):
             raise HarnessError('ARTIFACT_SCOPE_DENIED', '产物不属于已登记的任务工作区。')
         relative = path.relative_to(root)
+        return self._record_file(task, step_id, module_id, path, relative)
+
+    def record_observation_artifact(self, task, step_id, run_id, path):
+        root = self.data_dir / 'game-runtime' / 'observations' / task.id / run_id
+        path = Path(path)
+        if path != root / 'current-view.png' or path.resolve() != path:
+            raise HarnessError('ARTIFACT_SCOPE_DENIED', '截图必须属于本次浏览器检查。')
+        relative = Path('browser-observations') / task.id / run_id / path.name
+        return self._record_file(task, step_id, 'ai-playtest', path, relative)
+
+    def _record_file(self, task, step_id, module_id, path, relative):
         if any(part.startswith('.') for part in relative.parts):
             raise HarnessError('ARTIFACT_SCOPE_DENIED', '隐藏文件不是可发布产物。')
         source, metadata = self._open_regular(path)

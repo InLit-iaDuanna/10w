@@ -8854,6 +8854,88 @@
           }
         }
       }
+    },
+    "/api/agent/tasks/{task_id}/game/observation/cancel": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Cancel Observation",
+        "operationId": "cancel_observation_api_agent_tasks__task_id__game_observation_cancel_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/game/observation/revoke": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Revoke Observation",
+        "operationId": "revoke_observation_api_agent_tasks__task_id__game_observation_revoke_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10630,6 +10712,16 @@
               }
             ],
             "title": "Finished At"
+          },
+          "browser_authorization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrowserObservationAuthorization"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -13027,6 +13119,11 @@
             "type": "string",
             "title": "Cost Notice",
             "default": "最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。"
+          },
+          "allow_browser_observation": {
+            "type": "boolean",
+            "title": "Allow Browser Observation",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -19362,7 +19459,8 @@
               "check",
               "build",
               "preview_start",
-              "preview_stop"
+              "preview_stop",
+              "observe"
             ],
             "title": "Operation"
           },
@@ -19486,6 +19584,49 @@
             "type": "boolean",
             "title": "Source Stale",
             "default": false
+          },
+          "build_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Run Id"
+          },
+          "preview_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Run Id"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation"
+          },
+          "artifact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Artifact Ids"
           }
         },
         "additionalProperties": false,
@@ -19509,7 +19650,8 @@
               "check",
               "build",
               "preview_start",
-              "preview_stop"
+              "preview_stop",
+              "observe"
             ],
             "title": "Operation"
           }
@@ -19593,6 +19735,16 @@
             "type": "boolean",
             "title": "Gameplay Verified",
             "default": false
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -25284,6 +25436,11 @@
             "type": "array",
             "maxItems": 16,
             "title": "Selected Scene Object Ids"
+          },
+          "allow_browser_observation": {
+            "type": "boolean",
+            "title": "Allow Browser Observation",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -31713,6 +31870,11 @@
             "type": "boolean",
             "title": "Revoked",
             "default": false
+          },
+          "allow_browser_observation": {
+            "type": "boolean",
+            "title": "Allow Browser Observation",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -36220,6 +36382,51 @@
           "approval_state"
         ],
         "title": "Provenance"
+      },
+      "BrowserObservationAuthorization": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "revoked": {
+            "type": "boolean",
+            "title": "Revoked",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "project_id",
+          "workspace_root",
+          "card_id",
+          "branch",
+          "expires_at"
+        ],
+        "title": "BrowserObservationAuthorization"
       }
     }
   }

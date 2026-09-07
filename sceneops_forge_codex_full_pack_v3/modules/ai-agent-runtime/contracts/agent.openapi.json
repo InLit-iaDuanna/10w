@@ -363,6 +363,88 @@
         }
       }
     },
+    "/api/agent/tasks/{task_id}/game/observation/cancel": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Cancel Observation",
+        "operationId": "cancel_observation_api_agent_tasks__task_id__game_observation_cancel_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/game/observation/revoke": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Revoke Observation",
+        "operationId": "revoke_observation_api_agent_tasks__task_id__game_observation_revoke_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/tasks/{task_id}/events": {
       "get": {
         "tags": [
@@ -906,6 +988,16 @@
       },
       "AgentTaskRecord": {
         "properties": {
+          "browser_authorization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrowserObservationAuthorization"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -1161,6 +1253,11 @@
       },
       "AuthorizationCard": {
         "properties": {
+          "allow_browser_observation": {
+            "type": "boolean",
+            "title": "Allow Browser Observation",
+            "default": false
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -1335,6 +1432,51 @@
         ],
         "title": "AuthorizeAgentTask"
       },
+      "BrowserObservationAuthorization": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_root": {
+            "type": "string",
+            "title": "Workspace Root"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "revoked": {
+            "type": "boolean",
+            "title": "Revoked",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "project_id",
+          "workspace_root",
+          "card_id",
+          "branch",
+          "expires_at"
+        ],
+        "title": "BrowserObservationAuthorization"
+      },
       "ChangeSet": {
         "properties": {
           "change_set_id": {
@@ -1500,6 +1642,49 @@
       },
       "GameExecutionRun": {
         "properties": {
+          "build_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Run Id"
+          },
+          "preview_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Run Id"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation"
+          },
+          "artifact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Artifact Ids"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -1511,7 +1696,8 @@
               "check",
               "build",
               "preview_start",
-              "preview_stop"
+              "preview_stop",
+              "observe"
             ],
             "title": "Operation"
           },
@@ -1658,7 +1844,8 @@
               "check",
               "build",
               "preview_start",
-              "preview_stop"
+              "preview_stop",
+              "observe"
             ],
             "title": "Operation"
           }
@@ -1672,6 +1859,16 @@
       },
       "GameProjectExecution": {
         "properties": {
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameExecutionRun"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "project_id": {
             "type": "string",
             "title": "Project Id"
@@ -1782,6 +1979,11 @@
       "JsonValue": {},
       "PrepareAgentTask": {
         "properties": {
+          "allow_browser_observation": {
+            "type": "boolean",
+            "title": "Allow Browser Observation",
+            "default": false
+          },
           "goal": {
             "type": "string",
             "maxLength": 8000,
@@ -2338,6 +2540,11 @@
       },
       "TaskGrant": {
         "properties": {
+          "allow_browser_observation": {
+            "type": "boolean",
+            "title": "Allow Browser Observation",
+            "default": false
+          },
           "id": {
             "type": "string",
             "title": "Id"

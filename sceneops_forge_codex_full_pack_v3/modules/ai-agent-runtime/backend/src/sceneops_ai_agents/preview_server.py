@@ -8,6 +8,20 @@ import sys
 import threading
 
 
+class BuildHandler(SimpleHTTPRequestHandler):
+    def send_head(self):
+        root = Path(self.directory).resolve()
+        path = Path(self.translate_path(self.path))
+        if path.resolve() != path or not path.is_relative_to(root):
+            self.send_error(403, 'Outside registered build')
+            return None
+        return super().send_head()
+
+    def list_directory(self, path):
+        self.send_error(403, 'Directory listing disabled')
+        return None
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--directory', required=True)
@@ -15,7 +29,7 @@ def main():
     directory = Path(args.directory)
     if not directory.is_absolute() or directory.resolve() != directory or not (directory / 'index.html').is_file():
         raise SystemExit('invalid build directory')
-    handler = partial(SimpleHTTPRequestHandler, directory=str(directory))
+    handler = partial(BuildHandler, directory=str(directory))
     server = ThreadingHTTPServer(('127.0.0.1', 0), handler)
     print(json.dumps({'host': '127.0.0.1', 'port': server.server_port}), flush=True)
     thread = threading.Thread(target=server.serve_forever, daemon=True)

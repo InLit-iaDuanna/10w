@@ -1,0 +1,6 @@
+{
+  "name": "sceneops-browser-observation-worker",
+  "private": true,
+  "type": "module",
+  "optionalDependencies": { "playwright": "1.62.1" }
+}

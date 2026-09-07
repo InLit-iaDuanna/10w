@@ -45,6 +45,14 @@ def create_agent_task_router(service):
     def game_status(task_id: str):
         return require_service().game_status(task_id)
 
+    @router.post('/{task_id}/game/observation/cancel')
+    def cancel_observation(task_id: str):
+        return require_service().cancel_browser_observation(task_id)
+
+    @router.post('/{task_id}/game/observation/revoke', response_model=AgentTaskRecord)
+    def revoke_observation(task_id: str):
+        return require_service().revoke_browser_authorization(task_id)
+
     @router.post('/{task_id}/game', response_model=GameProjectExecution)
     async def game_operation(task_id: str, body: GameOperationRequest):
         return await require_service().game_operation(task_id, body)

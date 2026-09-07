@@ -17,6 +17,7 @@ MUTATIONS.add('code.file.write')
 MUTATIONS.update({'code.dependencies.prepare', 'code.project.check', 'code.project.build',
                   'code.preview.start', 'code.preview.stop'})
 MUTATIONS.add('environment.object.transform')
+MUTATIONS.add('code.browser.observe')
 INPUT_MODELS = {"blender.asset.create": CreateCubeInput, "blender.asset.export": AssetInput,
     "unity.asset.import": AssetInput, "blender.scene.inspect": EmptyActionInput,
     "unity.scene.inspect": EmptyActionInput, "agent.finish": FinishInput,
@@ -26,6 +27,7 @@ INPUT_MODELS.update({'unity.prototype.compose': PrototypeSpec, 'unity.prototype.
     'unity.prototype.verify': PrototypeVerifyInput})
 INPUT_MODELS['agent.report_blocked'] = CapabilityGapInput
 INPUT_MODELS['agent.history.read'] = HistoryReadInput
+INPUT_MODELS['code.browser.observe'] = EmptyActionInput
 INPUT_MODELS.update({'code.workspace.inspect': EmptyActionInput,
                      'code.file.read': CodeReadInput, 'code.file.write': CodeWriteInput})
 INPUT_MODELS.update({capability: EmptyActionInput for capability in
@@ -157,6 +159,8 @@ class TaskTools:
             evidence = {'tool': 'project_assets', 'mode': 'live', 'effect_state': 'NONE',
                         'project_id': task.project_id,
                         'assets': [item.model_dump(mode='json') for item in assets]}
+        elif invocation.capability_id == 'code.browser.observe':
+            evidence = await self.service.observe_game(task.id, active_agent=True)
         elif invocation.capability_id == 'environment.scene.read':
             if self.service.environment_scenes is None:
                 raise HarnessError('ENVIRONMENT_SCENE_NOT_CONNECTED', '项目环境场景服务尚未连接。')

@@ -108,6 +108,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/game/observation/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Observation */
+        post: operations["cancel_observation_api_agent_tasks__task_id__game_observation_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/game/observation/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Observation */
+        post: operations["revoke_observation_api_agent_tasks__task_id__game_observation_revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/events": {
         parameters: {
             query?: never;
@@ -297,6 +331,7 @@ export interface components {
         };
         /** AgentTaskRecord */
         AgentTaskRecord: {
+            browser_authorization?: components["schemas"]["BrowserObservationAuthorization"] | null;
             /** Id */
             id?: string;
             /** Project Id */
@@ -397,6 +432,11 @@ export interface components {
         };
         /** AuthorizationCard */
         AuthorizationCard: {
+            /**
+             * Allow Browser Observation
+             * @default false
+             */
+            allow_browser_observation: boolean;
             /** Id */
             id?: string;
             /** Workspace Root */
@@ -494,6 +534,29 @@ export interface components {
              */
             accept_full_access: boolean;
         };
+        /** BrowserObservationAuthorization */
+        BrowserObservationAuthorization: {
+            /** Task Id */
+            task_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Workspace Root */
+            workspace_root: string;
+            /** Card Id */
+            card_id: string;
+            /** Branch */
+            branch: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Revoked
+             * @default false
+             */
+            revoked: boolean;
+        };
         /** ChangeSet */
         ChangeSet: {
             /** Change Set Id */
@@ -557,13 +620,23 @@ export interface components {
         };
         /** GameExecutionRun */
         GameExecutionRun: {
+            /** Build Run Id */
+            build_run_id?: string | null;
+            /** Preview Run Id */
+            preview_run_id?: string | null;
+            /** Observation */
+            observation?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Artifact Ids */
+            artifact_ids?: string[];
             /** Id */
             id?: string;
             /**
              * Operation
              * @enum {string}
              */
-            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop";
+            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop" | "observe";
             /**
              * Status
              * @default running
@@ -620,10 +693,11 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop";
+            operation: "prepare" | "check" | "build" | "preview_start" | "preview_stop" | "observe";
         };
         /** GameProjectExecution */
         GameProjectExecution: {
+            observation?: components["schemas"]["GameExecutionRun"] | null;
             /** Project Id */
             project_id: string;
             /** Card Id */
@@ -665,6 +739,11 @@ export interface components {
         JsonValue: unknown;
         /** PrepareAgentTask */
         PrepareAgentTask: {
+            /**
+             * Allow Browser Observation
+             * @default false
+             */
+            allow_browser_observation: boolean;
             /** Goal */
             goal: string;
             /** Project Id */
@@ -900,6 +979,11 @@ export interface components {
         };
         /** TaskGrant */
         TaskGrant: {
+            /**
+             * Allow Browser Observation
+             * @default false
+             */
+            allow_browser_observation: boolean;
             /** Id */
             id?: string;
             /** Task Id */
@@ -1265,6 +1349,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameProjectExecution"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_observation_api_agent_tasks__task_id__game_observation_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_observation_api_agent_tasks__task_id__game_observation_revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
                 };
             };
             /** @description Validation Error */

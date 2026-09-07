@@ -38,6 +38,8 @@ def card_code_capabilities(value):
     capabilities = list(CODE_CAPABILITIES)
     if value.allow_game_execution:
         capabilities[4:4] = GAME_EXECUTION_CAPABILITIES
+        if value.allow_browser_observation:
+            capabilities.insert(4, 'code.browser.observe')
         if value.allow_dependency_install:
             capabilities.insert(4, DEPENDENCY_CAPABILITY)
     return capabilities
@@ -75,6 +77,7 @@ class VerificationRecord(TaskModel):
 
 
 class PrepareAgentTask(TaskModel):
+    allow_browser_observation: bool = False
     goal: str = Field(min_length=1, max_length=8000)
     project_id: str | None = None
     card_id: str | None = Field(default=None, pattern=r'^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$')
@@ -88,6 +91,8 @@ class PrepareAgentTask(TaskModel):
 
     @model_validator(mode='after')
     def card_scope(self):
+        if self.allow_browser_observation and (self.task_profile != 'card-development' or not self.allow_game_execution):
+            raise ValueError('浏览器观察需要卡片工程运行授权。')
         if self.task_profile == 'card-development':
             if not self.project_id or not self.card_id or self.execution_mode != 'typed-tools':
                 raise ValueError('卡片开发需要项目、已登记卡片和 typed-tools 权限。')
@@ -119,6 +124,7 @@ class AuthorizeAgentTask(TaskModel):
 
 
 class AuthorizationCard(TaskModel):
+    allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("card"))
     workspace_root: str
     card_id: str | None = None
@@ -159,6 +165,7 @@ class AuthorizationCard(TaskModel):
 
 
 class TaskGrant(TaskModel):
+    allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("grant"))
     task_id: str
     project_id: str
@@ -226,7 +233,7 @@ class EmptyActionInput(TaskModel):
     pass
 
 
-GameOperation = Literal['prepare', 'check', 'build', 'preview_start', 'preview_stop']
+GameOperation = Literal['prepare', 'check', 'build', 'preview_start', 'preview_stop', 'observe']
 GameRunStatus = Literal['running', 'succeeded', 'failed', 'stale', 'stopped', 'interrupted']
 
 
@@ -235,6 +242,10 @@ class GameOperationRequest(TaskModel):
 
 
 class GameExecutionRun(TaskModel):
+    build_run_id: str | None = None
+    preview_run_id: str | None = None
+    observation: dict[str, JsonValue] | None = None
+    artifact_ids: list[str] = Field(default_factory=list)
     id: str = Field(default_factory=lambda: identifier('game_run'))
     operation: GameOperation
     status: GameRunStatus = 'running'
@@ -256,6 +267,7 @@ class GameExecutionRun(TaskModel):
 
 
 class GameProjectExecution(TaskModel):
+    observation: GameExecutionRun | None = None
     project_id: str
     card_id: str
     workspace_root: str
@@ -341,7 +353,18 @@ class ActionRecord(TaskModel):
         return migrated
 
 
+class BrowserObservationAuthorization(TaskModel):
+    task_id: str
+    project_id: str
+    workspace_root: str
+    card_id: str
+    branch: str
+    expires_at: datetime
+    revoked: bool = False
+
+
 class AgentTaskRecord(TaskModel):
+    browser_authorization: BrowserObservationAuthorization | None = None
     id: str = Field(default_factory=lambda: identifier("task"))
     project_id: str
     goal: str

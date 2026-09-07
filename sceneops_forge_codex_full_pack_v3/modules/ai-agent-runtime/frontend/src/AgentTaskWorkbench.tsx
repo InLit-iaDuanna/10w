@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { agentTasks, agentTaskKeys, type AgentTask, type GameProjectExecution } from './client';
 import { useProduction, productionKeys } from './production-client';
 import './agent-task.css';
+import { BrowserObservationPanel } from './BrowserObservationPanel';
 
 const LABELS: Record<string, string> = {
   awaiting_authorization: '等待任务授权', queued: '排队中', running: 'Agent 执行中',
@@ -23,6 +24,7 @@ const ACTIONS: Record<string, string> = {
   'project.assets.list': '读取项目资产与版本',
   'environment.scene.read': '读取当前场景与对象',
   'environment.object.transform': '修改对象变换并回读',
+  'code.browser.observe': '采集当前构建画面与浏览器错误',
 };
 const busy = (task: AgentTask) => ['queued', 'running'].includes(task.status);
 
@@ -105,6 +107,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
   }, [cache, card.task_profile, observedSceneVersion, task.project_id]);
   const restart = useMutation({ mutationFn: () => agentTasks.prepare({ goal: task.goal, execution_mode: card.execution_mode, allow_image_generation: card.allow_image_generation, allow_playtest:false,
     allow_game_execution: card.allow_game_execution, allow_dependency_install: card.allow_dependency_install, task_profile: card.task_profile,
+    allow_browser_observation: card.allow_browser_observation,
     ...(card.card_id ? { project_id: task.project_id, card_id: card.card_id } : {}),
     ...(card.task_profile === 'environment-scene' ? {project_id:task.project_id,selected_scene_object_ids:selectedSceneObjectIds} : {}) }),
     onSuccess: () => cache.invalidateQueries({ queryKey: ['agent-tasks'] }) });
@@ -125,6 +128,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
     {fullAccess && activity != null && <p className="agent-task-live-activity" role="status">最近执行活动：{activityLabel(activity)}</p>}
     {fullAccess && task.observations.codex != null && <details><summary>查看 Codex 结果与执行摘要</summary><pre>{JSON.stringify(task.observations.codex, null, 2)}</pre></details>}
     {card.allow_game_execution && task.grant && <GameRuntimePanel task={task} />}
+    {card.allow_game_execution && task.grant && <BrowserObservationPanel task={task} />}
     <ol className="agent-action-tree">{task.actions.map(record => <li key={record.request_id} data-state={record.state}>
       <strong>{ACTIONS[record.action.capability_id] ?? record.action.capability_id}</strong><span>{record.state === 'succeeded' ? '已执行' : record.state === 'running' ? '执行中' : record.state}</span>
       <small>{record.action.rationale}</small>{record.reason && <p>{record.reason}</p>}

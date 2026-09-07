@@ -228,7 +228,15 @@ class GameProjectRuntime:
                             output = self._validate_output(root, required=code == 0)
                             passed = code == 0
                             if passed:
-                                run.artifact_path = str(output)
+                                from .browser_observation import build_files
+                                before = build_files(output)
+                                retained = self.data_dir / 'builds' / run.id / 'dist'
+                                retained.parent.mkdir(parents=True, exist_ok=False)
+                                shutil.copytree(output, retained, symlinks=True)
+                                self._validate_output(retained.parent, required=True)
+                                if before != build_files(output):
+                                    raise HarnessError('BUILD_OUTPUT_CHANGED', '构建输出在登记期间改变，请重新构建。')
+                                run.artifact_path = str(retained)
                         else:
                             raise HarnessError('GAME_OPERATION_INVALID', '未知的工程操作。')
                 except HarnessError as error:
@@ -250,24 +258,29 @@ class GameProjectRuntime:
         run = self._latest(task.project_id, task.grant.card_id, 'build')
         if not run or run.status != 'succeeded' or not run.passed or run.source_stale:
             raise HarnessError('CURRENT_BUILD_REQUIRED', '请先让当前源码通过构建，再启动预览。')
-        self._validate_output(task.grant.workspace_root, required=True)
+        expected = self.data_dir / 'builds' / run.id / 'dist'
+        if run.artifact_path != str(expected):
+            raise HarnessError('CURRENT_BUILD_REQUIRED', '旧构建没有独立输出版本，请重新构建。')
+        self._validate_output(expected.parent, required=True)
         return run
 
     async def _start_preview(self, task, root):
-        self._current_build(task)
+        build = self._current_build(task)
         self._validate_output(root, required=True)
         key = self.key(task.project_id, task.grant.card_id)
         active = self.previews.get(key)
-        if active and active['process'].returncode is None and not active['run'].source_stale:
+        if (active and active['process'].returncode is None and not active['run'].source_stale
+                and active['run'].build_run_id == build.id):
             return active['run']
         if active:
             await self._stop_active(key, status='stopped')
         run = GameExecutionRun(operation='preview_start', project_id=task.project_id,
-            card_id=task.grant.card_id, task_id=task.id, workspace_root=str(root), branch=task.grant.branch)
+            card_id=task.grant.card_id, task_id=task.id, workspace_root=str(root), branch=task.grant.branch,
+            build_run_id=build.id)
         self._save(run)
         script = Path(__file__).with_name('preview_server.py').resolve()
         try:
-            process = await asyncio.create_subprocess_exec(sys.executable, '-I', str(script), '--directory', str(root / 'dist'),
+            process = await asyncio.create_subprocess_exec(sys.executable, '-I', str(script), '--directory', build.artifact_path,
                 cwd=str(root), env=self._environment(), stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, start_new_session=True)
         except (OSError, PermissionError) as error:
@@ -356,6 +369,7 @@ class GameProjectRuntime:
             dependency=self._latest(task.project_id, grant.card_id, 'prepare'),
             check=self._latest(task.project_id, grant.card_id, 'check'),
             build=self._latest(task.project_id, grant.card_id, 'build'),
+            observation=self._latest(task.project_id, grant.card_id, 'observe'),
             preview=(active['run'] if active and active['process'].returncode is None
                      else self._latest(task.project_id, grant.card_id, 'preview_start')))
 
@@ -371,7 +385,7 @@ class GameProjectRuntime:
                                       (str(workspace_root),)).fetchall()
             for run_id, body in rows:
                 run = GameExecutionRun.model_validate_json(body)
-                if run.operation in ('check', 'build') and run.status == 'succeeded':
+                if run.operation in ('check', 'build', 'observe') and run.status == 'succeeded':
                     run.status, run.source_stale = 'stale', True
                 elif run.operation == 'preview_start' and run.status == 'running':
                     run.source_stale = True
