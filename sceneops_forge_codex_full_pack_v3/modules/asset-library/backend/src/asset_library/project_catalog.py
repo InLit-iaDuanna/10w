@@ -8,11 +8,11 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
-from typing import Literal
+from typing import Literal, Optional, Union
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def _now() -> str:
@@ -74,15 +74,81 @@ class ProjectAssetModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class DoorMaterial(ProjectAssetModel):
+    color_hex: str = Field(default="#6B4F3A", pattern=r"^#[0-9A-Fa-f]{6}$")
+    roughness: float = Field(default=0.75, ge=0, le=1)
+    metalness: float = Field(default=0.05, ge=0, le=1)
+
+
+class DoorRecipe(ProjectAssetModel):
+    """Editable source for the first supported procedural asset."""
+
+    kind: Literal["door-v1"] = "door-v1"
+    seed: Literal[0] = 0
+    width_m: float = Field(default=1.2, ge=0.2, le=10)
+    height_m: float = Field(default=2.2, ge=0.5, le=10)
+    thickness_m: float = Field(default=0.15, ge=0.02, le=2)
+    material: DoorMaterial = Field(default_factory=DoorMaterial)
+
+    @property
+    def dimensions_m(self) -> tuple[float, float, float]:
+        return (self.width_m, self.height_m, self.thickness_m)
+
+
+class RecipeParameterDescriptor(ProjectAssetModel):
+    path: str
+    label: str
+    value_type: Literal["number", "color"]
+    unit: Literal["meter", "ratio", "hex"]
+    default: Union[float, str]
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+
+
+class DoorRecipeDefinition(ProjectAssetModel):
+    kind: Literal["door-v1"] = "door-v1"
+    parameters: list[RecipeParameterDescriptor]
+
+
+def door_recipe_definition() -> DoorRecipeDefinition:
+    return DoorRecipeDefinition(parameters=[
+        RecipeParameterDescriptor(path="width_m", label="宽度", value_type="number",
+                                  unit="meter", default=1.2, minimum=0.2, maximum=10),
+        RecipeParameterDescriptor(path="height_m", label="高度", value_type="number",
+                                  unit="meter", default=2.2, minimum=0.5, maximum=10),
+        RecipeParameterDescriptor(path="thickness_m", label="厚度", value_type="number",
+                                  unit="meter", default=0.15, minimum=0.02, maximum=2),
+        RecipeParameterDescriptor(path="material.color_hex", label="颜色", value_type="color",
+                                  unit="hex", default="#6B4F3A"),
+        RecipeParameterDescriptor(path="material.roughness", label="粗糙度", value_type="number",
+                                  unit="ratio", default=0.75, minimum=0, maximum=1),
+        RecipeParameterDescriptor(path="material.metalness", label="金属度", value_type="number",
+                                  unit="ratio", default=0.05, minimum=0, maximum=1),
+    ])
+
+
+class RuntimeArtifactReference(ProjectAssetModel):
+    artifact_id: str = Field(min_length=1)
+    artifact_type: Literal["render", "collision", "module"]
+    project_relative_path: str = Field(min_length=1)
+    export_name: Optional[str] = Field(default=None, min_length=1)
+
+
 class ProjectAssetVersion(ProjectAssetModel):
     source_version: int = Field(ge=1)
+    asset_version_id: Optional[str] = Field(default=None, min_length=1)
+    source_kind: Literal["file", "procedural"] = "file"
     dimensions_m: tuple[float, float, float]
     vertex_count: int = Field(ge=0)
     triangle_count: int = Field(ge=0)
-    blend_path: str = Field(min_length=1)
-    preview_path: str = Field(min_length=1)
-    fbx_path: str = Field(min_length=1)
-    operation: Literal["import", "generate", "normalize", "calibrate"]
+    blend_path: Optional[str] = Field(default=None, min_length=1)
+    preview_path: Optional[str] = Field(default=None, min_length=1)
+    fbx_path: Optional[str] = Field(default=None, min_length=1)
+    recipe: Optional[DoorRecipe] = None
+    runtime_artifacts: list[RuntimeArtifactReference] = Field(default_factory=list)
+    operation: Literal[
+        "import", "generate", "normalize", "calibrate", "recipe-create", "recipe-edit"
+    ]
     model_rotation_quaternion_xyzw: ModelRotationQuaternion = MODEL_ROTATION_IDENTITY
     saved_at: str = Field(default_factory=_now)
 
@@ -91,11 +157,28 @@ class ProjectAssetVersion(ProjectAssetModel):
     def validate_rotation(cls, value: ModelRotationQuaternion) -> ModelRotationQuaternion:
         return _validate_model_rotation(value)
 
+    @model_validator(mode="after")
+    def validate_source(self):
+        if self.source_kind == "file":
+            if not all((self.blend_path, self.preview_path, self.fbx_path)):
+                raise ValueError("file asset versions require blend, preview, and fbx paths")
+            if self.recipe is not None:
+                raise ValueError("file asset versions cannot contain a procedural recipe")
+        else:
+            if self.asset_version_id is None:
+                raise ValueError("procedural asset versions require a stable asset_version_id")
+            if self.recipe is None:
+                raise ValueError("procedural asset versions require a recipe")
+            if self.dimensions_m != self.recipe.dimensions_m:
+                raise ValueError("procedural dimensions must be derived from the recipe")
+        return self
+
 
 class ProjectAssetEntry(ProjectAssetModel):
     id: str
     project_id: str
-    card_id: str
+    card_id: Optional[str] = None
+    workspace_id: Optional[str] = None
     source_asset_id: str
     title: str
     source_title: str | None = None
@@ -107,15 +190,28 @@ class ProjectAssetEntry(ProjectAssetModel):
     created_at: str = Field(default_factory=_now)
     updated_at: str = Field(default_factory=_now)
 
+    @model_validator(mode="after")
+    def validate_scope(self):
+        if not self.card_id and not self.workspace_id:
+            raise ValueError("asset entries require card_id or workspace_id")
+        return self
+
 
 class ProjectAssetRegistration(ProjectAssetModel):
     project_id: str = Field(min_length=1)
-    card_id: str = Field(min_length=1)
+    card_id: Optional[str] = Field(default=None, min_length=1)
+    workspace_id: Optional[str] = Field(default=None, min_length=1)
     source_asset_id: str = Field(min_length=1)
     title: str = Field(min_length=1, max_length=120)
     source_type: Literal["import", "generated"]
     modeling_session_id: str | None = Field(default=None, max_length=160)
     version: ProjectAssetVersion
+
+    @model_validator(mode="after")
+    def validate_scope(self):
+        if not self.card_id and not self.workspace_id:
+            raise ValueError("asset registrations require card_id or workspace_id")
+        return self
 
 
 class SaveProjectAssetResult(ProjectAssetModel):
@@ -126,6 +222,12 @@ class SaveProjectAssetResult(ProjectAssetModel):
 class RenameProjectAssetRequest(ProjectAssetModel):
     title: str = Field(min_length=1, max_length=24)
     expected_updated_at: str
+
+
+class UpdateProjectAssetRecipeRequest(ProjectAssetModel):
+    expected_version: int = Field(ge=1)
+    recipe: DoorRecipe
+    runtime_artifacts: list[RuntimeArtifactReference] = Field(default_factory=list)
 
 
 class SqliteProjectAssetRepository:
@@ -241,8 +343,15 @@ class ProjectAssetCatalogService:
         with self._lock:
             existing = self.repository.find_source(request.project_id, request.source_asset_id)
             if existing:
-                if existing.card_id != request.card_id or existing.source_type != request.source_type:
+                if (existing.card_id != request.card_id
+                        or existing.workspace_id != request.workspace_id
+                        or existing.source_type != request.source_type):
                     raise ValueError("资产来源与已有资产库记录不一致。")
+                if (request.version.asset_version_id is not None
+                        and any(item.asset_version_id == request.version.asset_version_id
+                                and item.source_version != request.version.source_version
+                                for item in existing.versions)):
+                    raise ValueError("资产版本 ID 已被另一版本使用。")
                 same = next((item for item in existing.versions
                              if item.source_version == request.version.source_version), None)
                 if same:
@@ -264,6 +373,7 @@ class ProjectAssetCatalogService:
                 id="libasset_" + uuid4().hex,
                 project_id=request.project_id,
                 card_id=request.card_id,
+                workspace_id=request.workspace_id,
                 source_asset_id=request.source_asset_id,
                 title=_unique_name(simple_asset_name(request.title), used),
                 source_title=request.title,
@@ -275,13 +385,64 @@ class ProjectAssetCatalogService:
             self.repository.save(entry)
             return SaveProjectAssetResult(entry=entry, version_created=True)
 
+    def update_recipe(self, project_id: str, entry_id: str,
+                      request: UpdateProjectAssetRecipeRequest) -> SaveProjectAssetResult:
+        with self._lock:
+            entry = self.get(project_id, entry_id)
+            latest = next(item for item in entry.versions
+                          if item.source_version == entry.current_version)
+            if latest.source_kind != "procedural":
+                raise ValueError("只有程序化资产可以直接编辑配方。")
+            if entry.current_version != request.expected_version:
+                if (entry.current_version == request.expected_version + 1
+                        and latest.operation == "recipe-edit"
+                        and latest.recipe == request.recipe
+                        and latest.runtime_artifacts == request.runtime_artifacts):
+                    return SaveProjectAssetResult(entry=entry, version_created=False)
+                raise ValueError("资产版本已更新，请重新读取后再编辑配方。")
+            version = ProjectAssetVersion(
+                source_version=entry.current_version + 1,
+                asset_version_id="aver_" + uuid4().hex,
+                source_kind="procedural",
+                dimensions_m=request.recipe.dimensions_m,
+                vertex_count=24,
+                triangle_count=12,
+                recipe=request.recipe,
+                runtime_artifacts=request.runtime_artifacts,
+                operation="recipe-edit",
+                model_rotation_quaternion_xyzw=latest.model_rotation_quaternion_xyzw,
+            )
+            updated = entry.model_copy(update={
+                "current_version": version.source_version,
+                "versions": [*entry.versions, version],
+                "updated_at": _now(),
+            })
+            self.repository.save(updated)
+            return SaveProjectAssetResult(entry=updated, version_created=True)
+
 
 def create_project_catalog_router(service: ProjectAssetCatalogService) -> APIRouter:
     router = APIRouter(prefix="/api/project-assets", tags=["project-asset-library"])
 
+    @router.get("/recipe-definitions/door-v1", response_model=DoorRecipeDefinition,
+                operation_id="getDoorRecipeDefinition")
+    def get_door_recipe_definition():
+        return door_recipe_definition()
+
     @router.get("", response_model=list[ProjectAssetEntry], operation_id="listProjectAssets")
     def list_assets(project_id: str = Query(..., min_length=1)):
         return service.list(project_id)
+
+    @router.post("/{entry_id}/recipe-versions", response_model=SaveProjectAssetResult,
+                 operation_id="updateProjectAssetRecipe")
+    def update_recipe(entry_id: str, request: UpdateProjectAssetRecipeRequest,
+                      project_id: str = Query(..., min_length=1)):
+        try:
+            return service.update_recipe(project_id, entry_id, request)
+        except LookupError as error:
+            raise HTTPException(404, "当前项目没有此资产库记录。") from error
+        except ValueError as error:
+            raise HTTPException(409, str(error)) from error
 
     @router.get("/{entry_id}", response_model=ProjectAssetEntry, operation_id="getProjectAsset")
     def get_asset(entry_id: str, project_id: str = Query(..., min_length=1)):

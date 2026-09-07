@@ -261,6 +261,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/project-demo/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Project Demo */
+        post: operations["updateProjectDemo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -521,7 +538,7 @@ export interface components {
              * @default asset-exchange
              * @enum {string}
              */
-            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene";
+            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene" | "project-demo";
             /** Capability Ids */
             capability_ids?: string[];
             /** Scene Write Object Ids */
@@ -563,6 +580,15 @@ export interface components {
              * @default 最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。
              */
             cost_notice: string;
+            /** Alignment Id */
+            alignment_id?: string | null;
+            /**
+             * Include Demo Assets
+             * @default false
+             */
+            include_demo_assets: boolean;
+            /** Workspace Id */
+            workspace_id?: string | null;
         };
         /** AuthorizeAgentTask */
         AuthorizeAgentTask: {
@@ -611,9 +637,9 @@ export interface components {
             /** Workspace Root */
             workspace_root: string;
             /** Card Id */
-            card_id: string;
+            card_id?: string | null;
             /** Branch */
-            branch: string;
+            branch?: string | null;
             /**
              * Expires At
              * Format: date-time
@@ -624,6 +650,8 @@ export interface components {
              * @default false
              */
             revoked: boolean;
+            /** Workspace Id */
+            workspace_id: string;
         };
         /** ChangeSet */
         ChangeSet: {
@@ -725,14 +753,20 @@ export interface components {
             mode: "live";
             /** Project Id */
             project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
             /** Card Id */
-            card_id: string;
+            card_id?: string | null;
             /** Task Id */
             task_id: string;
             /** Workspace Root */
             workspace_root: string;
             /** Branch */
-            branch: string;
+            branch?: string | null;
+            /** Candidate Id */
+            candidate_id?: string | null;
+            /** Candidate Sequence */
+            candidate_sequence?: number | null;
             /**
              * Started At
              * Format: date-time
@@ -776,12 +810,14 @@ export interface components {
             observation?: components["schemas"]["GameExecutionRun"] | null;
             /** Project Id */
             project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
             /** Card Id */
-            card_id: string;
+            card_id?: string | null;
             /** Workspace Root */
             workspace_root: string;
             /** Branch */
-            branch: string;
+            branch?: string | null;
             /**
              * Dependencies Ready
              * @default false
@@ -791,6 +827,16 @@ export interface components {
             check?: components["schemas"]["GameExecutionRun"] | null;
             build?: components["schemas"]["GameExecutionRun"] | null;
             preview?: components["schemas"]["GameExecutionRun"] | null;
+            /** Build Candidates */
+            build_candidates?: components["schemas"]["GameBuildCandidate"][];
+            latest_candidate?: components["schemas"]["GameBuildCandidate"] | null;
+            current_playable_candidate?: components["schemas"]["GameBuildCandidate"] | null;
+            /**
+             * Update State
+             * @default idle
+             * @enum {string}
+             */
+            update_state: "idle" | "building" | "updated" | "failed";
             /**
              * Browser Errors Verified
              * @default false
@@ -867,9 +913,16 @@ export interface components {
              * @default asset-exchange
              * @enum {string}
              */
-            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene";
+            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene" | "project-demo";
             /** Selected Scene Object Ids */
             selected_scene_object_ids?: string[];
+            /** Alignment Id */
+            alignment_id?: string | null;
+            /**
+             * Include Demo Assets
+             * @default false
+             */
+            include_demo_assets: boolean;
         };
         /** ProductionArtifact */
         ProductionArtifact: {
@@ -1143,6 +1196,15 @@ export interface components {
              * @default false
              */
             revoked: boolean;
+            /** Alignment Id */
+            alignment_id?: string | null;
+            /**
+             * Include Demo Assets
+             * @default false
+             */
+            include_demo_assets: boolean;
+            /** Workspace Id */
+            workspace_id?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -1190,6 +1252,53 @@ export interface components {
             assertions?: {
                 [key: string]: components["schemas"]["JsonValue"];
             }[];
+        };
+        /** GameBuildCandidate */
+        GameBuildCandidate: {
+            /** Id */
+            id?: string;
+            /** Project Id */
+            project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /** Task Id */
+            task_id: string;
+            /** Sequence */
+            sequence: number;
+            /** Build Run Id */
+            build_run_id: string;
+            /**
+             * Status
+             * @default building
+             * @enum {string}
+             */
+            status: "building" | "succeeded" | "failed" | "superseded";
+            /** Artifact Path */
+            artifact_path?: string | null;
+            /** Failure Code */
+            failure_code?: string | null;
+            /** Source Version */
+            source_version?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Scene Id */
+            scene_id?: string | null;
+            /** Scene Version */
+            scene_version?: number | null;
+            /** Asset Versions */
+            asset_versions?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at?: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at?: string;
         };
     };
     responses: never;
@@ -1737,6 +1846,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    updateProjectDemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
                 };
             };
             /** @description Validation Error */

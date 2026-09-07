@@ -803,6 +803,48 @@
           }
         }
       }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/update": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Update Project Demo",
+        "operationId": "updateProjectDemo",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1438,7 +1480,8 @@
               "survival-prototype",
               "auto",
               "card-development",
-              "environment-scene"
+              "environment-scene",
+              "project-demo"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -1512,6 +1555,34 @@
             "type": "string",
             "title": "Cost Notice",
             "default": "最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。"
+          },
+          "alignment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Id"
+          },
+          "include_demo_assets": {
+            "type": "boolean",
+            "title": "Include Demo Assets",
+            "default": false
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
           }
         },
         "additionalProperties": false,
@@ -1633,11 +1704,25 @@
             "title": "Workspace Root"
           },
           "card_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Card Id"
           },
           "branch": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Branch"
           },
           "expires_at": {
@@ -1649,6 +1734,10 @@
             "type": "boolean",
             "title": "Revoked",
             "default": false
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
           }
         },
         "additionalProperties": false,
@@ -1656,9 +1745,8 @@
         "required": [
           "task_id",
           "project_id",
+          "workspace_id",
           "workspace_root",
-          "card_id",
-          "branch",
           "expires_at"
         ],
         "title": "BrowserObservationAuthorization"
@@ -1922,8 +2010,19 @@
             "type": "string",
             "title": "Project Id"
           },
-          "card_id": {
+          "workspace_id": {
             "type": "string",
+            "title": "Workspace Id"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Card Id"
           },
           "task_id": {
@@ -1935,8 +2034,38 @@
             "title": "Workspace Root"
           },
           "branch": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Branch"
+          },
+          "candidate_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Id"
+          },
+          "candidate_sequence": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Sequence"
           },
           "started_at": {
             "type": "string",
@@ -2026,10 +2155,9 @@
         "required": [
           "operation",
           "project_id",
-          "card_id",
+          "workspace_id",
           "task_id",
-          "workspace_root",
-          "branch"
+          "workspace_root"
         ],
         "title": "GameExecutionRun"
       },
@@ -2092,8 +2220,19 @@
             "type": "string",
             "title": "Project Id"
           },
-          "card_id": {
+          "workspace_id": {
             "type": "string",
+            "title": "Workspace Id"
+          },
+          "card_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Card Id"
           },
           "workspace_root": {
@@ -2101,7 +2240,14 @@
             "title": "Workspace Root"
           },
           "branch": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Branch"
           },
           "dependencies_ready": {
@@ -2149,6 +2295,44 @@
               }
             ]
           },
+          "build_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/GameBuildCandidate"
+            },
+            "type": "array",
+            "title": "Build Candidates"
+          },
+          "latest_candidate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameBuildCandidate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current_playable_candidate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameBuildCandidate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "update_state": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "building",
+              "updated",
+              "failed"
+            ],
+            "title": "Update State",
+            "default": "idle"
+          },
           "browser_errors_verified": {
             "type": "boolean",
             "title": "Browser Errors Verified",
@@ -2164,9 +2348,8 @@
         "type": "object",
         "required": [
           "project_id",
-          "card_id",
-          "workspace_root",
-          "branch"
+          "workspace_id",
+          "workspace_root"
         ],
         "title": "GameProjectExecution"
       },
@@ -2278,7 +2461,8 @@
               "survival-prototype",
               "auto",
               "card-development",
-              "environment-scene"
+              "environment-scene",
+              "project-demo"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -2290,6 +2474,23 @@
             "type": "array",
             "maxItems": 16,
             "title": "Selected Scene Object Ids"
+          },
+          "alignment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Id"
+          },
+          "include_demo_assets": {
+            "type": "boolean",
+            "title": "Include Demo Assets",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -2890,6 +3091,34 @@
             "type": "boolean",
             "title": "Revoked",
             "default": false
+          },
+          "alignment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Id"
+          },
+          "include_demo_assets": {
+            "type": "boolean",
+            "title": "Include Demo Assets",
+            "default": false
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
           }
         },
         "additionalProperties": false,
@@ -3031,6 +3260,128 @@
         ],
         "title": "VerificationRecord",
         "description": "A business verdict bound to the exact revision, run, suite and evidence."
+      },
+      "GameBuildCandidate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Sequence"
+          },
+          "build_run_id": {
+            "type": "string",
+            "title": "Build Run Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "building",
+              "succeeded",
+              "failed",
+              "superseded"
+            ],
+            "title": "Status",
+            "default": "building"
+          },
+          "artifact_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Path"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "source_version": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Source Version"
+          },
+          "scene_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Id"
+          },
+          "scene_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Version"
+          },
+          "asset_versions": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Asset Versions"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "task_id",
+          "sequence",
+          "build_run_id"
+        ],
+        "title": "GameBuildCandidate"
       }
     }
   }

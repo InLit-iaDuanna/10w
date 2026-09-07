@@ -225,7 +225,7 @@ def changeset(task, entry):
     full_access = entry.action.capability_id == "codex.task.execute"
     code_write = entry.action.capability_id == 'code.file.write'
     scene_transform = entry.action.capability_id == 'environment.object.transform'
-    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.'))
+    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_content.'))
     base_version = (f"environment-scene:{task.project_id}:{entry.action.inputs['expected_version']}"
                     if scene_transform else f"agent-task:{task.id}")
     object_ids = ([entry.action.inputs['object_id']] if scene_transform else

@@ -10,7 +10,7 @@ export type AgentTask = Required<components['schemas']['AgentTaskRecord']> & {
 type TaskList = Omit<components['schemas']['AgentTaskList'], 'tasks'> & { tasks: AgentTask[] };
 type TaskEvents = components['schemas']['AgentTaskEvents'];
 type OptionalPrepareField = 'allow_browser_observation' | 'allow_browser_interaction'
-  | 'allow_model_image_input';
+  | 'allow_model_image_input' | 'include_demo_assets';
 type Prepare = Omit<components['schemas']['PrepareAgentTask'], OptionalPrepareField>
   & Partial<Pick<components['schemas']['PrepareAgentTask'], OptionalPrepareField>>;
 type Authorize = components['schemas']['AuthorizeAgentTask'];
@@ -31,6 +31,7 @@ export const agentTasks = {
   authorize: (id: string, body: Authorize) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/authorize`, { body }),
   cancel: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/cancel`, { body: {} }),
   resume: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/resume`, { body: {} }),
+  updateProjectDemo: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/project-demo/update`, { body: {} }),
   gameStatus: (id: string, signal?: AbortSignal) => requestJson<GameProjectExecution>(
     `${root}/${encodeURIComponent(id)}/game`, signal ? { signal } : {}),
   gameOperation: (id: string, operation: GameOperation) => requestJson<GameProjectExecution>(

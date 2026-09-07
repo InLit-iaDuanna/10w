@@ -209,7 +209,17 @@ function createWorkbench(unified: boolean) {
                   messages:(result.scene.history ?? []).map(message => ({...message,
                     created_at:message.created_at ?? '1970-01-01T00:00:00.000Z',mode:'live' as const}))};
               }}}
-              development={{ prepare: async (projectId, cardId, goal, options) => {
+              development={{ prepareProjectDemo: async (projectId, directionId, goal) => {
+                const prepared = await agentTasks.prepare({project_id:projectId,goal,task_profile:'project-demo',
+                  execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
+                  allow_game_execution:true,allow_dependency_install:true,include_demo_assets:true,
+                  allow_browser_observation:false,allow_browser_interaction:false,
+                  allow_model_image_input:false,alignment_id:directionId});
+                if (prepared.status === 'awaiting_authorization') await agentTasks.authorize(prepared.id, {
+                  authorization_card_id:prepared.authorization_card.id,accept_unknown_cost:true,accept_full_access:false});
+                await queryClient.invalidateQueries({queryKey:['agent-tasks']});
+                await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
+              }, prepare: async (projectId, cardId, goal, options) => {
                 await agentTasks.prepare({project_id:projectId,card_id:cardId,goal,task_profile:'card-development',execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
                   allow_game_execution:options.allowGameExecution,allow_dependency_install:options.allowDependencyInstall,
                   allow_browser_observation:options.allowBrowserObservation,
@@ -217,7 +227,8 @@ function createWorkbench(unified: boolean) {
                   allow_model_image_input:options.allowModelImageInput});
                 await queryClient.invalidateQueries({queryKey:['agent-tasks']});
                 await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
-              }, renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}
+              }, renderProjectDemoTasks: projectId => <AgentTaskTimeline projectId={projectId} taskProfile="project-demo" />,
+              renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}
               modelPicker={busy => <UnifiedModelPicker disabled={busy} compact />}
               onOpenProjects={() => void open('workspace.projects', {mode:'split',direction:'right'}).catch(report)}
               fallback={<UnifiedConversation context={props.context} onDirtyChange={dirty} onOpenPipeline={() => void open('harness.pipeline', {mode:'split',direction:'right'}).catch(report)} />} />;

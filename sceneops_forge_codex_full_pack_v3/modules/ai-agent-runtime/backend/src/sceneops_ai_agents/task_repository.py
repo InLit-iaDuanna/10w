@@ -14,7 +14,7 @@ class AgentTaskRepository:
             return False
         mutations = {'blender.asset.create', 'blender.asset.export', 'unity.asset.import', 'codex.task.execute'}
         mutations.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prototype.capture', 'unity.prototype.verify'})
-        mutations.update({'code.file.write', 'code.dependencies.prepare', 'code.project.check',
+        mutations.update({'code.demo_content.materialize', 'code.file.write', 'code.dependencies.prepare', 'code.project.check',
                           'code.project.build', 'code.preview.start', 'code.preview.stop'})
         mutations.add('environment.object.transform')
         mutations.update({'code.project.build_test', 'code.browser.interact'})

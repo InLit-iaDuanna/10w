@@ -22,6 +22,7 @@ const ACTIONS: Record<string, string> = {
   'code.dependencies.prepare': '准备游戏工程依赖', 'code.project.status': '读取工程运行状态',
   'code.project.check': 'TypeScript 检查', 'code.project.build': '构建游戏',
   'code.preview.start': '启动本地预览', 'code.preview.stop': '停止本地预览',
+  'code.demo_content.materialize': '保存 Demo 内容源并物化',
   'project.assets.list': '读取项目资产与版本',
   'environment.scene.read': '读取当前场景与对象',
   'environment.object.transform': '修改对象变换并回读',
@@ -62,16 +63,18 @@ export function AgentTaskWorkbench({ projectId, onDirtyChange }: { projectId: st
 }
 
 /** Timeline-only embedding for the conversation canvas; preparation remains owned by the caller. */
-export function AgentTaskTimeline({ projectId, cardId, onContinue }: { projectId: string | null; cardId?: string; onContinue?: () => void }) {
+export function AgentTaskTimeline({ projectId, cardId, taskProfile, onContinue }: { projectId: string | null; cardId?: string; taskProfile?: string; onContinue?: () => void }) {
   if (!projectId) return null;
-  return <ProjectAgentTaskTimeline projectId={projectId} {...(cardId === undefined ? {} : { cardId })} {...(onContinue ? { onContinue } : {})} />;
+  return <ProjectAgentTaskTimeline projectId={projectId} {...(cardId === undefined ? {} : { cardId })}
+    {...(taskProfile === undefined ? {} : { taskProfile })} {...(onContinue ? { onContinue } : {})} />;
 }
 
-function ProjectAgentTaskTimeline({ projectId, cardId, onContinue }: { projectId: string; cardId?: string; onContinue?: () => void }) {
+function ProjectAgentTaskTimeline({ projectId, cardId, taskProfile, onContinue }: { projectId: string; cardId?: string; taskProfile?: string; onContinue?: () => void }) {
   const query = useTasks(projectId);
   if (query.isPending) return <p className="agent-task-timeline-state" role="status">正在读取任务记录…</p>;
   if (query.error) return <p className="agent-task-timeline-state" role="alert">任务服务未连接：{query.error.message} <button onClick={() => void query.refetch()}>重新连接</button></p>;
-  const tasks = query.data?.tasks.filter(task => cardId === undefined || task.authorization_card.card_id === cardId) ?? [];
+  const tasks = query.data?.tasks.filter(task => (cardId === undefined || task.authorization_card.card_id === cardId)
+    && (taskProfile === undefined || task.authorization_card.task_profile === taskProfile)) ?? [];
   if (!tasks.length) return null;
   return <section className="agent-task-timeline" aria-label="任务时间线"><div className="agent-task-list">{tasks.map(task => <TaskCard key={task.id} task={task} onContinue={onContinue} />)}</div></section>;
 }
@@ -121,6 +124,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
       <p>{card.scope}</p><p>专用工作目录：<code>{card.workspace_root}</code></p>
       <p>模型：{task.provider_model ?? 'CLI 默认模型'} · {task.provider_id}</p>
       {card.card_id && <p>卡片：{card.card_id} · 分支：{card.branch}</p>}
+      {card.task_profile === 'project-demo' && <p>工作区：{card.workspace_id}</p>}
       {card.card_id && task.observations.card_context != null && <details><summary>查看本次开发采用的策划快照</summary><pre>{JSON.stringify(task.observations.card_context, null, 2)}</pre></details>}
       <p>{card.cost_notice}</p>{card.task_profile === 'environment-scene'
         ? <p>选中对象只是任务上下文；确认后才授权修改卡片中列出的对象变换。场景数据修改不代表运行游戏已更新。</p>
@@ -171,6 +175,10 @@ function GameRuntimePanel({ task }: { task: AgentTask }) {
       const snapshot = state.state.data as GameProjectExecution | undefined;
       return busy(task) || snapshot?.preview?.status === 'running' ? 1500 : false;
     } });
+  const updateDemo = useMutation({mutationFn:()=>agentTasks.updateProjectDemo(task.id), onSuccess:async()=>{
+    await cache.invalidateQueries({queryKey:['agent-tasks']});
+    await cache.invalidateQueries({queryKey:agentTaskKeys.game(task.id)});
+  }});
   const operation = useMutation({ mutationFn: async (kind: GameOperation | 'check_build') => {
     if (kind !== 'check_build') return agentTasks.gameOperation(task.id, kind);
     const checked = await agentTasks.gameOperation(task.id, 'check');
@@ -186,24 +194,28 @@ function GameRuntimePanel({ task }: { task: AgentTask }) {
   if (!snapshot) return null;
   const previewRunning = snapshot.preview?.status === 'running';
   const agentBusy = busy(task);
+  const projectDemo = task.authorization_card.task_profile === 'project-demo';
   const latest = [snapshot.dependency, snapshot.check, snapshot.build, snapshot.preview].filter(Boolean).at(-1);
   return <section className="agent-game-runtime" aria-label="游戏工程运行">
     <header><div><strong>游戏工程</strong><small>{snapshot.branch}</small></div>
-      {previewRunning && snapshot.preview?.preview_url && !snapshot.preview.source_stale
+      {previewRunning && snapshot.preview?.preview_url && (projectDemo || !snapshot.preview.source_stale)
         ? <a href={snapshot.preview.preview_url} target="_blank" rel="noopener noreferrer">打开独立预览 ↗</a>
         : <span>{snapshot.preview?.source_stale ? '源码已改变 · 需重新构建' : '预览未运行'}</span>}</header>
     <p><code>{snapshot.workspace_root}</code></p>
+    {projectDemo && <p role={snapshot.update_state === 'failed' ? 'alert' : 'status'}>{snapshot.update_state === 'building' ? '正在构建' : snapshot.update_state === 'failed' ? '更新失败 · 上一试玩仍可用' : snapshot.update_state === 'updated' ? '试玩已更新' : '源已保存后可更新试玩'}</p>}
     <dl><div><dt>依赖</dt><dd>{snapshot.dependencies_ready ? '已准备' : '未准备'}</dd></div>
       <div><dt>类型检查</dt><dd>{runLabel(snapshot.check)}</dd></div><div><dt>构建</dt><dd>{runLabel(snapshot.build)}</dd></div>
       <div><dt>预览</dt><dd>{previewRunning ? '运行中' : runLabel(snapshot.preview)}</dd></div></dl>
     <div className="agent-game-actions">
-      {task.authorization_card.allow_dependency_install && <button disabled={operation.isPending || agentBusy} onClick={() => operation.mutate('prepare')}>准备依赖</button>}
-      <button disabled={operation.isPending || agentBusy || !snapshot.dependencies_ready} onClick={() => operation.mutate('check_build')}>检查并构建</button>
-      <button disabled={operation.isPending || agentBusy || snapshot.build?.status !== 'succeeded' || snapshot.build.source_stale === true || previewRunning} onClick={() => operation.mutate('preview_start')}>启动预览</button>
-      <button disabled={operation.isPending || agentBusy || !previewRunning} onClick={() => operation.mutate('preview_stop')}>停止预览</button>
+      {projectDemo && <button className="primary" disabled={updateDemo.isPending || agentBusy} onClick={()=>updateDemo.mutate()}>{updateDemo.isPending ? '正在更新…' : '更新 Demo'}</button>}
+      {!projectDemo && task.authorization_card.allow_dependency_install && <button disabled={operation.isPending || agentBusy} onClick={() => operation.mutate('prepare')}>准备依赖</button>}
+      {!projectDemo && <button disabled={operation.isPending || agentBusy || !snapshot.dependencies_ready} onClick={() => operation.mutate('check_build')}>检查并构建</button>}
+      {!projectDemo && <button disabled={operation.isPending || agentBusy || snapshot.build?.status !== 'succeeded' || snapshot.build.source_stale === true || previewRunning} onClick={() => operation.mutate('preview_start')}>启动预览</button>}
+      <button disabled={operation.isPending || updateDemo.isPending || agentBusy || !previewRunning} onClick={() => operation.mutate('preview_stop')}>停止预览</button>
     </div>
     {operation.isPending && <p role="status">正在执行固定工程操作…</p>}
     {operation.error && <p role="alert">{operation.error.message}</p>}
+    {updateDemo.error && <p role="alert">{updateDemo.error.message}</p>}
     {latest?.log && <details><summary>最近日志 · {latest.operation}</summary><pre>{latest.log}</pre></details>}
     <small>浏览器错误与玩法结果尚未自动判定，请在独立预览中验收。</small>
   </section>;

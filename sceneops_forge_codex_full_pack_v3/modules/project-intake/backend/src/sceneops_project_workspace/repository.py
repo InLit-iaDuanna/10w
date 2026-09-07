@@ -57,6 +57,7 @@ class WorkspaceRepository(Protocol):
     def get_project_demo_workspace(self, project_id: str, workspace_id: str | None = None) -> dict: ...
     def initialize_game_project(self, project_id: str, selection: dict, design_version: int,
                                 *, commit_baseline: bool = True) -> dict: ...
+    def materialize_demo_content(self, project_id: str, workspace_id: str, manifest: dict) -> dict: ...
 
 
 class SqliteWorkspaceRepository:
@@ -394,6 +395,9 @@ class SqliteWorkspaceRepository:
     def initialize_game_project(self, project_id, selection, design_version, *, commit_baseline=True):
         return GameProjects(self).initialize(project_id, selection, design_version,
                                              commit_baseline=commit_baseline)
+
+    def materialize_demo_content(self, project_id, workspace_id, manifest):
+        return GameProjects(self).materialize_demo_content(project_id, workspace_id, manifest)
 
     def set_project_kind(self, project_id, project_kind):
         with self.connect() as connection:

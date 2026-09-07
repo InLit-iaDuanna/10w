@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .git_projects import GitProjects
+from .demo_assets import demo_asset_files
+from .demo_content import EMPTY_DEMO_CONTENT, demo_content_source
 from .test_adapter_files import test_adapter_files
 
 
@@ -37,6 +39,8 @@ def _shared_files(*, ecs: bool) -> dict[str, str]:
         "devDependencies": {"@types/three": "0.183.1", "typescript": "6.0.3", "vite": "8.0.0"},
     }
     return {
+        **demo_asset_files(),
+        "src/game/sceneops-demo-content.ts": demo_content_source(EMPTY_DEMO_CONTENT),
         **test_adapter_files(),
         "README.md": """# SceneOps game project
 
@@ -48,7 +52,9 @@ pnpm check
 pnpm dev
 ```
 
-Open the URL printed by Vite, then move with WASD or the arrow keys to collect the yellow items.
+打开 Vite 显示的本地地址，用 WASD 或方向键移动，收集黄色宝石。
+
+内置演示资产位于 `src/game/sceneops-demo-assets.ts`，无需用户上传素材或联网下载。蓝色玩家、红色敌人、黄色 NPC、绿色队友使用相同人物轮廓；小屋、树、木箱和岩石组成示例村落。示例敌人和 NPC 目前是场景展示物，不代表已经实现战斗或对话。素材均为可编辑的 Three.js 基础几何，单位米、Y 轴向上。
 Read `ARCHITECTURE.md` before adding gameplay code so new work continues within the selected architecture.
 """,
         "package.json": json.dumps(package, ensure_ascii=False, indent=2) + "\n",
@@ -64,10 +70,10 @@ Read `ARCHITECTURE.md` before adding gameplay code so new work continues within 
         "index.html": """<!doctype html>
 <html lang="zh-CN">
   <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="icon" href="data:,"/><title>SceneOps Game</title></head>
-  <body><div id="hud">移动：WASD / 方向键　得分：<strong id="score">0</strong></div><div id="app"></div><script type="module" src="/src/main.ts"></script></body>
+  <body><div id="hud">移动：WASD / 方向键　互动：空格 / Enter　道具：<strong id="score">0</strong><span id="prompt"></span></div><div id="app"></div><script type="module" src="/src/main.ts"></script></body>
 </html>
 """,
-        "src/style.css": """html,body,#app{width:100%;height:100%;margin:0;overflow:hidden;background:#111827}body{font-family:system-ui,sans-serif;color:white}canvas{display:block}#hud{position:fixed;z-index:2;top:16px;left:16px;padding:10px 14px;border:1px solid #ffffff2e;border-radius:10px;background:#111827d9}
+        "src/style.css": """html,body,#app{width:100%;height:100%;margin:0;overflow:hidden;background:#111827}body{font-family:system-ui,sans-serif;color:white}canvas{display:block}#hud{position:fixed;z-index:2;top:16px;left:16px;padding:10px 14px;border:1px solid #ffffff2e;border-radius:10px;background:#111827d9}#prompt{display:block;margin-top:6px;color:#f6d37a}
 """,
         "src/vite-env.d.ts": "/// <reference types=\"vite/client\" />\n",
         ".gitignore": "node_modules/\ndist/\n.DS_Store\n",
@@ -92,8 +98,9 @@ new Game(host).start()
 """,
         "src/game/components/InputController.ts": """export class InputController {
   private readonly pressed = new Set<string>()
+  private interactRequested = false
   constructor() {
-    window.addEventListener('keydown', event => this.pressed.add(event.key.toLowerCase()))
+    window.addEventListener('keydown', event => { this.pressed.add(event.key.toLowerCase()); if (event.key === ' ' || event.key === 'Enter') this.interactRequested = true })
     window.addEventListener('keyup', event => this.pressed.delete(event.key.toLowerCase()))
   }
   direction() {
@@ -102,7 +109,8 @@ new Game(host).start()
     const length = Math.hypot(x, z) || 1
     return { x: x / length, z: z / length }
   }
-  reset() { this.pressed.clear() }
+  consumeInteract() { const requested = this.interactRequested; this.interactRequested = false; return requested }
+  reset() { this.pressed.clear(); this.interactRequested = false }
 }
 """,
         "src/game/components/ScoreCounter.ts": """export class ScoreCounter {
@@ -116,10 +124,11 @@ new Game(host).start()
 """,
         "src/game/objects/Player.ts": """import * as THREE from 'three'
 import type { InputController } from '../components/InputController'
+import { createCharacter } from '../sceneops-demo-assets'
 
 export class Player {
-  readonly mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x60a5fa }))
-  constructor(private readonly input: InputController) { this.mesh.position.y = 0.5 }
+  readonly mesh = createCharacter('player')
+  constructor(private readonly input: InputController) {}
   update(deltaSeconds: number) {
     const direction = this.input.direction()
     this.mesh.position.x = THREE.MathUtils.clamp(this.mesh.position.x + direction.x * 5 * deltaSeconds, -8, 8)
@@ -128,11 +137,12 @@ export class Player {
 }
 """,
         "src/game/objects/Collectible.ts": """import * as THREE from 'three'
+import { createCollectible } from '../sceneops-demo-assets'
 
 export class Collectible {
-  readonly mesh = new THREE.Mesh(new THREE.SphereGeometry(0.35, 18, 12), new THREE.MeshStandardMaterial({ color: 0xfbbf24 }))
+  readonly mesh = createCollectible()
   collected = false
-  constructor(x: number, z: number) { this.mesh.position.set(x, 0.45, z) }
+  constructor(x: number, z: number) { this.mesh.position.set(x, 0, z) }
   tryCollect(player: THREE.Vector3) {
     if (this.collected || this.mesh.position.distanceTo(player) >= 0.9) return false
     this.collected = true
@@ -141,12 +151,40 @@ export class Collectible {
   }
 }
 """,
+        "src/game/objects/KeyDoor.ts": """import * as THREE from 'three'
+import { createDoorMesh, keyDoorCanOpen, type DemoAsset, type DemoObject } from '../sceneops-demo-content'
+
+export class KeyDoor {
+  readonly mesh: THREE.Mesh
+  opened = false
+  private readonly closedRotation: number
+  constructor(readonly source: DemoObject, asset: DemoAsset) {
+    this.mesh = createDoorMesh(asset.recipe)
+    const {position_m,rotation_y_deg,scale} = source.transform
+    this.mesh.position.set(...position_m); this.mesh.scale.setScalar(scale)
+    this.mesh.rotation.y = THREE.MathUtils.degToRad(rotation_y_deg)
+    this.closedRotation = this.mesh.rotation.y
+    this.mesh.name = source.id; this.mesh.userData.sceneops_id = source.id
+  }
+  distanceTo(player: THREE.Vector3) { const at=this.mesh.position.clone(); at.y=player.y; return at.distanceTo(player) }
+  tryOpen(player: THREE.Vector3, inventory: ReadonlySet<string>) {
+    const behavior = this.source.behavior
+    if (!behavior || this.opened || !keyDoorCanOpen(player, this.mesh, inventory, behavior)) return false
+    this.opened = true; this.mesh.rotation.y = this.closedRotation + THREE.MathUtils.degToRad(behavior.open_angle_deg)
+    return true
+  }
+  reset() { this.opened = false; this.mesh.rotation.y = this.closedRotation }
+}
+""",
         "src/game/Game.ts": """import * as THREE from 'three'
 import { InputController } from './components/InputController'
 import { ScoreCounter } from './components/ScoreCounter'
 import { Collectible } from './objects/Collectible'
 import { Player } from './objects/Player'
+import { KeyDoor } from './objects/KeyDoor'
 import { createTestAdapter } from './sceneops-test'
+import { createDemoScenery } from './sceneops-demo-assets'
+import { demoContent } from './sceneops-demo-content'
 
 export class Game {
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -156,13 +194,19 @@ export class Game {
   private readonly player = new Player(this.input)
   private readonly collectibles = [[-4,-2],[0,2],[4,-1]].map(([x,z]) => new Collectible(x, z))
   private readonly score = new ScoreCounter(document.querySelector<HTMLElement>('#score')!)
+  private readonly prompt = document.querySelector<HTMLElement>('#prompt')!
+  private readonly doors = demoContent.objects.map(source => {
+    const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
+    if (!asset) throw new Error(`Missing asset version for ${source.id}`)
+    return new KeyDoor(source, asset)
+  })
   private last = performance.now()
   private test?: ReturnType<typeof createTestAdapter>
 
   constructor(private readonly host: HTMLElement) {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); this.host.append(this.renderer.domElement)
     this.scene.background = new THREE.Color(0x111827)
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.2), this.player.mesh)
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.2), this.player.mesh, createDemoScenery(), ...this.doors.map(item => item.mesh))
     this.collectibles.forEach(item => this.scene.add(item.mesh))
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 12), new THREE.MeshStandardMaterial({ color: 0x334155 }))
     floor.rotation.x = -Math.PI / 2; this.scene.add(floor); this.camera.position.set(0, 10, 11); this.camera.lookAt(0, 0, 0)
@@ -175,6 +219,7 @@ export class Game {
         this.collectibles.forEach((item, index) => {
           item.mesh.position.copy(spawns[index]); item.collected = false; item.mesh.visible = true
         })
+        this.doors.forEach(item => item.reset()); this.prompt.textContent = ''
         this.last = performance.now()
         this.host.dataset.playerX = spawn.x.toFixed(3); this.host.dataset.playerZ = spawn.z.toFixed(3)
       }, () => ({
@@ -184,6 +229,8 @@ export class Game {
           id: `collectible-${index + 1}`, x: item.mesh.position.x, y: item.mesh.position.y, z: item.mesh.position.z,
           collected: item.collected, visible: item.mesh.visible,
         })),
+        doors: this.doors.map(item => ({ id:item.source.id, open:item.opened, distance:item.distanceTo(this.player.mesh.position),
+          interactionDistance:item.source.behavior?.interaction_distance_m, colliderDimensions:item.mesh.userData.colliderDimensionsM })),
       }))
       window.__sceneopsTest = this.test.protocol
     }
@@ -194,6 +241,10 @@ export class Game {
     if (!this.test?.paused) {
       this.player.update(delta)
       this.collectibles.forEach(item => { if (item.tryCollect(this.player.mesh.position)) this.score.collect() })
+      const inventory = new Set(this.score.current() > 0 ? this.doors.flatMap(item => item.source.behavior ? [item.source.behavior.required_key_asset_id] : []) : [])
+      if (this.input.consumeInteract()) this.doors.forEach(item => item.tryOpen(this.player.mesh.position, inventory))
+      const nearby = this.doors.find(item => !item.opened && item.source.behavior && item.distanceTo(this.player.mesh.position) <= item.source.behavior.interaction_distance_m)
+      this.prompt.textContent = nearby ? (inventory.has(nearby.source.behavior!.required_key_asset_id) ? '按空格或 Enter 开门' : '需要钥匙') : ''
       this.test?.recordFrame(delta)
     }
     this.host.dataset.playerX = this.player.mesh.position.x.toFixed(3)
@@ -225,6 +276,8 @@ import { inputSystem } from './game/systems/inputSystem'
 import { movementSystem } from './game/systems/movementSystem'
 import { collectionSystem, resetScore, currentScore } from './game/systems/collectionSystem'
 import { createTestAdapter } from './game/sceneops-test'
+import { createDemoScenery } from './game/sceneops-demo-assets'
+import { doorSystem } from './game/systems/doorSystem'
 
 const host = document.querySelector<HTMLDivElement>('#app')
 const score = document.querySelector<HTMLElement>('#score')
@@ -234,10 +287,15 @@ const scoreOutput: HTMLElement = score
 const renderer = new THREE.WebGLRenderer({ antialias: true }); gameHost.append(renderer.domElement)
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x111827)
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100); camera.position.set(0, 10, 11); camera.lookAt(0, 0, 0)
-scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.2))
+scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 2.2), createDemoScenery())
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(18, 12), new THREE.MeshStandardMaterial({ color: 0x334155 })); floor.rotation.x = -Math.PI / 2; scene.add(floor)
 const game = createGameWorld(scene)
-const keys = new Set<string>(); addEventListener('keydown', e => keys.add(e.key.toLowerCase())); addEventListener('keyup', e => keys.delete(e.key.toLowerCase()))
+const input = { keys: new Set<string>(), interactRequested: false }
+addEventListener('keydown', e => {
+  input.keys.add(e.key.toLowerCase())
+  if (e.key === ' ' || e.key === 'Enter') input.interactRequested = true
+})
+addEventListener('keyup', e => input.keys.delete(e.key.toLowerCase()))
 const resize = () => { const width=gameHost.clientWidth,height=gameHost.clientHeight; renderer.setSize(width,height,false); camera.aspect=width/Math.max(height,1); camera.updateProjectionMatrix() }
 addEventListener('resize', resize); resize()
 let last = performance.now()
@@ -248,12 +306,14 @@ if (import.meta.env.MODE === 'sceneops-test') {
   const items = [...game.world.with('collectible', 'position', 'mesh')]
   const spawns = items.map(item => item.position.clone())
   test = createTestAdapter(() => {
-    keys.clear(); player.position.copy(spawn); player.velocity.set(0, 0, 0); resetScore(scoreOutput)
+    input.keys.clear(); input.interactRequested = false; player.position.copy(spawn); player.velocity.set(0, 0, 0); player.inventory?.clear(); resetScore(scoreOutput)
     items.forEach((item, index) => {
       item.position.copy(spawns[index]); item.mesh.visible = true
       if (!game.world.has(item)) game.world.add(item)
       scene.add(item.mesh)
     })
+    for (const door of game.world.with('keyDoor','mesh')) { door.keyDoor.open=false; door.mesh.rotation.y=door.keyDoor.closedRotation }
+    document.querySelector<HTMLElement>('#prompt')!.textContent=''
     last = performance.now()
     gameHost.dataset.playerX = spawn.x.toFixed(3); gameHost.dataset.playerZ = spawn.z.toFixed(3)
   }, () => ({
@@ -262,13 +322,17 @@ if (import.meta.env.MODE === 'sceneops-test') {
       id: `collectible-${index + 1}`, x: item.position.x, y: item.position.y, z: item.position.z,
       collected: !game.world.has(item), visible: item.mesh.parent === scene && item.mesh.visible,
     })),
+    doors: [...game.world.with('keyDoor','mesh')].map(item => ({ id:item.sceneObjectId, open:item.keyDoor.open,
+      distance:item.mesh.position.distanceTo(player.position), interactionDistance:item.keyDoor.behavior.interaction_distance_m,
+      colliderDimensions:item.mesh.userData.colliderDimensionsM })),
   }))
   window.__sceneopsTest = test.protocol
 }
 function frame(time: number) {
   const delta = Math.min((time-last)/1000, 0.05); last=time
   if (!test?.paused) {
-    inputSystem(game.world, keys); movementSystem(game.world, delta); collectionSystem(game.world, scoreOutput)
+    const interact = inputSystem(game.world, input); movementSystem(game.world, delta); collectionSystem(game.world, scoreOutput)
+    doorSystem(game.world, interact, document.querySelector<HTMLElement>('#prompt')!)
     test?.recordFrame(delta)
   }
   const [player] = game.world.with('player','position'); if (player) { gameHost.dataset.playerX=player.position.x.toFixed(3); gameHost.dataset.playerZ=player.position.z.toFixed(3) }
@@ -278,21 +342,35 @@ requestAnimationFrame(frame)
 """,
         "src/game/world.ts": """import { World } from 'miniplex'
 import * as THREE from 'three'
+import { createCharacter, createCollectible } from './sceneops-demo-assets'
+import { createDoorMesh, demoContent, type KeyDoorBehavior } from './sceneops-demo-content'
 
 export type Entity = {
   position?: THREE.Vector3
   velocity?: THREE.Vector3
-  mesh?: THREE.Mesh
+  mesh?: THREE.Object3D
   player?: true
   collectible?: true
+  itemId?: string
+  inventory?: Set<string>
+  sceneObjectId?: string
+  keyDoor?: { behavior: KeyDoorBehavior; closedRotation: number; open: boolean }
 }
 export function createGameWorld(scene: THREE.Scene) {
   const world = new World<Entity>()
-  const playerMesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshStandardMaterial({color:0x60a5fa})); playerMesh.position.y=.5; scene.add(playerMesh)
-  world.add({player:true,position:playerMesh.position,velocity:new THREE.Vector3(),mesh:playerMesh})
+  const playerMesh = createCharacter('player'); scene.add(playerMesh)
+  world.add({player:true,position:playerMesh.position,velocity:new THREE.Vector3(),mesh:playerMesh,inventory:new Set<string>()})
   for (const [x,z] of [[-4,-2],[0,2],[4,-1]]) {
-    const mesh = new THREE.Mesh(new THREE.SphereGeometry(.35,18,12), new THREE.MeshStandardMaterial({color:0xfbbf24})); mesh.position.set(x,.45,z); scene.add(mesh)
-    world.add({collectible:true,position:mesh.position,mesh})
+    const mesh = createCollectible(); mesh.position.set(x,0,z); scene.add(mesh)
+    world.add({collectible:true,position:mesh.position,mesh,itemId:demoContent.objects.find(item => item.behavior)?.behavior?.required_key_asset_id ?? 'key-item'})
+  }
+  for (const source of demoContent.objects) {
+    const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
+    if (!asset || !source.behavior) continue
+    const mesh = createDoorMesh(asset.recipe), {position_m,rotation_y_deg,scale} = source.transform
+    mesh.position.set(...position_m); mesh.scale.setScalar(scale); mesh.rotation.y=THREE.MathUtils.degToRad(rotation_y_deg)
+    mesh.name=source.id; mesh.userData.sceneops_id=source.id; scene.add(mesh)
+    world.add({sceneObjectId:source.id,position:mesh.position,mesh,keyDoor:{behavior:source.behavior,closedRotation:mesh.rotation.y,open:false}})
   }
   return { world }
 }
@@ -300,11 +378,17 @@ export function createGameWorld(scene: THREE.Scene) {
         "src/game/systems/inputSystem.ts": """import type { World } from 'miniplex'
 import type { Entity } from '../world'
 
-export function inputSystem(world: World<Entity>, keys: Set<string>) {
+export type InputState = { keys: Set<string>; interactRequested: boolean }
+
+export function inputSystem(world: World<Entity>, input: InputState) {
+  const keys = input.keys
   const x = Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'))
   const z = Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'))
   const length = Math.hypot(x,z)||1
   for (const entity of world.with('player','velocity')) entity.velocity.set(x/length*5,0,z/length*5)
+  const interact = input.interactRequested
+  input.interactRequested = false
+  return interact
 }
 """,
         "src/game/systems/movementSystem.ts": """import type { World } from 'miniplex'
@@ -324,11 +408,33 @@ let points = 0
 export function resetScore(output: HTMLElement) { points = 0; output.textContent = '0' }
 export function currentScore() { return points }
 export function collectionSystem(world: World<Entity>, output: HTMLElement) {
-  const [player] = world.with('player','position')
+  const [player] = world.with('player','position','inventory')
   if (!player) return
   for (const item of world.with('collectible','position','mesh')) {
-    if (item.position.distanceTo(player.position) < .9) { world.remove(item); item.mesh.removeFromParent(); output.textContent=String(++points) }
+    if (item.position.distanceTo(player.position) < .9) { if (item.itemId) player.inventory.add(item.itemId); world.remove(item); item.mesh.removeFromParent(); output.textContent=String(++points) }
   }
+}
+""",
+        "src/game/systems/doorSystem.ts": """import * as THREE from 'three'
+import type { World } from 'miniplex'
+import type { Entity } from '../world'
+import { keyDoorCanOpen } from '../sceneops-demo-content'
+
+export function doorSystem(world: World<Entity>, interact: boolean, prompt: HTMLElement) {
+  const [player] = world.with('player','position','inventory')
+  if (!player) return
+  let message = ''
+  for (const entity of world.with('keyDoor','mesh')) {
+    const door = entity.keyDoor
+    const distance = entity.mesh.position.distanceTo(player.position)
+    if (!door.open && distance <= door.behavior.interaction_distance_m) {
+      message = player.inventory.has(door.behavior.required_key_asset_id) ? '按空格或 Enter 开门' : '需要钥匙'
+    }
+    if (interact && !door.open && keyDoorCanOpen(player.position, entity.mesh, player.inventory, door.behavior)) {
+      door.open = true; entity.mesh.rotation.y = door.closedRotation + THREE.MathUtils.degToRad(door.behavior.open_angle_deg)
+    }
+  }
+  prompt.textContent = message
 }
 """,
     }
@@ -345,6 +451,42 @@ def template_files(architecture: str) -> dict[str, str]:
 class GameProjects:
     def __init__(self, repository):
         self.repository = repository
+
+    def materialize_demo_content(self, project_id: str, workspace_id: str, manifest: dict) -> dict:
+        """Write derived runtime inputs only after validating the registered project workspace."""
+        workspace = self.repository.get_project_demo_workspace(project_id, workspace_id)
+        root = self.repository._safe_existing_directory(Path(workspace["workspace_root"]))
+        if manifest.get("project_id") != project_id or manifest.get("workspace_id") != workspace_id:
+            raise GameProjectError("Demo 内容版本不属于当前项目工作区。")
+        source = root / "src" / "game" / "sceneops-demo-content.ts"
+        metadata = self.repository._real_directory(root / ".sceneops", create=True)
+        record = metadata / "demo-content.json"
+        if not source.parent.is_dir() or source.parent.is_symlink():
+            raise GameProjectError("游戏工程缺少可写入的 src/game 目录。")
+        self._replace_text(source, demo_content_source(manifest))
+        self._replace_text(record, json.dumps(manifest, ensure_ascii=False, allow_nan=False, indent=2) + "\n")
+        return {
+            "workspace_id": workspace_id,
+            "workspace_root": str(root),
+            "source_path": "src/game/sceneops-demo-content.ts",
+            "manifest_path": ".sceneops/demo-content.json",
+            "scene_id": manifest.get("scene_id"),
+            "scene_version": manifest.get("scene_version"),
+        }
+
+    @staticmethod
+    def _replace_text(path: Path, content: str) -> None:
+        if path.is_symlink() or (path.exists() and not path.is_file()):
+            raise GameProjectError(f"派生内容路径 {path.name} 不是普通文件。")
+        temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+        descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+                stream.write(content)
+            os.replace(temporary, path)
+        finally:
+            if temporary.exists() and not temporary.is_symlink():
+                temporary.unlink()
 
     def _root(self, project_id: str) -> Path:
         return self.repository._safe_existing_directory(Path(self.repository.get_folder_project(project_id).root_path))

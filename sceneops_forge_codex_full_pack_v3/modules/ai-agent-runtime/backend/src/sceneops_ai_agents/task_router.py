@@ -21,6 +21,11 @@ def create_agent_task_router(service):
     async def prepare(body: PrepareAgentTask):
         return require_service().prepare(body)
 
+    @router.post("/{task_id}/project-demo/update", response_model=AgentTaskRecord,
+                 operation_id="updateProjectDemo")
+    async def update_project_demo(task_id: str):
+        return require_service().update_project_demo(task_id)
+
     @router.get("", response_model=AgentTaskList)
     def list_tasks(project_id: str | None = Query(default=None)):
         return AgentTaskList(tasks=require_service().list(project_id))

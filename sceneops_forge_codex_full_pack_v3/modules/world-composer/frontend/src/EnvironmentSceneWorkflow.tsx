@@ -8,11 +8,14 @@ import {
   environmentSceneKey,
   type EnvironmentObject,
   type EnvironmentScene,
+  type DoorRecipe,
   type ProjectAssetEntry,
 } from './environment-client.ts';
 import './environment-scene.css';
 
 type TransformDraft = {x:string;y:string;z:string;rotation:string;scale:string};
+type RecipeDraft = {width:string;height:string;thickness:string;color:string;roughness:string;metalness:string};
+type BehaviorDraft = {requiredKey:string;distance:string;angle:string};
 type AssetSource = 'import' | 'create';
 const SCENE_SHARE_KEY = 'sceneops.environment.scene-share.v1';
 
@@ -29,10 +32,11 @@ function currentVersion(asset: ProjectAssetEntry, selected: number | undefined) 
     ?? asset.versions.at(-1)!;
 }
 
-export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset, onAgentEdit}: {
+export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset, onAgentEdit, onOpenBuiltinAssets}: {
   projectId: string; aiBusy?: boolean; onCreateAsset?: (source: AssetSource) => void;
   onImportAsset?: (file: File) => Promise<ProjectAssetEntry>;
   onAgentEdit?: (goal: string, selectedSceneObjectId: string) => Promise<void>;
+  onOpenBuiltinAssets?: () => void;
 }) {
   const cache = useQueryClient();
   const splitRoot = useRef<HTMLElement>(null);
@@ -54,6 +58,9 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
   const [dropNotice, setDropNotice] = useState('');
   const [agentGoal, setAgentGoal] = useState('');
   const [agentNotice, setAgentNotice] = useState('');
+  const [sourceNotice, setSourceNotice] = useState('');
+  const [recipeDraft, setRecipeDraft] = useState<RecipeDraft>({width:'1.2',height:'2.2',thickness:'.15',color:'#6B4F3A',roughness:'.75',metalness:'.05'});
+  const [behaviorDraft, setBehaviorDraft] = useState<BehaviorDraft>({requiredKey:'',distance:'2',angle:'90'});
   const [draft, setDraft] = useState<TransformDraft>({x:'0',y:'0',z:'0',rotation:'0',scale:'1'});
   const scene = sceneQuery.data;
   const objects = scene?.objects ?? [];
@@ -118,6 +125,27 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     setAssetName(value.title);
     setError('');
   }, onError:error => setError(error.message)});
+  const recipeSaved = useMutation({mutationFn:async () => {
+    if (!selectedAsset || !scene || !assetVersion?.recipe || assetVersion.source_version !== selectedAsset.current_version) throw new Error('请编辑共享资产的当前程序化版本。');
+    const values=[recipeDraft.width,recipeDraft.height,recipeDraft.thickness,recipeDraft.roughness,recipeDraft.metalness].map(Number);
+    if(values.some(value=>!Number.isFinite(value))) throw new Error('门尺寸与材质参数必须是有效数字。');
+    const recipe:DoorRecipe={kind:'door-v1',seed:0,width_m:values[0]!,height_m:values[1]!,thickness_m:values[2]!,material:{color_hex:recipeDraft.color,roughness:values[3]!,metalness:values[4]!}};
+    const saved=await environmentSceneClient.updateRecipe(projectId,selectedAsset.id,{expected_version:selectedAsset.current_version,recipe});
+    const referencing=(scene.objects??[]).filter(item=>item.asset_id===selectedAsset.id && item.asset_version===selectedAsset.current_version);
+    if(!referencing.length) return {saved,scene,affected:[] as string[]};
+    const rebound=await environmentSceneClient.rebindAsset(projectId,selectedAsset.id,{expected_version:scene.version,from_asset_version:selectedAsset.current_version,to_asset_version:saved.entry.current_version});
+    return {saved,scene:rebound.scene,affected:rebound.affected_object_ids};
+  },onSuccess:result=>{
+    cache.setQueryData<ProjectAssetEntry[]>(assetsKey,current=>(current??[]).map(item=>item.id===result.saved.entry.id?result.saved.entry:item));
+    updateScene(result.scene);setSelectedAssetVersions(current=>({...current,[result.saved.entry.id]:result.saved.entry.current_version}));
+    setSourceNotice(`源已保存${result.affected.length?` · 已更新 ${result.affected.length} 个引用实例及碰撞几何`:''}`);setError('');
+  },onError:error=>{setSourceNotice('');setError(error.message)}});
+  const behaviorSaved=useMutation({mutationFn:()=>{
+    if(!scene||!selectedSceneObject) throw new Error('请先选择门实例。');
+    const distance=Number(behaviorDraft.distance),angle=Number(behaviorDraft.angle);
+    if(!behaviorDraft.requiredKey||!Number.isFinite(distance)||!Number.isFinite(angle)) throw new Error('请选择钥匙并填写有效参数。');
+    return environmentSceneClient.updateKeyDoor(projectId,selectedSceneObject.id,{expected_version:scene.version,required_key_asset_id:behaviorDraft.requiredKey,interaction_distance_m:distance,open_angle_deg:angle});
+  },onSuccess:value=>{updateScene(value);setSourceNotice('源已保存 · 仅修改当前行为实例');setError('');},onError:error=>{setSourceNotice('');setError(error.message)}});
   const agentEdit = useMutation({mutationFn:async () => {
     if (!onAgentEdit || !selectedSceneObject) throw new Error('请先选择一个场景对象。');
     const goal = agentGoal.trim();
@@ -154,6 +182,8 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
       z:String(selectedSceneObject.transform.position_m[2]),rotation:String(selectedSceneObject.transform.rotation_y_deg),
       scale:String(selectedSceneObject.transform.scale)});
   }, [selectedSceneObject]);
+  useEffect(()=>{const behavior=selectedSceneObject?.behavior;if(!behavior)return;setBehaviorDraft({requiredKey:behavior.required_key_asset_id,distance:String(behavior.interaction_distance_m),angle:String(behavior.open_angle_deg)});},[selectedSceneObject?.id,selectedSceneObject?.behavior]);
+  useEffect(()=>{const recipe=assetVersion?.recipe;if(!recipe)return;const material=recipe.material??{color_hex:'#6B4F3A',roughness:.75,metalness:.05};setRecipeDraft({width:String(recipe.width_m),height:String(recipe.height_m),thickness:String(recipe.thickness_m),color:material.color_hex,roughness:String(material.roughness),metalness:String(material.metalness)});},[selectedAsset?.id,assetVersion?.source_version]);
   useEffect(() => { setAssetName(selectedAsset?.title ?? ''); }, [selectedAsset?.id, selectedAsset?.title]);
   useEffect(() => {
     if (selectedAssetId && !assets.some(item => item.id === selectedAssetId)) setSelectedAssetId(null);
@@ -163,7 +193,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
 
   if (sceneQuery.isPending || assetsQuery.isPending) return <p role="status" className="environment-loading">读取项目资产库与场景…</p>;
   if (sceneQuery.error || assetsQuery.error || !scene) return <p role="alert" className="environment-error">{(sceneQuery.error ?? assetsQuery.error)?.message ?? '场景读取失败'} <button onClick={() => {void sceneQuery.refetch();void assetsQuery.refetch();}}>重试</button></p>;
-  const busy = placed.isPending || dropped.isPending || transformed.isPending || removed.isPending || renamed.isPending || agentEdit.isPending || aiBusy;
+  const busy = placed.isPending || dropped.isPending || transformed.isPending || removed.isPending || renamed.isPending || recipeSaved.isPending || behaviorSaved.isPending || agentEdit.isPending || aiBusy;
   const profile = scene.scale_profile ?? {unit:'meter' as const,up_axis:'Y' as const,handedness:'right' as const,
     grid_step_m:1,reference_human_height_m:1.8,default_object_spacing_m:3};
   const beginAsset = (source: AssetSource) => {
@@ -185,7 +215,7 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
         onDragOver={event => {if (!onImportAsset || !Array.from(event.dataTransfer.types).includes('Files')) return;event.preventDefault();event.dataTransfer.dropEffect = busy ? 'none' : 'copy';}}
         onDragLeave={() => {dragDepth.current = Math.max(0, dragDepth.current - 1);if (!dragDepth.current) setDropActive(false);}}
         onDrop={event => {if (!onImportAsset) return;event.preventDefault();dragDepth.current = 0;setDropActive(false);setDropNotice('');if (busy) {setError('当前场景正在处理，请完成后再导入。');return;}const files=Array.from(event.dataTransfer.files);if (files.length) dropped.mutate(files);}}>
-        <EnvironmentScenePreview objects={objects} selectedId={selectedSceneId} onSelect={onSceneSelect}/>
+        <EnvironmentScenePreview objects={objects} assets={assets} selectedId={selectedSceneId} onSelect={onSceneSelect}/>
         {onImportAsset && <div className="environment-drop-hint" aria-live="polite">{dropped.isPending ? '正在导入、检查并加入场景…' : dropActive ? '松开以导入并加入场景' : '拖入 GLB / FBX 直接导入'}</div>}
       </div>
       {dropNotice && <p role="status" className="environment-import-notice">{dropNotice}</p>}
@@ -199,12 +229,19 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
       onKeyDown={event => {if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;event.preventDefault();setSceneShare(value => clampSceneShare(value + (event.key === 'ArrowUp' ? -4 : 4)));}}><span/></div>
     <section ref={assetPane} className="environment-assets-card" aria-label={selectedSceneObject ? '已选模型信息' : '项目资产'}>
       {error && <p role="alert" className="environment-error">{error}</p>}
+      {sourceNotice && <p role="status" className="environment-import-notice">{sourceNotice}</p>}
       {addingAsset && onCreateAsset && <section className="environment-new-asset" aria-label="添加资产方式"><div><strong>添加一个资产</strong><small>只带入项目背景和世界尺度，不带入上一个资产的对话。</small></div><div><button onClick={() => beginAsset('import')}>导入 GLB / FBX</button><button className="primary" onClick={() => beginAsset('create')}>新建模型</button><button aria-label="取消添加资产" onClick={() => setAddingAsset(false)}>取消</button></div></section>}
       {selectedSceneObject ? <section className="environment-inspector" aria-label={`${selectedSceneAsset?.title ?? selectedSceneObject.title} 场景模型信息`}>
         <header><div><button type="button" className="scene-back" onClick={() => setSelectedSceneId(null)}>← 项目资产</button><strong>{selectedSceneAsset?.title ?? selectedSceneObject.title}</strong><small>已选模型 · 场景实例 · {selectedSceneObject.id}</small></div><button disabled={busy} onClick={() => removed.mutate(selectedSceneObject)}>移出场景</button></header>
         <div className="environment-transform-grid">
           {([['x','X'],['y','Y'],['z','Z'],['rotation','旋转 Y°'],['scale','缩放']] as const).map(([key,label]) => <label key={key}>{label}<input type="number" step={key === 'rotation' ? 5 : .1} value={draft[key]} disabled={busy} onChange={event => setDraft(current => ({...current,[key]:event.target.value}))}/></label>)}
         </div><button className="primary" disabled={busy} onClick={() => transformed.mutate()}>应用变换</button>
+        {selectedSceneObject.behavior && <form className="asset-name-editor" onSubmit={event=>{event.preventDefault();behaviorSaved.mutate();}}>
+          <label>所需钥匙<select value={behaviorDraft.requiredKey} disabled={busy} onChange={event=>setBehaviorDraft(value=>({...value,requiredKey:event.target.value}))}>{assets.map(asset=><option key={asset.id} value={asset.id}>{asset.title}</option>)}</select></label>
+          <label>交互距离（米）<input type="number" min="0.01" max="20" step="0.1" value={behaviorDraft.distance} disabled={busy} onChange={event=>setBehaviorDraft(value=>({...value,distance:event.target.value}))}/></label>
+          <label>打开角度（°）<input type="number" min="-180" max="180" step="5" value={behaviorDraft.angle} disabled={busy} onChange={event=>setBehaviorDraft(value=>({...value,angle:event.target.value}))}/></label>
+          <button type="submit" disabled={busy}>保存行为参数</button>
+        </form>}
         {onAgentEdit && <form className="environment-agent-edit" onSubmit={event => {event.preventDefault();agentEdit.mutate();}}>
           <label>让主 Agent 修改这个对象<textarea rows={2} maxLength={8000} value={agentGoal} disabled={busy}
             placeholder="例如：把世界坐标 X 增加 1 米，保持旋转和缩放不变。"
@@ -225,12 +262,20 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
             aria-pressed={version.source_version === assetVersion.source_version}
             onClick={() => setSelectedAssetVersions(current => ({...current,[selectedAsset.id]:version.source_version}))}>v{version.source_version}</button>)}</div>
           <dl className="asset-metrics"><div><dt>尺寸</dt><dd>{assetVersion.dimensions_m.map(value => Number(value.toFixed(2))).join(' × ')} m</dd></div><div><dt>几何</dt><dd>{assetVersion.vertex_count} 顶点 · {assetVersion.triangle_count} 面</dd></div><div><dt>来源</dt><dd>{selectedAsset.source_type === 'generated' ? 'AI / Blender 新建' : '文件导入'}</dd></div></dl>
-          <div className="asset-file-links"><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'blend',assetVersion.source_version)}>.blend</a><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'preview',assetVersion.source_version)}>GLB</a><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'fbx',assetVersion.source_version)}>FBX</a></div>
+          {assetVersion.source_kind === 'procedural' && assetVersion.recipe ? <form className="environment-transform-grid" onSubmit={event=>{event.preventDefault();recipeSaved.mutate();}}>
+            <label>宽（米）<input type="number" min="0.2" max="10" step="0.1" value={recipeDraft.width} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,width:event.target.value}))}/></label>
+            <label>高（米）<input type="number" min="0.5" max="10" step="0.1" value={recipeDraft.height} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,height:event.target.value}))}/></label>
+            <label>厚（米）<input type="number" min="0.02" max="2" step="0.01" value={recipeDraft.thickness} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,thickness:event.target.value}))}/></label>
+            <label>颜色<input type="color" value={recipeDraft.color} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,color:event.target.value}))}/></label>
+            <label>粗糙度<input type="number" min="0" max="1" step="0.05" value={recipeDraft.roughness} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,roughness:event.target.value}))}/></label>
+            <label>金属度<input type="number" min="0" max="1" step="0.05" value={recipeDraft.metalness} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,metalness:event.target.value}))}/></label>
+            <button className="primary" type="submit" disabled={busy || assetVersion.source_version!==selectedAsset.current_version}>保存共享门配方</button>
+          </form> : <div className="asset-file-links"><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'blend',assetVersion.source_version)}>.blend</a><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'preview',assetVersion.source_version)}>GLB</a><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'fbx',assetVersion.source_version)}>FBX</a></div>}
           {selectedAsset.source_title && selectedAsset.source_title !== selectedAsset.title && <details className="asset-source-title"><summary>原始生成说明</summary><p>{selectedAsset.source_title}</p></details>}
           <div className="asset-editor-actions"><button type="button" className="primary" disabled={busy} onClick={() => placed.mutate({assetId:selectedAsset.id,version:assetVersion.source_version})}>加入场景</button><button type="button" onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button></div>
         </div>
       </section> : <>
-        <div className="environment-library-heading"><div><strong>项目资产</strong><small>{assets.length ? `${assets.length} 个资产 · 点击进入编辑` : '资产库为空'}</small></div>{onCreateAsset && <button onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button>}</div>
+        <div className="environment-library-heading"><div><strong>项目资产</strong><small>{assets.length ? `${assets.length} 个资产 · 点击进入编辑` : '资产库为空'}</small></div>{onOpenBuiltinAssets && <button onClick={onOpenBuiltinAssets}>内置资产</button>}{onCreateAsset && <button onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button>}</div>
         <div className="environment-library" role="list" aria-label="项目资产库">
           {assets.map(asset => { const version = currentVersion(asset, undefined); return <button type="button" role="listitem" className="environment-asset-card" key={asset.id} onClick={() => {setSelectedSceneId(null);setSelectedAssetId(asset.id);setAddingAsset(false);}}>
             <span className="asset-card-icon"><AssetGlyph/></span><strong>{asset.title}</strong><small>v{asset.current_version} · {Math.max(...version.dimensions_m).toFixed(1)}m</small>

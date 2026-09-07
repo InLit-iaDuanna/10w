@@ -7,7 +7,7 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
-from typing import Literal
+from typing import Literal, Optional, Union
 from uuid import uuid4
 
 from fastapi import APIRouter, Query
@@ -42,13 +42,55 @@ class EnvironmentTransform(EnvironmentModel):
         return value
 
 
+class KeyDoorBehavior(EnvironmentModel):
+    behavior_instance_id: str = Field(min_length=1)
+    definition_id: Literal["KeyDoor@1"] = "KeyDoor@1"
+    required_key_asset_id: str = Field(min_length=1)
+    interaction_distance_m: float = Field(default=2.0, gt=0, le=20)
+    open_angle_deg: float = Field(default=90.0, ge=-180, le=180)
+
+
+class BehaviorParameterDescriptor(EnvironmentModel):
+    path: str
+    label: str
+    value_type: Literal["number", "asset-reference"]
+    unit: Literal["meter", "degree", "asset-id"]
+    default: Union[float, str, None] = None
+    minimum: Optional[float] = None
+    maximum: Optional[float] = None
+
+
+class KeyDoorBehaviorDefinition(EnvironmentModel):
+    definition_id: Literal["KeyDoor@1"] = "KeyDoor@1"
+    parameters: list[BehaviorParameterDescriptor]
+
+
+def key_door_behavior_definition() -> KeyDoorBehaviorDefinition:
+    return KeyDoorBehaviorDefinition(parameters=[
+        BehaviorParameterDescriptor(
+            path="required_key_asset_id", label="所需钥匙", value_type="asset-reference",
+            unit="asset-id",
+        ),
+        BehaviorParameterDescriptor(
+            path="interaction_distance_m", label="交互距离", value_type="number",
+            unit="meter", default=2.0, minimum=0, maximum=20,
+        ),
+        BehaviorParameterDescriptor(
+            path="open_angle_deg", label="打开角度", value_type="number",
+            unit="degree", default=90.0, minimum=-180, maximum=180,
+        ),
+    ])
+
+
 class EnvironmentObject(EnvironmentModel):
     id: str
     asset_id: str
     asset_version: int = Field(ge=1)
+    asset_version_id: Optional[str] = None
     source_asset_id: str
     title: str
     transform: EnvironmentTransform
+    behavior: Optional[KeyDoorBehavior] = None
 
 
 class EnvironmentMessage(EnvironmentModel):
@@ -91,6 +133,24 @@ class ManualPlacementRequest(EnvironmentModel):
 class TransformObjectRequest(EnvironmentModel):
     expected_version: int = Field(ge=0)
     transform: EnvironmentTransform
+
+
+class UpdateKeyDoorBehaviorRequest(EnvironmentModel):
+    expected_version: int = Field(ge=0)
+    required_key_asset_id: str = Field(min_length=1)
+    interaction_distance_m: float = Field(default=2.0, gt=0, le=20)
+    open_angle_deg: float = Field(default=90.0, ge=-180, le=180)
+
+
+class RebindAssetVersionRequest(EnvironmentModel):
+    expected_version: int = Field(ge=0)
+    from_asset_version: int = Field(ge=1)
+    to_asset_version: int = Field(ge=1)
+
+
+class AssetVersionRebindResult(EnvironmentModel):
+    scene: "EnvironmentScene"
+    affected_object_ids: list[str]
 
 
 class RemoveObjectRequest(EnvironmentModel):
@@ -267,9 +327,11 @@ class EnvironmentSceneService:
         except LookupError as error:
             raise EnvironmentSceneError("ASSET_NOT_FOUND", "资产不在当前项目资产库。", status_code=404) from error
         selected = version or entry.current_version
-        if not any(item.source_version == selected for item in entry.versions):
+        selected_version = next((item for item in entry.versions
+                                 if item.source_version == selected), None)
+        if selected_version is None:
             raise EnvironmentSceneError("ASSET_VERSION_NOT_FOUND", "资产库中没有所选版本。", status_code=404)
-        return entry, selected
+        return entry, selected_version
 
     def add_object(self, project_id: str, request: ManualPlacementRequest) -> EnvironmentScene:
         with self._lock:
@@ -280,7 +342,8 @@ class EnvironmentSceneService:
             placed = EnvironmentObject(
                 id="sobj_" + uuid4().hex,
                 asset_id=entry.id,
-                asset_version=version,
+                asset_version=version.source_version,
+                asset_version_id=version.asset_version_id,
                 source_asset_id=entry.source_asset_id,
                 title=entry.title,
                 transform=EnvironmentTransform(
@@ -300,6 +363,63 @@ class EnvironmentSceneService:
             objects = [item.model_copy(update={"transform": request.transform})
                        if item.id == object_id else item for item in scene.objects]
             return self._save(scene.model_copy(update={"objects": objects}), scene.version)
+
+    def update_key_door_behavior(self, project_id: str, object_id: str,
+                                 request: UpdateKeyDoorBehaviorRequest) -> EnvironmentScene:
+        with self._lock:
+            scene = self.get(project_id)
+            if scene.version != request.expected_version:
+                raise EnvironmentSceneError(
+                    "SCENE_VERSION_CONFLICT", "场景已更新，请重新读取后再调整门行为。"
+                )
+            current = next((item for item in scene.objects if item.id == object_id), None)
+            if current is None:
+                raise EnvironmentSceneError(
+                    "SCENE_OBJECT_NOT_FOUND", "场景对象不存在。", status_code=404
+                )
+            try:
+                self.catalog.get(project_id, request.required_key_asset_id)
+            except LookupError as error:
+                raise EnvironmentSceneError(
+                    "KEY_ASSET_NOT_FOUND", "所需钥匙不在当前项目资产库。", status_code=404
+                ) from error
+            behavior = KeyDoorBehavior(
+                behavior_instance_id=(current.behavior.behavior_instance_id
+                                      if current.behavior else "behavior_" + uuid4().hex),
+                required_key_asset_id=request.required_key_asset_id,
+                interaction_distance_m=request.interaction_distance_m,
+                open_angle_deg=request.open_angle_deg,
+            )
+            objects = [item.model_copy(update={"behavior": behavior})
+                       if item.id == object_id else item for item in scene.objects]
+            return self._save(scene.model_copy(update={"objects": objects}), scene.version)
+
+    def rebind_asset_version(self, project_id: str, asset_id: str,
+                             request: RebindAssetVersionRequest) -> AssetVersionRebindResult:
+        with self._lock:
+            scene = self.get(project_id)
+            if scene.version != request.expected_version:
+                raise EnvironmentSceneError(
+                    "SCENE_VERSION_CONFLICT", "场景已更新，请重新读取后再更新共享资产。"
+                )
+            entry, target = self._asset_version(project_id, asset_id, request.to_asset_version)
+            self._asset_version(project_id, asset_id, request.from_asset_version)
+            affected = [item.id for item in scene.objects
+                        if item.asset_id == entry.id
+                        and item.asset_version == request.from_asset_version]
+            if not affected:
+                raise EnvironmentSceneError(
+                    "ASSET_VERSION_NOT_REFERENCED", "当前场景没有引用待更新的资产版本。"
+                )
+            affected_set = set(affected)
+            objects = [item.model_copy(update={
+                "asset_version": target.source_version,
+                "asset_version_id": target.asset_version_id,
+                "source_asset_id": entry.source_asset_id,
+                "title": entry.title,
+            }) if item.id in affected_set else item for item in scene.objects]
+            saved = self._save(scene.model_copy(update={"objects": objects}), scene.version)
+            return AssetVersionRebindResult(scene=saved, affected_object_ids=affected)
 
     def remove_object(self, project_id: str, object_id: str,
                       request: RemoveObjectRequest) -> EnvironmentScene:
@@ -403,7 +523,8 @@ class EnvironmentSceneService:
                 created.append(EnvironmentObject(
                     id="sobj_" + uuid4().hex,
                     asset_id=entry.id,
-                    asset_version=version,
+                    asset_version=version.source_version,
+                    asset_version_id=version.asset_version_id,
                     source_asset_id=entry.source_asset_id,
                     title=entry.title,
                     transform=EnvironmentTransform(
@@ -432,6 +553,11 @@ class EnvironmentSceneService:
 def create_environment_scene_router(service: EnvironmentSceneService) -> APIRouter:
     router = APIRouter(prefix="/api/environment-scenes", tags=["environment-scenes"])
 
+    @router.get("/behavior-definitions/key-door", response_model=KeyDoorBehaviorDefinition,
+                operation_id="getKeyDoorBehaviorDefinition")
+    def get_key_door_behavior_definition():
+        return key_door_behavior_definition()
+
     @router.get("/{project_id}", response_model=EnvironmentScene, operation_id="getEnvironmentScene")
     def get_scene(project_id: str, version: int | None = Query(default=None, ge=0)):
         return service.get(project_id, version)
@@ -445,6 +571,18 @@ def create_environment_scene_router(service: EnvironmentSceneService) -> APIRout
                 operation_id="transformEnvironmentObject")
     def transform_object(project_id: str, object_id: str, request: TransformObjectRequest):
         return service.transform_object(project_id, object_id, request)
+
+    @router.put("/{project_id}/objects/{object_id}/key-door", response_model=EnvironmentScene,
+                operation_id="updateEnvironmentKeyDoorBehavior")
+    def update_key_door_behavior(project_id: str, object_id: str,
+                                 request: UpdateKeyDoorBehaviorRequest):
+        return service.update_key_door_behavior(project_id, object_id, request)
+
+    @router.put("/{project_id}/asset-bindings/{asset_id}", response_model=AssetVersionRebindResult,
+                operation_id="rebindEnvironmentAssetVersion")
+    def rebind_asset_version(project_id: str, asset_id: str,
+                             request: RebindAssetVersionRequest):
+        return service.rebind_asset_version(project_id, asset_id, request)
 
     @router.delete("/{project_id}/objects/{object_id}", response_model=EnvironmentScene,
                    operation_id="removeEnvironmentObject")

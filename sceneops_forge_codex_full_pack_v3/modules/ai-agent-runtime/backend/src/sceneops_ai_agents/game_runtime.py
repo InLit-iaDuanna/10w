@@ -8,7 +8,7 @@ import signal
 import sys
 
 from sceneops_harness import HarnessError
-from .task_models import GameExecutionRun, GameProjectExecution, now
+from .task_models import GameBuildCandidate, GameExecutionRun, GameProjectExecution, now
 
 MAX_LOG_BYTES = 262144
 VITE_CONFIG = """export default {
@@ -36,10 +36,20 @@ class GameProjectRuntime:
         self.previews = {}
         self.locks = {}
         with self.records.connect() as connection:
-            connection.execute('''CREATE TABLE IF NOT EXISTS game_project_runs (
-                id TEXT PRIMARY KEY, project_id TEXT NOT NULL, card_id TEXT NOT NULL,
-                task_id TEXT NOT NULL, workspace_root TEXT NOT NULL, branch TEXT NOT NULL,
-                operation TEXT NOT NULL, body TEXT NOT NULL, updated_at TEXT NOT NULL)''')
+            self._migrate_run_table(connection)
+            connection.executescript('''
+                CREATE TABLE IF NOT EXISTS game_build_candidates (
+                    id TEXT PRIMARY KEY, project_id TEXT NOT NULL, workspace_id TEXT NOT NULL,
+                    sequence INTEGER NOT NULL, task_id TEXT NOT NULL, build_run_id TEXT NOT NULL,
+                    body TEXT NOT NULL, updated_at TEXT NOT NULL,
+                    UNIQUE(project_id, workspace_id, sequence));
+                CREATE INDEX IF NOT EXISTS game_build_candidates_scope
+                    ON game_build_candidates(project_id, workspace_id, sequence);
+                CREATE TABLE IF NOT EXISTS game_workspace_playables (
+                    project_id TEXT NOT NULL, workspace_id TEXT NOT NULL,
+                    latest_sequence INTEGER NOT NULL, current_candidate_id TEXT,
+                    PRIMARY KEY(project_id, workspace_id));
+            ''')
             rows = connection.execute("SELECT id,body FROM game_project_runs").fetchall()
             for run_id, body in rows:
                 run = GameExecutionRun.model_validate_json(body)
@@ -49,11 +59,48 @@ class GameProjectRuntime:
                         (run.model_dump_json(), now().isoformat(), run_id))
 
     @staticmethod
-    def key(project_id, card_id):
-        return project_id, card_id
+    def _migrate_run_table(connection):
+        columns = connection.execute('PRAGMA table_info(game_project_runs)').fetchall()
+        if not columns:
+            connection.execute('''CREATE TABLE game_project_runs (
+                id TEXT PRIMARY KEY, project_id TEXT NOT NULL, workspace_id TEXT NOT NULL,
+                card_id TEXT, task_id TEXT NOT NULL, workspace_root TEXT NOT NULL, branch TEXT,
+                operation TEXT NOT NULL, body TEXT NOT NULL, updated_at TEXT NOT NULL)''')
+            return
+        by_name = {column[1]: column for column in columns}
+        if ('workspace_id' in by_name and not by_name['card_id'][3]
+                and not by_name['branch'][3]):
+            return
+        connection.execute('ALTER TABLE game_project_runs RENAME TO game_project_runs_legacy')
+        connection.execute('''CREATE TABLE game_project_runs (
+            id TEXT PRIMARY KEY, project_id TEXT NOT NULL, workspace_id TEXT NOT NULL,
+            card_id TEXT, task_id TEXT NOT NULL, workspace_root TEXT NOT NULL, branch TEXT,
+            operation TEXT NOT NULL, body TEXT NOT NULL, updated_at TEXT NOT NULL)''')
+        for row in connection.execute('''SELECT id,project_id,card_id,task_id,workspace_root,branch,
+                                                operation,body,updated_at
+                                         FROM game_project_runs_legacy ORDER BY rowid'''):
+            run = GameExecutionRun.model_validate_json(row[7])
+            connection.execute('''INSERT INTO game_project_runs
+                (id,project_id,workspace_id,card_id,task_id,workspace_root,branch,operation,body,updated_at)
+                VALUES(?,?,?,?,?,?,?,?,?,?)''',
+                (run.id, run.project_id, run.workspace_id, run.card_id, run.task_id,
+                 run.workspace_root, run.branch, run.operation, run.model_dump_json(), row[8]))
+        connection.execute('DROP TABLE game_project_runs_legacy')
 
-    def _lock(self, project_id, card_id):
-        return self.locks.setdefault(self.key(project_id, card_id), asyncio.Lock())
+    @staticmethod
+    def workspace_id(task):
+        grant = task.grant
+        workspace_id = getattr(grant, 'workspace_id', None) or grant.card_id
+        if not workspace_id:
+            raise HarnessError('GAME_WORKSPACE_ID_REQUIRED', '游戏工程缺少已登记的工作区身份。')
+        return workspace_id
+
+    @staticmethod
+    def key(project_id, workspace_id):
+        return project_id, workspace_id
+
+    def _lock(self, project_id, workspace_id):
+        return self.locks.setdefault(self.key(project_id, workspace_id), asyncio.Lock())
 
     def _validate_vite_config(self):
         if (self.vite_config.is_symlink() or not self.vite_config.is_file()
@@ -63,19 +110,97 @@ class GameProjectRuntime:
     def _save(self, run):
         with self.records.connect() as connection:
             connection.execute('''INSERT INTO game_project_runs
-                (id,project_id,card_id,task_id,workspace_root,branch,operation,body,updated_at)
-                VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET body=excluded.body,updated_at=excluded.updated_at''',
-                (run.id, run.project_id, run.card_id, run.task_id, run.workspace_root, run.branch,
-                 run.operation, run.model_dump_json(), now().isoformat()))
+                (id,project_id,workspace_id,card_id,task_id,workspace_root,branch,operation,body,updated_at)
+                VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET body=excluded.body,updated_at=excluded.updated_at''',
+                (run.id, run.project_id, run.workspace_id, run.card_id, run.task_id,
+                 run.workspace_root, run.branch, run.operation, run.model_dump_json(), now().isoformat()))
         return run
 
-    def _latest(self, project_id, card_id, operation, *, task_id=None):
+    def _latest(self, project_id, workspace_id, operation, *, task_id=None):
         with self.records.connect() as connection:
             row = connection.execute('''SELECT body FROM game_project_runs
-                WHERE project_id=? AND card_id=? AND operation=? AND (? IS NULL OR task_id=?)
+                WHERE project_id=? AND workspace_id=? AND operation=? AND (? IS NULL OR task_id=?)
                 ORDER BY rowid DESC LIMIT 1''',
-                (project_id, card_id, operation, task_id, task_id)).fetchone()
+                (project_id, workspace_id, operation, task_id, task_id)).fetchone()
         return GameExecutionRun.model_validate_json(row[0]) if row else None
+
+    def _run_by_id(self, project_id, workspace_id, run_id):
+        with self.records.connect() as connection:
+            row = connection.execute('''SELECT body FROM game_project_runs
+                WHERE id=? AND project_id=? AND workspace_id=?''',
+                (run_id, project_id, workspace_id)).fetchone()
+        return GameExecutionRun.model_validate_json(row[0]) if row else None
+
+    def _begin_candidate(self, run):
+        with self.records.connect() as connection:
+            connection.execute('BEGIN IMMEDIATE')
+            row = connection.execute('''SELECT latest_sequence,current_candidate_id
+                FROM game_workspace_playables WHERE project_id=? AND workspace_id=?''',
+                (run.project_id, run.workspace_id)).fetchone()
+            sequence = (row[0] if row else 0) + 1
+            task = self.records.get(run.task_id)
+            materialization = task.observations.get('demo_materialization', {})
+            candidate = GameBuildCandidate(project_id=run.project_id, workspace_id=run.workspace_id,
+                task_id=run.task_id, sequence=sequence, build_run_id=run.id,
+                source_version=materialization.get('source_version', {}),
+                scene_id=materialization.get('scene_id'), scene_version=materialization.get('scene_version'),
+                asset_versions=materialization.get('asset_versions', []))
+            connection.execute('''INSERT INTO game_build_candidates
+                (id,project_id,workspace_id,sequence,task_id,build_run_id,body,updated_at)
+                VALUES(?,?,?,?,?,?,?,?)''',
+                (candidate.id, candidate.project_id, candidate.workspace_id, candidate.sequence,
+                 candidate.task_id, candidate.build_run_id, candidate.model_dump_json(),
+                 candidate.updated_at.isoformat()))
+            connection.execute('''INSERT INTO game_workspace_playables
+                (project_id,workspace_id,latest_sequence,current_candidate_id) VALUES(?,?,?,?)
+                ON CONFLICT(project_id,workspace_id) DO UPDATE SET latest_sequence=excluded.latest_sequence''',
+                (run.project_id, run.workspace_id, sequence, row[1] if row else None))
+        run.candidate_id, run.candidate_sequence = candidate.id, sequence
+        return candidate
+
+    def _finish_candidate(self, run, candidate):
+        with self.records.connect() as connection:
+            connection.execute('BEGIN IMMEDIATE')
+            row = connection.execute('''SELECT latest_sequence,current_candidate_id
+                FROM game_workspace_playables WHERE project_id=? AND workspace_id=?''',
+                (candidate.project_id, candidate.workspace_id)).fetchone()
+            current = row[0] == candidate.sequence
+            if run.status == 'succeeded' and run.passed and run.artifact_path:
+                status = 'succeeded' if current else 'superseded'
+                if current:
+                    connection.execute('''UPDATE game_workspace_playables SET current_candidate_id=?
+                        WHERE project_id=? AND workspace_id=? AND latest_sequence=?''',
+                        (candidate.id, candidate.project_id, candidate.workspace_id, candidate.sequence))
+            else:
+                status = 'failed'
+            candidate = candidate.model_copy(update={'status': status,
+                'artifact_path': run.artifact_path, 'failure_code': run.failure_code, 'updated_at': now()})
+            connection.execute('''UPDATE game_build_candidates SET body=?,updated_at=?
+                WHERE id=? AND project_id=? AND workspace_id=?''',
+                (candidate.model_dump_json(), candidate.updated_at.isoformat(), candidate.id,
+                 candidate.project_id, candidate.workspace_id))
+        return candidate
+
+    def _candidate_snapshot(self, project_id, workspace_id):
+        with self.records.connect() as connection:
+            rows = connection.execute('''SELECT body FROM game_build_candidates
+                WHERE project_id=? AND workspace_id=? ORDER BY sequence''',
+                (project_id, workspace_id)).fetchall()
+            state = connection.execute('''SELECT current_candidate_id FROM game_workspace_playables
+                WHERE project_id=? AND workspace_id=?''', (project_id, workspace_id)).fetchone()
+        candidates = [GameBuildCandidate.model_validate_json(row[0]) for row in rows]
+        latest = candidates[-1] if candidates else None
+        current_id = state[0] if state else None
+        current = next((item for item in candidates if item.id == current_id), None)
+        if latest is None:
+            update_state = 'idle'
+        elif latest.status == 'building':
+            update_state = 'building'
+        elif latest.status == 'failed':
+            update_state = 'failed'
+        else:
+            update_state = 'updated'
+        return candidates, latest, current, update_state
 
     @staticmethod
     def _validate_root(root):
@@ -178,22 +303,26 @@ class GameProjectRuntime:
 
     async def execute(self, task, operation):
         grant = task.grant
+        workspace_id = self.workspace_id(task)
         root = self._validate_root(grant.workspace_root)
-        async with self._lock(task.project_id, grant.card_id):
+        async with self._lock(task.project_id, workspace_id):
             if operation == 'preview_start':
                 try:
                     run = await self._start_preview(task, root)
                 except HarnessError as error:
                     run = GameExecutionRun(operation=operation, project_id=task.project_id,
-                        card_id=grant.card_id, task_id=task.id, workspace_root=str(root), branch=grant.branch,
+                        workspace_id=workspace_id, card_id=grant.card_id, task_id=task.id,
+                        workspace_root=str(root), branch=grant.branch,
                         status='failed', passed=False, failure_code=error.code, finished_at=now(), log=str(error) + '\n')
                     self._save(run)
             elif operation == 'preview_stop':
                 run = await self._stop_preview(task, root)
             else:
                 run = GameExecutionRun(operation=operation, project_id=task.project_id,
-                    card_id=grant.card_id, task_id=task.id, workspace_root=str(root), branch=grant.branch,
+                    workspace_id=workspace_id, card_id=grant.card_id, task_id=task.id,
+                    workspace_root=str(root), branch=grant.branch,
                     build_kind='test' if operation == 'build_test' else 'delivery')
+                candidate = self._begin_candidate(run) if operation == 'build' else None
                 self._save(run)
                 try:
                     if operation == 'prepare':
@@ -202,7 +331,8 @@ class GameProjectRuntime:
                             self._append_log(run, 'pnpm is not available in the application environment.\n')
                             code = None
                         else:
-                            args = [self.pnpm_executable, 'install', '--ignore-scripts']
+                            args = [self.pnpm_executable, 'install', '--ignore-scripts',
+                                    '--ignore-workspace', '--no-lockfile']
                             if (root / 'pnpm-lock.yaml').is_file():
                                 args.append('--frozen-lockfile')
                             code = await self._command(run, args, timeout=600)
@@ -249,17 +379,28 @@ class GameProjectRuntime:
                     run.status, run.passed, run.failure_code, run.finished_at = (
                         'interrupted', False, 'COMMAND_CANCELLED', now())
                     self._save(run)
+                    if candidate is not None:
+                        self._finish_candidate(run, candidate)
                     raise
                 run.exit_code, run.passed, run.finished_at = code, passed, now()
                 run.status = 'succeeded' if passed else 'failed'
                 if not passed and run.failure_code is None:
                     run.failure_code = 'COMMAND_FAILED' if code is not None else 'COMMAND_NOT_STARTED'
                 self._save(run)
+                if candidate is not None:
+                    self._finish_candidate(run, candidate)
             return self.evidence(task, run)
 
     def _current_build(self, task, *, kind='delivery'):
-        run = self._latest(task.project_id, task.grant.card_id, 'build_test' if kind == 'test' else 'build')
-        if not run or run.status != 'succeeded' or not run.passed or run.source_stale:
+        workspace_id = self.workspace_id(task)
+        if kind == 'delivery':
+            _, _, current, _ = self._candidate_snapshot(task.project_id, workspace_id)
+            run = (self._run_by_id(task.project_id, workspace_id, current.build_run_id)
+                   if current is not None else None)
+        else:
+            run = self._latest(task.project_id, workspace_id, 'build_test')
+        if (not run or run.status != 'succeeded' or not run.passed
+                or (kind == 'test' and run.source_stale)):
             raise HarnessError('TEST_BUILD_REQUIRED' if kind == 'test' else 'CURRENT_BUILD_REQUIRED',
                 '请先让当前源码通过对应类型的构建，再启动预览。')
         if run.build_kind != kind:
@@ -273,7 +414,8 @@ class GameProjectRuntime:
     async def _start_preview(self, task, root, *, kind='delivery', key=None):
         build = self._current_build(task, kind=kind)
         self._validate_output(root, required=True)
-        key = key or self.key(task.project_id, task.grant.card_id)
+        workspace_id = self.workspace_id(task)
+        key = key or self.key(task.project_id, workspace_id)
         active = self.previews.get(key)
         if (active and active['process'].returncode is None and not active['run'].source_stale
                 and active['run'].build_run_id == build.id):
@@ -281,7 +423,8 @@ class GameProjectRuntime:
         if active:
             await self._stop_active(key, status='stopped')
         run = GameExecutionRun(operation='preview_test' if kind == 'test' else 'preview_start', project_id=task.project_id,
-            card_id=task.grant.card_id, task_id=task.id, workspace_root=str(root), branch=task.grant.branch,
+            workspace_id=workspace_id, card_id=task.grant.card_id, task_id=task.id,
+            workspace_root=str(root), branch=task.grant.branch,
             build_run_id=build.id, build_kind=kind)
         self._save(run)
         script = Path(__file__).with_name('preview_server.py').resolve()
@@ -347,22 +490,25 @@ class GameProjectRuntime:
         return run
 
     async def _stop_preview(self, task, root):
-        key = self.key(task.project_id, task.grant.card_id)
+        workspace_id = self.workspace_id(task)
+        key = self.key(task.project_id, workspace_id)
         stopped = await self._stop_active(key, status='stopped')
         run = GameExecutionRun(operation='preview_stop', project_id=task.project_id,
-            card_id=task.grant.card_id, task_id=task.id, workspace_root=str(root), branch=task.grant.branch,
+            workspace_id=workspace_id, card_id=task.grant.card_id, task_id=task.id,
+            workspace_root=str(root), branch=task.grant.branch,
             status='succeeded', passed=True, finished_at=now(), log='Owned preview stopped.\n' if stopped else 'No owned preview was running.\n')
         return self._save(run)
 
     async def stop_task_preview(self, task):
-        key = self.key(task.project_id, task.authorization_card.card_id)
+        key = self.key(task.project_id, self.workspace_id(task))
         async with self._lock(*key):
             return await self._stop_active(key, status='stopped')
 
     def snapshot(self, task):
         grant = task.grant
+        workspace_id = self.workspace_id(task)
         root = self._validate_root(grant.workspace_root)
-        key = self.key(task.project_id, grant.card_id)
+        key = self.key(task.project_id, workspace_id)
         active = self.previews.get(key)
         if active and active['process'].returncode is not None:
             run = active['run']
@@ -370,16 +516,27 @@ class GameProjectRuntime:
             run.exit_code = active['process'].returncode
             self._save(run)
             self.previews.pop(key, None)
-        return GameProjectExecution(project_id=task.project_id, card_id=grant.card_id,
+        candidates, latest_candidate, current_candidate, update_state = self._candidate_snapshot(
+            task.project_id, workspace_id)
+        if task.authorization_card.task_profile == 'project-demo':
+            update = task.observations.get('demo_update', {})
+            if task.status in ('queued', 'running'):
+                update_state = 'building'
+            elif isinstance(update, dict) and update.get('status') == 'failed':
+                update_state = 'failed'
+        return GameProjectExecution(project_id=task.project_id, workspace_id=workspace_id,
+            card_id=grant.card_id,
             workspace_root=str(root), branch=grant.branch, dependencies_ready=self.dependencies_ready(root),
-            dependency=self._latest(task.project_id, grant.card_id, 'prepare'),
-            check=self._latest(task.project_id, grant.card_id, 'check'),
-            build=self._latest(task.project_id, grant.card_id, 'build'),
-            test_build=self._latest(task.project_id, grant.card_id, 'build_test', task_id=task.id),
-            interaction=self._latest(task.project_id, grant.card_id, 'interact', task_id=task.id),
-            observation=self._latest(task.project_id, grant.card_id, 'observe'),
+            dependency=self._latest(task.project_id, workspace_id, 'prepare'),
+            check=self._latest(task.project_id, workspace_id, 'check'),
+            build=self._latest(task.project_id, workspace_id, 'build'),
+            test_build=self._latest(task.project_id, workspace_id, 'build_test', task_id=task.id),
+            interaction=self._latest(task.project_id, workspace_id, 'interact', task_id=task.id),
+            observation=self._latest(task.project_id, workspace_id, 'observe'),
             preview=(active['run'] if active and active['process'].returncode is None
-                     else self._latest(task.project_id, grant.card_id, 'preview_start')))
+                     else self._latest(task.project_id, workspace_id, 'preview_start')),
+            build_candidates=candidates, latest_candidate=latest_candidate,
+            current_playable_candidate=current_candidate, update_state=update_state)
 
     def evidence(self, task, run):
         snapshot = self.snapshot(task)

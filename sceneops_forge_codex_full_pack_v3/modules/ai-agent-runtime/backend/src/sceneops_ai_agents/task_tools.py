@@ -13,7 +13,7 @@ from engine_unity import PrototypeSpec, PrototypePlayPayload
 
 MUTATIONS = {"blender.asset.create", "blender.asset.export", "unity.asset.import", "codex.task.execute"}
 MUTATIONS.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prototype.capture', 'unity.prototype.verify'})
-MUTATIONS.add('code.file.write')
+MUTATIONS.update({'code.file.write', 'code.demo_content.materialize'})
 MUTATIONS.update({'code.dependencies.prepare', 'code.project.check', 'code.project.build',
                   'code.preview.start', 'code.preview.stop'})
 MUTATIONS.add('environment.object.transform')
@@ -31,6 +31,7 @@ INPUT_MODELS['agent.history.read'] = HistoryReadInput
 INPUT_MODELS['code.browser.observe'] = EmptyActionInput
 INPUT_MODELS['code.browser.interact'] = BrowserInteractionRequest
 INPUT_MODELS['code.project.build_test'] = EmptyActionInput
+INPUT_MODELS['code.demo_content.materialize'] = EmptyActionInput
 INPUT_MODELS.update({'code.workspace.inspect': EmptyActionInput,
                      'code.file.read': CodeReadInput, 'code.file.write': CodeWriteInput})
 INPUT_MODELS.update({capability: EmptyActionInput for capability in
@@ -213,6 +214,9 @@ class TaskTools:
                         'object': changed.model_dump(mode='json'),
                         'notice': ('本任务唯一一次对象变换已写入并即时读回；下一步读取最新场景核对，'
                                    '不要再次执行相对变换。没有验证运行中的游戏。')}
+        elif invocation.capability_id == 'code.demo_content.materialize':
+            from .project_demo import materialize_project_demo
+            evidence = materialize_project_demo(self.service, task)
         elif invocation.capability_id == 'code.project.status':
             snapshot = self.service.game.snapshot(task)
             evidence = {'tool': 'game_project', 'mode': 'live', 'effect_state': 'NONE',

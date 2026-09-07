@@ -5,6 +5,9 @@ export type EnvironmentScene = components['schemas']['EnvironmentScene'];
 export type EnvironmentObject = components['schemas']['EnvironmentObject'];
 export type EnvironmentTransform = components['schemas']['EnvironmentTransform'];
 export type ProjectAssetEntry = components['schemas']['ProjectAssetEntry'];
+export type DoorRecipe = components['schemas']['DoorRecipe'];
+export type SaveProjectAssetResult = components['schemas']['SaveProjectAssetResult'];
+export type AssetVersionRebindResult = components['schemas']['AssetVersionRebindResult'];
 export type AiBuildResult = components['schemas']['AiBuildResult'];
 export type SharedProjectMemory = components['schemas']['SharedProjectMemory'];
 
@@ -24,6 +27,12 @@ export const environmentSceneClient = {
     requestJson<ProjectAssetEntry>(`/api/project-assets/${encodeURIComponent(assetId)}?project_id=${encodeURIComponent(projectId)}`, {
       method:'PUT', body:{title,expected_updated_at:expectedUpdatedAt},
     }),
+  updateRecipe: (projectId: string, assetId: string, body: {expected_version:number;recipe:DoorRecipe;runtime_artifacts?:never[]}) =>
+    requestJson<SaveProjectAssetResult>(`/api/project-assets/${encodeURIComponent(assetId)}/recipe-versions?project_id=${encodeURIComponent(projectId)}`, {body}),
+  rebindAsset: (projectId:string, assetId:string, body:{expected_version:number;from_asset_version:number;to_asset_version:number}) =>
+    requestJson<AssetVersionRebindResult>(`/api/environment-scenes/${encodeURIComponent(projectId)}/asset-bindings/${encodeURIComponent(assetId)}`, {method:'PUT',body}),
+  updateKeyDoor: (projectId:string, objectId:string, body:{expected_version:number;required_key_asset_id:string;interaction_distance_m:number;open_angle_deg:number}) =>
+    requestJson<EnvironmentScene>(`/api/environment-scenes/${encodeURIComponent(projectId)}/objects/${encodeURIComponent(objectId)}/key-door`, {method:'PUT',body}),
   place: (projectId: string, body: {expected_version:number;asset_id:string;asset_version?:number}) =>
     requestJson<EnvironmentScene>(`/api/environment-scenes/${encodeURIComponent(projectId)}/objects`, { body }),
   transform: (projectId: string, objectId: string, body: {expected_version:number;transform:EnvironmentTransform}) =>

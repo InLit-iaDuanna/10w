@@ -32,6 +32,19 @@ ENVIRONMENT_SCENE_CAPABILITIES = ['agent.next_action', 'project.assets.list',
 GAME_EXECUTION_CAPABILITIES = ['code.project.status', 'code.project.check', 'code.project.build',
                                'code.preview.start', 'code.preview.stop']
 DEPENDENCY_CAPABILITY = 'code.dependencies.prepare'
+PROJECT_DEMO_CAPABILITIES = ['code.demo_content.materialize', DEPENDENCY_CAPABILITY,
+    *GAME_EXECUTION_CAPABILITIES]
+
+
+def project_demo_capabilities(value):
+    capabilities = list(PROJECT_DEMO_CAPABILITIES)
+    if not value.allow_dependency_install:
+        capabilities.remove(DEPENDENCY_CAPABILITY)
+    if value.allow_browser_observation:
+        capabilities.append('code.browser.observe')
+    if value.allow_browser_interaction:
+        capabilities.extend(['code.project.build_test', 'code.browser.interact'])
+    return capabilities
 
 
 def card_code_capabilities(value):
@@ -46,7 +59,7 @@ def card_code_capabilities(value):
             capabilities.insert(4, DEPENDENCY_CAPABILITY)
     return capabilities
 TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development',
-                      'environment-scene']
+                      'environment-scene', 'project-demo']
 ExecutionMode = Literal["typed-tools", "codex-full-access"]
 EffectState = Literal["NONE", "STAGED", "APPLIED", "COMMITTED", "UNKNOWN"]
 VerificationExecutionStatus = Literal["COMPLETED", "FAILED", "CANCELLED", "INTERRUPTED"]
@@ -81,6 +94,8 @@ class VerificationRecord(TaskModel):
 class PrepareAgentTask(TaskModel):
     allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
+    include_demo_assets: bool = False
+    alignment_id: str | None = Field(default=None, pattern=r'^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$')
     allow_browser_observation: bool = False
     goal: str = Field(min_length=1, max_length=8000)
     project_id: str | None = None
@@ -95,13 +110,17 @@ class PrepareAgentTask(TaskModel):
 
     @model_validator(mode='after')
     def card_scope(self):
-        if self.allow_model_image_input and (self.task_profile != 'card-development'
+        if self.allow_model_image_input and (self.task_profile not in ('card-development', 'project-demo')
                 or not self.allow_game_execution
                 or not (self.allow_browser_observation or self.allow_browser_interaction)):
             raise ValueError('模型图片输入需要卡片工程运行及本次浏览器截图授权。')
-        if self.allow_browser_interaction and (self.task_profile != 'card-development' or not self.allow_game_execution):
+        if self.allow_browser_interaction and (self.task_profile not in ('card-development', 'project-demo') or not self.allow_game_execution):
             raise ValueError('浏览器输入检查需要卡片工程运行授权。')
-        if self.allow_browser_observation and (self.task_profile != 'card-development' or not self.allow_game_execution):
+        if self.include_demo_assets and (self.task_profile != 'project-demo' or not self.allow_game_execution):
+            raise ValueError('Demo 内容仅用于获授权运行的项目初版任务。')
+        if self.alignment_id is not None and not self.include_demo_assets:
+            raise ValueError('对齐记录仅用于 Demo 任务准备。')
+        if self.allow_browser_observation and (self.task_profile not in ('card-development', 'project-demo') or not self.allow_game_execution):
             raise ValueError('浏览器观察需要卡片工程运行授权。')
         if self.task_profile == 'card-development':
             if not self.project_id or not self.card_id or self.execution_mode != 'typed-tools':
@@ -110,6 +129,12 @@ class PrepareAgentTask(TaskModel):
                 raise ValueError('卡片代码开发不包含图片生成或游测执行。')
             if self.allow_dependency_install and not self.allow_game_execution:
                 raise ValueError('依赖准备只能与游戏工程执行权限一起授权。')
+        elif self.task_profile == 'project-demo':
+            if (not self.project_id or self.card_id is not None or self.execution_mode != 'typed-tools'
+                    or not self.allow_game_execution or not self.include_demo_assets or self.alignment_id is None):
+                raise ValueError('项目初版任务需要项目、已确认方向、受控工具、Demo 内容和工程执行权限。')
+            if self.allow_playtest or self.allow_image_generation or self.allow_model_image_input:
+                raise ValueError('D1+D2 项目初版任务不包含图片生成、模型截图输入或自动游测。')
         elif self.task_profile == 'environment-scene':
             if not self.project_id or self.execution_mode != 'typed-tools':
                 raise ValueError('环境场景编辑需要当前项目和 typed-tools 权限。')
@@ -136,9 +161,12 @@ class AuthorizeAgentTask(TaskModel):
 class AuthorizationCard(TaskModel):
     allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
+    include_demo_assets: bool = False
+    alignment_id: str | None = Field(default=None, pattern=r'^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$')
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("card"))
     workspace_root: str
+    workspace_id: str | None = None
     card_id: str | None = None
     branch: str | None = None
     execution_mode: ExecutionMode = "typed-tools"
@@ -163,6 +191,8 @@ class AuthorizationCard(TaskModel):
     def preserve_historical_playtest_authorization(cls, value):
         if isinstance(value, dict):
             value = dict(value)
+            if not value.get('workspace_id') and value.get('card_id'):
+                value['workspace_id'] = value['card_id']
             if 'allow_playtest' not in value:
                 value['allow_playtest'] = 'unity.prototype.verify' in value.get('capability_ids', [])
             value.setdefault('allow_game_execution', False)
@@ -179,11 +209,14 @@ class AuthorizationCard(TaskModel):
 class TaskGrant(TaskModel):
     allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
+    include_demo_assets: bool = False
+    alignment_id: str | None = Field(default=None, pattern=r'^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$')
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("grant"))
     task_id: str
     project_id: str
     workspace_root: str
+    workspace_id: str | None = None
     card_id: str | None = None
     branch: str | None = None
     execution_mode: ExecutionMode = "typed-tools"
@@ -199,6 +232,13 @@ class TaskGrant(TaskModel):
     authorized_at: datetime = Field(default_factory=now)
     expires_at: datetime
     revoked: bool = False
+
+    @model_validator(mode='before')
+    @classmethod
+    def preserve_card_workspace_identity(cls, value):
+        if isinstance(value, dict) and not value.get('workspace_id') and value.get('card_id'):
+            value = {**value, 'workspace_id': value['card_id']}
+        return value
 
 
 class AgentAction(TaskModel):
@@ -250,6 +290,8 @@ class EmptyActionInput(TaskModel):
 
 GameOperation = Literal['prepare', 'check', 'build', 'build_test', 'preview_start', 'preview_test', 'preview_stop', 'observe', 'interact']
 GameRunStatus = Literal['running', 'succeeded', 'failed', 'stale', 'stopped', 'interrupted']
+GameCandidateStatus = Literal['building', 'succeeded', 'failed', 'superseded']
+GameUpdateState = Literal['idle', 'building', 'updated', 'failed']
 
 
 class GameOperationRequest(TaskModel):
@@ -275,6 +317,24 @@ class BrowserInteractionRequest(TaskModel):
         return self
 
 
+class GameBuildCandidate(TaskModel):
+    id: str = Field(default_factory=lambda: identifier('game_candidate'))
+    project_id: str
+    workspace_id: str
+    task_id: str
+    sequence: int = Field(ge=1)
+    build_run_id: str
+    status: GameCandidateStatus = 'building'
+    artifact_path: str | None = None
+    failure_code: str | None = None
+    source_version: dict[str, JsonValue] = Field(default_factory=dict)
+    scene_id: str | None = None
+    scene_version: int | None = Field(default=None, ge=0)
+    asset_versions: list[dict[str, JsonValue]] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=now)
+    updated_at: datetime = Field(default_factory=now)
+
+
 class GameExecutionRun(TaskModel):
     build_kind: Literal['delivery', 'test'] = 'delivery'
     build_run_id: str | None = None
@@ -286,10 +346,13 @@ class GameExecutionRun(TaskModel):
     status: GameRunStatus = 'running'
     mode: Literal['live'] = 'live'
     project_id: str
-    card_id: str
+    workspace_id: str
+    card_id: str | None = None
     task_id: str
     workspace_root: str
-    branch: str
+    branch: str | None = None
+    candidate_id: str | None = None
+    candidate_sequence: int | None = Field(default=None, ge=1)
     started_at: datetime = Field(default_factory=now)
     finished_at: datetime | None = None
     exit_code: int | None = None
@@ -300,20 +363,32 @@ class GameExecutionRun(TaskModel):
     preview_url: str | None = None
     source_stale: bool = False
 
+    @model_validator(mode='before')
+    @classmethod
+    def preserve_card_workspace_identity(cls, value):
+        if isinstance(value, dict) and not value.get('workspace_id') and value.get('card_id'):
+            value = {**value, 'workspace_id': value['card_id']}
+        return value
+
 
 class GameProjectExecution(TaskModel):
     test_build: GameExecutionRun | None = None
     interaction: GameExecutionRun | None = None
     observation: GameExecutionRun | None = None
     project_id: str
-    card_id: str
+    workspace_id: str
+    card_id: str | None = None
     workspace_root: str
-    branch: str
+    branch: str | None = None
     dependencies_ready: bool = False
     dependency: GameExecutionRun | None = None
     check: GameExecutionRun | None = None
     build: GameExecutionRun | None = None
     preview: GameExecutionRun | None = None
+    build_candidates: list[GameBuildCandidate] = Field(default_factory=list)
+    latest_candidate: GameBuildCandidate | None = None
+    current_playable_candidate: GameBuildCandidate | None = None
+    update_state: GameUpdateState = 'idle'
     browser_errors_verified: bool = False
     gameplay_verified: bool = False
 
@@ -382,7 +457,7 @@ class ActionRecord(TaskModel):
             "blender.asset.create", "blender.asset.export", "unity.asset.import",
             "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
             "unity.prototype.verify", "codex.task.execute",
-            "code.dependencies.prepare", "code.project.check", "code.project.build",
+            "code.demo_content.materialize", "code.dependencies.prepare", "code.project.check", "code.project.build",
             "code.preview.start", "code.preview.stop",
             "environment.object.transform",
         }
@@ -393,11 +468,19 @@ class ActionRecord(TaskModel):
 class BrowserObservationAuthorization(TaskModel):
     task_id: str
     project_id: str
+    workspace_id: str
     workspace_root: str
-    card_id: str
-    branch: str
+    card_id: str | None = None
+    branch: str | None = None
     expires_at: datetime
     revoked: bool = False
+
+    @model_validator(mode='before')
+    @classmethod
+    def preserve_card_workspace_identity(cls, value):
+        if isinstance(value, dict) and not value.get('workspace_id') and value.get('card_id'):
+            value = {**value, 'workspace_id': value['card_id']}
+        return value
 
 
 class AgentTaskRecord(TaskModel):

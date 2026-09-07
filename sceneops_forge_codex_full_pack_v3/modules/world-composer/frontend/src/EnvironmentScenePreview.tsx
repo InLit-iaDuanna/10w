@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { environmentAssetUrl, type EnvironmentObject } from './environment-client.ts';
+import { environmentAssetUrl, type EnvironmentObject, type ProjectAssetEntry } from './environment-client.ts';
 
 
-export function EnvironmentScenePreview({objects, selectedId, onSelect}: {
-  objects: EnvironmentObject[]; selectedId: string | null; onSelect: (id: string | null) => void;
+export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}: {
+  objects: EnvironmentObject[]; assets: ProjectAssetEntry[]; selectedId: string | null; onSelect: (id: string | null) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const groupsRef = useRef(new Map<string, THREE.Group>());
@@ -64,6 +64,15 @@ export function EnvironmentScenePreview({objects, selectedId, onSelect}: {
     const loader = new GLTFLoader();
     const loaded = new Map<string, Promise<THREE.Object3D>>();
     const load = (object: EnvironmentObject) => {
+      const asset=assets.find(item=>item.id===object.asset_id);
+      const version=asset?.versions.find(item=>item.source_version===object.asset_version);
+      if(version?.source_kind==='procedural'&&version.recipe){
+        const recipe=version.recipe;
+        const material=recipe.material ?? {color_hex:'#6B4F3A',roughness:.75,metalness:.05};
+        const mesh=new THREE.Mesh(new THREE.BoxGeometry(recipe.width_m,recipe.height_m,recipe.thickness_m),new THREE.MeshStandardMaterial({color:material.color_hex,roughness:material.roughness,metalness:material.metalness}));
+        mesh.position.y=recipe.height_m/2;mesh.userData.colliderDimensionsM=[recipe.width_m,recipe.height_m,recipe.thickness_m];
+        return Promise.resolve(mesh);
+      }
       const url = environmentAssetUrl(object.source_asset_id, object.asset_version);
       let promise = loaded.get(url);
       if (!promise) {
@@ -131,7 +140,7 @@ export function EnvironmentScenePreview({objects, selectedId, onSelect}: {
       renderer.dispose(); renderer.domElement.remove();
       groupsRef.current = new Map(); selectionRef.current = null; drawRef.current = () => undefined;
     };
-  }, [objects, onSelect]);
+  }, [objects, assets, onSelect]);
   return <div className="environment-scene-preview" ref={host} aria-label="Three.js 环境场景预览">
     {failure && <p role="alert">{failure}</p>}
     {!failure && objects.length === 0 && <span>场景为空 · 从资产库加入模型，或在左侧让 AI 搭建</span>}
