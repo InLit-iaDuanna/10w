@@ -3,6 +3,7 @@ import asyncio
 import json
 from datetime import timedelta
 import os
+import shutil
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -117,7 +118,9 @@ class ArchitectureInteractionTests(unittest.IsolatedAsyncioTestCase):
                     'tradeoffs':[],'ecs_library':'miniplex' if architecture == 'ecs' else None}, 1)
                 card = repository.open_card_worktree(project.project_id, 'card_test', 'S3')
                 worktree = Path(card['worktree_path'])
-                (worktree / 'node_modules').symlink_to(Path(os.environ['SCENEOPS_S3_GAME_DEPENDENCIES']).resolve(), target_is_directory=True)
+                # Each build owns its dependency links; pnpm may rewrite them during preparation.
+                shutil.copytree(Path(os.environ['SCENEOPS_S3_GAME_DEPENDENCIES']).resolve(),
+                                worktree / 'node_modules', symlinks=True)
                 provider = SimpleNamespace(database_path=root / 'state.sqlite3',settings=lambda:SimpleNamespace(provider='fixture',model='fixture'))
                 service = AgentTaskService(root / 'state.sqlite3', repository, root, provider=provider)
                 try:
