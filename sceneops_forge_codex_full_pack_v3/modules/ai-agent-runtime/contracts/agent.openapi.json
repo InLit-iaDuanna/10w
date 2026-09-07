@@ -1357,6 +1357,11 @@
       },
       "AuthorizationCard": {
         "properties": {
+          "allow_model_image_input": {
+            "type": "boolean",
+            "title": "Allow Model Image Input",
+            "default": false
+          },
           "allow_browser_interaction": {
             "type": "boolean",
             "title": "Allow Browser Interaction",
@@ -2193,6 +2198,11 @@
       "JsonValue": {},
       "PrepareAgentTask": {
         "properties": {
+          "allow_model_image_input": {
+            "type": "boolean",
+            "title": "Allow Model Image Input",
+            "default": false
+          },
           "allow_browser_interaction": {
             "type": "boolean",
             "title": "Allow Browser Interaction",
@@ -2759,6 +2769,11 @@
       },
       "TaskGrant": {
         "properties": {
+          "allow_model_image_input": {
+            "type": "boolean",
+            "title": "Allow Model Image Input",
+            "default": false
+          },
           "allow_browser_interaction": {
             "type": "boolean",
             "title": "Allow Browser Interaction",

@@ -40,6 +40,7 @@ class AgentTaskService:
         self.code = CodeWorkspace(self)
         self.records.recover_workspace_ownership(self.workspace_base)
         self.production = ProductionStore(database_path, self.data_dir, self.records)
+        self.agents.image_resolver = self.resolve_model_image
         self.blender_factory, self.unity_factory = blender_factory, unity_factory
         self.jobs, self.tools, self.runtimes = {}, {}, {}
         self.cleanups = {}
@@ -85,6 +86,7 @@ class AgentTaskService:
             task_profile=request.task_profile, card_id=request.card_id,
             allow_browser_observation=request.allow_browser_observation,
             allow_browser_interaction=request.allow_browser_interaction,
+            allow_model_image_input=request.allow_model_image_input,
             branch=card_work['branch'] if card_work else None,
             scene_write_object_ids=list(request.selected_scene_object_ids))
         if card_work:
@@ -111,6 +113,9 @@ class AgentTaskService:
                 card.scope += (' 本次允许用独立浏览器执行当前登记构建，采集 current-view 截图和浏览器错误；'
                     '只访问该构建预览，不使用用户会话、不自动操作角色、不做视觉模型评审。'
                     '此只观察授权在代码任务结束后保留至本次20分钟期限，单次最长35秒；取消时撤销。')
+            if card.allow_model_image_input:
+                card.scope += (' 本次另授权把当前任务浏览器检查登记的截图版本作为下一次决策模型的图片输入；'
+                    '仅限应用自有产物副本，不接受模型或客户端路径。提供方或模型未确认支持时不发送。')
         elif request.task_profile == 'survival-prototype':
             card.capability_ids = list(PROTOTYPE_CAPABILITIES)
             card.scope = ('本任务专用空 Unity 工程：以有界数据生成方块生存射击原型，'
@@ -193,6 +198,49 @@ class AgentTaskService:
         self.get(task_id)
         return self.records.events(task_id, after)
 
+    def model_image_input(self, task):
+        metadata = {"status": "not_authorized", "provider": task.provider_id,
+                    "model": task.provider_model, "visual_reviewed": False}
+        if not task.authorization_card.allow_model_image_input or not task.grant \
+                or not task.grant.allow_model_image_input:
+            return metadata
+        support = (self.provider.image_input_support(task.provider_id, task.provider_model)
+                   if hasattr(self.provider, 'image_input_support') else 'unknown')
+        if support != 'supported':
+            metadata["status"] = "provider_unsupported" if support == 'unsupported' else "provider_support_unknown"
+            return metadata
+        from .context_projection import project_game_diagnostics
+        latest = project_game_diagnostics(task)["latest"]
+        if latest.get("evidence_status") == "stale":
+            metadata["status"] = "screenshot_stale"
+            return metadata
+        screenshot = latest.get("screenshot_reference")
+        scope = latest.get("scope")
+        if not isinstance(screenshot, dict) or not isinstance(scope, dict) \
+                or not isinstance(scope.get("browser_run_id"), str):
+            metadata["status"] = "no_current_screenshot"
+            return metadata
+        metadata.update({"status": "ready", **screenshot,
+                         "browser_run_id": scope["browser_run_id"],
+                         "build_run_id": scope.get("build_run_id"),
+                         "check": scope.get("check") or "current-view"})
+        return metadata
+
+    def resolve_model_image(self, metadata):
+        task_id = metadata.get("task_id")
+        task = self.check_grant(task_id, "agent.next_action")
+        if not task.authorization_card.allow_model_image_input or not task.grant.allow_model_image_input:
+            raise HarnessError('MODEL_IMAGE_NOT_AUTHORIZED', '本任务没有授权向模型发送截图。')
+        settings = self.provider.settings()
+        if (settings.provider, settings.model) != (task.provider_id, task.provider_model):
+            raise HarnessError('TASK_SCOPE_DENIED', '模型配置已改变，不能发送截图。')
+        current = {**self.model_image_input(task), "task_id": task.id,
+                   "project_id": task.project_id}
+        if current != metadata or current.get("status") != "ready":
+            raise HarnessError('MODEL_IMAGE_STALE', '登记截图已变化或不再代表当前源码。')
+        return self.production.model_image_path(task, current["artifact_id"], current["version"],
+                                                current["browser_run_id"])
+
     def check_grant(self, task_id, capability_id=None):
         task = self.get(task_id)
         grant = task.grant
@@ -213,6 +261,7 @@ class AgentTaskService:
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
                     or grant.allow_browser_observation != task.authorization_card.allow_browser_observation
                     or grant.allow_browser_interaction != task.authorization_card.allow_browser_interaction
+                    or grant.allow_model_image_input != task.authorization_card.allow_model_image_input
                     or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')
             self.card_workspace(task.project_id, grant.card_id, expected_root=grant.workspace_root, expected_branch=grant.branch)
@@ -274,6 +323,7 @@ class AgentTaskService:
                 allow_game_execution=task.authorization_card.allow_game_execution,
                 allow_browser_observation=task.authorization_card.allow_browser_observation,
                 allow_browser_interaction=task.authorization_card.allow_browser_interaction,
+                allow_model_image_input=task.authorization_card.allow_model_image_input,
                 allow_dependency_install=task.authorization_card.allow_dependency_install,
                 capability_ids=list(task.authorization_card.capability_ids),
                 scene_write_object_ids=list(task.authorization_card.scene_write_object_ids),
@@ -608,6 +658,7 @@ class AgentTaskService:
         return task
 
     def finish_game(self, task):
+        from .context_projection import project_game_diagnostics
         snapshot = self.game.snapshot(task)
         if not snapshot.check or snapshot.check.status != 'succeeded' or not snapshot.check.passed:
             raise HarnessError('VERIFICATION_INCOMPLETE', '当前源码还没有通过 TypeScript 检查。')
@@ -616,13 +667,27 @@ class AgentTaskService:
         if (not snapshot.preview or snapshot.preview.status != 'running'
                 or not snapshot.preview.passed or snapshot.preview.source_stale):
             raise HarnessError('VERIFICATION_INCOMPLETE', '当前构建还没有运行中的本地预览。')
+        diagnostics = project_game_diagnostics(task)
+        if task.authorization_card.allow_browser_interaction:
+            checks = diagnostics['checks']
+            verified_scopes = [name for name, value in checks.items()
+                               if value.get('evidence_status') == 'pass']
+            statuses = '、'.join(f"{name}={value.get('evidence_status', 'unknown')}"
+                                for name, value in checks.items()) or '未执行'
+            summary = ('类型检查、交付构建和当前预览通过；浏览器局部证据：' + statuses
+                       + '。未执行完整玩法或视觉评审。')
+        else:
+            verified_scopes = []
+            summary = ('源码已回读，类型检查和构建通过，本地预览正在运行；'
+                       '未执行受控玩法检查或视觉评审。')
         return {'tool': 'game_project', 'mode': 'live', 'delivery_status': 'build_ready',
             'content_verified': True, 'compilation_verified': True, 'verified': False,
-            'browser_errors_verified': False, 'gameplay_verified': False,
+            'browser_errors_verified': bool(verified_scopes), 'gameplay_verified': False,
+            'browser_checks': diagnostics, 'verified_scopes': verified_scopes,
             'preview_url': snapshot.preview.preview_url,
             'card_id': snapshot.card_id, 'branch': snapshot.branch,
             'workspace_root': snapshot.workspace_root,
-            'summary': '源码已回读，类型检查和构建通过，本地预览正在运行；浏览器错误和玩法仍待人工验收。'}
+            'summary': summary}
 
     def execution_status(self) -> Literal["running", "connected", "idle"]:
         """Local observed lifecycle only; never launch/probe DCCs for a health request."""

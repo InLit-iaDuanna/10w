@@ -7,7 +7,8 @@ from .task_models import (ActionRecord, AgentAction, CreateCubeInput, Verificati
 from .task_tools import INPUT_MODELS, MUTATIONS, TaskTools, contained
 from .production_models import ProductionStep
 from .production_catalog import module_for
-from .context_projection import project_action_history, project_observations, task_context_summary
+from .context_projection import (project_action_history, project_game_diagnostics,
+                                 project_observations, task_context_summary)
 
 
 def project_action(service, task, entry, *, run_id=None):
@@ -51,7 +52,7 @@ def definition(task, step):
         stages=[PipelineStage(id="action", title="单动作执行", steps=[step])], budget=budget, execution_mode="live")
 
 
-def next_action_inputs(task, runtime):
+def next_action_inputs(task, runtime, *, model_image_input=None):
     capabilities = [cap.model_dump(mode="json") for cap in runtime.registry.list()
                     if cap.id != "agent.next_action"]
     capability_ids = {item["id"] for item in capabilities}
@@ -62,6 +63,8 @@ def next_action_inputs(task, runtime):
         "expected_provider": task.provider_id, "expected_model": task.provider_model,
         "history": project_action_history(task.actions, can_read_history=can_read_history),
         "capabilities": capabilities}
+    if model_image_input is not None:
+        inputs["model_image_input"] = model_image_input
     inputs['input_schemas'] = {cap.id: INPUT_MODELS[cap.id].model_json_schema()
         for cap in runtime.registry.list() if cap.id in INPUT_MODELS}
     return inputs
@@ -78,7 +81,9 @@ async def choose(service, task_id):
         current.model_calls_used += 1
     task = service.records.update(task_id, reserve, "agent.model.reserved")
     runtime = service.runtimes[task_id]
-    inputs = next_action_inputs(task, runtime)
+    image_input = {**service.model_image_input(task), "task_id": task.id,
+                   "project_id": task.project_id}
+    inputs = next_action_inputs(task, runtime, model_image_input=image_input)
     step = PipelineStep(id="decide", title="观察并选择下一动作", capability_id="agent.next_action", inputs=inputs)
     run = runtime.submit(definition(task, step), service.authority(task), f"{task.id}_model_{task.model_calls_used}")
     def link(current):
@@ -86,10 +91,26 @@ async def choose(service, task_id):
         current.current_run_id = run.id
     service.records.update(task_id, link, "agent.model.started", {"run_id": run.id, "call": task.model_calls_used})
     run = await runtime.start(task.project_id, run.id, service.authority(task))
+    result = run.step_runs[0].result if run.step_runs else None
+    expected_image_ref = (f"model-image://{image_input.get('artifact_id')}/versions/"
+                          f"{image_input.get('version')}"
+                          if image_input.get("status") == "ready" else None)
+    evidence_refs = result.evidence_refs if result else []
+    image_provided = expected_image_ref is not None and expected_image_ref in evidence_refs
     def observed(current):
         current.current_run_id = None
         current.model_tokens_known += run.tokens_used
         current.observations["model_last_state"] = {"state": run.state, "reason": run.reason}
+        image_audit = {
+            **{key: value for key, value in image_input.items() if key not in ("task_id", "project_id")},
+            "status": ("provided" if image_provided else "request_failed"
+                       if image_input.get("status") == "ready" else image_input.get("status")),
+            "model_run_id": run.id,
+        }
+        current.observations["model_image_input"] = image_audit
+        audits = current.observations.setdefault("model_image_inputs", [])
+        if isinstance(audits, list):
+            audits.append(image_audit)
     service.records.update(task_id, observed, "agent.model.observed", {"run_id": run.id, "state": run.state, "reason": run.reason})
     if run.state != "completed":
         if run.state == "cancelled":
@@ -375,6 +396,9 @@ async def execute_action(service, task_id, action_id):
                 except ValidationError:
                     # Legacy or incomplete evidence remains historical evidence, never a current PASS.
                     action.verification_result = None
+        if (current.authorization_card.allow_browser_observation
+                or current.authorization_card.allow_browser_interaction):
+            current.observations["game_diagnostics"] = project_game_diagnostics(current)
         if pending:
             current.pending_action_id, current.status, current.reason = action_id, "blocked", run.reason
             current.observations["blocked_tool"] = service.tools[task_id].blocked_tool
@@ -387,7 +411,9 @@ async def execute_action(service, task_id, action_id):
             build_ready = (action.result or {}).get('evidence', {}).get('delivery_status') == 'build_ready'
             scene_updated = (action.result or {}).get('evidence', {}).get('delivery_status') == 'scene_updated'
             current.status = 'review_required' if production_ready or code_written or build_ready else 'completed'
-            current.reason = ('类型检查和构建已通过，本地预览正在运行；待浏览器与玩法验收。' if build_ready else
+            finish_summary = (action.result or {}).get('evidence', {}).get('summary')
+            current.reason = (finish_summary if isinstance(finish_summary, str) else
+                '类型检查和构建已通过，本地预览正在运行；待浏览器与玩法验收。' if build_ready else
                 '源码已写入并回读，待检查；未运行或编译。' if code_written else
                 '制作与编译检查完成，待用户手动试玩；未执行自动游测。' if production_ready else None)
             if scene_updated:

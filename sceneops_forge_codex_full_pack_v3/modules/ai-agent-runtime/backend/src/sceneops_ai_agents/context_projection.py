@@ -12,6 +12,8 @@ REFERENCE_ONLY_FIELDS = {
     "stderr", "stdout", "value",
 }
 
+BROWSER_CAPABILITIES = {"code.browser.observe", "code.browser.interact"}
+
 
 def action_input_reference(action_id: str, field: str) -> str:
     return f"task-action://{action_id}/input/{field}"
@@ -89,6 +91,13 @@ def project_observations(task, *, can_read_history: bool) -> dict:
     observations = deepcopy(task.observations)
     if not can_read_history:
         return observations
+    diagnostics = project_game_diagnostics(task)
+    for key in ("browser_interaction", "browser_observation"):
+        if key in observations:
+            observations[key] = {
+                "diagnostic_context": diagnostics,
+                "notice": "浏览器正文保留在原动作结果中；按 result_reference 读取，不在每轮模型请求中重发。",
+            }
     sources = {}
     for index, entry in enumerate(task.actions):
         evidence = entry.result.get("evidence") if isinstance(entry.result, dict) else None
@@ -111,6 +120,119 @@ def project_observations(task, *, can_read_history: bool) -> dict:
     return observations
 
 
+def _state_summary(value: Any) -> dict | None:
+    if not isinstance(value, dict):
+        return None
+    result = {}
+    for key in ("state_id", "player", "score"):
+        if key in value:
+            result[key] = deepcopy(value[key])
+    simulation = value.get("simulation")
+    if isinstance(simulation, dict):
+        result["simulation"] = {key: simulation[key] for key in ("steps", "elapsed_seconds")
+                                if key in simulation}
+    collectibles = value.get("collectibles")
+    if isinstance(collectibles, list):
+        result["collectibles"] = [{key: item[key] for key in ("id", "collected", "visible")
+                                   if key in item}
+                                  for item in collectibles[:16] if isinstance(item, dict)]
+    return result or None
+
+
+def _browser_diagnostic(task, index: int, entry) -> dict:
+    reference = action_result_reference(entry.action.action_id)
+    evidence = entry.result.get("evidence") if isinstance(entry.result, dict) else None
+    run = evidence.get("run") if isinstance(evidence, dict) else None
+    if not isinstance(run, dict):
+        return {
+            "evidence_status": "unknown",
+            "issue_types": ["result_unavailable"],
+            "capability_id": entry.action.capability_id,
+            "result_reference": reference,
+        }
+    observation = run.get("observation") if isinstance(run.get("observation"), dict) else {}
+    request = observation.get("request") if isinstance(observation.get("request"), dict) else {}
+    assertions = observation.get("assertions") if isinstance(observation.get("assertions"), list) else []
+    passed = [item.get("id") for item in assertions
+              if isinstance(item, dict) and item.get("passed") is True and isinstance(item.get("id"), str)]
+    failed = [item.get("id") for item in assertions
+              if isinstance(item, dict) and item.get("passed") is False and isinstance(item.get("id"), str)]
+    later_write = any(item.state == "succeeded" and item.action.capability_id == "code.file.write"
+                      for item in task.actions[index + 1:])
+    stale = bool(run.get("source_stale") or later_write)
+    browser_errors = {
+        key: [str(value)[:500] for value in observation.get(key, [])[:8]]
+        for key in ("console_errors", "page_errors", "network_errors")
+        if isinstance(observation.get(key), list) and observation.get(key)
+    }
+    failure_code = run.get("failure_code") or observation.get("failure_code")
+    issue_types = []
+    if stale:
+        status = "stale"
+    else:
+        if failed or failure_code == "BROWSER_BEHAVIOR_CHECK_FAILED":
+            issue_types.append("behavior_issue")
+        if browser_errors:
+            issue_types.append("browser_errors")
+        if run.get("status") in ("failed", "interrupted") and not issue_types:
+            issue_types.append("tool_failure")
+        status = ("fail" if issue_types else "pass" if run.get("status") == "succeeded"
+                  and run.get("passed") is True else "unknown")
+    trace = observation.get("input_trace") if isinstance(observation.get("input_trace"), list) else []
+    first_input = next((item.get("actual") for item in trace if isinstance(item, dict)
+                        and isinstance(item.get("actual"), dict)), None)
+    screenshot = observation.get("screenshot_artifact")
+    screenshot_reference = None
+    if isinstance(screenshot, dict) and isinstance(screenshot.get("id"), str) \
+            and isinstance(screenshot.get("version"), int):
+        screenshot_reference = {"artifact_id": screenshot["id"], "version": screenshot["version"]}
+    return {
+        "evidence_status": status,
+        "issue_types": issue_types,
+        "capability_id": entry.action.capability_id,
+        "scope": {
+            "build_kind": run.get("build_kind"),
+            "check": observation.get("check_scope") or request.get("check"),
+            "state_id": request.get("state_id"),
+            "build_run_id": run.get("build_run_id"),
+            "preview_run_id": run.get("preview_run_id"),
+            "browser_run_id": run.get("id"),
+        },
+        "assertions": {"failed": failed, "passed": passed},
+        "states": {
+            key: summary for key, summary in (
+                ("initial", _state_summary(observation.get("initial_state"))),
+                ("first_input", _state_summary(first_input)),
+                ("final", _state_summary(observation.get("final_state"))),
+            ) if summary is not None
+        },
+        "browser_errors": browser_errors,
+        "failure": ({"code": failure_code,
+                     "reason": str(observation.get("reason") or run.get("log") or "")[:500]}
+                    if failure_code else None),
+        "result_reference": reference,
+        "screenshot_reference": screenshot_reference,
+    }
+
+
+def project_game_diagnostics(task) -> dict:
+    """Summarize current browser evidence without treating logs as verdicts."""
+    checks = {}
+    latest = None
+    for index, entry in enumerate(task.actions):
+        if entry.action.capability_id not in BROWSER_CAPABILITIES:
+            continue
+        diagnostic = _browser_diagnostic(task, index, entry)
+        latest = diagnostic
+        scope = diagnostic.get("scope", {})
+        name = scope.get("check") if isinstance(scope, dict) else None
+        checks[name or "current-view"] = diagnostic
+    if latest is None:
+        latest = {"evidence_status": "not_run", "issue_types": [],
+                  "result_reference": None, "screenshot_reference": None}
+    return {"latest": latest, "checks": checks}
+
+
 def task_context_summary(task, *, can_read_history: bool = True) -> dict:
     """Short handoff facts; current authority and capabilities remain runtime-owned."""
     latest = task.actions[-1] if task.actions else None
@@ -125,7 +247,7 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
                          "capability_id": latest.action.capability_id,
                          "state": latest.state, "reason": latest.reason,
                          "evidence_basis": "最近动作的当前状态"}
-    return {
+    result = {
         "task_id": task.id,
         "project_id": task.project_id,
         "task_profile": task.authorization_card.task_profile,
@@ -143,6 +265,9 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
                            if can_read_history else
                            "当前授权没有历史读取能力；必要的历史输入和结果以内联兼容模式提供。"),
     }
+    if task.authorization_card.allow_browser_observation or task.authorization_card.allow_browser_interaction:
+        result["game_diagnostics"] = project_game_diagnostics(task)
+    return result
 
 
 def read_history_reference(task, reference: str):

@@ -224,3 +224,34 @@ class ProductionStore:
         artifact = ProductionArtifact.model_validate_json(row[0])
         stream, _ = self._open_regular(self.snapshots / artifact.id / str(artifact.version))
         return stream, artifact
+
+    def model_image_path(self, task, artifact_id, version, run_id):
+        """Resolve one immutable task-owned browser screenshot for provider input."""
+        with self.records.connect() as connection:
+            row = connection.execute('''SELECT body FROM production_artifact_versions
+                WHERE project_id=? AND id=? AND version=?''',
+                (task.project_id, artifact_id, version)).fetchone()
+        if not row:
+            raise HarnessError('MODEL_IMAGE_NOT_FOUND', '当前任务没有登记该截图版本。')
+        artifact = ProductionArtifact.model_validate_json(row[0])
+        expected_source = f'browser-observations/{task.id}/{run_id}/current-view.png'
+        if ((artifact.task_id, artifact.step_id, artifact.module_id, artifact.kind,
+             artifact.media_type, artifact.source_path)
+                != (task.id, f'{task.id}:{run_id}', 'ai-playtest', 'image', 'image/png', expected_source)):
+            raise HarnessError('MODEL_IMAGE_SCOPE_DENIED', '截图不属于当前任务的指定浏览器运行。')
+        path = self.snapshots / artifact.id / str(artifact.version)
+        stream, metadata = self._open_regular(path)
+        stream.close()
+        # Provider validation also binds media type by extension.  Expose a
+        # server-owned hard link next to the immutable version; never a caller path.
+        provider_path = path.with_name(path.name + '.png')
+        try:
+            os.link(path, provider_path)
+        except FileExistsError:
+            linked = provider_path.lstat()
+            if (stat.S_ISLNK(linked.st_mode) or not stat.S_ISREG(linked.st_mode)
+                    or (linked.st_dev, linked.st_ino) != (metadata.st_dev, metadata.st_ino)):
+                raise HarnessError('MODEL_IMAGE_SCOPE_DENIED', '模型截图输入副本已被替换。')
+        stream, _ = self._open_regular(provider_path)
+        stream.close()
+        return provider_path

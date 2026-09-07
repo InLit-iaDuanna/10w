@@ -468,6 +468,11 @@ export interface components {
         /** AuthorizationCard */
         AuthorizationCard: {
             /**
+             * Allow Model Image Input
+             * @default false
+             */
+            allow_model_image_input: boolean;
+            /**
              * Allow Browser Interaction
              * @default false
              */
@@ -811,6 +816,11 @@ export interface components {
         /** PrepareAgentTask */
         PrepareAgentTask: {
             /**
+             * Allow Model Image Input
+             * @default false
+             */
+            allow_model_image_input: boolean;
+            /**
              * Allow Browser Interaction
              * @default false
              */
@@ -1055,6 +1065,11 @@ export interface components {
         };
         /** TaskGrant */
         TaskGrant: {
+            /**
+             * Allow Model Image Input
+             * @default false
+             */
+            allow_model_image_input: boolean;
             /**
              * Allow Browser Interaction
              * @default false

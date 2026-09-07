@@ -34,6 +34,7 @@ class AgentRuntime:
     def __init__(self, provider):
         self.provider = provider
         self.router = ModelRouter(provider)
+        self.image_resolver = None
 
     async def assess(self, invocation, cancellation):
         cancellation.raise_if_cancelled()
@@ -76,17 +77,33 @@ class AgentRuntime:
         if (selected.provider, selected.model) != (data.expected_provider, data.expected_model):
             raise ValueError("当前模型配置与任务授权中的路由不一致，请重新审阅。")
         skill_context = load_skill_context(data)
+        options = {}
+        image_reference = None
+        if data.model_image_input and data.model_image_input.get("status") == "ready":
+            if self.image_resolver is None:
+                raise ValueError("已登记模型图片输入，但运行时没有任务产物解析器。")
+            image_path = self.image_resolver(data.model_image_input)
+            options["images"] = [image_path]
+            image_reference = (f"model-image://{data.model_image_input['artifact_id']}/versions/"
+                               f"{data.model_image_input['version']}")
         response = await self.provider.generate(next_action_prompt(data), model=data.expected_model,
             schema=AgentAction.model_json_schema(), purpose="agent-action",
-            instructions=next_action_instructions(skill_context))
+            instructions=next_action_instructions(skill_context), **options)
         cancellation.raise_if_cancelled()
         if (response.provider, response.model) != (data.expected_provider, data.expected_model):
             raise ValueError("实际模型响应与已授权路由不一致；本次输出不会执行。")
         action = AgentAction.model_validate(response.structured or json.loads(response.text))
+        evidence_refs = [f"agent-action:{invocation.id}"]
+        evidence_types = ["agent_action"]
+        if image_reference:
+            evidence_refs.append(image_reference)
+            evidence_types.append("model_image_input")
         return CapabilityResult(execution_mode="live", outputs=action.model_dump(mode="json"),
-            evidence_refs=[f"agent-action:{invocation.id}"], evidence_types=["agent_action"],
+            evidence_refs=evidence_refs, evidence_types=evidence_types,
             tokens=(response.usage or {}).get("total_tokens"), cost_usd=None,
-            logs=[f"{response.provider}/{response.model} · {response.latency_ms}ms", *skill_context.logs])
+            logs=[f"{response.provider}/{response.model} · {response.latency_ms}ms",
+                  *( [f"model.image_input {image_reference}"] if image_reference else []),
+                  *skill_context.logs])
 
 
 from .task_models import (AgentTaskRecord, AgentTaskList, AgentTaskEvents, AgentTaskEvent,

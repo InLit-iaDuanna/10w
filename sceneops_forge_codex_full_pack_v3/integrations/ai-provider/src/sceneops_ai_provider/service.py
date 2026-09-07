@@ -309,6 +309,22 @@ class ProviderService:
         settings = self.settings()
         return bool(settings.base_url and settings.api_key_configured)
 
+    def image_input_support(self, provider: ProviderId | None = None,
+                            model: str | None = None) -> Literal['supported', 'unsupported', 'unknown']:
+        """Report only capabilities established by the active transport contract."""
+        settings = self.settings()
+        selected_provider = provider or settings.provider
+        selected_model = model or settings.model
+        if (selected_provider, selected_model) != (settings.provider, settings.model):
+            return 'unknown'
+        if selected_provider == 'codexcli':
+            return 'supported'
+        if selected_provider == 'codebuddycli':
+            return 'unsupported'
+        # A compatible endpoint accepts multimodal payloads, but its arbitrary
+        # model catalogue does not declare model-level vision support.
+        return 'unknown'
+
     async def complete(self, prompt: str, model: str | None = None, schema: dict | None = None,
                        purpose: str = 'chat') -> str:
         return (await self.generate(prompt, model=model, schema=schema, purpose=purpose)).text

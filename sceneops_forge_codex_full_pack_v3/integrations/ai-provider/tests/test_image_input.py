@@ -9,6 +9,16 @@ from sceneops_ai_provider.openai_compatible import build_payload
 
 
 class ImageInputTests(unittest.IsolatedAsyncioTestCase):
+    def test_model_support_is_not_inferred_for_arbitrary_compatible_catalogues(self):
+        with tempfile.TemporaryDirectory() as directory:
+            service = ProviderService(Path(directory) / 'settings.sqlite3')
+            self.assertEqual(service.image_input_support(), 'unsupported')
+            service.update_settings(provider='codexcli', model='fixture-codex')
+            self.assertEqual(service.image_input_support(), 'supported')
+            service.update_settings(provider='openai-compatible', model='arbitrary-model',
+                                    base_url='https://example.com/v1', api_key='fixture-secret')
+            self.assertEqual(service.image_input_support(), 'unknown')
+
     def test_codex_places_each_reference_before_stdin_prompt(self):
         first = Path("/tmp/sceneops-reference-one.png")
         second = Path("/tmp/sceneops-reference-two.webp")

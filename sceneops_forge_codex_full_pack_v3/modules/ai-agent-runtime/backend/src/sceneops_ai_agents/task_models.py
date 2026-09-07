@@ -79,6 +79,7 @@ class VerificationRecord(TaskModel):
 
 
 class PrepareAgentTask(TaskModel):
+    allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
     allow_browser_observation: bool = False
     goal: str = Field(min_length=1, max_length=8000)
@@ -94,6 +95,10 @@ class PrepareAgentTask(TaskModel):
 
     @model_validator(mode='after')
     def card_scope(self):
+        if self.allow_model_image_input and (self.task_profile != 'card-development'
+                or not self.allow_game_execution
+                or not (self.allow_browser_observation or self.allow_browser_interaction)):
+            raise ValueError('模型图片输入需要卡片工程运行及本次浏览器截图授权。')
         if self.allow_browser_interaction and (self.task_profile != 'card-development' or not self.allow_game_execution):
             raise ValueError('浏览器输入检查需要卡片工程运行授权。')
         if self.allow_browser_observation and (self.task_profile != 'card-development' or not self.allow_game_execution):
@@ -129,6 +134,7 @@ class AuthorizeAgentTask(TaskModel):
 
 
 class AuthorizationCard(TaskModel):
+    allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("card"))
@@ -171,6 +177,7 @@ class AuthorizationCard(TaskModel):
 
 
 class TaskGrant(TaskModel):
+    allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
     allow_browser_observation: bool = False
     id: str = Field(default_factory=lambda: identifier("grant"))
@@ -210,6 +217,7 @@ class NextActionInput(TaskModel):
     expected_provider: str
     expected_model: str
     input_schemas: dict[str, JsonValue] = Field(default_factory=dict)
+    model_image_input: dict[str, JsonValue] | None = None
 
 
 SceneCoordinate = Annotated[float, Field(ge=-10000, le=10000, allow_inf_nan=False)]

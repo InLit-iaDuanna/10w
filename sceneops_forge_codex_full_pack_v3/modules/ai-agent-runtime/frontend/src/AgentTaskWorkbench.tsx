@@ -110,6 +110,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
     allow_game_execution: card.allow_game_execution, allow_dependency_install: card.allow_dependency_install, task_profile: card.task_profile,
     allow_browser_observation: card.allow_browser_observation,
     allow_browser_interaction: card.allow_browser_interaction,
+    allow_model_image_input: card.allow_model_image_input,
     ...(card.card_id ? { project_id: task.project_id, card_id: card.card_id } : {}),
     ...(card.task_profile === 'environment-scene' ? {project_id:task.project_id,selected_scene_object_ids:selectedSceneObjectIds} : {}) }),
     onSuccess: () => cache.invalidateQueries({ queryKey: ['agent-tasks'] }) });
@@ -124,6 +125,7 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
       <p>{card.cost_notice}</p>{card.task_profile === 'environment-scene'
         ? <p>选中对象只是任务上下文；确认后才授权修改卡片中列出的对象变换。场景数据修改不代表运行游戏已更新。</p>
         : !fullAccess && card.task_profile !== 'card-development' && <p>允许自动准备本任务工程及自有插件、打开专用 Blender/Unity 会话；不修改其他工程、不购买或激活服务。</p>}
+      {card.allow_model_image_input && <p>本次另授权把当前任务登记的最新截图发送给决策模型；不会接受任意文件路径或自动切换模型。</p>}
       <button disabled={action.isPending} onClick={() => action.mutate('authorize')}>{fullAccess ? '确认完全权限风险并开始 · 费用未知' : '确认范围并开始 · 接受费用可能未知'}</button>
     </section>}
     {task.reason && <p className="agent-task-reason" role="alert">{task.reason}</p>}
@@ -132,6 +134,10 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
     {card.allow_game_execution && task.grant && <GameRuntimePanel task={task} />}
     {card.allow_game_execution && task.grant && <BrowserObservationPanel task={task} />}
     {card.allow_game_execution && task.grant && <BrowserInteractionPanel task={task} />}
+    {card.allow_game_execution && task.observations.game_diagnostics != null
+      && <GameDiagnosticSummary value={task.observations.game_diagnostics} />}
+    {card.allow_model_image_input && task.observations.model_image_input != null
+      && <ModelImageInputSummary value={task.observations.model_image_input} />}
     <ol className="agent-action-tree">{task.actions.map(record => <li key={record.request_id} data-state={record.state}>
       <strong>{ACTIONS[record.action.capability_id] ?? record.action.capability_id}</strong><span>{record.state === 'succeeded' ? '已执行' : record.state === 'running' ? '执行中' : record.state}</span>
       <small>{record.action.rationale}</small>{record.reason && <p>{record.reason}</p>}
@@ -210,6 +216,47 @@ function runLabel(run: GameProjectExecution['check'] | undefined) {
   if (run.status === 'running') return '运行中';
   if (run.status === 'stopped') return '已停止';
   return `失败${run.exit_code == null ? '' : ` · exit ${run.exit_code}`}`;
+}
+
+function GameDiagnosticSummary({ value }: { value: unknown }) {
+  if (!value || typeof value !== 'object' || !('checks' in value)
+      || !value.checks || typeof value.checks !== 'object' || Array.isArray(value.checks)) return null;
+  const checks = Object.entries(value.checks).filter((entry): entry is [string, Record<string, unknown>] =>
+    !!entry[1] && typeof entry[1] === 'object' && !Array.isArray(entry[1]));
+  if (!checks.length) return <section className="agent-game-runtime" aria-label="Agent 诊断证据">
+    <header><strong>Agent 诊断证据</strong><span>未执行</span></header>
+    <small>尚无当前构建的浏览器检查证据。</small></section>;
+  const labels: Record<string, string> = { pass:'通过', fail:'失败', stale:'源码已改变',
+    not_run:'未执行', unknown:'证据未知' };
+  return <section className="agent-game-runtime" aria-label="Agent 诊断证据">
+    <header><strong>Agent 诊断证据</strong><span>按构建与检查范围记录</span></header>
+    <dl>{checks.map(([name, diagnostic]) => {
+      const scope = diagnostic.scope && typeof diagnostic.scope === 'object' && !Array.isArray(diagnostic.scope)
+        ? diagnostic.scope as Record<string, unknown> : {};
+      const assertions = diagnostic.assertions && typeof diagnostic.assertions === 'object' && !Array.isArray(diagnostic.assertions)
+        ? diagnostic.assertions as Record<string, unknown> : {};
+      const failed = Array.isArray(assertions.failed) ? assertions.failed.join(', ') : '';
+      return <div key={name}><dt>{name}</dt><dd>{labels[String(diagnostic.evidence_status)] ?? '证据未知'}
+        {failed && ` · 失败断言 ${failed}`}
+        {scope.build_run_id == null ? null : ` · 构建 ${String(scope.build_run_id)}`}</dd></div>;
+    })}</dl>
+    <small>局部行为通过不代表全局玩法或视觉评审通过；源码改变后的旧证据会标记为过期。</small>
+  </section>;
+}
+
+function ModelImageInputSummary({ value }: { value: unknown }) {
+  if (!value || typeof value !== 'object' || !('status' in value)) return null;
+  const status = String(value.status);
+  const labels: Record<string, string> = { provided:'截图已随本次模型请求发送', not_authorized:'未授权',
+    provider_unsupported:'当前提供方不支持图片输入', provider_support_unknown:'当前模型图片能力未确认',
+    no_current_screenshot:'尚无当前截图', screenshot_stale:'截图已因源码改变过期', request_failed:'图片请求未完成' };
+  return <section className="agent-game-runtime" aria-label="模型图片输入">
+    <header><strong>模型图片输入</strong><span>{labels[status] ?? status}</span></header>
+    {'artifact_id' in value && <small>截图 {String(value.artifact_id)} v{'version' in value ? String(value.version) : '?'}
+      {'browser_run_id' in value ? ` · 浏览器运行 ${String(value.browser_run_id)}` : ''}</small>}
+    <small>{status === 'provided' ? '该记录证明图片字节进入了指定模型请求；不等于完成视觉评审。'
+      : '文本诊断仍可使用；不会改换提供方、模型或预算。'}</small>
+  </section>;
 }
 
 function CodeWriteEvidence({ result }: { result: unknown }) {

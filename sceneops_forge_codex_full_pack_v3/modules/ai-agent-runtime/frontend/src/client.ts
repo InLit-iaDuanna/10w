@@ -9,8 +9,10 @@ export type AgentTask = Required<components['schemas']['AgentTaskRecord']> & {
 };
 type TaskList = Omit<components['schemas']['AgentTaskList'], 'tasks'> & { tasks: AgentTask[] };
 type TaskEvents = components['schemas']['AgentTaskEvents'];
-type Prepare = Omit<components['schemas']['PrepareAgentTask'], 'allow_browser_observation' | 'allow_browser_interaction'>
-  & Partial<Pick<components['schemas']['PrepareAgentTask'], 'allow_browser_observation' | 'allow_browser_interaction'>>;
+type OptionalPrepareField = 'allow_browser_observation' | 'allow_browser_interaction'
+  | 'allow_model_image_input';
+type Prepare = Omit<components['schemas']['PrepareAgentTask'], OptionalPrepareField>
+  & Partial<Pick<components['schemas']['PrepareAgentTask'], OptionalPrepareField>>;
 type Authorize = components['schemas']['AuthorizeAgentTask'];
 export type GameProjectExecution = components['schemas']['GameProjectExecution'];
 type GameOperation = components['schemas']['GameOperationRequest']['operation'];

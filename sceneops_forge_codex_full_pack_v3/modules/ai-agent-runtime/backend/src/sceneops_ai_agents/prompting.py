@@ -16,6 +16,9 @@ STRUCTURED_ACTION_PROTOCOL = """本轮只返回一个符合传入 JSON Schema �
 
 CODE_TOOL_GUIDANCE = """源码任务只使用已登记卡片分支的类型化能力。先检查工作区并读取需要修改的当前文件；code.file.write 需要相对源码路径、准确 expected_content（新文件为 null）和完整新内容。运行能力存在时按状态、依赖、检查、构建、预览推进；这些动作不接受模型提供的命令、目录、端口或环境变量。"""
 
+DIAGNOSTIC_REPAIR_GUIDANCE = """浏览器诊断以 context_summary.game_diagnostics 的结构化字段为准，不从日志措辞猜结论。区分工具失败、行为断言失败、页面/控制台/网络错误、未执行、源码改变后证据过期和证据未知。诊断包含原动作 result_reference；缺少精确证据时按引用读取。
+修复行为问题时先读取最可能负责该行为的现有游戏源码，再修改原实现；不得通过改断言、测试 hooks、测试起点、检查脚本、删除功能或跳过检查制造通过。相同失败检查在没有新增源码读取、源码修改或构建结果前不要机械重跑。源码修改后重新类型检查，生成相同范围的测试构建并复跑原检查；随后用普通交付构建的 current-input 检查确认基本输入仍工作。局部断言通过不能表述为全局玩法或视觉验收通过。"""
+
 HISTORY_TOOL_GUIDANCE = """历史正文或日志不在当前上下文时，使用 agent.history.read 读取给出的 task-action 引用，不能从摘要恢复旧前文后直接覆盖。"""
 
 ASSET_TOOL_GUIDANCE = """基础资产路径只支持能力清单所表达的有界对象。asset_id 使用 ast_ 前缀，sceneops_id 使用 sobj_ 前缀；尺寸单位为米。Blender 为右手 Z 向上，Unity 为左手 Y 向上。配方无法表达目标时使用阻塞报告能力说明具体缺口，不用简单资产冒充完成。"""
@@ -39,6 +42,8 @@ def next_action_prompt(data) -> str:
     guidance = []
     if any(capability.startswith("code.") for capability in capability_ids):
         guidance.append(CODE_TOOL_GUIDANCE)
+        if "code.browser.interact" in capability_ids:
+            guidance.append(DIAGNOSTIC_REPAIR_GUIDANCE)
         if "agent.history.read" in capability_ids:
             guidance.append(HISTORY_TOOL_GUIDANCE)
     if any(capability.startswith(("blender.", "unity.asset")) for capability in capability_ids):

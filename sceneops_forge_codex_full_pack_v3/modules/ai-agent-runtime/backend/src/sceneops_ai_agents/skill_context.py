@@ -7,7 +7,8 @@ import re
 VERSION = "sceneops-s1.1"
 UPSTREAM = "e5f301d548bb18c530afbece78cd25082f4cda9c"
 LOGGER = logging.getLogger(__name__)
-CHECKS = {"code.project.check", "code.project.build", "code.preview.start"}
+CHECKS = {"code.project.check", "code.project.build", "code.project.build_test",
+          "code.preview.start", "code.browser.observe", "code.browser.interact"}
 CONSULT = re.compile(r"^(?:请|帮我|please\s+)?(?:解释|讨论|比较|分析方案|explain\b|discuss\b|compare\b)", re.I)
 VERIFY = re.compile(r"^(?:请|帮我|please\s+)?(?:检查|验证|验收|复查|测试|check\b|verify\b|test\b|review\b)", re.I)
 TIMING = re.compile(r"冷却|冲刺|暂停|重开|计时|cooldown|dash|sprint|pause|restart|timer", re.I)
@@ -58,11 +59,19 @@ def select_skills(data):
                 if isinstance(run, dict):
                     latest[f"code.project.{operation}"] = {
                         "result_summary": {"evidence": {"run": run}}}
+    diagnostics = data.context_summary.get("game_diagnostics", {})
+    current_browser = diagnostics.get("latest", {}) if isinstance(diagnostics, dict) else {}
+    browser_status = current_browser.get("evidence_status") if isinstance(current_browser, dict) else None
+    browser_issues = set(current_browser.get("issue_types", [])) if isinstance(current_browser, dict) else set()
     failures = any(_failed(entry) for entry in latest.values())
     verify = bool(VERIFY.search(data.goal.strip()))
     last_capability = last.get("action", {}).get("capability_id") if last else None
+    if browser_status == "fail" and browser_issues & {"behavior_issue", "browser_errors", "tool_failure"}:
+        return "diagnosis", (["qa"] if verify else ["gameplay"]) + ["debug"]
     if failures:
         return "diagnosis", (["qa"] if verify else ["gameplay"]) + ["debug"]
+    if browser_status == "stale":
+        return "verification", ["qa"]
     if verify or (last and last.get("state") == "succeeded" and
                   (last_capability in CHECKS or
                    (last_capability == "code.file.write" and CHECKS & capabilities))):
