@@ -39,3 +39,17 @@ test('failed confirmation preparation is visible and only retries on a click', a
     expect(host.querySelector('[role="alert"]')).toBeNull();
   } finally { await act(async () => root.unmount()); }
 });
+
+test('project Demo agent shows its cumulative model and action budget before execution', async () => {
+  const host = document.createElement('div');
+  const root = createRoot(host);
+  const prepare = vi.fn().mockResolvedValue(undefined);
+  try {
+    await act(async () => root.render(<DemoExecutionRequest alignmentId="direction-one"
+      mode="project-demo-agent" prepare={prepare} />));
+    expect(host.textContent).toContain('制作模型将按已确认方向选择内容与源码修改');
+    expect(host.textContent).toContain('累计最多 28 次模型请求、32 个类型化动作和 30 分钟');
+    expect(host.textContent).toContain('派生运行输入与构建产物不作为编辑源');
+    expect(prepare).not.toHaveBeenCalled();
+  } finally { await act(async () => root.unmount()); }
+});

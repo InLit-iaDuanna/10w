@@ -57,7 +57,7 @@ max_steps/max_attempts/执行时间有内核边界；输入的 agent budget 进�
 
 RuntimeBudget.usage_policy 默认 `require_reported`：已有用量未知时停止后续计费调用。只有用户明确选择 `bounded_calls` 后，才允许未知用量下继续；宿主必须从明确用户预算设置构造该策略，不能让模型自行放开。此模式仅限制调用次数、步骤、尝试和执行时间，无法验证真实 token/货币硬上限，`budget_accounting_complete` 始终保留 false。已知 usage 仍受预算检查。
 
-两种策略都有 `max_metered_calls`，默认 4，上限 16，0 禁止计费调用。每个计费 attempt（含补偿）开始前事务递增 `PipelineRun.metered_calls_used`，失败、取消和中断不退还次数。`CapabilityInvocation.budget.max_metered_calls` 是预留本次前可用额度，包含当前调用，最后一次为 1；不会把初始总预算重复交给后续 handler。AgentTask 的更小次数预算也适用。调用预算只覆盖 run 内已注册的计费 attempts，编译计划等 run 外请求必须由宿主单独披露及约束。
+两种策略都有 `max_metered_calls`，默认 4，上限 32，0 禁止计费调用。每个计费 attempt（含补偿）开始前事务递增 `PipelineRun.metered_calls_used`，失败、取消和中断不退还次数。`CapabilityInvocation.budget.max_metered_calls` 是预留本次前可用额度，包含当前调用，最后一次为 1；不会把初始总预算重复交给后续 handler。AgentTask 的更小次数预算也适用。调用预算只覆盖 run 内已注册的计费 attempts，编译计划等 run 外请求必须由宿主单独披露及约束。
 
 混合 live/mock run 总模式为 mock；每个 step 和 attempt 始终保留自身模式。缓存和规划条目不会自动执行 mock。注册 handler 返回不匹配模式、缺证据或无验收通过记录时停止执行。
 

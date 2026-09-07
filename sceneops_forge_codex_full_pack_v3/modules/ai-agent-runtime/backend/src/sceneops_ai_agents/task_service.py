@@ -9,7 +9,8 @@ from sceneops_harness import Authority, CapabilityRegistry, HarnessError, Harnes
 from .task_models import (AgentTaskRecord, AuthorizationCard, AuthorizeAgentTask, PrepareAgentTask,
                           TaskGrant, now, PROTOTYPE_CAPABILITIES, TASK_CAPABILITIES,
                           ENVIRONMENT_SCENE_CAPABILITIES, card_code_capabilities,
-                          project_demo_capabilities, GameOperationRequest)
+                          project_demo_capabilities, project_demo_agent_capabilities,
+                          GameOperationRequest, ContinueProjectDemoRequest)
 from .task_models import BrowserObservationAuthorization
 from .task_repository import AgentTaskRepository
 from .task_tools import TaskTools, contained
@@ -89,7 +90,7 @@ class AgentTaskService:
         card_work = (self.card_workspace(project.project_id, request.card_id)
                      if request.task_profile == 'card-development' else None)
         scene_work = request.task_profile == 'environment-scene'
-        project_work = request.task_profile == 'project-demo'
+        project_work = request.task_profile in ('project-demo', 'project-demo-agent')
         demo_work = self.workspace.open_project_demo_workspace(project.project_id) if project_work else None
         root = (Path(card_work['worktree_path']) if card_work else Path(demo_work['workspace_root'])
                 if demo_work else contained(self.workspace_base / project.project_id, self.workspace_base))
@@ -139,14 +140,26 @@ class AgentTaskService:
         elif project_work:
             if self.project_assets is None or self.environment_scenes is None or self.project_demo_context is None:
                 raise HarnessError('PROJECT_DEMO_NOT_CONNECTED', '项目 Demo 的方向、资产或场景服务尚未连接。')
-            card.capability_ids = project_demo_capabilities(card)
-            card.max_model_calls = 0
-            card.max_attempts_per_action = 2
-            card.scope = ('仅此项目登记的 Demo 工作区：通过公开服务保存门配方、两个共享实例和 KeyDoor 参数，'
-                '把所选场景与资产版本物化为派生运行输入，并执行固定 TypeScript 检查、Vite 构建与本地预览。'
-                '不调用制作模型，不提交、合并或发布；构建失败时保留上一可玩候选。')
-            card.cost_notice = ('最多 32 个固定类型化步骤、20 分钟；修复与更新累计使用同一任务预算和期限。'
-                '依赖准备只运行工程声明的 pnpm 依赖，安装脚本禁用。')
+            if request.task_profile == 'project-demo':
+                card.capability_ids = project_demo_capabilities(card)
+                card.max_model_calls = 0
+                card.max_attempts_per_action = 2
+                card.scope = ('仅此项目登记的 Demo 工作区：通过公开服务保存门配方、两个共享实例和 KeyDoor 参数，'
+                    '把所选场景与资产版本物化为派生运行输入，并执行固定 TypeScript 检查、Vite 构建与本地预览。'
+                    '不调用制作模型，不提交、合并或发布；构建失败时保留上一可玩候选。')
+                card.cost_notice = ('最多 32 个固定类型化步骤、20 分钟；修复与更新累计使用同一任务预算和期限。'
+                    '依赖准备只运行工程声明的 pnpm 依赖，安装脚本禁用。')
+            else:
+                card.capability_ids = project_demo_agent_capabilities(card)
+                card.max_model_calls = 28
+                card.max_duration_seconds = 1800
+                card.max_attempts_per_action = 2
+                card.scope = ('仅此项目登记的 Demo 工作区：真实制作模型可读取现有源码、资产与场景，通过公开服务'
+                    '创建或更新程序化门配方、实例与 KeyDoor 参数，并按精确前文修改普通游戏源码。'
+                    'SceneOps 派生内容、测试适配器、依赖锁和构建输出不可作为编辑源。模型可执行固定检查、构建、'
+                    '本地预览及本次授权的浏览器检查；不接受任意 Shell、目录、端口或环境变量，不提交、合并或发布。')
+                card.cost_notice = ('整个任务累计最多 28 次模型请求、32 个类型化动作和 30 分钟；追加目标与修复'
+                    '沿用相同计数和期限，不自动扩大能力。依赖准备禁用安装脚本；模型费用可能未知。')
         elif request.task_profile == 'survival-prototype':
             card.capability_ids = list(PROTOTYPE_CAPABILITIES)
             card.scope = ('本任务专用空 Unity 工程：以有界数据生成方块生存射击原型，'
@@ -212,7 +225,10 @@ class AgentTaskService:
             prepare_project_demo(task, request, context)
             task.observations['development_workspace'] = {
                 'workspace_id': demo_work['workspace_id'], 'workspace_root': str(root),
-                'instruction': '使用项目登记根目录中的现有未采纳源码；只替换 SceneOps 派生内容文件。',
+                'instruction': ('使用项目登记根目录中的现有未采纳源码；资产、场景和行为参数走公开内容服务，'
+                    '新玩法按精确前文增量修改普通源码。物化只替换 SceneOps 派生内容文件。'
+                    if request.task_profile == 'project-demo-agent' else
+                    '使用项目登记根目录中的现有未采纳源码；只替换 SceneOps 派生内容文件。'),
             }
         elif scene_work:
             task.observations['scene_selection'] = {
@@ -307,8 +323,10 @@ class AgentTaskService:
                     or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')
             self.card_workspace(task.project_id, grant.card_id, expected_root=grant.workspace_root, expected_branch=grant.branch)
-        elif task.authorization_card.task_profile == 'project-demo':
-            expected_capabilities = project_demo_capabilities(task.authorization_card)
+        elif task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
+            expected_capabilities = (project_demo_agent_capabilities(task.authorization_card)
+                if task.authorization_card.task_profile == 'project-demo-agent'
+                else project_demo_capabilities(task.authorization_card))
             if (grant.workspace_id != task.authorization_card.workspace_id
                     or not grant.workspace_id or grant.card_id is not None or grant.branch is not None
                     or grant.workspace_root != task.authorization_card.workspace_root
@@ -316,7 +334,11 @@ class AgentTaskService:
                     or task.authorization_card.capability_ids != expected_capabilities
                     or grant.capability_ids != expected_capabilities
                     or grant.alignment_id != task.authorization_card.alignment_id
+                    or grant.include_demo_assets != task.authorization_card.include_demo_assets
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
+                    or grant.allow_browser_observation != task.authorization_card.allow_browser_observation
+                    or grant.allow_browser_interaction != task.authorization_card.allow_browser_interaction
+                    or grant.allow_model_image_input != task.authorization_card.allow_model_image_input
                     or grant.allow_dependency_install != task.authorization_card.allow_dependency_install):
                 raise HarnessError('TASK_SCOPE_DENIED', '项目 Demo 授权与已确认方向或工作区不一致。')
             self.project_demo_workspace(task.project_id, grant.workspace_id,
@@ -364,7 +386,7 @@ class AgentTaskService:
             if task.status != "awaiting_authorization":
                 raise HarnessError("TASK_STATE_CONFLICT", "任务当前不可授权。")
             card_work = task.authorization_card.task_profile == 'card-development'
-            project_work = task.authorization_card.task_profile == 'project-demo'
+            project_work = task.authorization_card.task_profile in ('project-demo', 'project-demo-agent')
             if card_work:
                 record = self.card_workspace(task.project_id, task.authorization_card.card_id,
                     expected_root=task.authorization_card.workspace_root, expected_branch=task.authorization_card.branch)
@@ -396,7 +418,7 @@ class AgentTaskService:
                 allow_dependency_install=task.authorization_card.allow_dependency_install,
                 capability_ids=list(task.authorization_card.capability_ids),
                 scene_write_object_ids=list(task.authorization_card.scene_write_object_ids),
-                expires_at=now() + timedelta(minutes=20))
+                expires_at=now() + timedelta(seconds=task.authorization_card.max_duration_seconds))
             if task.grant.execution_mode == "codex-full-access":
                 task.grant.budget = RuntimeBudget(max_steps=1, max_attempts_per_step=1,
                     max_duration_seconds=1200, max_metered_calls=1, usage_policy="bounded_calls")
@@ -408,12 +430,14 @@ class AgentTaskService:
             task.status, task.reason = "queued", None
             if task.authorization_card.allow_browser_observation:
                 task.browser_authorization = BrowserObservationAuthorization(
-                    task_id=task.id, project_id=task.project_id, workspace_root=str(root),
+                    task_id=task.id, project_id=task.project_id, workspace_id=task.grant.workspace_id,
+                    workspace_root=str(root),
                     card_id=task.grant.card_id, branch=task.grant.branch,
                     expires_at=task.grant.expires_at)
             if task.authorization_card.allow_browser_interaction:
                 task.browser_interaction_authorization = BrowserObservationAuthorization(
-                    task_id=task.id, project_id=task.project_id, workspace_root=str(root),
+                    task_id=task.id, project_id=task.project_id, workspace_id=task.grant.workspace_id,
+                    workspace_root=str(root),
                     card_id=task.grant.card_id, branch=task.grant.branch,
                     expires_at=task.grant.expires_at)
         task = self.records.update(task_id, grant, "agent.task.authorized")
@@ -425,7 +449,8 @@ class AgentTaskService:
             job.add_done_callback(lambda completed: self.jobs.pop(task_id, None))
         return task
 
-    async def _run(self, task_id, *, actions=None, continue_with_agent=False):
+    async def _run(self, task_id, *, actions=None, continue_with_agent=False,
+                   project_demo_update=False):
         from .task_loop import execute_task
         def claim(task):
             if task.owner_pid is not None or task.status != "queued":
@@ -433,9 +458,11 @@ class AgentTaskService:
             task.owner_pid, task.status = os.getpid(), "running"
         self.records.update(task_id, claim, "agent.task.started")
         try:
-            if self.get(task_id).authorization_card.task_profile == 'project-demo':
+            profile = self.get(task_id).authorization_card.task_profile
+            if profile == 'project-demo' or (profile == 'project-demo-agent' and project_demo_update):
                 from .project_demo import run_project_demo
-                await run_project_demo(self, task_id)
+                await run_project_demo(self, task_id,
+                    initialize_fixture=True if profile == 'project-demo' and not project_demo_update else False)
                 return
             if actions is None:
                 await execute_task(self, task_id)
@@ -460,7 +487,8 @@ class AgentTaskService:
             self._stop_record(task_id, "failed", f"{getattr(error, 'code', type(error).__name__)}: {error}")
         finally:
             task = self.get(task_id)
-            if task.cancel_requested and task.authorization_card.task_profile == 'card-development':
+            if (task.cancel_requested and task.authorization_card.task_profile in
+                    ('card-development', 'project-demo', 'project-demo-agent')):
                 try:
                     await self.game.stop_task_preview(task)
                 except Exception as error:
@@ -483,17 +511,22 @@ class AgentTaskService:
             def release(current):
                 current.owner_pid = None
                 if (current.grant and current.status != 'blocked'
-                        and current.authorization_card.task_profile != 'project-demo'):
+                        and current.authorization_card.task_profile not in
+                            ('project-demo', 'project-demo-agent')):
                     current.grant.revoked = True
             self.records.update(task_id, release, "agent.task.worker_released")
 
     def _stop_record(self, task_id, status, reason):
         observed = self.get(task_id)
         recovered = {}
-        if observed.authorization_card.task_profile == 'card-development' and observed.grant:
+        if observed.authorization_card.task_profile in ('card-development', 'project-demo-agent') and observed.grant:
             try:
-                self.card_workspace(observed.project_id, observed.grant.card_id,
-                    expected_root=observed.grant.workspace_root, expected_branch=observed.grant.branch)
+                if observed.authorization_card.task_profile == 'card-development':
+                    self.card_workspace(observed.project_id, observed.grant.card_id,
+                        expected_root=observed.grant.workspace_root, expected_branch=observed.grant.branch)
+                else:
+                    self.project_demo_workspace(observed.project_id, observed.grant.workspace_id,
+                        expected_root=observed.grant.workspace_root)
                 recovered = {entry.action.action_id: self.code.reconcile(observed, entry)
                     for entry in observed.actions if entry.action.capability_id == 'code.file.write'
                     and entry.state in ('running', 'uncertain')}
@@ -601,7 +634,7 @@ class AgentTaskService:
 
     def update_project_demo(self, task_id):
         task = self.get(task_id)
-        if task.authorization_card.task_profile != 'project-demo' or task.grant is None:
+        if task.authorization_card.task_profile not in ('project-demo', 'project-demo-agent') or task.grant is None:
             raise HarnessError('PROJECT_DEMO_NOT_AUTHORIZED', '此任务不是已授权的项目 Demo。')
         if (task.grant.revoked or task.cancel_requested
                 or (task.grant.expires_at is not None and task.grant.expires_at <= now())):
@@ -616,6 +649,62 @@ class AgentTaskService:
         def queue(current):
             current.status, current.reason, current.finished_at = 'queued', None, None
         task = self.records.update(task_id, queue, 'agent.task.authorized', {'update': True})
+        if task_id not in self.tools:
+            self.tools[task_id] = TaskTools(self, task_id)
+            self.runtimes[task_id] = HarnessRuntime(self.database_path, self.tools[task_id].registry())
+        job = asyncio.create_task(self._run(task_id, project_demo_update=True))
+        self.jobs[task_id] = job
+        job.add_done_callback(lambda completed: self.jobs.pop(task_id, None))
+        return task
+
+    def continue_project_demo(self, task_id, request: ContinueProjectDemoRequest):
+        task = self.get(task_id)
+        if task.authorization_card.task_profile != 'project-demo-agent' or task.grant is None:
+            raise HarnessError('PROJECT_DEMO_AGENT_REQUIRED', '此任务不是已授权的 D3 自主项目 Demo。')
+        if (task.grant.revoked or task.cancel_requested
+                or (task.grant.expires_at is not None and task.grant.expires_at <= now())):
+            raise HarnessError('TASK_GRANT_INVALID', '追加目标沿用原任务预算与期限；当前授权已失效。')
+        from .demo_tasks import validate_project_demo_alignment
+        context = self.project_demo_context(task.project_id) if self.project_demo_context else {}
+        validate_project_demo_alignment(task.grant.alignment_id, context)
+        self.project_demo_workspace(task.project_id, task.grant.workspace_id,
+                                    expected_root=task.grant.workspace_root)
+        goals = task.observations.get('demo_goals', [])
+        prior = next((item for item in goals if isinstance(item, dict)
+                      and item.get('request_id') == request.request_id), None)
+        if prior is not None:
+            if prior.get('goal') != request.goal.strip():
+                raise HarnessError('REQUEST_ID_CONFLICT', '同一追加请求 ID 不能更换目标。')
+            return task
+        if task.status not in ('completed', 'review_required') or task.owner_pid is not None:
+            raise HarnessError('TASK_BUSY', '项目 Demo 正在执行，或当前状态不可追加目标。')
+        queued = False
+        def queue(current):
+            nonlocal queued
+            history = current.observations.setdefault('demo_goals', [])
+            prior = next((item for item in history if isinstance(item, dict)
+                          and item.get('request_id') == request.request_id), None)
+            if prior is not None:
+                if prior.get('goal') != request.goal.strip():
+                    raise HarnessError('REQUEST_ID_CONFLICT', '同一追加请求 ID 不能更换目标。')
+                return
+            if current.status not in ('completed', 'review_required') or current.owner_pid is not None:
+                raise HarnessError('TASK_BUSY', '项目 Demo 已由另一个请求开始执行。')
+            if (current.grant is None or current.grant.revoked or current.cancel_requested
+                    or current.grant.expires_at <= now()):
+                raise HarnessError('TASK_GRANT_INVALID', '追加目标的原授权已失效。')
+            if not request.goal.strip():
+                raise HarnessError('TASK_GOAL_REQUIRED', '请输入追加目标。')
+            current.goal = request.goal.strip()
+            queued = True
+            history.append({'request_id': request.request_id, 'goal': current.goal,
+                'kind': 'follow-up', 'accepted_at': now().isoformat()})
+            current.observations['active_goal_action_start'] = len(current.actions)
+            current.status, current.reason, current.finished_at = 'queued', None, None
+        task = self.records.update(task_id, queue, 'agent.project_demo.goal_added',
+            {'request_id': request.request_id})
+        if not queued:
+            return task
         if task_id not in self.tools:
             self.tools[task_id] = TaskTools(self, task_id)
             self.runtimes[task_id] = HarnessRuntime(self.database_path, self.tools[task_id].registry())
@@ -667,7 +756,7 @@ class AgentTaskService:
     def _game_task(self, task_id, *, active_agent=False, manual_operation=False):
         task = self.get(task_id)
         card = task.authorization_card
-        if card.task_profile not in ('card-development', 'project-demo') or not card.allow_game_execution or task.grant is None:
+        if card.task_profile not in ('card-development', 'project-demo', 'project-demo-agent') or not card.allow_game_execution or task.grant is None:
             raise HarnessError('GAME_EXECUTION_NOT_AUTHORIZED', '此任务没有游戏工程运行权限。')
         if active_agent:
             task = self.check_grant(task_id)

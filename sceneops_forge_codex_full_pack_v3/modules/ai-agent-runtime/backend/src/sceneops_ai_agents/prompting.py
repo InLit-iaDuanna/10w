@@ -14,7 +14,7 @@ DIRECTOR_ROLE_INSTRUCTION = """当前角色：主制作 Agent。维持本轮目�
 
 STRUCTURED_ACTION_PROTOCOL = """本轮只返回一个符合传入 JSON Schema 的动作。capability_id 必须来自本轮能力清单，inputs 只使用对应 schema 字段。先补必要观察再修改；相同动作重试保留 action_id 和 inputs，实际输入改变则使用新 action_id。工具完成后依据真实结果决定下一步；结果未知时先核查。agent.finish 的 summary 不是完成证据。"""
 
-CODE_TOOL_GUIDANCE = """源码任务只使用已登记卡片分支的类型化能力。先检查工作区并读取需要修改的当前文件；code.file.write 需要相对源码路径、准确 expected_content（新文件为 null）和完整新内容。运行能力存在时按状态、依赖、检查、构建、预览推进；这些动作不接受模型提供的命令、目录、端口或环境变量。"""
+CODE_TOOL_GUIDANCE = """源码任务只使用已授权的登记工作区和类型化能力。先检查工作区并读取需要修改的当前文件；code.file.write 需要相对源码路径、准确 expected_content（新文件为 null）和完整新内容。运行能力存在时按状态、依赖、检查、构建、预览推进；这些动作不接受模型提供的命令、目录、端口或环境变量。"""
 
 DIAGNOSTIC_REPAIR_GUIDANCE = """浏览器诊断以 context_summary.game_diagnostics 的结构化字段为准，不从日志措辞猜结论。区分工具失败、行为断言失败、页面/控制台/网络错误、未执行、源码改变后证据过期和证据未知。诊断包含原动作 result_reference；缺少精确证据时按引用读取。
 修复行为问题时先读取最可能负责该行为的现有游戏源码，再修改原实现；不得通过改断言、测试 hooks、测试起点、检查脚本、删除功能或跳过检查制造通过。相同失败检查在没有新增源码读取、源码修改或构建结果前不要机械重跑。源码修改后重新类型检查，生成相同范围的测试构建并复跑原检查；随后用普通交付构建的 current-input 检查确认基本输入仍工作。局部断言通过不能表述为全局玩法或视觉验收通过。"""
@@ -26,6 +26,8 @@ ASSET_TOOL_GUIDANCE = """基础资产路径只支持能力清单所表达的有�
 PROTOTYPE_TOOL_GUIDANCE = """固定原型路径先按实际能力组合有界参数，再读取场景结果并交付检查。只有能力清单明确包含玩法验证时才执行自动游测；未授权游测不妨碍如实交付已完成的制作与编译结果。"""
 
 ENVIRONMENT_TOOL_GUIDANCE = """项目环境任务先读取当前项目资产与最新场景，用任务上下文中的选中对象 ID 定位对象。对象选择只是上下文，只有能力清单中的 environment.object.transform 和已确认对象范围才允许写入。修改时提交刚读取的 expected_version 和完整变换，未要求变化的坐标、旋转与缩放保持原值。每个环境场景任务只允许一次成功变换；写入后必须读取当前场景核对，不得再次按相对描述重复修改。对象不存在或版本冲突时重新读取，不猜 ID、不强行覆盖。这里修改的是项目场景数据，不能据此声称运行中的游戏已更新。"""
+
+PROJECT_DEMO_TOOL_GUIDANCE = """项目 Demo 制作先读取登记工作区、项目资产和当前场景。共享门配方、实例和 KeyDoor 参数使用对应公开内容工具并提交刚读取的版本；新玩法使用普通项目源码模块。禁止编辑 `.sceneops/demo-content.json`、`src/game/sceneops-demo-content.ts`、测试适配器和构建输出。内容源改变后执行物化，再根据真实检查、构建和浏览器结果修复同一工程；旧候选仍可玩不代表当前更新通过。"""
 
 
 def next_action_instructions(skill_context) -> str:
@@ -50,8 +52,10 @@ def next_action_prompt(data) -> str:
         guidance.append(ASSET_TOOL_GUIDANCE)
     if any(capability.startswith("unity.prototype.") for capability in capability_ids):
         guidance.append(PROTOTYPE_TOOL_GUIDANCE)
-    if any(capability.startswith(("project.assets.", "environment.")) for capability in capability_ids):
+    if data.context_summary.get('task_profile') == 'environment-scene':
         guidance.append(ENVIRONMENT_TOOL_GUIDANCE)
+    elif data.context_summary.get('task_profile') == 'project-demo-agent':
+        guidance.append(PROJECT_DEMO_TOOL_GUIDANCE)
     blocks = ["根据下面的目标、当前上下文、真实观测、历史引用和能力合同选择下一动作。"]
     if guidance:
         blocks.append("\n\n".join(guidance))

@@ -140,9 +140,24 @@ class GameProjectRuntime:
             sequence = (row[0] if row else 0) + 1
             task = self.records.get(run.task_id)
             materialization = task.observations.get('demo_materialization', {})
+            writes = [action for action in task.actions
+                if action.action.capability_id == 'code.file.write'
+                and action.state == 'succeeded' and action.effect_state == 'COMMITTED']
+            content_actions = [action for action in task.actions
+                if action.action.capability_id in {
+                    'project.asset.door.create', 'project.asset.door.update',
+                    'environment.object.place', 'environment.demo_object.transform',
+                    'environment.key_door.configure', 'environment.object.remove'}
+                and action.state == 'succeeded' and action.effect_state == 'COMMITTED']
+            source_version = {**materialization.get('source_version', {}),
+                'code_write_requests': [action.request_id for action in writes],
+                'code_paths': sorted({action.action.inputs['path'] for action in writes}),
+                'content_action_ids': [action.action.action_id for action in content_actions],
+                'goal_request_id': ((task.observations.get('demo_goals') or [{}])[-1].get('request_id')
+                                    if isinstance(task.observations.get('demo_goals'), list) else None)}
             candidate = GameBuildCandidate(project_id=run.project_id, workspace_id=run.workspace_id,
                 task_id=run.task_id, sequence=sequence, build_run_id=run.id,
-                source_version=materialization.get('source_version', {}),
+                source_version=source_version,
                 scene_id=materialization.get('scene_id'), scene_version=materialization.get('scene_version'),
                 asset_versions=materialization.get('asset_versions', []))
             connection.execute('''INSERT INTO game_build_candidates
@@ -518,7 +533,7 @@ class GameProjectRuntime:
             self.previews.pop(key, None)
         candidates, latest_candidate, current_candidate, update_state = self._candidate_snapshot(
             task.project_id, workspace_id)
-        if task.authorization_card.task_profile == 'project-demo':
+        if task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
             update = task.observations.get('demo_update', {})
             if task.status in ('queued', 'running'):
                 update_state = 'building'

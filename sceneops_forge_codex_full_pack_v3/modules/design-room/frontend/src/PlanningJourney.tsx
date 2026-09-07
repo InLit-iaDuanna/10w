@@ -406,7 +406,7 @@ function PlanningJourneyChat({ projectId, modelPicker, onDirtyChange, onOpenProj
             setEditingInitialDirection(true);
           }}>修改初版方向</button>
           {development?.prepareProjectDemo && <DemoExecutionRequest key={initialDirection.direction_id}
-            alignmentId={initialDirection.direction_id} mode="typed-tools"
+            alignmentId={initialDirection.direction_id} mode="project-demo-agent"
             prepare={() => development.prepareProjectDemo!(projectId, initialDirection.direction_id,
               `制作项目第一版 Demo：${initialDirection.core_experience}。${initialDirection.perspective_style}；${initialDirection.simplified_scope}。`)} />}
         </> : <form className="journey-demo-direction-form" onSubmit={event => {event.preventDefault();act('confirm_demo_direction', directionDraft);}}>

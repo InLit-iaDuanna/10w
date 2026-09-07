@@ -14,4 +14,6 @@
 
 这是应用随包知识，独立于用户全局 skill 安装和游戏目录同名文件。`skill_context.py` 只加载本包已知路径，记录真正读入的路径、适配版本与上游提交到已有 Harness 结果日志。缺资源返回明确诊断，不编造成功记录。
 
+D3 自有资源 `sceneops-demo-composer/SKILL.md` 与 `sceneops-editable-content/SKILL.md` 的适配版本为 `sceneops-d3.0`。它们是 SceneOps 产品运行规则，不来自上述上游；仅在具有真实项目 Demo 制作权限的 `project-demo-agent` 模型调用中加载，日志使用 `source=sceneops-product` 区分来源。
+
 后续更新需人工审阅已采用文件的差异，并同步适配版本与对应测试；本轮不在运行中联网获取上游。回退本轮产品代码可恢复旧装配，不重写游戏成果或改变任务授权。

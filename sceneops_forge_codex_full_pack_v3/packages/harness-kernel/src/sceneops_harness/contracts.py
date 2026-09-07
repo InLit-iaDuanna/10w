@@ -26,7 +26,7 @@ class RuntimeBudget(HarnessContract):
     max_tokens: int = Field(default=32000, ge=0)
     max_cost_usd: float = Field(default=1, ge=0, allow_inf_nan=False)
     usage_policy: Literal["require_reported", "bounded_calls"] = "require_reported"
-    max_metered_calls: int = Field(default=4, ge=0, le=16)
+    max_metered_calls: int = Field(default=4, ge=0, le=32)
 
 
 class ResourceRef(HarnessContract):

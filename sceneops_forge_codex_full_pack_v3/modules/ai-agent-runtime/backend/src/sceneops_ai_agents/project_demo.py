@@ -1,4 +1,4 @@
-"""Deterministic D1/D2 project Demo fixture and content-to-runtime delivery."""
+"""Project Demo source materialization plus the explicit deterministic D2 fixture."""
 from __future__ import annotations
 
 import json
@@ -32,7 +32,8 @@ def _door_asset(service, task):
     return result.entry
 
 
-def _ensure_fixture(service, task):
+def initialize_key_door_fixture(service, task):
+    """Seed the D2 example when a caller explicitly requests that fixture."""
     from world_composer import ManualPlacementRequest, UpdateKeyDoorBehaviorRequest
 
     door = _door_asset(service, task)
@@ -69,41 +70,39 @@ def _source_version(root: Path) -> dict:
 
 
 def _manifest(service, task, scene):
-    asset_ids = {item.asset_id for item in scene.objects if item.behavior is not None}
+    asset_ids = {item.asset_id for item in scene.objects}
     assets = []
     version_by_ref = {}
     for asset_id in sorted(asset_ids):
         entry = service.project_assets.get(task.project_id, asset_id)
+        if entry.workspace_id != task.grant.workspace_id:
+            raise HarnessError("TASK_SCOPE_DENIED", "场景引用了另一个工作区的资产，不能物化到当前 Demo。")
         for version in entry.versions:
             version_by_ref[(entry.id, version.source_version)] = version
         referenced_versions = sorted({item.asset_version for item in scene.objects
-                                      if item.asset_id == entry.id and item.behavior is not None})
+                                      if item.asset_id == entry.id})
         for number in referenced_versions:
-            version = version_by_ref[(entry.id, number)]
-            if version.source_kind != "procedural" or version.recipe is None:
-                raise HarnessError("DEMO_ASSET_SOURCE_UNSUPPORTED",
-                                   "首批 Demo 门实例必须引用可编辑程序化门配方。")
+            version = version_by_ref.get((entry.id, number))
+            if version is None:
+                raise HarnessError("ASSET_VERSION_NOT_FOUND", "场景引用的资产版本不存在。")
             assets.append({
                 "asset_id": entry.id, "asset_version": number,
                 "asset_version_id": version.asset_version_id,
-                "recipe": version.recipe.model_dump(mode="json"),
+                "source_kind": version.source_kind,
+                "dimensions_m": version.dimensions_m,
+                "recipe": (version.recipe.model_dump(mode="json")
+                           if version.recipe is not None else None),
                 "runtime_artifacts": [item.model_dump(mode="json") for item in version.runtime_artifacts],
             })
     objects = []
     for item in scene.objects:
-        if item.behavior is None:
-            continue
+        behavior = (None if item.behavior is None else
+                    {"kind": "KeyDoor", **item.behavior.model_dump(mode="json")})
         objects.append({
             "id": item.id, "asset_id": item.asset_id, "asset_version": item.asset_version,
             "asset_version_id": item.asset_version_id,
             "transform": item.transform.model_dump(mode="json"),
-            "behavior": {
-                "behavior_instance_id": item.behavior.behavior_instance_id,
-                "kind": "KeyDoor", "definition_id": item.behavior.definition_id,
-                "required_key_asset_id": item.behavior.required_key_asset_id,
-                "interaction_distance_m": item.behavior.interaction_distance_m,
-                "open_angle_deg": item.behavior.open_angle_deg,
-            },
+            "behavior": behavior,
         })
     return {
         "schema_version": 1, "project_id": task.project_id,
@@ -113,13 +112,13 @@ def _manifest(service, task, scene):
 
 
 def materialize_project_demo(service, task):
-    if task.authorization_card.task_profile != "project-demo":
+    if task.authorization_card.task_profile not in ("project-demo", "project-demo-agent"):
         raise HarnessError("TASK_SCOPE_DENIED", "当前任务不是项目级 Demo。")
     if service.project_assets is None or service.environment_scenes is None:
         raise HarnessError("PROJECT_DEMO_NOT_CONNECTED", "项目资产或场景服务尚未连接。")
     workspace = service.project_demo_workspace(task.project_id, task.grant.workspace_id,
                                                expected_root=task.grant.workspace_root)
-    _, scene = _ensure_fixture(service, task)
+    scene = service.environment_scenes.get(task.project_id)
     manifest = _manifest(service, task, scene)
     report = service.workspace.materialize_demo_content(
         task.project_id, task.grant.workspace_id, manifest)
@@ -139,16 +138,28 @@ def materialize_project_demo(service, task):
             "outcome": "source_saved", **materialization}
 
 
-async def run_project_demo(service, task_id):
+async def run_project_demo(service, task_id, *, initialize_fixture: bool | None = None):
     """Execute the bounded materialize/check/build/preview recipe without a model call."""
     from .task_loop import execute_action, record_action
 
     task = service.check_grant(task_id)
+    if initialize_fixture is None:
+        initialize_fixture = (task.authorization_card.task_profile == 'project-demo'
+            and not any(item.action.capability_id == 'code.demo_content.materialize'
+                        for item in task.actions))
+    if initialize_fixture:
+        door, scene = initialize_key_door_fixture(service, task)
+        service.records.update(task_id,
+            lambda current: current.observations.update({'project_demo_fixture': {
+                'fixture_id': 'key-door-v1', 'asset_id': door.id,
+                'scene_id': scene.scene_id, 'scene_version': scene.version}}),
+            'agent.project_demo.fixture_initialized', {'fixture_id': 'key-door-v1'})
+        task = service.get(task_id)
     update_number = 1 + sum(item.action.capability_id == "code.demo_content.materialize"
                             for item in task.actions)
     prefix = f"demo_update_{update_number}"
     steps = [
-        (f"{prefix}_materialize", "code.demo_content.materialize", "保存当前门配方、场景实例与行为参数到登记游戏工程。"),
+        (f"{prefix}_materialize", "code.demo_content.materialize", "把当前资产、场景实例与行为参数物化到登记游戏工程。"),
     ]
     if not service.game.dependencies_ready(task.grant.workspace_root):
         if not task.grant.allow_dependency_install:
@@ -176,7 +187,7 @@ async def run_project_demo(service, task_id):
         current.status = "review_required"
         current.finished_at = now()
         current.reason = (f"试玩更新失败（{failure}）；上一可玩候选保持不变。" if failure else
-                          "门配方、场景与行为配置已物化，最新试玩候选正在运行。")
+                          "当前内容源已物化，最新试玩候选正在运行。")
         current.observations["demo_update"] = {
             "status": "failed" if failure else "updated", "failure_code": failure,
             "current_candidate_id": (snapshot.current_playable_candidate.id

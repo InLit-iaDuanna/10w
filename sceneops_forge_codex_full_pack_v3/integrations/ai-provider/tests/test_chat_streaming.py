@@ -2,7 +2,7 @@
 import asyncio
 import json
 import unittest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 from sceneops_ai_provider.codex_cli import _chat_event
 from sceneops_ai_provider.openai_stream import _events, _response_events
@@ -43,6 +43,42 @@ class ChatStreamingTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(CodeBuddyFailure) as caught:
             await _stream_exchange(process, b'fixture', AsyncMock())
         self.assertNotIn('private', str(caught.exception))
+
+    async def test_codebuddy_retains_only_terminal_result(self):
+        process = Mock(stdin=Mock(drain=AsyncMock()), wait=AsyncMock())
+        process.stdout, process.stderr = asyncio.StreamReader(), asyncio.StreamReader()
+        delta = json.dumps({'type': 'stream_event', 'event': {'type': 'content_block_delta',
+            'delta': {'type': 'thinking_delta', 'thinking': 'x'}}}).encode() + b'\n'
+        result = {'type': 'result', 'subtype': 'success', 'result': '完成'}
+        process.stdout.feed_data(delta * 20 + json.dumps(result, ensure_ascii=False).encode() + b'\n')
+        process.stdout.feed_eof()
+        process.stderr.feed_eof()
+        stdout, stderr = await _stream_exchange(process, b'fixture', AsyncMock())
+        self.assertEqual(json.loads(stdout), result)
+        self.assertEqual(stderr, b'')
+
+    async def test_codebuddy_discards_large_request_transcript_events(self):
+        process = Mock(stdin=Mock(drain=AsyncMock()), wait=AsyncMock())
+        process.stdout, process.stderr = asyncio.StreamReader(), asyncio.StreamReader()
+        request = {'type': 'message', 'role': 'user', 'content': 'x' * 100_000}
+        result = {'type': 'result', 'subtype': 'success', 'result': '{"status":"ok"}'}
+        process.stdout.feed_data(json.dumps(request).encode() + b'\n')
+        process.stdout.feed_data(json.dumps(result).encode() + b'\n')
+        process.stdout.feed_eof()
+        process.stderr.feed_eof()
+        stdout, _ = await _stream_exchange(process, b'fixture', AsyncMock())
+        self.assertEqual(json.loads(stdout), result)
+
+    async def test_codebuddy_rejects_one_oversized_stream_event(self):
+        process = Mock(stdin=Mock(drain=AsyncMock()), wait=AsyncMock())
+        process.stdout, process.stderr = asyncio.StreamReader(), asyncio.StreamReader()
+        process.stdout.feed_data(json.dumps({'type': 'message', 'content': 'x' * 100}).encode() + b'\n')
+        process.stdout.feed_eof()
+        process.stderr.feed_eof()
+        with patch('sceneops_codebuddy.provider.MAX_EVENT_BYTES', 64), \
+             self.assertRaises(CodeBuddyFailure) as caught:
+            await _stream_exchange(process, b'fixture', AsyncMock())
+        self.assertEqual(caught.exception.code, 'CLI_OUTPUT_LIMIT')
 
     async def test_sse_fragmented_utf8_and_multiline(self):
         class Response:

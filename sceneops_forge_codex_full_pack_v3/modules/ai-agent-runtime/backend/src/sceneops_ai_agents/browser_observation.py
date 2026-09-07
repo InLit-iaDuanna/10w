@@ -27,7 +27,8 @@ def build_files(root):
 
 def target(runtime, task, *, kind='delivery', preview_key=None):
     build = runtime._current_build(task, kind=kind)
-    active = runtime.previews.get(preview_key or runtime.key(task.project_id, task.grant.card_id))
+    workspace_id = runtime.workspace_id(task)
+    active = runtime.previews.get(preview_key or runtime.key(task.project_id, workspace_id))
     if not active or active['process'].returncode is not None:
         raise HarnessError('CURRENT_PREVIEW_REQUIRED', '当前卡片没有运行中的已登记预览。')
     preview = active['run']
@@ -90,7 +91,7 @@ async def observe(service, task, *, interaction=None):
     capability = 'code.browser.interact' if interactive else 'code.browser.observe'
     title = '受控输入与状态回读' if interactive else '观察当前构建'
     run = GameExecutionRun(operation='interact' if interactive else 'observe', build_kind=kind, project_id=task.project_id,
-        card_id=task.grant.card_id, task_id=task.id,
+        workspace_id=runtime.workspace_id(task), card_id=task.grant.card_id, task_id=task.id,
         workspace_root=task.grant.workspace_root, branch=task.grant.branch)
     step_id = f'{task.id}:{run.id}'
     directory = runtime.data_dir / 'observations' / task.id / run.id
@@ -101,7 +102,7 @@ async def observe(service, task, *, interaction=None):
         run_id=run.id, effect_state='NONE', updated_at=now().isoformat()))
     runtime._save(run)
     try:
-        async with asyncio.timeout(35), runtime._lock(task.project_id, task.grant.card_id):
+        async with asyncio.timeout(35), runtime._lock(task.project_id, runtime.workspace_id(task)):
             service.browser_task(task.id, interaction=interactive)
             if preview_key:
                 await runtime._start_preview(task, Path(task.grant.workspace_root), kind=kind, key=preview_key)

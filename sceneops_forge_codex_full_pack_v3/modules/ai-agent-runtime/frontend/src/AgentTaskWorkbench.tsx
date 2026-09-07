@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { agentTasks, agentTaskKeys, type AgentTask, type GameProjectExecution } from './client';
 import { useProduction, productionKeys } from './production-client';
@@ -22,10 +22,16 @@ const ACTIONS: Record<string, string> = {
   'code.dependencies.prepare': '准备游戏工程依赖', 'code.project.status': '读取工程运行状态',
   'code.project.check': 'TypeScript 检查', 'code.project.build': '构建游戏',
   'code.preview.start': '启动本地预览', 'code.preview.stop': '停止本地预览',
-  'code.demo_content.materialize': '保存 Demo 内容源并物化',
+  'code.demo_content.materialize': '物化 Demo 运行输入',
   'project.assets.list': '读取项目资产与版本',
   'environment.scene.read': '读取当前场景与对象',
   'environment.object.transform': '修改对象变换并回读',
+  'project.asset.door.create': '创建可编辑门配方',
+  'project.asset.door.update': '更新共享门配方',
+  'environment.object.place': '放置场景实例',
+  'environment.demo_object.transform': '调整 Demo 实例',
+  'environment.key_door.configure': '配置钥匙门行为',
+  'environment.object.remove': '移除场景实例',
   'code.browser.observe': '采集当前构建画面与浏览器错误',
 };
 const busy = (task: AgentTask) => ['queued', 'running'].includes(task.status);
@@ -63,18 +69,18 @@ export function AgentTaskWorkbench({ projectId, onDirtyChange }: { projectId: st
 }
 
 /** Timeline-only embedding for the conversation canvas; preparation remains owned by the caller. */
-export function AgentTaskTimeline({ projectId, cardId, taskProfile, onContinue }: { projectId: string | null; cardId?: string; taskProfile?: string; onContinue?: () => void }) {
+export function AgentTaskTimeline({ projectId, cardId, taskProfile, onContinue }: { projectId: string | null; cardId?: string; taskProfile?: string | string[]; onContinue?: () => void }) {
   if (!projectId) return null;
   return <ProjectAgentTaskTimeline projectId={projectId} {...(cardId === undefined ? {} : { cardId })}
     {...(taskProfile === undefined ? {} : { taskProfile })} {...(onContinue ? { onContinue } : {})} />;
 }
 
-function ProjectAgentTaskTimeline({ projectId, cardId, taskProfile, onContinue }: { projectId: string; cardId?: string; taskProfile?: string; onContinue?: () => void }) {
+function ProjectAgentTaskTimeline({ projectId, cardId, taskProfile, onContinue }: { projectId: string; cardId?: string; taskProfile?: string | string[]; onContinue?: () => void }) {
   const query = useTasks(projectId);
   if (query.isPending) return <p className="agent-task-timeline-state" role="status">正在读取任务记录…</p>;
   if (query.error) return <p className="agent-task-timeline-state" role="alert">任务服务未连接：{query.error.message} <button onClick={() => void query.refetch()}>重新连接</button></p>;
   const tasks = query.data?.tasks.filter(task => (cardId === undefined || task.authorization_card.card_id === cardId)
-    && (taskProfile === undefined || task.authorization_card.task_profile === taskProfile)) ?? [];
+    && (taskProfile === undefined || (Array.isArray(taskProfile) ? taskProfile.includes(task.authorization_card.task_profile) : task.authorization_card.task_profile === taskProfile))) ?? [];
   if (!tasks.length) return null;
   return <section className="agent-task-timeline" aria-label="任务时间线"><div className="agent-task-list">{tasks.map(task => <TaskCard key={task.id} task={task} onContinue={onContinue} />)}</div></section>;
 }
@@ -94,6 +100,15 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
   useEffect(() => { if (expanded) void events.refetch(); }, [expanded, task.updated_at]);
   const card = task.authorization_card;
   const fullAccess = card.execution_mode === 'codex-full-access';
+  const [followupGoal, setFollowupGoal] = useState('');
+  const followupRequestId = useRef<string | null>(null);
+  const agentProjectDemo = card.task_profile === 'project-demo-agent';
+  const continueDemo = useMutation({mutationFn:(value:{goal:string;requestId:string})=>
+    agentTasks.continueProjectDemo(task.id,{goal:value.goal,request_id:value.requestId}),onSuccess:async()=>{
+      setFollowupGoal(''); followupRequestId.current=null;
+      await cache.invalidateQueries({queryKey:['agent-tasks']});
+      await cache.invalidateQueries({queryKey:productionKeys.snapshot(task.project_id)});
+    }});
   const activity = task.observations.codex_activity;
   const grantExpired = !!task.grant && Date.parse(task.grant.expires_at) <= Date.now();
   const sceneSelection = task.observations.scene_selection;
@@ -124,11 +139,11 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
       <p>{card.scope}</p><p>专用工作目录：<code>{card.workspace_root}</code></p>
       <p>模型：{task.provider_model ?? 'CLI 默认模型'} · {task.provider_id}</p>
       {card.card_id && <p>卡片：{card.card_id} · 分支：{card.branch}</p>}
-      {card.task_profile === 'project-demo' && <p>工作区：{card.workspace_id}</p>}
+      {['project-demo', 'project-demo-agent'].includes(card.task_profile) && <p>工作区：{card.workspace_id}</p>}
       {card.card_id && task.observations.card_context != null && <details><summary>查看本次开发采用的策划快照</summary><pre>{JSON.stringify(task.observations.card_context, null, 2)}</pre></details>}
       <p>{card.cost_notice}</p>{card.task_profile === 'environment-scene'
         ? <p>选中对象只是任务上下文；确认后才授权修改卡片中列出的对象变换。场景数据修改不代表运行游戏已更新。</p>
-        : !fullAccess && card.task_profile !== 'card-development' && <p>允许自动准备本任务工程及自有插件、打开专用 Blender/Unity 会话；不修改其他工程、不购买或激活服务。</p>}
+        : !fullAccess && !['card-development', 'project-demo', 'project-demo-agent'].includes(card.task_profile) && <p>允许自动准备本任务工程及自有插件、打开专用 Blender/Unity 会话；不修改其他工程、不购买或激活服务。</p>}
       {card.allow_model_image_input && <p>本次另授权把当前任务登记的最新截图发送给决策模型；不会接受任意文件路径或自动切换模型。</p>}
       <button disabled={action.isPending} onClick={() => action.mutate('authorize')}>{fullAccess ? '确认完全权限风险并开始 · 费用未知' : '确认范围并开始 · 接受费用可能未知'}</button>
     </section>}
@@ -142,6 +157,15 @@ function TaskCard({ task, onContinue }: { task: AgentTask; onContinue?: () => vo
       && <GameDiagnosticSummary value={task.observations.game_diagnostics} />}
     {card.allow_model_image_input && task.observations.model_image_input != null
       && <ModelImageInputSummary value={task.observations.model_image_input} />}
+    {agentProjectDemo && task.grant && !grantExpired && ['completed','review_required'].includes(task.status)
+      && <form className="agent-demo-followup" onSubmit={event=>{event.preventDefault();const goal=followupGoal.trim();if(!goal||continueDemo.isPending)return;
+        followupRequestId.current ??= crypto.randomUUID();continueDemo.mutate({goal,requestId:followupRequestId.current});}}>
+        <textarea aria-label="继续修改当前 Demo" rows={2} maxLength={8000} value={followupGoal}
+          onChange={event=>{setFollowupGoal(event.target.value);followupRequestId.current=null;}}
+          placeholder="例如：把开门距离改为 1 米，并保持当前场景和其他源码。" />
+        <button disabled={!followupGoal.trim()||continueDemo.isPending}>{continueDemo.isPending?'正在继续…':'继续修改同一 Demo'}</button>
+        {continueDemo.error && <p role="alert">{continueDemo.error.message}</p>}
+      </form>}
     <ol className="agent-action-tree">{task.actions.map(record => <li key={record.request_id} data-state={record.state}>
       <strong>{ACTIONS[record.action.capability_id] ?? record.action.capability_id}</strong><span>{record.state === 'succeeded' ? '已执行' : record.state === 'running' ? '执行中' : record.state}</span>
       <small>{record.action.rationale}</small>{record.reason && <p>{record.reason}</p>}
@@ -194,7 +218,7 @@ function GameRuntimePanel({ task }: { task: AgentTask }) {
   if (!snapshot) return null;
   const previewRunning = snapshot.preview?.status === 'running';
   const agentBusy = busy(task);
-  const projectDemo = task.authorization_card.task_profile === 'project-demo';
+  const projectDemo = ['project-demo', 'project-demo-agent'].includes(task.authorization_card.task_profile);
   const latest = [snapshot.dependency, snapshot.check, snapshot.build, snapshot.preview].filter(Boolean).at(-1);
   return <section className="agent-game-runtime" aria-label="游戏工程运行">
     <header><div><strong>游戏工程</strong><small>{snapshot.branch}</small></div>

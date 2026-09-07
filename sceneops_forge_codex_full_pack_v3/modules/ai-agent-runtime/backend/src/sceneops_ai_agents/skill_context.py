@@ -5,6 +5,7 @@ import logging
 import re
 
 VERSION = "sceneops-s1.1"
+PRODUCT_VERSION = "sceneops-d3.0"
 UPSTREAM = "e5f301d548bb18c530afbece78cd25082f4cda9c"
 LOGGER = logging.getLogger(__name__)
 CHECKS = {"code.project.check", "code.project.build", "code.project.build_test",
@@ -84,7 +85,11 @@ def select_skills(data):
 def load_skill_context(data) -> SkillContext:
     phase, selected = select_skills(data)
     context = SkillContext(phase=phase)
-    paths = [f"sceneops-threejs-{name}/SKILL.md" for name in selected]
+    paths = []
+    if data.context_summary.get('task_profile') == 'project-demo-agent':
+        paths.extend(['sceneops-demo-composer/SKILL.md',
+                      'sceneops-editable-content/SKILL.md'])
+    paths.extend(f"sceneops-threejs-{name}/SKILL.md" for name in selected)
     if "gameplay" in selected and TIMING.search(data.goal):
         paths.append("sceneops-threejs-gameplay/references/time-and-state.md")
     root = files("sceneops_ai_agents").joinpath("skills")
@@ -100,6 +105,9 @@ def load_skill_context(data) -> SkillContext:
             context.blocks.append(diagnostic + "；该资料未加载，继续不依赖它的工作，不推断其内容。")
             continue
         context.blocks.append(text)
-        context.logs.append(f"skill.loaded {VERSION} upstream={UPSTREAM} skills/{path}")
+        if path.startswith('sceneops-threejs-'):
+            context.logs.append(f"skill.loaded {VERSION} upstream={UPSTREAM} skills/{path}")
+        else:
+            context.logs.append(f"skill.loaded {PRODUCT_VERSION} source=sceneops-product skills/{path}")
     context.logs.insert(0, f"skill.phase {phase}")
     return context

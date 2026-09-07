@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import IsolatedAsyncioTestCase
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from sceneops_harness import (
     Authority, CapabilityDefinition, CapabilityRegistry, CapabilityResult, HarnessError,
     HarnessRuntime, PipelineDefinition, PipelineStage, PipelineStep, RetryPolicy, RuntimeBudget,
@@ -83,3 +83,8 @@ class CallBudgetTests(IsolatedAsyncioTestCase):
         self.assertFalse(report.valid)
         self.assertIn("CALL_BUDGET_EXCEEDED", [issue.code for issue in report.issues])
         self.assertEqual(self.calls, [])
+
+    async def test_long_running_agent_budget_stays_explicit_and_bounded(self):
+        self.assertEqual(RuntimeBudget(max_metered_calls=28).max_metered_calls, 28)
+        with self.assertRaises(ValidationError):
+            RuntimeBudget(max_metered_calls=33)

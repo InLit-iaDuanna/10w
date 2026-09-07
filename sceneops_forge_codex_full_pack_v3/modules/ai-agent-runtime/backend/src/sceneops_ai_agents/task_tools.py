@@ -2,10 +2,13 @@
 import asyncio
 import math
 from pathlib import Path
+from uuid import uuid4
 from sceneops_harness import CapabilityDefinition, CapabilityRegistry, CapabilityResult, HarnessError, RetryPolicy
 from .task_models import (AgentAction, AssetInput, CreateCubeInput, CodexTaskInput, EmptyActionInput,
                           FinishInput, NextActionInput, ToolResult, now, PrototypeVerifyInput, CapabilityGapInput,
-                          CodeReadInput, CodeWriteInput, HistoryReadInput, SceneTransformInput, BrowserInteractionRequest)
+                          CodeReadInput, CodeWriteInput, HistoryReadInput, SceneTransformInput, BrowserInteractionRequest,
+                          CreateDoorAssetInput, UpdateDoorAssetInput, PlaceDemoObjectInput,
+                          ConfigureKeyDoorInput, RemoveDemoObjectInput)
 from .production_catalog import module_for
 from .output_manifest import OUTPUT_MANIFEST_INSTRUCTION, register_output_manifest
 from engine_unity import PrototypeSpec, PrototypePlayPayload
@@ -19,6 +22,9 @@ MUTATIONS.update({'code.dependencies.prepare', 'code.project.check', 'code.proje
 MUTATIONS.add('environment.object.transform')
 MUTATIONS.add('code.browser.observe')
 MUTATIONS.update({'code.browser.interact', 'code.project.build_test'})
+MUTATIONS.update({'project.asset.door.create', 'project.asset.door.update',
+                  'environment.object.place', 'environment.demo_object.transform',
+                  'environment.key_door.configure', 'environment.object.remove'})
 INPUT_MODELS = {"blender.asset.create": CreateCubeInput, "blender.asset.export": AssetInput,
     "unity.asset.import": AssetInput, "blender.scene.inspect": EmptyActionInput,
     "unity.scene.inspect": EmptyActionInput, "agent.finish": FinishInput,
@@ -40,6 +46,14 @@ INPUT_MODELS.update({capability: EmptyActionInput for capability in
 INPUT_MODELS.update({'project.assets.list': EmptyActionInput,
                      'environment.scene.read': EmptyActionInput,
                      'environment.object.transform': SceneTransformInput})
+INPUT_MODELS.update({
+    'project.asset.door.create': CreateDoorAssetInput,
+    'project.asset.door.update': UpdateDoorAssetInput,
+    'environment.object.place': PlaceDemoObjectInput,
+    'environment.demo_object.transform': SceneTransformInput,
+    'environment.key_door.configure': ConfigureKeyDoorInput,
+    'environment.object.remove': RemoveDemoObjectInput,
+})
 
 
 def contained(path, root):
@@ -160,9 +174,77 @@ class TaskTools:
             if self.service.project_assets is None:
                 raise HarnessError('PROJECT_ASSETS_NOT_CONNECTED', '项目资产查询服务尚未连接。')
             assets = self.service.project_assets.list(task.project_id)
+            if task.authorization_card.task_profile == 'project-demo-agent':
+                assets = [item for item in assets if item.workspace_id == task.grant.workspace_id]
             evidence = {'tool': 'project_assets', 'mode': 'live', 'effect_state': 'NONE',
                         'project_id': task.project_id,
+                        'workspace_id': task.grant.workspace_id,
                         'assets': [item.model_dump(mode='json') for item in assets]}
+        elif invocation.capability_id in ('project.asset.door.create', 'project.asset.door.update'):
+            if self.service.project_assets is None:
+                raise HarnessError('PROJECT_ASSETS_NOT_CONNECTED', '项目资产服务尚未连接。')
+            from asset_library import (DoorRecipe, ProjectAssetRegistration,
+                                       ProjectAssetVersion, UpdateProjectAssetRecipeRequest)
+            try:
+                if invocation.capability_id == 'project.asset.door.create':
+                    data = CreateDoorAssetInput.model_validate(invocation.inputs)
+                    recipe = DoorRecipe(**data.recipe.model_dump(mode='python'))
+                    existing = next((item for item in self.service.project_assets.list(task.project_id)
+                                     if item.source_asset_id == data.source_asset_id), None)
+                    if existing is not None:
+                        latest = next(item for item in existing.versions
+                                      if item.source_version == existing.current_version)
+                        if existing.workspace_id != task.grant.workspace_id or latest.recipe != recipe:
+                            raise HarnessError('ASSET_SOURCE_CONFLICT',
+                                '同名源资产已存在且内容或工作区不同；请读取现有资产并明确更新。')
+                        entry, created = existing, False
+                    else:
+                        version = ProjectAssetVersion(
+                            source_version=1, asset_version_id='aver_' + uuid4().hex,
+                            source_kind='procedural', dimensions_m=recipe.dimensions_m,
+                            vertex_count=24, triangle_count=12, recipe=recipe,
+                            operation='recipe-create')
+                        saved = self.service.project_assets.register_version(ProjectAssetRegistration(
+                            project_id=task.project_id, workspace_id=task.grant.workspace_id,
+                            source_asset_id=data.source_asset_id, title=data.title,
+                            source_type='generated', version=version))
+                        entry, created = saved.entry, saved.version_created
+                    evidence = {'tool': 'project_asset_source', 'mode': 'live',
+                        'effect_state': 'COMMITTED' if created else 'NONE',
+                        'operation': 'door-create', 'outcome': 'created' if created else 'already_present',
+                        'project_id': task.project_id, 'workspace_id': task.grant.workspace_id,
+                        'asset': entry.model_dump(mode='json'),
+                        'source_locator': {'kind': 'asset-recipe', 'asset_id': entry.id,
+                                           'source_version': entry.current_version}}
+                else:
+                    data = UpdateDoorAssetInput.model_validate(invocation.inputs)
+                    current = self.service.project_assets.get(task.project_id, data.asset_id)
+                    if current.workspace_id != task.grant.workspace_id:
+                        raise HarnessError('TASK_SCOPE_DENIED', '资产不属于当前登记 Demo 工作区。')
+                    recipe = DoorRecipe(**data.recipe.model_dump(mode='python'))
+                    saved = self.service.project_assets.update_recipe(task.project_id, data.asset_id,
+                        UpdateProjectAssetRecipeRequest(expected_version=data.expected_version,
+                                                        recipe=recipe))
+                    evidence = {'tool': 'project_asset_source', 'mode': 'live',
+                        'effect_state': 'COMMITTED' if saved.version_created else 'NONE',
+                        'operation': 'door-update',
+                        'outcome': 'updated' if saved.version_created else 'already_present',
+                        'project_id': task.project_id, 'workspace_id': task.grant.workspace_id,
+                        'asset': saved.entry.model_dump(mode='json'),
+                        'source_locator': {'kind': 'asset-recipe', 'asset_id': saved.entry.id,
+                                           'source_version': saved.entry.current_version}}
+            except HarnessError as error:
+                self.safe_failures[invocation.run_id] = {
+                    'tool': 'project_asset_source', 'mode': 'live', 'effect_state': 'NONE',
+                    'code': error.code, 'reason': str(error),
+                    'project_id': task.project_id, 'workspace_id': task.grant.workspace_id}
+                raise
+            except (LookupError, ValueError) as error:
+                self.safe_failures[invocation.run_id] = {
+                    'tool': 'project_asset_source', 'mode': 'live', 'effect_state': 'NONE',
+                    'code': 'ASSET_SOURCE_CONFLICT', 'reason': str(error),
+                    'project_id': task.project_id, 'workspace_id': task.grant.workspace_id}
+                raise HarnessError('ASSET_SOURCE_CONFLICT', str(error)) from error
         elif invocation.capability_id == 'code.browser.observe':
             evidence = await self.service.observe_game(task.id, active_agent=True)
         elif invocation.capability_id == 'code.browser.interact':
@@ -214,6 +296,95 @@ class TaskTools:
                         'object': changed.model_dump(mode='json'),
                         'notice': ('本任务唯一一次对象变换已写入并即时读回；下一步读取最新场景核对，'
                                    '不要再次执行相对变换。没有验证运行中的游戏。')}
+        elif invocation.capability_id in ('environment.object.place',
+                                           'environment.demo_object.transform',
+                                           'environment.key_door.configure',
+                                           'environment.object.remove'):
+            if self.service.environment_scenes is None or self.service.project_assets is None:
+                raise HarnessError('PROJECT_DEMO_NOT_CONNECTED', '项目资产或场景服务尚未连接。')
+            from world_composer import (EnvironmentSceneError, EnvironmentTransform,
+                ManualPlacementRequest, RemoveObjectRequest, TransformObjectRequest,
+                UpdateKeyDoorBehaviorRequest)
+            try:
+                before = self.service.environment_scenes.get(task.project_id)
+                if invocation.capability_id == 'environment.object.place':
+                    data = PlaceDemoObjectInput.model_validate(invocation.inputs)
+                    asset = self.service.project_assets.get(task.project_id, data.asset_id)
+                    if asset.workspace_id != task.grant.workspace_id:
+                        raise HarnessError('TASK_SCOPE_DENIED', '场景实例只能引用当前登记 Demo 工作区的资产。')
+                    after = self.service.environment_scenes.add_object(task.project_id,
+                        ManualPlacementRequest(expected_version=data.expected_version,
+                            asset_id=data.asset_id, asset_version=data.asset_version,
+                            position_m=data.position_m))
+                    prior_ids = {item.id for item in before.objects}
+                    changed = next(item for item in after.objects if item.id not in prior_ids)
+                    operation, affected = 'place', [changed.id]
+                elif invocation.capability_id == 'environment.demo_object.transform':
+                    data = SceneTransformInput.model_validate(invocation.inputs)
+                    current = next((item for item in before.objects if item.id == data.object_id), None)
+                    if current is None:
+                        raise EnvironmentSceneError('SCENE_OBJECT_NOT_FOUND', '场景对象不存在。')
+                    asset = self.service.project_assets.get(task.project_id, current.asset_id)
+                    if asset.workspace_id != task.grant.workspace_id:
+                        raise HarnessError('TASK_SCOPE_DENIED', '场景对象不属于当前登记 Demo 工作区。')
+                    after = self.service.environment_scenes.transform_object(task.project_id, data.object_id,
+                        TransformObjectRequest(expected_version=data.expected_version,
+                            transform=EnvironmentTransform(position_m=data.position_m,
+                                rotation_y_deg=data.rotation_y_deg, scale=data.scale)))
+                    operation, affected = 'transform', [data.object_id]
+                elif invocation.capability_id == 'environment.key_door.configure':
+                    data = ConfigureKeyDoorInput.model_validate(invocation.inputs)
+                    current = next((item for item in before.objects if item.id == data.object_id), None)
+                    if current is None:
+                        raise EnvironmentSceneError('SCENE_OBJECT_NOT_FOUND', '场景对象不存在。')
+                    object_asset = self.service.project_assets.get(task.project_id, current.asset_id)
+                    key_asset = self.service.project_assets.get(task.project_id, data.required_key_asset_id)
+                    if (object_asset.workspace_id != task.grant.workspace_id
+                            or key_asset.workspace_id != task.grant.workspace_id):
+                        raise HarnessError('TASK_SCOPE_DENIED', '门实例和钥匙资产必须属于当前登记 Demo 工作区。')
+                    after = self.service.environment_scenes.update_key_door_behavior(task.project_id,
+                        data.object_id, UpdateKeyDoorBehaviorRequest(
+                            expected_version=data.expected_version,
+                            required_key_asset_id=data.required_key_asset_id,
+                            interaction_distance_m=data.interaction_distance_m,
+                            open_angle_deg=data.open_angle_deg))
+                    operation, affected = 'configure-key-door', [data.object_id]
+                else:
+                    data = RemoveDemoObjectInput.model_validate(invocation.inputs)
+                    current = next((item for item in before.objects if item.id == data.object_id), None)
+                    if current is None:
+                        raise EnvironmentSceneError('SCENE_OBJECT_NOT_FOUND', '场景对象不存在。')
+                    asset = self.service.project_assets.get(task.project_id, current.asset_id)
+                    if asset.workspace_id != task.grant.workspace_id:
+                        raise HarnessError('TASK_SCOPE_DENIED', '场景对象不属于当前登记 Demo 工作区。')
+                    after = self.service.environment_scenes.remove_object(task.project_id, data.object_id,
+                        RemoveObjectRequest(expected_version=data.expected_version))
+                    operation, affected = 'remove', [data.object_id]
+            except HarnessError as error:
+                self.safe_failures[invocation.run_id] = {
+                    'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'NONE',
+                    'code': error.code, 'reason': str(error), 'project_id': task.project_id,
+                    'workspace_id': task.grant.workspace_id}
+                raise
+            except EnvironmentSceneError as error:
+                self.safe_failures[invocation.run_id] = {
+                    'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'NONE',
+                    'code': error.code, 'reason': str(error), 'project_id': task.project_id,
+                    'workspace_id': task.grant.workspace_id}
+                raise HarnessError(error.code, str(error)) from error
+            except (LookupError, ValueError) as error:
+                self.safe_failures[invocation.run_id] = {
+                    'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'NONE',
+                    'code': 'SCENE_SOURCE_CONFLICT', 'reason': str(error),
+                    'project_id': task.project_id, 'workspace_id': task.grant.workspace_id}
+                raise HarnessError('SCENE_SOURCE_CONFLICT', str(error)) from error
+            evidence = {'tool': 'environment_scene', 'mode': 'live', 'effect_state': 'COMMITTED',
+                'operation': operation, 'project_id': task.project_id,
+                'workspace_id': task.grant.workspace_id, 'before_version': before.version,
+                'scene_version': after.version, 'affected_object_ids': affected,
+                'scene': after.model_dump(mode='json'),
+                'source_locator': {'kind': 'scene', 'scene_id': after.scene_id,
+                                   'scene_version': after.version}}
         elif invocation.capability_id == 'code.demo_content.materialize':
             from .project_demo import materialize_project_demo
             evidence = materialize_project_demo(self.service, task)
@@ -232,13 +403,16 @@ class TaskTools:
                          'code.preview.stop': 'preview_stop'}[invocation.capability_id]
             evidence = await self.service.game.execute(task, operation)
         elif invocation.capability_id.startswith('code.'):
-            from .code_workspace import read_source
+            from .code_workspace import read_source, task_source_path
             if invocation.capability_id == 'code.workspace.inspect':
                 evidence = self.service.code.inspect(task)
             elif invocation.capability_id == 'code.file.read':
+                task_source_path(task, invocation.inputs['path'])
                 content = read_source(task.grant.workspace_root, invocation.inputs['path'])
                 evidence = {'tool': 'code', 'mode': 'live', 'path': invocation.inputs['path'],
-                            'content': content, 'exists': content is not None}
+                            'content': content, 'exists': content is not None,
+                            'project_id': task.project_id,
+                            'workspace_id': task.grant.workspace_id}
             else:
                 entry = next(item for item in task.actions if invocation.run_id in item.run_ids)
                 evidence = self.service.code.write(task, entry)
@@ -373,6 +547,53 @@ class TaskTools:
             if not task.authorization_card.allow_game_execution:
                 return code
             return {**code, **self.service.finish_game(task)}
+        if task.authorization_card.task_profile == 'project-demo-agent':
+            start = task.observations.get('active_goal_action_start', 0)
+            if not isinstance(start, int) or start < 0 or start > len(task.actions):
+                raise HarnessError('VERIFICATION_INCOMPLETE', '当前追加目标的动作边界不可读取。')
+            current_actions = task.actions[start:]
+            content_capabilities = {'project.asset.door.create', 'project.asset.door.update',
+                'environment.object.place', 'environment.demo_object.transform',
+                'environment.key_door.configure', 'environment.object.remove'}
+            source_actions = [entry for entry in current_actions
+                if entry.state == 'succeeded' and entry.action.capability_id in
+                   (content_capabilities | {'code.file.write'})
+                and (entry.effect_state == 'COMMITTED')]
+            if not source_actions:
+                raise HarnessError('VERIFICATION_INCOMPLETE',
+                    '当前目标还没有保存并回读任何真实内容源或普通游戏源码。')
+            materializations = [entry for entry in current_actions
+                if entry.state == 'succeeded'
+                and entry.action.capability_id == 'code.demo_content.materialize']
+            last_content = max((task.actions.index(entry) for entry in source_actions
+                                if entry.action.capability_id in content_capabilities), default=-1)
+            if not materializations or task.actions.index(materializations[-1]) < last_content:
+                raise HarnessError('VERIFICATION_INCOMPLETE',
+                    '当前资产或场景源改变后尚未重新物化 Demo 内容。')
+            if task.authorization_card.allow_browser_observation:
+                from .context_projection import project_game_diagnostics
+                if project_game_diagnostics(task)['latest'].get('evidence_status') != 'pass':
+                    raise HarnessError('VERIFICATION_INCOMPLETE',
+                        '当前构建还没有成功的浏览器加载或受控输入证据。')
+            code_writes = [entry for entry in current_actions
+                           if entry.action.capability_id == 'code.file.write'
+                           and entry.state == 'succeeded']
+            code = self.service.code.finish(task) if code_writes else {
+                'tool': 'code', 'mode': 'live', 'content_verified': True,
+                'changed_files': [], 'project_id': task.project_id,
+                'workspace_id': task.grant.workspace_id}
+            game = self.service.finish_game(task)
+            locators = []
+            for entry in source_actions:
+                evidence = (entry.result or {}).get('evidence', {})
+                locator = evidence.get('source_locator') if isinstance(evidence, dict) else None
+                if isinstance(locator, dict):
+                    locators.append(locator)
+                elif entry.action.capability_id == 'code.file.write':
+                    locators.append({'kind': 'project-source', 'path': entry.action.inputs['path']})
+            return {**code, **game, 'editable_sources': locators,
+                    'workspace_id': task.grant.workspace_id,
+                    'summary': game['summary']}
         if task.authorization_card.task_profile == 'survival-prototype' or any(item.action.capability_id == 'unity.prototype.compose' for item in task.actions):
             from .prototype_execution import finish_prototype
             return await finish_prototype(self, task)

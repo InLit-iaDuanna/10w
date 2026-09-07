@@ -36,7 +36,7 @@ class GameTestAdapterTests(unittest.TestCase):
                 self.assertIn('dataset.playerX', entry)
                 self.assertIn('dataset.playerZ', entry)
         ecs = template_files('ecs')['src/main.ts']
-        self.assertIn('inputSystem(game.world, keys); movementSystem(game.world, delta); collectionSystem(game.world, scoreOutput)', ecs)
+        self.assertIn('const interact = inputSystem(game.world, input); movementSystem(game.world, delta); collectionSystem(game.world, scoreOutput)', ecs)
 
 
 if __name__ == '__main__':

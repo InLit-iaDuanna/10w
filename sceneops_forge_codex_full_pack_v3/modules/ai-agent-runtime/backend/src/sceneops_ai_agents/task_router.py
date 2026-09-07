@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from sceneops_harness import HarnessError
 from .task_models import (AgentTaskEvents, AgentTaskList, AgentTaskRecord, AuthorizeAgentTask,
                           PrepareAgentTask, GameOperationRequest, GameProjectExecution, BrowserInteractionRequest)
+from .task_models import ContinueProjectDemoRequest
 from .production_models import ProductionEvents, ProductionSnapshot
 
 
@@ -25,6 +26,11 @@ def create_agent_task_router(service):
                  operation_id="updateProjectDemo")
     async def update_project_demo(task_id: str):
         return require_service().update_project_demo(task_id)
+
+    @router.post("/{task_id}/project-demo/continue", response_model=AgentTaskRecord,
+                 operation_id="continueProjectDemo")
+    async def continue_project_demo(task_id: str, body: ContinueProjectDemoRequest):
+        return require_service().continue_project_demo(task_id, body)
 
     @router.get("", response_model=AgentTaskList)
     def list_tasks(project_id: str | None = Query(default=None)):

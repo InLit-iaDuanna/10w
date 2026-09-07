@@ -3923,7 +3923,7 @@
           },
           "max_metered_calls": {
             "type": "integer",
-            "maximum": 16.0,
+            "maximum": 32.0,
             "minimum": 0.0,
             "title": "Max Metered Calls",
             "default": 4

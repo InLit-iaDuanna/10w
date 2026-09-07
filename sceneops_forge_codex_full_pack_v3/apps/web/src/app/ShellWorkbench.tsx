@@ -210,10 +210,10 @@ function createWorkbench(unified: boolean) {
                     created_at:message.created_at ?? '1970-01-01T00:00:00.000Z',mode:'live' as const}))};
               }}}
               development={{ prepareProjectDemo: async (projectId, directionId, goal) => {
-                const prepared = await agentTasks.prepare({project_id:projectId,goal,task_profile:'project-demo',
+                const prepared = await agentTasks.prepare({project_id:projectId,goal,task_profile:'project-demo-agent',
                   execution_mode:'typed-tools',allow_image_generation:false,allow_playtest:false,
                   allow_game_execution:true,allow_dependency_install:true,include_demo_assets:true,
-                  allow_browser_observation:false,allow_browser_interaction:false,
+                  allow_browser_observation:true,allow_browser_interaction:true,
                   allow_model_image_input:false,alignment_id:directionId});
                 if (prepared.status === 'awaiting_authorization') await agentTasks.authorize(prepared.id, {
                   authorization_card_id:prepared.authorization_card.id,accept_unknown_cost:true,accept_full_access:false});
@@ -227,7 +227,7 @@ function createWorkbench(unified: boolean) {
                   allow_model_image_input:options.allowModelImageInput});
                 await queryClient.invalidateQueries({queryKey:['agent-tasks']});
                 await queryClient.invalidateQueries({queryKey:productionKeys.snapshot(projectId)});
-              }, renderProjectDemoTasks: projectId => <AgentTaskTimeline projectId={projectId} taskProfile="project-demo" />,
+              }, renderProjectDemoTasks: projectId => <AgentTaskTimeline projectId={projectId} taskProfile={['project-demo-agent','project-demo']} />,
               renderTasks: (projectId, cardId, onContinue) => <AgentTaskTimeline projectId={projectId} cardId={cardId} onContinue={onContinue} /> }}
               modelPicker={busy => <UnifiedModelPicker disabled={busy} compact />}
               onOpenProjects={() => void open('workspace.projects', {mode:'split',direction:'right'}).catch(report)}

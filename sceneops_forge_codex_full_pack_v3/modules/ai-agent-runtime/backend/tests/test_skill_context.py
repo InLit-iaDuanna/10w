@@ -33,10 +33,11 @@ def action(capability, *, state="succeeded", run=None):
 
 
 class SkillRequestTests(IsolatedAsyncioTestCase):
-    async def capture(self, goal, *, history=(), capabilities=None, observations=None):
+    async def capture(self, goal, *, history=(), capabilities=None, observations=None,
+                      task_profile="card-development"):
         with TemporaryDirectory() as directory:
             provider = Provider(Path(directory))
-            data = NextActionInput(goal=goal, context_summary={"task_profile": "card-development"},
+            data = NextActionInput(goal=goal, context_summary={"task_profile": task_profile},
                 history=list(history), observations=observations or {},
                 capabilities=[{"id": key} for key in (capabilities if capabilities is not None else
                     ["code.workspace.inspect", "code.file.read", "code.file.write", "code.project.check"])],
@@ -48,6 +49,18 @@ class SkillRequestTests(IsolatedAsyncioTestCase):
             self.assertIn(CORE_SYSTEM_INSTRUCTION, provider.request["instructions"])
             self.assertIn(STRUCTURED_ACTION_PROTOCOL, provider.request["instructions"])
             return provider.request, result.logs
+
+    async def test_project_demo_agent_receives_product_skills_verbatim(self):
+        request, logs = await self.capture('按已确认方向制作可编辑初版',
+            task_profile='project-demo-agent')
+        for name in ('sceneops-demo-composer', 'sceneops-editable-content'):
+            path = f'skills/{name}/SKILL.md'
+            body = files('sceneops_ai_agents').joinpath(path).read_text(encoding='utf-8')
+            self.assertEqual(request['instructions'].count(body), 1)
+            loaded = [line for line in logs if path in line]
+            self.assertEqual(len(loaded), 1)
+            self.assertIn('sceneops-d3.0', loaded[0])
+            self.assertIn('source=sceneops-product', loaded[0])
 
     def assert_resources(self, request, logs, names):
         for name in ("gameplay", "debug", "qa"):

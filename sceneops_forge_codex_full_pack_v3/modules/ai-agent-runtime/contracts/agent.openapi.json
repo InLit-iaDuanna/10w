@@ -93,6 +93,100 @@
         }
       }
     },
+    "/api/agent/tasks/{task_id}/project-demo/update": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Update Project Demo",
+        "operationId": "updateProjectDemo",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/continue": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Continue Project Demo",
+        "operationId": "continueProjectDemo",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContinueProjectDemoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/tasks/{task_id}": {
       "get": {
         "tags": [
@@ -803,48 +897,6 @@
           }
         }
       }
-    },
-    "/api/agent/tasks/{task_id}/project-demo/update": {
-      "post": {
-        "tags": [
-          "agent-tasks"
-        ],
-        "summary": "Update Project Demo",
-        "operationId": "updateProjectDemo",
-        "parameters": [
-          {
-            "name": "task_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Task Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AgentTaskRecord"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -1409,6 +1461,23 @@
             "title": "Allow Browser Interaction",
             "default": false
           },
+          "include_demo_assets": {
+            "type": "boolean",
+            "title": "Include Demo Assets",
+            "default": false
+          },
+          "alignment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Id"
+          },
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
@@ -1421,6 +1490,17 @@
           "workspace_root": {
             "type": "string",
             "title": "Workspace Root"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
           },
           "card_id": {
             "anyOf": [
@@ -1481,7 +1561,8 @@
               "auto",
               "card-development",
               "environment-scene",
-              "project-demo"
+              "project-demo",
+              "project-demo-agent"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -1555,34 +1636,6 @@
             "type": "string",
             "title": "Cost Notice",
             "default": "最多 8 次模型请求（含规划和修复），20 分钟，每动作最多 2 次尝试；CLI 费用可能未知，这不是美元或 token 硬限额。"
-          },
-          "alignment_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Alignment Id"
-          },
-          "include_demo_assets": {
-            "type": "boolean",
-            "title": "Include Demo Assets",
-            "default": false
-          },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
           }
         },
         "additionalProperties": false,
@@ -1699,6 +1752,10 @@
             "type": "string",
             "title": "Project Id"
           },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
           "workspace_root": {
             "type": "string",
             "title": "Workspace Root"
@@ -1734,10 +1791,6 @@
             "type": "boolean",
             "title": "Revoked",
             "default": false
-          },
-          "workspace_id": {
-            "type": "string",
-            "title": "Workspace Id"
           }
         },
         "additionalProperties": false,
@@ -1913,6 +1966,150 @@
           "module_id"
         ],
         "title": "ChangeSetTarget"
+      },
+      "ContinueProjectDemoRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,120}$",
+            "title": "Request Id"
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Goal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "goal"
+        ],
+        "title": "ContinueProjectDemoRequest"
+      },
+      "GameBuildCandidate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Sequence"
+          },
+          "build_run_id": {
+            "type": "string",
+            "title": "Build Run Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "building",
+              "succeeded",
+              "failed",
+              "superseded"
+            ],
+            "title": "Status",
+            "default": "building"
+          },
+          "artifact_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Path"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "source_version": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Source Version"
+          },
+          "scene_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Id"
+          },
+          "scene_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Version"
+          },
+          "asset_versions": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Asset Versions"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "task_id",
+          "sequence",
+          "build_run_id"
+        ],
+        "title": "GameBuildCandidate"
       },
       "GameExecutionRun": {
         "properties": {
@@ -2391,6 +2588,23 @@
             "title": "Allow Browser Interaction",
             "default": false
           },
+          "include_demo_assets": {
+            "type": "boolean",
+            "title": "Include Demo Assets",
+            "default": false
+          },
+          "alignment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Id"
+          },
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
@@ -2462,7 +2676,8 @@
               "auto",
               "card-development",
               "environment-scene",
-              "project-demo"
+              "project-demo",
+              "project-demo-agent"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -2474,23 +2689,6 @@
             "type": "array",
             "maxItems": 16,
             "title": "Selected Scene Object Ids"
-          },
-          "alignment_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Alignment Id"
-          },
-          "include_demo_assets": {
-            "type": "boolean",
-            "title": "Include Demo Assets",
-            "default": false
           }
         },
         "additionalProperties": false,
@@ -2958,7 +3156,7 @@
           },
           "max_metered_calls": {
             "type": "integer",
-            "maximum": 16.0,
+            "maximum": 32.0,
             "minimum": 0.0,
             "title": "Max Metered Calls",
             "default": 4
@@ -2980,6 +3178,23 @@
             "title": "Allow Browser Interaction",
             "default": false
           },
+          "include_demo_assets": {
+            "type": "boolean",
+            "title": "Include Demo Assets",
+            "default": false
+          },
+          "alignment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alignment Id"
+          },
           "allow_browser_observation": {
             "type": "boolean",
             "title": "Allow Browser Observation",
@@ -3000,6 +3215,17 @@
           "workspace_root": {
             "type": "string",
             "title": "Workspace Root"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
           },
           "card_id": {
             "anyOf": [
@@ -3091,34 +3317,6 @@
             "type": "boolean",
             "title": "Revoked",
             "default": false
-          },
-          "alignment_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^(?:direction_)?[a-fA-F0-9]{32}$|^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Alignment Id"
-          },
-          "include_demo_assets": {
-            "type": "boolean",
-            "title": "Include Demo Assets",
-            "default": false
-          },
-          "workspace_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Workspace Id"
           }
         },
         "additionalProperties": false,
@@ -3260,128 +3458,6 @@
         ],
         "title": "VerificationRecord",
         "description": "A business verdict bound to the exact revision, run, suite and evidence."
-      },
-      "GameBuildCandidate": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "workspace_id": {
-            "type": "string",
-            "title": "Workspace Id"
-          },
-          "task_id": {
-            "type": "string",
-            "title": "Task Id"
-          },
-          "sequence": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Sequence"
-          },
-          "build_run_id": {
-            "type": "string",
-            "title": "Build Run Id"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "building",
-              "succeeded",
-              "failed",
-              "superseded"
-            ],
-            "title": "Status",
-            "default": "building"
-          },
-          "artifact_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Artifact Path"
-          },
-          "failure_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Failure Code"
-          },
-          "source_version": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/JsonValue"
-            },
-            "type": "object",
-            "title": "Source Version"
-          },
-          "scene_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scene Id"
-          },
-          "scene_version": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scene Version"
-          },
-          "asset_versions": {
-            "items": {
-              "additionalProperties": {
-                "$ref": "#/components/schemas/JsonValue"
-              },
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Asset Versions"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "project_id",
-          "workspace_id",
-          "task_id",
-          "sequence",
-          "build_run_id"
-        ],
-        "title": "GameBuildCandidate"
       }
     }
   }

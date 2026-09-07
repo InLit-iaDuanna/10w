@@ -18,6 +18,8 @@ DENIED_NAMES = {'package-lock.json', 'npm-shrinkwrap.json', 'pnpm-lock.yaml', 'y
                 'bun.lock', 'bun.lockb', 'sceneops-outputs.json'}
 DENIED_DIRECTORIES = {'node_modules', 'Library', 'Temp', 'Obj', 'Logs', 'Build', 'Builds',
                       'dist', 'build', 'coverage', '__pycache__'}
+PROJECT_DEMO_DERIVED_PATHS = {'src/game/sceneops-demo-content.ts',
+                              'src/game/sceneops-test.ts'}
 
 
 def source_path(value):
@@ -27,6 +29,15 @@ def source_path(value):
             or any(part.startswith('.') or part in DENIED_DIRECTORIES for part in path.parts)
             or path.name in DENIED_NAMES or path.suffix.lower() not in SOURCE_SUFFIXES):
         raise HarnessError('CODE_PATH_DENIED', '仅允许卡片目录内的普通源码路径；隐藏目录、依赖和生成目录不在范围内。')
+    return path
+
+
+def task_source_path(task, value):
+    path = source_path(value)
+    if (task.authorization_card.task_profile == 'project-demo-agent'
+            and path.as_posix() in PROJECT_DEMO_DERIVED_PATHS):
+        raise HarnessError('CODE_PATH_DERIVED',
+            '该文件由 SceneOps 物化或测试适配器生成；请修改资产、场景、行为参数或独立游戏源码。')
     return path
 
 
@@ -104,7 +115,7 @@ class CodeWorkspace:
             for name in sorted(names):
                 relative = (Path(parent) / name).relative_to(root).as_posix()
                 try:
-                    source_path(relative)
+                    task_source_path(task, relative)
                     with source_parent(root, PurePosixPath(relative)) as descriptor:
                         info = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
                     if stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= MAX_FILE_BYTES:
@@ -116,7 +127,8 @@ class CodeWorkspace:
                     break
             if truncated:
                 break
-        return {'tool': 'code', 'mode': 'live', 'card_id': task.grant.card_id,
+        return {'tool': 'code', 'mode': 'live', 'project_id': task.project_id,
+                'workspace_id': task.grant.workspace_id, 'card_id': task.grant.card_id,
                 'branch': task.grant.branch, 'files': files, 'truncated': truncated,
                 'max_file_bytes': MAX_FILE_BYTES, 'max_task_write_bytes': MAX_TASK_BYTES}
 
@@ -130,7 +142,7 @@ class CodeWorkspace:
         for content in (data['expected_content'], data['content']):
             if content is not None and (len(content.encode('utf-8')) > MAX_FILE_BYTES or '\0' in content):
                 raise HarnessError('CODE_FILE_DENIED', '每个源码文件最多 64 KiB，且必须为 UTF-8 文本。')
-        source_path(data['path'])
+        task_source_path(task, data['path'])
         with self.service.records.connect() as connection:
             connection.execute('BEGIN IMMEDIATE')
             row = connection.execute('SELECT task_id,path,before_content,after_content,evidence,state '
@@ -147,7 +159,9 @@ class CodeWorkspace:
                 'before': data['expected_content'], 'after': data['content'],
                 'diff': ''.join(difflib.unified_diff((data['expected_content'] or '').splitlines(keepends=True),
                     data['content'].splitlines(keepends=True), fromfile='before/' + data['path'], tofile='after/' + data['path'])),
-                'request_id': entry.request_id, 'card_id': task.grant.card_id, 'branch': task.grant.branch,
+                'request_id': entry.request_id, 'project_id': task.project_id,
+                'workspace_id': task.grant.workspace_id,
+                'card_id': task.grant.card_id, 'branch': task.grant.branch,
                 'effect_state': 'STAGED'}
             connection.execute('INSERT INTO agent_code_writes VALUES(?,?,?,?,?,?,?)',
                 (entry.request_id, task.id, data['path'], data['expected_content'], data['content'],
@@ -172,7 +186,7 @@ class CodeWorkspace:
             if actual == entry.action.inputs['content']:
                 raise HarnessError('CODE_NO_CHANGE', '源码内容没有改变，不登记为实际写入。')
         evidence, state = self.stage(task, entry)
-        root, relative = Path(task.grant.workspace_root), source_path(evidence['path'])
+        root, relative = Path(task.grant.workspace_root), task_source_path(task, evidence['path'])
         with source_parent(root, relative, create=True) as parent:
             current, info = read_at(parent, relative.name)
             if state != 'NEW' and current == evidence['after']:
@@ -230,8 +244,12 @@ class CodeWorkspace:
         if row is None:
             return 'NONE', None
         try:
-            self.service.card_workspace(task.project_id, task.grant.card_id,
-                expected_root=task.grant.workspace_root, expected_branch=task.grant.branch)
+            if task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
+                self.service.project_demo_workspace(task.project_id, task.grant.workspace_id,
+                    expected_root=task.grant.workspace_root)
+            else:
+                self.service.card_workspace(task.project_id, task.grant.card_id,
+                    expected_root=task.grant.workspace_root, expected_branch=task.grant.branch)
             current = read_source(task.grant.workspace_root, row[1])
         except FileNotFoundError:
             current = None
@@ -255,5 +273,6 @@ class CodeWorkspace:
         return {'tool': 'code', 'mode': 'live', 'delivery_status': 'code_written',
                 'content_verified': True, 'verified': False, 'gameplay_verified': False,
                 'compilation_verified': False, 'changed_files': sorted(latest),
+                'project_id': task.project_id, 'workspace_id': task.grant.workspace_id,
                 'card_id': task.grant.card_id, 'branch': task.grant.branch,
                 'summary': '源码已写入并回读，待检查；未运行或编译。'}

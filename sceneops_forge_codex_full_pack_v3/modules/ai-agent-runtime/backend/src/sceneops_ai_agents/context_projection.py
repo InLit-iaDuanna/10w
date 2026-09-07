@@ -250,6 +250,8 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
     result = {
         "task_id": task.id,
         "project_id": task.project_id,
+        "workspace_id": (task.grant.workspace_id if task.grant else
+                         task.authorization_card.workspace_id),
         "task_profile": task.authorization_card.task_profile,
         "execution_mode": task.grant.execution_mode,
         "completed_action_count": sum(entry.state == "succeeded" for entry in task.actions),
@@ -267,6 +269,13 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
     }
     if task.authorization_card.allow_browser_observation or task.authorization_card.allow_browser_interaction:
         result["game_diagnostics"] = project_game_diagnostics(task)
+    if task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
+        context = task.observations.get('project_demo_context')
+        if isinstance(context, dict):
+            result['confirmed_direction'] = deepcopy(context)
+        requests = task.observations.get('demo_goals')
+        if isinstance(requests, list) and requests:
+            result['active_demo_request'] = deepcopy(requests[-1])
     return result
 
 

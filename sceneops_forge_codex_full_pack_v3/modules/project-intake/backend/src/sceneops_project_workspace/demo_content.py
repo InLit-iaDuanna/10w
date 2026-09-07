@@ -22,8 +22,8 @@ import * as THREE from 'three'
 
 export type DoorRecipe = {{ kind: 'door-v1'; seed: 0; width_m: number; height_m: number; thickness_m: number; material: {{ color_hex: string; roughness: number; metalness: number }} }}
 export type KeyDoorBehavior = {{ behavior_instance_id: string; kind: 'KeyDoor'; definition_id: 'KeyDoor@1'; required_key_asset_id: string; interaction_distance_m: number; open_angle_deg: number }}
-export type DemoAsset = {{ asset_id: string; asset_version: number; asset_version_id: string; recipe: DoorRecipe; runtime_artifacts: Array<{{ artifact_id: string; artifact_type: 'render'|'collision'|'module'; project_relative_path: string; export_name?: string }}> }}
-export type DemoObject = {{ id: string; asset_id: string; asset_version: number; asset_version_id: string; transform: {{ position_m: [number,number,number]; rotation_y_deg: number; scale: number }}; behavior: KeyDoorBehavior | null }}
+export type DemoAsset = {{ asset_id: string; asset_version: number; asset_version_id: string | null; source_kind: 'file'|'procedural'; dimensions_m: [number,number,number]; recipe: DoorRecipe | null; runtime_artifacts: Array<{{ artifact_id: string; artifact_type: 'render'|'collision'|'module'; project_relative_path: string; export_name?: string }}> }}
+export type DemoObject = {{ id: string; asset_id: string; asset_version: number; asset_version_id: string | null; transform: {{ position_m: [number,number,number]; rotation_y_deg: number; scale: number }}; behavior: KeyDoorBehavior | null }}
 export type DemoContent = {{ schema_version: 1; project_id: string; workspace_id: string; scene_id: string; scene_version: number; assets: DemoAsset[]; objects: DemoObject[] }}
 
 export const demoContent = {payload} as DemoContent

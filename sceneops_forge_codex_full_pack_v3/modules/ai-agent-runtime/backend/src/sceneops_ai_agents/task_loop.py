@@ -135,7 +135,7 @@ def record_action(service, task_id, action):
             if len(task.actions) >= task.grant.budget.max_steps:
                 raise HarnessError("ACTION_LIMIT", "已达到任务步骤上限。")
             role = ("blender-specialist" if action.capability_id.startswith("blender.") else
-                    "technical-artist" if action.capability_id.startswith(("environment.", "project.assets.")) else
+                    "technical-artist" if action.capability_id.startswith(("environment.", "project.asset")) else
                     "unity-engineer" if action.capability_id.startswith(("unity.", "code.")) else
                     "reviewer" if action.capability_id == "agent.finish" else "producer")
             task.actions.append(ActionRecord(action=action, assigned_role=role))
@@ -151,6 +151,30 @@ def validate_action(service, task, entry):
     if set(entry.action.inputs) - set(INPUT_MODELS[cap].model_fields):
         raise HarnessError("TASK_SCOPE_DENIED", "动作包含未授权参数；路径和权限不能由模型指定，需要重新审阅。")
     INPUT_MODELS[cap].model_validate(entry.action.inputs)
+    if cap.startswith('project.asset.') or cap in {
+            'environment.object.place', 'environment.demo_object.transform',
+            'environment.key_door.configure', 'environment.object.remove'}:
+        prior_actions = [item for item in task.actions if item is not entry]
+        asset_reads = [item for item in prior_actions
+            if item.action.capability_id == 'project.assets.list' and item.state == 'succeeded']
+        if not asset_reads:
+            raise HarnessError('PROJECT_ASSET_CONTEXT_REQUIRED',
+                '修改 Demo 内容源前必须读取当前工作区的资产与版本。')
+        if cap.startswith('environment.'):
+            scene_reads = [item for item in prior_actions
+                if item.action.capability_id == 'environment.scene.read' and item.state == 'succeeded']
+            latest_read = scene_reads[-1] if scene_reads else None
+            read_scene = ((latest_read.result or {}).get('evidence', {}).get('scene', {})
+                          if latest_read else {})
+            expected = entry.action.inputs.get('expected_version')
+            if read_scene.get('version') != expected:
+                raise HarnessError('SCENE_CONTEXT_REQUIRED',
+                    '修改 Demo 场景前必须读取同一版本的当前场景。')
+            object_id = entry.action.inputs.get('object_id')
+            if object_id and not any(item.get('id') == object_id
+                                     for item in read_scene.get('objects', [])):
+                raise HarnessError('SCENE_CONTEXT_REQUIRED',
+                    '刚读取的场景不包含目标实例；不能猜测对象身份。')
     if cap == 'environment.object.transform':
         data = INPUT_MODELS[cap].model_validate(entry.action.inputs)
         prior_transform = next((item for item in task.actions if item is not entry
@@ -225,16 +249,31 @@ def changeset(task, entry):
     full_access = entry.action.capability_id == "codex.task.execute"
     code_write = entry.action.capability_id == 'code.file.write'
     scene_transform = entry.action.capability_id == 'environment.object.transform'
+    content_source = entry.action.capability_id in {
+        'project.asset.door.create', 'project.asset.door.update',
+        'environment.object.place', 'environment.demo_object.transform',
+        'environment.key_door.configure', 'environment.object.remove'}
     project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_content.'))
     base_version = (f"environment-scene:{task.project_id}:{entry.action.inputs['expected_version']}"
-                    if scene_transform else f"agent-task:{task.id}")
+                    if scene_transform or (content_source and 'expected_version' in entry.action.inputs)
+                    else f"agent-task:{task.id}")
+    # ChangeSetTarget accepts shared cross-module StableIds. Project Asset Library
+    # keeps its own `libasset_` identity, so project/placement mutations target the
+    # registered project while instance mutations can target the public `sobj_` ID.
+    content_object_id = (entry.action.inputs.get('object_id') or task.project_id
+        if entry.action.capability_id.startswith('environment.') else task.project_id)
     object_ids = ([entry.action.inputs['object_id']] if scene_transform else
+        [content_object_id] if content_source else
         [task.project_id] if code_write or project_operation or full_access
             or entry.action.capability_id.startswith('unity.prototype.') else
         [entry.action.inputs["asset_id"]])
     previous_values = ({"scene_version": entry.action.inputs['expected_version'],
                         "selected_object": task.observations.get('scene_selection', {})}
                        if scene_transform else
+        {"workspace_id": task.grant.workspace_id,
+         "source_readback": task.observations.get(
+             'environment_scene' if entry.action.capability_id.startswith('environment.')
+             else 'project_assets', {})} if content_source else
         {"path": entry.action.inputs['path'], "content": entry.action.inputs['expected_content']}
             if code_write else
         {"task_owned_readback": task.observations.get(
@@ -249,7 +288,7 @@ def changeset(task, entry):
             "源码写入后回读实际内容；不运行或编译，待用户审阅。" if code_write else
             "Codex 完成目标后返回待审阅结果；不声称独立验收。" if full_access else
             "仅授权独立工作区内的类型化动作，并由工具即时读回核验。"),
-        impact_scope="project" if full_access or project_operation else "object",
+        impact_scope="project" if full_access or project_operation or entry.action.capability_id.startswith('project.asset.') else "object",
         risk="high" if full_access else "low",
         validation_plan=(["读取保存后的最新场景版本，核对对象 ID、位置、旋转和缩放"]
             if scene_transform else
@@ -366,7 +405,8 @@ async def execute_action(service, task_id, action_id):
             and entry.action.capability_id in MUTATIONS
             and reported_effect in ("STAGED", "APPLIED", "UNKNOWN"))
         completed_mutation_without_effect = (run.state == "completed"
-            and entry.action.capability_id in MUTATIONS and reported_effect == "NONE")
+            and entry.action.capability_id in MUTATIONS and reported_effect == "NONE"
+            and evidence.get("outcome") != "already_present")
         action.state = ("uncertain" if completed_mutation_without_commit else
                         "failed" if completed_mutation_without_effect else
                         "succeeded" if run.state == "completed" or code_recovered else

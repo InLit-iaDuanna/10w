@@ -158,7 +158,7 @@ export class KeyDoor {
   readonly mesh: THREE.Mesh
   opened = false
   private readonly closedRotation: number
-  constructor(readonly source: DemoObject, asset: DemoAsset) {
+  constructor(readonly source: DemoObject, asset: DemoAsset & { recipe: NonNullable<DemoAsset['recipe']> }) {
     this.mesh = createDoorMesh(asset.recipe)
     const {position_m,rotation_y_deg,scale} = source.transform
     this.mesh.position.set(...position_m); this.mesh.scale.setScalar(scale)
@@ -184,7 +184,7 @@ import { Player } from './objects/Player'
 import { KeyDoor } from './objects/KeyDoor'
 import { createTestAdapter } from './sceneops-test'
 import { createDemoScenery } from './sceneops-demo-assets'
-import { demoContent } from './sceneops-demo-content'
+import { demoContent, type DemoAsset } from './sceneops-demo-content'
 
 export class Game {
   private readonly renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -195,10 +195,10 @@ export class Game {
   private readonly collectibles = [[-4,-2],[0,2],[4,-1]].map(([x,z]) => new Collectible(x, z))
   private readonly score = new ScoreCounter(document.querySelector<HTMLElement>('#score')!)
   private readonly prompt = document.querySelector<HTMLElement>('#prompt')!
-  private readonly doors = demoContent.objects.map(source => {
+  private readonly doors = demoContent.objects.flatMap(source => {
     const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
-    if (!asset) throw new Error(`Missing asset version for ${source.id}`)
-    return new KeyDoor(source, asset)
+    if (!asset?.recipe) return []
+    return [new KeyDoor(source, asset as DemoAsset & { recipe: NonNullable<DemoAsset['recipe']> })]
   })
   private last = performance.now()
   private test?: ReturnType<typeof createTestAdapter>
@@ -241,7 +241,8 @@ export class Game {
     if (!this.test?.paused) {
       this.player.update(delta)
       this.collectibles.forEach(item => { if (item.tryCollect(this.player.mesh.position)) this.score.collect() })
-      const inventory = new Set(this.score.current() > 0 ? this.doors.flatMap(item => item.source.behavior ? [item.source.behavior.required_key_asset_id] : []) : [])
+      const keyItem = this.doors.find(item => item.source.behavior)?.source.behavior?.required_key_asset_id
+      const inventory = new Set(this.score.current() > 0 && keyItem ? [keyItem] : [])
       if (this.input.consumeInteract()) this.doors.forEach(item => item.tryOpen(this.player.mesh.position, inventory))
       const nearby = this.doors.find(item => !item.opened && item.source.behavior && item.distanceTo(this.player.mesh.position) <= item.source.behavior.interaction_distance_m)
       this.prompt.textContent = nearby ? (inventory.has(nearby.source.behavior!.required_key_asset_id) ? '按空格或 Enter 开门' : '需要钥匙') : ''
@@ -366,11 +367,12 @@ export function createGameWorld(scene: THREE.Scene) {
   }
   for (const source of demoContent.objects) {
     const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
-    if (!asset || !source.behavior) continue
+    if (!asset?.recipe) continue
     const mesh = createDoorMesh(asset.recipe), {position_m,rotation_y_deg,scale} = source.transform
     mesh.position.set(...position_m); mesh.scale.setScalar(scale); mesh.rotation.y=THREE.MathUtils.degToRad(rotation_y_deg)
     mesh.name=source.id; mesh.userData.sceneops_id=source.id; scene.add(mesh)
-    world.add({sceneObjectId:source.id,position:mesh.position,mesh,keyDoor:{behavior:source.behavior,closedRotation:mesh.rotation.y,open:false}})
+    world.add({sceneObjectId:source.id,position:mesh.position,mesh,
+      ...(source.behavior ? {keyDoor:{behavior:source.behavior,closedRotation:mesh.rotation.y,open:false}} : {})})
   }
   return { world }
 }

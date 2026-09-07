@@ -32,6 +32,8 @@ export const agentTasks = {
   cancel: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/cancel`, { body: {} }),
   resume: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/resume`, { body: {} }),
   updateProjectDemo: (id: string) => requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/project-demo/update`, { body: {} }),
+  continueProjectDemo: (id: string, body: components['schemas']['ContinueProjectDemoRequest']) =>
+    requestJson<AgentTask>(`${root}/${encodeURIComponent(id)}/project-demo/continue`, { body }),
   gameStatus: (id: string, signal?: AbortSignal) => requestJson<GameProjectExecution>(
     `${root}/${encodeURIComponent(id)}/game`, signal ? { signal } : {}),
   gameOperation: (id: string, operation: GameOperation) => requestJson<GameProjectExecution>(

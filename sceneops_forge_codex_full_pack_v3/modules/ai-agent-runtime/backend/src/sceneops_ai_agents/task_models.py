@@ -34,10 +34,34 @@ GAME_EXECUTION_CAPABILITIES = ['code.project.status', 'code.project.check', 'cod
 DEPENDENCY_CAPABILITY = 'code.dependencies.prepare'
 PROJECT_DEMO_CAPABILITIES = ['code.demo_content.materialize', DEPENDENCY_CAPABILITY,
     *GAME_EXECUTION_CAPABILITIES]
+PROJECT_DEMO_AGENT_SOURCE_CAPABILITIES = [
+    'project.asset.door.create', 'project.asset.door.update',
+    'environment.object.place', 'environment.demo_object.transform',
+    'environment.key_door.configure', 'environment.object.remove',
+]
+PROJECT_DEMO_AGENT_CAPABILITIES = [
+    'agent.next_action', 'agent.history.read',
+    'code.workspace.inspect', 'code.file.read', 'code.file.write',
+    'project.assets.list', 'environment.scene.read',
+    *PROJECT_DEMO_AGENT_SOURCE_CAPABILITIES,
+    'code.demo_content.materialize', DEPENDENCY_CAPABILITY,
+    *GAME_EXECUTION_CAPABILITIES, 'agent.finish', 'agent.report_blocked',
+]
 
 
 def project_demo_capabilities(value):
     capabilities = list(PROJECT_DEMO_CAPABILITIES)
+    if not value.allow_dependency_install:
+        capabilities.remove(DEPENDENCY_CAPABILITY)
+    if value.allow_browser_observation:
+        capabilities.append('code.browser.observe')
+    if value.allow_browser_interaction:
+        capabilities.extend(['code.project.build_test', 'code.browser.interact'])
+    return capabilities
+
+
+def project_demo_agent_capabilities(value):
+    capabilities = list(PROJECT_DEMO_AGENT_CAPABILITIES)
     if not value.allow_dependency_install:
         capabilities.remove(DEPENDENCY_CAPABILITY)
     if value.allow_browser_observation:
@@ -59,7 +83,7 @@ def card_code_capabilities(value):
             capabilities.insert(4, DEPENDENCY_CAPABILITY)
     return capabilities
 TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development',
-                      'environment-scene', 'project-demo']
+                      'environment-scene', 'project-demo', 'project-demo-agent']
 ExecutionMode = Literal["typed-tools", "codex-full-access"]
 EffectState = Literal["NONE", "STAGED", "APPLIED", "COMMITTED", "UNKNOWN"]
 VerificationExecutionStatus = Literal["COMPLETED", "FAILED", "CANCELLED", "INTERRUPTED"]
@@ -110,17 +134,18 @@ class PrepareAgentTask(TaskModel):
 
     @model_validator(mode='after')
     def card_scope(self):
-        if self.allow_model_image_input and (self.task_profile not in ('card-development', 'project-demo')
+        code_profile = self.task_profile in ('card-development', 'project-demo', 'project-demo-agent')
+        if self.allow_model_image_input and (not code_profile
                 or not self.allow_game_execution
                 or not (self.allow_browser_observation or self.allow_browser_interaction)):
             raise ValueError('模型图片输入需要卡片工程运行及本次浏览器截图授权。')
-        if self.allow_browser_interaction and (self.task_profile not in ('card-development', 'project-demo') or not self.allow_game_execution):
+        if self.allow_browser_interaction and (not code_profile or not self.allow_game_execution):
             raise ValueError('浏览器输入检查需要卡片工程运行授权。')
-        if self.include_demo_assets and (self.task_profile != 'project-demo' or not self.allow_game_execution):
+        if self.include_demo_assets and (self.task_profile not in ('project-demo', 'project-demo-agent') or not self.allow_game_execution):
             raise ValueError('Demo 内容仅用于获授权运行的项目初版任务。')
         if self.alignment_id is not None and not self.include_demo_assets:
             raise ValueError('对齐记录仅用于 Demo 任务准备。')
-        if self.allow_browser_observation and (self.task_profile not in ('card-development', 'project-demo') or not self.allow_game_execution):
+        if self.allow_browser_observation and (not code_profile or not self.allow_game_execution):
             raise ValueError('浏览器观察需要卡片工程运行授权。')
         if self.task_profile == 'card-development':
             if not self.project_id or not self.card_id or self.execution_mode != 'typed-tools':
@@ -135,6 +160,13 @@ class PrepareAgentTask(TaskModel):
                 raise ValueError('项目初版任务需要项目、已确认方向、受控工具、Demo 内容和工程执行权限。')
             if self.allow_playtest or self.allow_image_generation or self.allow_model_image_input:
                 raise ValueError('D1+D2 项目初版任务不包含图片生成、模型截图输入或自动游测。')
+        elif self.task_profile == 'project-demo-agent':
+            if (not self.project_id or self.card_id is not None or self.execution_mode != 'typed-tools'
+                    or not self.allow_game_execution or not self.include_demo_assets
+                    or self.alignment_id is None):
+                raise ValueError('自主项目初版任务需要项目、已确认方向、受控工具、Demo 内容和工程执行权限。')
+            if self.allow_playtest or self.allow_image_generation or self.allow_model_image_input:
+                raise ValueError('D3 项目初版任务不包含图片生成、模型截图输入或通用自动游测。')
         elif self.task_profile == 'environment-scene':
             if not self.project_id or self.execution_mode != 'typed-tools':
                 raise ValueError('环境场景编辑需要当前项目和 typed-tools 权限。')
@@ -402,6 +434,56 @@ class CodeWriteInput(CodeReadInput):
     content: str = Field(max_length=65536)
 
 
+class DoorMaterialInput(TaskModel):
+    color_hex: str = Field(default="#6B4F3A", pattern=r"^#[0-9A-Fa-f]{6}$")
+    roughness: float = Field(default=0.75, ge=0, le=1)
+    metalness: float = Field(default=0.05, ge=0, le=1)
+
+
+class DoorRecipeInput(TaskModel):
+    width_m: float = Field(default=1.2, ge=0.2, le=10)
+    height_m: float = Field(default=2.2, ge=0.5, le=10)
+    thickness_m: float = Field(default=0.15, ge=0.02, le=2)
+    material: DoorMaterialInput = Field(default_factory=DoorMaterialInput)
+
+
+class CreateDoorAssetInput(TaskModel):
+    source_asset_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}$")
+    title: str = Field(min_length=1, max_length=120)
+    recipe: DoorRecipeInput = Field(default_factory=DoorRecipeInput)
+
+
+class UpdateDoorAssetInput(TaskModel):
+    asset_id: str = Field(pattern=r"^libasset_[A-Za-z0-9_-]{8,100}$")
+    expected_version: int = Field(ge=1)
+    recipe: DoorRecipeInput
+
+
+class PlaceDemoObjectInput(TaskModel):
+    expected_version: int = Field(ge=0)
+    asset_id: str = Field(pattern=r"^libasset_[A-Za-z0-9_-]{8,100}$")
+    asset_version: int | None = Field(default=None, ge=1)
+    position_m: tuple[SceneCoordinate, SceneCoordinate, SceneCoordinate]
+
+
+class ConfigureKeyDoorInput(TaskModel):
+    object_id: str = Field(pattern=r"^sobj_[A-Za-z0-9_-]{1,160}$")
+    expected_version: int = Field(ge=0)
+    required_key_asset_id: str = Field(pattern=r"^libasset_[A-Za-z0-9_-]{8,100}$")
+    interaction_distance_m: float = Field(default=2.0, gt=0, le=20)
+    open_angle_deg: float = Field(default=90.0, ge=-180, le=180)
+
+
+class RemoveDemoObjectInput(TaskModel):
+    object_id: str = Field(pattern=r"^sobj_[A-Za-z0-9_-]{1,160}$")
+    expected_version: int = Field(ge=0)
+
+
+class ContinueProjectDemoRequest(TaskModel):
+    request_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,120}$")
+    goal: str = Field(min_length=1, max_length=8000)
+
+
 class CapabilityGapInput(TaskModel):
     reason: str = Field(min_length=1, max_length=1500)
     needed_capabilities: list[str] = Field(default_factory=list, max_length=10)
@@ -460,6 +542,9 @@ class ActionRecord(TaskModel):
             "code.demo_content.materialize", "code.dependencies.prepare", "code.project.check", "code.project.build",
             "code.preview.start", "code.preview.stop",
             "environment.object.transform",
+            "project.asset.door.create", "project.asset.door.update",
+            "environment.object.place", "environment.demo_object.transform",
+            "environment.key_door.configure", "environment.object.remove",
         }
         migrated["effect_state"] = "UNKNOWN" if mutating and state != "planned" else "NONE"
         return migrated

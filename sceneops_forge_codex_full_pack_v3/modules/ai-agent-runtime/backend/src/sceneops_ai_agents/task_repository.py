@@ -16,6 +16,9 @@ class AgentTaskRepository:
         mutations.update({'unity.prototype.compose', 'unity.prototype.play', 'unity.prototype.capture', 'unity.prototype.verify'})
         mutations.update({'code.demo_content.materialize', 'code.file.write', 'code.dependencies.prepare', 'code.project.check',
                           'code.project.build', 'code.preview.start', 'code.preview.stop'})
+        mutations.update({'project.asset.door.create', 'project.asset.door.update',
+                          'environment.object.place', 'environment.demo_object.transform',
+                          'environment.key_door.configure', 'environment.object.remove'})
         mutations.add('environment.object.transform')
         mutations.update({'code.project.build_test', 'code.browser.interact'})
         writes = [action for action in task.actions if action.action.capability_id in mutations]
@@ -95,7 +98,7 @@ class AgentTaskRepository:
             connection.execute("BEGIN IMMEDIATE")
             task = self._read(connection, task_id)
             mutate(task)
-            if event_type == 'agent.task.authorized' and task.status == 'queued':
+            if event_type in ('agent.task.authorized', 'agent.project_demo.goal_added') and task.status == 'queued':
                 self._claim_project(connection, task)
             if event_type == 'agent.task.worker_released':
                 safe = self.safe_to_release(task)

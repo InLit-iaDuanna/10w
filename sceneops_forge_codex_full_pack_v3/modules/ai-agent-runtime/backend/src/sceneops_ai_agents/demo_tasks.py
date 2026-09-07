@@ -7,12 +7,21 @@ from sceneops_harness import HarnessError
 def prepare_project_demo(task, request, context):
     validate_project_demo_alignment(request.alignment_id, context)
     token = request.alignment_id.removeprefix('direction_')
-    task.id = 'task_project_demo_' + token
+    task.id = ('task_project_demo_agent_' if request.task_profile == 'project-demo-agent'
+               else 'task_project_demo_') + token
     task.observations['demo_request'] = request.model_dump(mode='json')
     task.observations['project_demo_context'] = context
+    task.observations['demo_goals'] = [{
+        'request_id': 'initial_' + token, 'goal': request.goal.strip(),
+        'kind': 'initial', 'accepted_at': task.created_at.isoformat(),
+    }]
+    task.observations['active_goal_action_start'] = 0
     task.observations['demo_delivery'] = {
-        'instruction': ('授权后通过公开资产、场景和固定工程运行服务建立钥匙门夹具；'
-            '保存程序化配方与实例行为，物化到登记项目工作区，然后检查、构建并更新同一试玩。'),
+        'instruction': (('授权后由真实制作模型读取已确认方向、登记工作区和现有内容；使用公开内容服务与'
+            '受控源码工具完成可编辑初版，根据真实检查和浏览器结果修复，再更新同一试玩。')
+            if request.task_profile == 'project-demo-agent' else
+            ('授权后通过公开资产、场景和固定工程运行服务建立钥匙门夹具；'
+             '保存程序化配方与实例行为，物化到登记项目工作区，然后检查、构建并更新同一试玩。')),
     }
 
 
