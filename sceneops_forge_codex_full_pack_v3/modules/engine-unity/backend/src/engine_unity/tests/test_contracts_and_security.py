@@ -23,7 +23,13 @@ from engine_unity.tests.support import (
 class ContractAndSecurityTests(unittest.TestCase):
     def test_command_enum_has_exact_allowlist_and_no_execute_csharp(self) -> None:
         values = {command.value for command in CommandName}
-        self.assertEqual(16, len(values))
+        self.assertEqual(values, {
+            "unity.prototype.compose", "unity.prototype.inspect", "unity.prototype.play", "unity.prototype.capture",
+            "unity.health", "unity.project.scan", "unity.asset.import", "unity.identity.map",
+            "unity.prefab.upsert", "unity.game_object.inspect", "unity.component_property.set",
+            "unity.collider.upsert", "unity.navmesh.run", "unity.play.enter", "unity.play.exit",
+            "unity.capture", "unity.console.read", "unity.tests.run", "unity.profiler.snapshot", "unity.build.run",
+        })
         self.assertNotIn("unity.csharp.execute", values)
         self.assertFalse(any("script" in value or "shell" in value for value in values))
 

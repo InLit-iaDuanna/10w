@@ -88,7 +88,7 @@ class AgentRuntime:
                                f"{data.model_image_input['version']}")
         response = await self.provider.generate(next_action_prompt(data), model=data.expected_model,
             schema=AgentAction.model_json_schema(), purpose="agent-action",
-            instructions=next_action_instructions(skill_context), **options)
+            instructions=next_action_instructions(skill_context, data.context_summary), **options)
         cancellation.raise_if_cancelled()
         if (response.provider, response.model) != (data.expected_provider, data.expected_model):
             raise ValueError("实际模型响应与已授权路由不一致；本次输出不会执行。")
@@ -111,9 +111,15 @@ from .task_models import (AgentTaskRecord, AgentTaskList, AgentTaskEvents, Agent
 from .task_service import AgentTaskService
 from .task_router import create_agent_task_router, create_production_router
 from .production_models import ProductionStep, ProductionArtifact, ProductionSnapshot, ProductionEvents
+from .export_agent import ExportAgent
+from .export_knowledge import load_export_knowledge
+from .skill_context import production_skill_catalog, production_skill_detail
 
-__all__ = ["AgentRuntime", "agent_catalog", "AgentAssessmentInput", "AgentAssessment",
+__all__ = ["load_export_knowledge", "ExportAgent", "AgentRuntime", "agent_catalog", "AgentAssessmentInput", "AgentAssessment",
     "AgentTaskService", "create_agent_task_router", "AgentTaskRecord", "AgentTaskList",
     "AgentTaskEvents", "AgentTaskEvent", "AuthorizeAgentTask", "PrepareAgentTask",
     "AuthorizationCard", "TaskGrant", "AgentAction", "create_production_router",
-    "ProductionStep", "ProductionArtifact", "ProductionSnapshot", "ProductionEvents"]
+    "ProductionStep", "ProductionArtifact", "ProductionSnapshot", "ProductionEvents",
+    "production_skill_catalog", "production_skill_detail"]
+
+from .production_planning import production_snapshot

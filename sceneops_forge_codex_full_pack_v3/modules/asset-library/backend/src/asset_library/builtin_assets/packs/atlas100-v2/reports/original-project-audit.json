@@ -1,0 +1,17 @@
+{
+  "schema_version": "2.0.0",
+  "repository": "InLit-iaDuanna/10w",
+  "branch": "codex/harness-v5",
+  "source_commit": "190f43bfccfed132ade2e62888cbef6beba4d847",
+  "inspection": "GitHub connector recursive tree read and literal extension searches",
+  "model_extensions_searched": [".glb", ".gltf", ".fbx", ".blend"],
+  "matching_model_paths_found": 0,
+  "local_runtime_asset_directory_access": "not provided",
+  "original_models_modified": 0,
+  "status": "blocked_missing_original_model_files",
+  "not_claimed": ["all original assets lack these features", "original library has been upgraded", "local database contents inspected", "original gameplay bindings validated"],
+  "provided_tools": ["source_v2/audit_existing.py", "source_v2/upgrade_existing.py", "source_v2/upgrade_existing_blender.py", "source_v2/upgrade_existing_batch.py"],
+  "blender_processor_execution": "not run; Blender unavailable in this container",
+  "repository_writes_this_upgrade": 0,
+  "note": "Source repository documentation is not a substitute for local model bytes or saved project asset records."
+}

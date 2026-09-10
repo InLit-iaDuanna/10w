@@ -53,3 +53,21 @@ npm test
 - 不包含真实 GPU/WebGL 渲染器；预览是可重复的计划与 UI 信息。
 - 当前以模块本地完整值对象落实根 ChangeSet 字段与 proposed → approved 生命周期；根 `core-kernel` 可用后应替换为其公共类型。
 - SHA-256 值由上游制品存储提供；本模块不自行生成哈希。
+
+## 原生材质与灯光编辑（2026-09-09）
+
+`lookdev.material` 是工作台原生、可停靠、隐藏暂停的 GPU 编辑器。宿主传入稳定资产与场景实例目标；编辑器从项目 API 读取原始 GLB 与版本化材质工程，提供 PBR、程序化效果、Shader 参数、灯光、撤销重做、已保存版本对比、工程保存与 PNG / GLB / 工程 ZIP / Shader ZIP 导出。旧 VFX mock 预览与 Unity 审批发布路径独立保留。
+
+公共组合接口是 `LookdevMaterialEditorProps`：`EditorHostProps<LookdevEditorState>` 加 `onDirtyChange`、`onConversationTargetChange`、`onOpenConversation` 和 `onApplied`。主对话收到 `LookdevConversationSession` 后调用 `submit(text, signal)`；请求固定当前材质选择、工程版本和灯光授权范围，返回操作需通过范围校验与 GPU 编译才提交本地历史。编辑器不包含聊天窗口或模型配置。
+
+`LookdevEditorState` 使用 `assetId`、`assetVersion`、`sceneInstanceId`、`sceneVersion`、`sceneopsId` 和 `materialSlot`。应用到游戏会先保存文档，通过版本检查创建资产版本并返回 `needs_build`；宿主刷新资产与实例，再通过现有更新作品路径构建。保存失败、模型读取失败和 GPU 错误均显示并保留当前草稿。
+
+定向烟测：`node scripts/frontend-test.mjs modules/vfx-shader/frontend/tests/lookdev-history.test.ts`，覆盖身份保持、撤销重做与越界 AI 操作拒绝。本文前述“不包含 GPU”限制仅适用于旧 VFX 配方预览，原生 Lookdev 已提供实际浏览器 GPU 渲染。
+
+工程文档的 `history` 现在保存 `lookdev.history@1` 的 past/future 快照；重新打开后继续撤销与重做，加载时验证每个快照的源资产绑定。项目内 `editLog` 仍保存操作说明。旧文档只有操作日志时不虚构撤销快照。
+
+工具库直接打开材质编辑时会列出本项目已保存资产，并绑定所选资产当前版本；没有版本的上下文选择先查询目录，不猜测版本。场景实例缺少场景版本时通过 World Composer 公共客户端读取，应用仍执行版本冲突检查。
+
+主对话材质请求在发送前生成 turn ID，服务端保存完整请求生命周期。`session.history(signal)` 返回持久记录；只有 GPU 校验通过后才 finish 为 applied。取消、失败、拒绝和无需修改分别记录；会话保存故障不会把已接受的 GPU 修改谎报为未应用。
+
+完整本次交付与逐项实际验证见 [原生材质整合记录](docs/native-lookdev.md)。原生工程以持久源材质身份和独立当前材质身份区分局部覆盖，不依赖 GLB 材质数组顺序。导出菜单通过项目版本 API 登记制品；保存默认进入项目。

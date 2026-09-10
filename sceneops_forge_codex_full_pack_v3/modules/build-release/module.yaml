@@ -21,6 +21,7 @@ requires:
 
 contributes:
   editors:
+    - build.export
     - build.matrix
     - build.console
     - release.gates

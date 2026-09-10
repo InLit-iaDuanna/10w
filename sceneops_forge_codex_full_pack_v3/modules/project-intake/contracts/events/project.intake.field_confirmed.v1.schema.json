@@ -1,4 +1,6 @@
 {
+  "x-event-type": "project.intake.field_confirmed",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://project-intake/events/project.intake.field_confirmed/v1",
   "title": "project.intake.field_confirmed@1 payload",

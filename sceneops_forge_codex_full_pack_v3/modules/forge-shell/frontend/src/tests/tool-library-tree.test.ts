@@ -71,3 +71,17 @@ test('a progressive catalog hides registered tools that are not released yet', (
   assert.deepEqual(tree.map(branch => branch.id), ['current-workflow']);
   assert.deepEqual(tree[0]?.nodes.map(node => node.id), ['journey.modeling', 'journey.environment']);
 });
+
+test('catalog groups preserve order and never expose unregistered entries', () => {
+  const catalog = {title:'项目工具',description:'fixture',entries:[
+    {editorId:'journey.planning',title:'策划与制作卡片',description:'',group:'策划与制作'},
+    {editorId:'journey.source',title:'架构与源码',description:'',group:'游戏内容'},
+    {editorId:'journey.missing',title:'未接通',description:'',group:'游戏内容'},
+    {editorId:'journey.game-preview',title:'游戏试玩',description:'',group:'试玩与版本'},
+  ]};
+  const entries = ['journey.planning','journey.source','journey.game-preview'].map(id=>editor(id));
+  const tree=createToolLibraryTree(entries,'',catalog);
+  assert.deepEqual(tree.map(group=>group.title),['策划与制作','游戏内容','试玩与版本']);
+  assert.deepEqual(tree.flatMap(group=>group.nodes.map(node=>node.id)),entries.map(item=>item.id));
+  assert.deepEqual(createToolLibraryTree(entries,'源码',catalog).map(group=>group.title),['游戏内容']);
+});

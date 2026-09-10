@@ -11,7 +11,9 @@ export const generatedModuleManifest = {
   "requires": {
     "modules": [
       "core-kernel",
-      "module-runtime"
+      "module-runtime",
+      "ai-agent-runtime",
+      "ai-run-distiller"
     ],
     "integrations": [],
     "optional_integrations": [

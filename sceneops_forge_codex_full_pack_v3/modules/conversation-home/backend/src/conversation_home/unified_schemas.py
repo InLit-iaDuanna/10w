@@ -1,7 +1,7 @@
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, SecretStr
 
-from sceneops_ai_provider import AlignmentDetail, ApiProtocol, ProviderId
+from sceneops_ai_provider import AlignmentDetail, ApiProtocol, ProviderId, ReasoningEffort
 
 class AIContract(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -14,6 +14,10 @@ class AISettings(AIContract):
     api_protocol: ApiProtocol = 'chat-completions'
     streaming: bool = True
     alignment_detail: AlignmentDetail = 'standard'
+    reasoning_effort: ReasoningEffort = 'low'
+    agent_timeout_minutes: int | None = Field(default=None, ge=1, le=525600)
+    selector_provider: ProviderId | None = None
+    selector_model: str | None = None
 
 class AISettingsUpdate(AIContract):
     provider: ProviderId | None = None
@@ -24,6 +28,10 @@ class AISettingsUpdate(AIContract):
     api_protocol: ApiProtocol | None = None
     streaming: bool | None = None
     alignment_detail: AlignmentDetail | None = None
+    reasoning_effort: ReasoningEffort | None = None
+    agent_timeout_minutes: int | None = Field(default=None, ge=1, le=525600)
+    selector_provider: ProviderId | None = None
+    selector_model: str | None = Field(default=None, min_length=1, max_length=200)
 
 class AIModel(AIContract):
     id: str
@@ -56,6 +64,7 @@ class AIConnectionRequest(AIProviderModelsRequest):
     model: str = Field(min_length=1, max_length=200)
     api_protocol: ApiProtocol = 'chat-completions'
     streaming: bool = True
+    reasoning_effort: ReasoningEffort = 'low'
 
 
 class AIConnectionResult(AIContract):

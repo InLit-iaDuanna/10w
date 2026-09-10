@@ -1,4 +1,5 @@
 export { filterAssets, buildAssetEditorState, emptyAssetFilter, assetKeys } from "./assetBrowser.ts";
+export const loadBuiltinAssetLibrary = () => import('./BuiltinAssetLibrary');
 export {
   assetBrowserEditor,
   assetInspectorEditor,

@@ -8,11 +8,11 @@ import {
   moduleManifest,
 } from "../index.ts";
 
-test("module.yaml matches the public manifest and declares its only domain dependency", async () => {
+test("module.yaml matches the public manifest and declares its module dependencies", async () => {
   const manifestUrl = new URL("../../../module.yaml", import.meta.url);
   const diskManifest = JSON.parse(await readFile(manifestUrl, "utf8"));
   assert.deepEqual(diskManifest, moduleManifest);
-  assert.deepEqual(moduleManifest.requires.modules, ["core-kernel", "module-runtime", "project-intake"]);
+  assert.deepEqual(moduleManifest.requires.modules, ["core-kernel", "module-runtime", "project-intake", "ai-run-distiller"]);
   assert.deepEqual(moduleManifest.requires.integrations, []);
 });
 

@@ -11,6 +11,7 @@ requires:
     - core-kernel
     - module-runtime
     - ai-agent-runtime
+    - ai-run-distiller
   integrations: []
   optional_integrations:
     - llm-provider

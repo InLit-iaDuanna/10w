@@ -70,3 +70,15 @@ scripts/module-test all
 ```
 
 脚手架拒绝覆盖已有目录，并可用 `--surface` 只生成 frontend、backend 或二者。新模块的 fixture runner 明确返回 Mock success，或抛出稳定 Mock failure。
+
+## 2026-09-07 审计修复
+
+权限 ID 支持冒号分隔的多级作用域（例如 `logic:code:approve`）；注册器保留原始字符串，实际权限检查仍精确匹配，不引入通配授权。Asset Factory 的发布入口使用 `asset.pipeline.publish`，Asset Library 保持 `asset.version.publish`，避免两个不同模块重复注册同一命令。
+
+历史事件 schema 文件名保持可访问。规范事件文件可通过本地 `$ref` 引用原合同，共用事件包另外限制 `event_type`；不复制或放宽 payload 校验。角色与概念模块的生成器同时输出事件类型与版本元数据。
+
+Python 边界检查忽略 setuptools 的 `backend/build` 副本，继续扫描真实源码与测试。JavaScript 的对象方法 `client.import(...)` 不属于动态模块导入；真实计算目标 `import(modulePath)` 仍被拒绝。
+
+后端生成目录的每项是 `{manifest, module}`：manifest 来自已验证 YAML，module 是该 manifest 声明的公开 Python 包，使用静态 import 绑定。模块现有路由工厂与构造参数各异，当前 `services/api/app.py` 仍负责依赖注入及路由装配；生成目录不虚构通用 `backend_module_contribution` 导出，也不表示所有业务路由已自动挂载。
+
+前端生成目录显式绑定 `{...moduleContribution, manifest: generatedModuleManifest}`，所有模块启停及入口判断只消费 YAML 生成的完整合同；历史模块自身的简写 UI manifest 不作为目录合同。统一宿主仅注册一次 `harness.pipeline`，使用模块公开 editor 定义并保留原有项目选择、脏状态和生产视图包装。

@@ -6,12 +6,19 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-CAPABILITIES = {"create_asset": "blender.asset.create", "export_asset": "blender.asset.export", "bootstrap_door": "blender.asset.begin", "open_source": "blender.asset.begin", "edit_nodes": "blender.asset.edit", "save_source": "blender.asset.edit", "export_source": "blender.asset.publish"}
+CAPABILITIES = {"import_source": "blender.asset.begin", "create_asset": "blender.asset.create", "export_asset": "blender.asset.export", "bootstrap_door": "blender.asset.begin", "open_source": "blender.asset.begin", "edit_nodes": "blender.asset.edit", "save_source": "blender.asset.edit", "export_source": "blender.asset.publish", "derive_unity": "blender.asset.derive_unity"}
 
 
 def identifier(value):
     if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", value):
         raise ValueError("invalid stable identifier")
+    return value
+
+
+def object_identifier(value):
+    """Imported object identities are opaque metadata, never filesystem locators."""
+    if not isinstance(value, str) or not 1 <= len(value) <= 1024 or not value.isprintable():
+        raise ValueError("invalid object identifier")
     return value
 
 
@@ -25,9 +32,11 @@ def validate_command(command, binding):
         "export_asset": common,
         "bootstrap_door": common | {"candidate_id", "node_ids", "recipe"},
         "open_source": common | {"candidate_id"},
+        "import_source": common | {"candidate_id"},
         "save_source": common | {"candidate_id"},
         "edit_nodes": common | {"candidate_id", "edits"},
         "export_source": common | {"candidate_id", "formats"},
+        "derive_unity": common | {"candidate_id"},
     }
     keys = set(command)
     if operation == "create_asset" and "name" in command:
@@ -90,7 +99,7 @@ def validate_command(command, binding):
         for edit in edits:
             if not isinstance(edit, dict) or not {"node_id"} < set(edit) or not set(edit) <= {"node_id", "dimensions_m", "base_color"}:
                 raise ValueError("invalid typed node edit")
-            identifier(edit["node_id"])
+            object_identifier(edit["node_id"])
             if "dimensions_m" in edit:
                 bounded_values(edit["dimensions_m"], 3, 0.001, 100)
             if "base_color" in edit:

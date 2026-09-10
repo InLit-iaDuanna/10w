@@ -18,10 +18,12 @@ class PromptRoutingTests(unittest.TestCase):
 
     def test_selected_instruction_reaches_both_compatible_protocols(self):
         instruction = "trusted fixture instruction"
-        chat = build_payload("chat-completions", "hello", "model", None, [], instruction)
-        responses = build_payload("responses", "hello", "model", None, [], instruction)
+        chat = build_payload("chat-completions", "hello", "model", None, [], instruction, "high")
+        responses = build_payload("responses", "hello", "model", None, [], instruction, "xhigh")
         self.assertEqual(chat["messages"][0]["content"], instruction)
         self.assertEqual(responses["instructions"], instruction)
+        self.assertEqual(chat["reasoning_effort"], "high")
+        self.assertEqual(responses["reasoning"], {"effort": "xhigh"})
 
     def test_selected_instruction_reaches_both_restricted_cli_transports(self):
         instruction = "trusted fixture instruction"

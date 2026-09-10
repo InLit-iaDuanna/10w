@@ -27,7 +27,7 @@ contributes:
     - asset.pipeline.cancel
     - asset.pipeline.retry
     - asset.pipeline.rollback
-    - asset.version.publish
+    - asset.pipeline.publish
   events:
     - asset.pipeline.started@1
     - asset.pipeline.progressed@1
@@ -39,7 +39,7 @@ contributes:
     - asset.validate
     - asset.publish
   workflows:
-    - asset-to-engine-ready@1
+    - asset-to-engine-ready
   policy_gates:
     - asset.geometry
     - asset.uv-material

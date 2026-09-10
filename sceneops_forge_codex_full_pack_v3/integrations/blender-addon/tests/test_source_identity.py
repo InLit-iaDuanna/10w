@@ -8,6 +8,14 @@ from unittest.mock import patch
 import sceneops_blender.agent_protocol as protocol
 
 
+class SceneObject(dict):
+    type = 'MESH'
+    __hash__ = object.__hash__
+
+    def __bool__(self):
+        return True
+
+
 class SourceIdentityTests(unittest.TestCase):
     def adopt(self, objects):
         spec = importlib.util.spec_from_file_location('source_identity_test', Path(protocol.__file__).with_name('agent_source.py'))
@@ -16,9 +24,10 @@ class SourceIdentityTests(unittest.TestCase):
         with patch.dict(sys.modules, {'bpy': bpy}):
             spec.loader.exec_module(module)
             module.identify_scene('asset')
+            return module
 
     def test_adopts_new_nodes_and_preserves_ids(self):
-        old, new = {'sceneops_id': 'node_old', 'asset_id': 'asset'}, {}
+        old, new = SceneObject(sceneops_id='node_old', asset_id='asset'), SceneObject()
         self.adopt([old, new])
         self.assertEqual(old['sceneops_id'], 'node_old')
         self.assertEqual(new['asset_id'], 'asset')
@@ -29,10 +38,33 @@ class SourceIdentityTests(unittest.TestCase):
 
     def test_foreign_and_duplicate_identities_rejected_before_adoption(self):
         for existing in ([{'asset_id': 'foreign'}], [{'sceneops_id': 'duplicate'}, {'sceneops_id': 'duplicate'}]):
-            new = {}
+            existing = [SceneObject(value) for value in existing]
+            new = SceneObject()
             with self.assertRaises(ValueError):
                 self.adopt([new, *existing])
             self.assertEqual(new, {})
+
+    def test_bone_editor_shape_excluded_but_authored_shape_kept(self):
+        helper = SceneObject()
+        authored = SceneObject(sceneops_id='authored-shape')
+        rig = SceneObject(sceneops_id='rig')
+        rig.type = 'ARMATURE'
+        rig.pose = types.SimpleNamespace(bones=[types.SimpleNamespace(custom_shape=value) for value in (helper, authored)])
+        # Blender objects are truthy even when they have no custom properties.
+        self.adopt([rig, helper, authored])
+        self.assertNotIn('asset_id', helper)
+        self.assertEqual(authored['asset_id'], 'asset')
+        self.assertEqual(rig['sceneops_id'], 'rig')
+
+    def test_animation_identity_uses_importer_action_reference(self):
+        module = self.adopt([])
+        first, second = {}, {}
+        gltf = types.SimpleNamespace(
+            data=types.SimpleNamespace(animations=[types.SimpleNamespace(extras={'sceneops_id':'clip-run'})]),
+            needs_stash=[(object(), first, object()), (object(), second, object())])
+        module.glTF2ImportUserExtension().gather_import_animation_after_hook(0, 'arbitrary renamed track', gltf)
+        self.assertEqual(first, {'sceneops_id':'clip-run'})
+        self.assertEqual(second, first)
 
 
 class GrantContentTests(unittest.TestCase):

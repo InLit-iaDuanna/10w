@@ -19,7 +19,7 @@ _ESM_IMPORT = re.compile(
 _CALL_IMPORT = re.compile(
     r"\b(?:import|require)\s*\(\s*(?P<quote>['\"])(?P<source>[^'\"]+)(?P=quote)\s*\)"
 )
-_DYNAMIC_IMPORT = re.compile(r"\bimport\s*\(\s*(?!['\"])")
+_DYNAMIC_IMPORT = re.compile(r"(?<![\w$.])import\s*\(\s*(?![\s'\"])")
 
 
 def _strip_javascript_comments(source: str) -> str:
@@ -189,7 +189,7 @@ def _scan_python(
         if module.manifest.entrypoints.backend is not None
     }
     for path in sorted(owner.directory.rglob("*.py")):
-        if "__pycache__" in path.parts:
+        if "__pycache__" in path.parts or path.is_relative_to(owner.directory / "backend" / "build"):
             continue
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

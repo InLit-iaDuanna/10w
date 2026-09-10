@@ -1,4 +1,6 @@
 {
+  "x-event-type": "observability.log.recorded",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.dev/contracts/observability/events/observability.log.recorded.v1.schema.json",
   "title": "Observability Log Recorded v1",

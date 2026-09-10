@@ -6,7 +6,7 @@ description: V5 运行专家
 status: active
 feature_flag: ai_agent_runtime
 requires:
-  modules: ["core-kernel","module-runtime","ai-model-router","project-intake","engine-unity","asset-factory","asset-library","world-composer"]
+  modules: ["core-kernel","module-runtime","ai-model-router","project-intake","engine-unity","asset-factory","asset-library","world-composer","vfx-shader"]
   integrations: []
   optional_integrations: ["blender","unity"]
 contributes:

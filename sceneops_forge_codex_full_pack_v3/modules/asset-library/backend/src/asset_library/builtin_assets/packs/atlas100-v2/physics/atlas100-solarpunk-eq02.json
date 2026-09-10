@@ -1,0 +1,683 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-solarpunk-eq02",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 11.357,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p0:c0",
+      "center_m": [
+        -0.016670692442624396,
+        0.13412310249089054,
+        0.0
+      ],
+      "half_extents_m": [
+        0.1406511813423089,
+        0.0801084923687867,
+        0.028644
+      ],
+      "axes": [
+        [
+          0.96528608825427,
+          0.26119488475613317,
+          0.0
+        ],
+        [
+          -0.2611948847561333,
+          0.96528608825427,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p0:c1",
+      "center_m": [
+        0.1759405849900008,
+        0.22975876962540237,
+        0.0
+      ],
+      "half_extents_m": [
+        0.13233487688459109,
+        0.08586730743431983,
+        0.028644
+      ],
+      "axes": [
+        [
+          0.7071065501076227,
+          0.7071070122653975,
+          0.0
+        ],
+        [
+          -0.7071070122653975,
+          0.7071065501076222,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p0:c2",
+      "center_m": [
+        0.28714472177656625,
+        0.3954045314361977,
+        0.0
+      ],
+      "half_extents_m": [
+        0.12345964712055796,
+        0.09126345611711208,
+        0.028644
+      ],
+      "axes": [
+        [
+          0.26119425385494266,
+          0.9652862589683746,
+          0.0
+        ],
+        [
+          -0.9652862589683747,
+          0.2611942538549424,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p0:c3",
+      "center_m": [
+        0.28714465927011146,
+        0.5866757398164358,
+        0.0
+      ],
+      "half_extents_m": [
+        0.12345964712055796,
+        0.09126345611711208,
+        0.028644
+      ],
+      "axes": [
+        [
+          -0.261194884756133,
+          0.9652860882542702,
+          0.0
+        ],
+        [
+          -0.9652860882542703,
+          -0.2611948847561326,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p0:c4",
+      "center_m": [
+        0.17594041421919068,
+        0.7523214289453071,
+        0.0
+      ],
+      "half_extents_m": [
+        0.13233487688459109,
+        0.08586730743431985,
+        0.028644
+      ],
+      "axes": [
+        [
+          -0.7071070122653973,
+          0.7071065501076226,
+          0.0
+        ],
+        [
+          -0.7071065501076226,
+          -0.7071070122653972,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p0:c5",
+      "center_m": [
+        -0.016670925719889235,
+        0.8479569701910334,
+        0.0
+      ],
+      "half_extents_m": [
+        0.1406511813423089,
+        0.0801084923687867,
+        0.028644
+      ],
+      "axes": [
+        [
+          -0.9652862589683744,
+          0.26119425385494277,
+          0.0
+        ],
+        [
+          -0.26119425385494277,
+          -0.9652862589683745,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 3,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p1",
+      "center_m": [
+        -0.127875,
+        0.49104,
+        0.0
+      ],
+      "half_extents_m": [
+        0.006138,
+        0.49104,
+        0.006138
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p2",
+      "center_m": [
+        -0.046035,
+        0.49104,
+        0.0
+      ],
+      "half_extents_m": [
+        0.1023,
+        0.06138,
+        0.066495
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-solarpunk-eq02:p3",
+      "center_m": [
+        0.0,
+        0.49104,
+        0.05115
+      ],
+      "half_extents_m": [
+        0.009207,
+        0.434775,
+        0.009207
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          -0.9999999999999466,
+          0.0
+        ],
+        [
+          0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "hand_right",
+      "grip_position_m": [
+        0.0,
+        0.196416,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "limb_upper",
+        "parent": 0,
+        "pivot": [
+          -0.127875,
+          0.49104,
+          0.0
+        ]
+      },
+      {
+        "name": "limb_lower",
+        "parent": 0,
+        "pivot": [
+          -0.127875,
+          0.49104,
+          0.0
+        ]
+      },
+      {
+        "name": "string_draw",
+        "parent": 0,
+        "pivot": [
+          -0.127875,
+          0.49104,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      0,
+      3,
+      0,
+      0
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 1,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.0,
+                -0.07492970727274234,
+                0.9971888181122075
+              ],
+              [
+                0.0,
+                0.0,
+                -0.07492970727274234,
+                0.9971888181122075
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0,
+              0.35,
+              0.65,
+              0.8
+            ]
+          },
+          {
+            "joint": 2,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.07492970727274234,
+                0.9971888181122075
+              ],
+              [
+                0.0,
+                0.0,
+                0.07492970727274234,
+                0.9971888181122075
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0,
+              0.35,
+              0.65,
+              0.8
+            ]
+          },
+          {
+            "joint": 3,
+            "path": "translation",
+            "values": [
+              [
+                -0.127875,
+                0.49104,
+                0.0
+              ],
+              [
+                0.022125000000000006,
+                0.49104,
+                0.0
+              ],
+              [
+                0.022125000000000006,
+                0.49104,
+                0.0
+              ],
+              [
+                -0.127875,
+                0.49104,
+                0.0
+              ]
+            ],
+            "times": [
+              0,
+              0.35,
+              0.65,
+              0.8
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "hand_right",
+      "grip_position_m": [
+        0.0,
+        0.196416,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "blended bow limbs and string weights; rigid remaining parts",
+    "authoring": "authored recipe-family mechanics",
+    "bow_weights": {
+      "upper": 1,
+      "lower": 2,
+      "string": 3,
+      "center_y": 0.49104,
+      "half_height": 0.49104
+    }
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-solarpunk-eq02.glb",
+      "triangle_count": 312,
+      "part_count": 4,
+      "distance_m": 0.0,
+      "sha256": "1c13932eae9f6da3fe09df989deeafedf2391282f4dbb49e018fd84d5881a349",
+      "byte_size": 136744
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-solarpunk-eq02.lod1.glb",
+      "triangle_count": 216,
+      "part_count": 4,
+      "distance_m": 4.91,
+      "sha256": "04285668df09afa47edd5e641a6333d9d36f44bc0a7a4fd7055ba7e7869aa346",
+      "byte_size": 113672
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-solarpunk-eq02.lod2.glb",
+      "triangle_count": 156,
+      "part_count": 3,
+      "distance_m": 11.78,
+      "sha256": "b46ffb639395a876e5589abe8dd116211681a99a265d75d2e84536c62767e07c",
+      "byte_size": 99404
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.434775,
+      0.0,
+      -0.066495
+    ],
+    "max": [
+      0.434775,
+      0.98208,
+      0.066495
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

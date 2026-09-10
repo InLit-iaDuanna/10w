@@ -36,26 +36,24 @@
   inset: 0;
 }
 
-/* The primary conversation and its 3D companion tools use one compact tab
-   bar. Their editor-specific content starts immediately below it, like a
-   task canvas with a native right inspector instead of a nested window. */
-.forge-shell .forge-minimal-chrome-group {
+/* Every native workspace uses the same tab geometry and visual language. */
+.forge-shell .dv-groupview {
   --dv-tabs-and-actions-container-height: 38px;
   --dv-tabs-and-actions-container-background-color: var(--canvas);
   --dv-activegroup-visiblepanel-tab-background-color: var(--surface-2);
-  --dv-inactivegroup-visiblepanel-tab-background-color: var(--surface-1);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--surface-2);
   --dv-activegroup-hiddenpanel-tab-background-color: transparent;
   --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
   --dv-tab-margin: 5px 2px;
   --dv-tab-border-radius: 6px;
 }
 
-.forge-shell .forge-minimal-chrome-group > .dv-tabs-and-actions-container {
+.forge-shell .dv-groupview > .dv-tabs-and-actions-container {
   padding: 0 6px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.forge-shell .forge-minimal-chrome-group .dv-tab {
+.forge-shell .dv-groupview .dv-tab {
   display: flex;
   align-items: center;
   min-height: 28px;
@@ -63,7 +61,7 @@
   font-weight: 550;
 }
 
-.forge-shell .forge-minimal-chrome-group .dv-default-tab-action {
+.forge-shell .dv-groupview .dv-default-tab-action {
   border-radius: 5px;
   color: var(--text-muted);
 }
@@ -223,6 +221,7 @@
   top: 50%;
   bottom: auto;
   height: 72px;
+  width: 12px;
   transform: translateY(-50%);
 }
 .forge-region-pull.forge-edge-top,
@@ -230,6 +229,7 @@
   right: auto;
   left: 50%;
   width: 72px;
+  height: 12px;
   transform: translateX(-50%);
 }
 .forge-region-pull.forge-edge-top {
@@ -312,3 +312,47 @@
      must not intercept the enabled divider underneath it. */
   pointer-events: none;
 }
+
+/* Tool library keeps its Dockview tab as the single title and close control. */
+.forge-editor-layout.is-tool-picker .forge-region-pull.forge-edge-top { top: 0; }
+
+
+/* Quiet edge targets; no permanent grip or additional editor padding. */
+.forge-region-pull { touch-action: none; -webkit-app-region: no-drag; cursor: default; }
+.forge-region-pull::before { content: none; }
+.forge-region-pull:hover { border-color: transparent; }
+.forge-region-pull:focus-visible { outline: 1px solid var(--text-secondary); outline-offset: -2px; }
+.forge-hover-placement { position: fixed; inset: 0; z-index: 10000; cursor: move; touch-action: none; user-select: none; }
+.forge-hover-tool-card { position: fixed; z-index: 10001; width: 44px; height: 34px; display: grid; place-items: center; box-sizing: border-box; pointer-events: none; color: var(--text-secondary); background: var(--surface-2, #292929); border: 1px solid var(--border-strong, #555); border-radius: 7px; box-shadow: 0 5px 18px rgb(0 0 0 / 22%); animation: forge-hover-appear 140ms ease-out; }
+.forge-hover-tool-card svg { width: 28px; height: 22px; stroke: currentColor; stroke-width: 1.5; }
+.forge-hover-tool-card.is-ready { width: 144px; height: 56px; gap: 3px; padding: 7px; color: var(--text-primary); }
+.forge-hover-tool-card.is-ready span { font-size: 10px; white-space: nowrap; color: var(--text-secondary); }
+.forge-hover-tool-card.is-ready svg { width: 30px; height: 24px; }
+.forge-hover-split-preview { position: fixed; pointer-events: none; overflow: hidden; }
+.forge-hover-split-preview path { fill: color-mix(in srgb, var(--text-primary, #eee) 9%, transparent); stroke: var(--border-strong, #777); stroke-width: 1.2; }
+.forge-hover-retraction { position: fixed; inset: 0; z-index: 10000; pointer-events: none; }
+.forge-elastic-left { transform-origin: left center; }
+.forge-elastic-right { transform-origin: right center; }
+.forge-elastic-bottom { transform-origin: center bottom; }
+.forge-elastic-top { transform-origin: center top; }
+.forge-hover-retraction .forge-elastic-left, .forge-hover-retraction .forge-elastic-right { animation: forge-elastic-return-x 260ms cubic-bezier(.2,.8,.3,1) forwards; }
+.forge-hover-retraction .forge-elastic-top, .forge-hover-retraction .forge-elastic-bottom { animation: forge-elastic-return-y 260ms cubic-bezier(.2,.8,.3,1) forwards; }
+@keyframes forge-elastic-return-x { to { transform: scaleX(0); opacity: 0; } }
+@keyframes forge-elastic-return-y { to { transform: scaleY(0); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .forge-hover-retraction { display: none; } }
+
+.forge-hover-error { position: absolute; z-index: 40; bottom: 8px; left: 12px; right: 12px; color: var(--critical, #f06d6d); font-size: 12px; }
+@keyframes forge-hover-appear { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .forge-hover-tool-card { animation: none; } }
+
+.forge-region-pull.forge-edge-left, .forge-region-pull.forge-edge-right { top: 40px; bottom: 12px; height: auto; width: 8px; min-width: 8px; transform: none; }
+.forge-region-pull.forge-edge-top, .forge-region-pull.forge-edge-bottom { left: 12px; right: 12px; width: auto; height: 8px; min-height: 8px; transform: none; }
+
+/* Only the workspace perimeter owns hover launchers; internal panes have none. */
+.forge-shell > .forge-region-pull.forge-edge-left, .forge-shell > .forge-region-pull.forge-edge-right { top: 12px; bottom: 12px; }
+
+/* The unfolding surface must cover moving sibling content, including its native header. */
+.forge-shell .forge-region-entering { z-index: 2; background: var(--canvas); }
+.forge-shell .dv-render-overlay.forge-region-entering { z-index: 3; }
+
+.forge-hover-placement.is-confirming { cursor: default; }

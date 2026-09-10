@@ -44,7 +44,7 @@ class AdapterTests(unittest.TestCase):
     def test_capabilities_report_security_and_modes(self) -> None:
         capabilities = adapter().capabilities()
         self.assertFalse(capabilities.arbitrary_csharp_execution)
-        self.assertEqual(16, len(capabilities.command_allowlist))
+        self.assertEqual(20, len(capabilities.command_allowlist))
         self.assertEqual(set(ExecutionMode), set(capabilities.execution_modes))
 
     def test_deterministic_mock_success_is_labelled_mock(self) -> None:

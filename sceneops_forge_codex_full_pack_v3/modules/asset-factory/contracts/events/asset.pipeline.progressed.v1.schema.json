@@ -1,4 +1,7 @@
 {
+  "type": "object",
+  "x-event-type": "asset.pipeline.progressed",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.dev/contracts/events/asset.pipeline.progressed.v1.schema.json",
   "title": "asset.pipeline.progressed@1",

@@ -1,5 +1,7 @@
 # SceneOps Forge Product Specification
 
+当前新制作主线（2026-09-09）：**SceneOps 对齐目标 → 确认可编辑制作简报与权限 → Codex／CodeBuddy 原生制作 → 工作台接回实际文件、资产和试玩候选 → 准确会话续改**。新工程使用轻量 Three.js / TypeScript / Vite / pnpm 起点。历史任务与编辑服务继续保留；本轮不接 App Server、SDK 或多 Agent 编排。接口、配置与故障处理见 [原生 CLI 制作](modules/ai-agent-runtime/docs/native-cli-production.md)，实际验收见 [验收报告](NATIVE_CLI_PRODUCTION_ACCEPTANCE.md)。
+
 ## 1. Product statement
 
 SceneOps Forge is an AI-native full-chain 3D game production workbench. It connects creative intent, project planning, concepts, 3D assets, levels, gameplay logic, rendering, engine integration, builds, AI playtesting, issue backpinning, regression, and release through one traceable production digital thread.
@@ -156,3 +158,18 @@ It is an orchestration, production, review, and verification system.
 # 当前产品增量（2026-09-05）
 
 目标输入 → 一次任务授权 → 专用空工程自动准备 → Blender 基础资产创建/FBX 导出 → Unity 导入/放置 → 实际身份和尺寸回读已贯通。当前只有该有界资产路径为新增实测能力，其他生产节点不因有 UI 而声明真实接入。用户不需配置多 Agent 或工具参数；扩大范围、未知写入和预算异常仍停下来请求检查。见 `AGENT_LIVE_VERIFICATION.md`。
+
+## 当前导出能力
+
+新增独立导出页面，从当前 Web 游戏生成 Android APK、macOS 与 Windows 本地试玩 ZIP，并保留任务级 Agent 对话。包已生成和设备验证通过分别展示；Unity 不作为此前置条件。正式商店发行不在本期范围。
+
+
+## 2026-09-09：原生 CLI 制作主线
+
+新游戏制作采用「方向对齐 → 确认可编辑制作简报 → Codex/CodeBuddy 原生会话 → 工作台回流 → 准确会话续改」。权限独立选择 scoped/full；完整权限也需要确认简报。旧任务和领域编辑服务保留，新制作入口不再使用逐动作 JSON 规划器。
+
+工作区级源码登记与任务级 MCP 桥连接真实源码、GLB 资产版本、场景实例和试玩候选；新工程采用所选架构的轻量起点。手动修改后的「更新作品」只执行物化和构建，不调用模型。详见 [原生制作说明](modules/ai-agent-runtime/docs/native-cli-production.md)。
+
+## 对话学习与记忆（2026-09-09）
+
+任务开始显示实际依据，用户纠正在原消息下形成修订，完成后按实际新增结果展示沉淀。项目记忆回答当前决定，通用经验承载可复用方法与案例；不增加常驻栏。详见 [对话记忆](docs/conversation-memory.md)。

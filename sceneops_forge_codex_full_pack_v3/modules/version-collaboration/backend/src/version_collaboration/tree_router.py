@@ -9,6 +9,22 @@ from .base import CommitId, ExecutionMode, FrozenModel
 from .errors import VersionCollaborationError
 
 
+class ProgressCard(FrozenModel):
+    card_id: str
+    title: str
+    description: str
+    acceptance: str
+    dependencies: tuple[str, ...] = ()
+    branches: tuple[str, ...] = ()
+
+
+class ProgressVersion(FrozenModel):
+    number: int
+    title: str
+    confirmed_at: str
+    commit: str | None = None
+
+
 class TreeProgress(FrozenModel):
     stage: str
     confirmed_versions: int
@@ -16,6 +32,9 @@ class TreeProgress(FrozenModel):
     card_branches: int
     milestones: dict[str, str]
     branch_labels: dict[str, str]
+    cards: tuple[ProgressCard, ...] = ()
+    versions: tuple[ProgressVersion, ...] = ()
+    title: str | None = None
 
 
 class VersionTreeState(GitRepositoryState):

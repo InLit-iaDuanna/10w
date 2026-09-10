@@ -75,6 +75,16 @@ class ModelImageAuthorizationTests(TestCase):
 
         self.assertTrue(request.allow_model_image_input)
 
+    def test_native_project_image_input_preserves_typed_mode_restriction(self):
+        body = dict(project_id='project_fixture', goal='Review screenshot',
+            task_profile='project-demo-agent', execution_mode='agent-full-access',
+            native_production=True, allow_game_execution=True, include_demo_assets=True,
+            alignment_id='direction_0123456789abcdef0123456789abcdef', allow_browser_observation=True, allow_model_image_input=True)
+        self.assertTrue(PrepareAgentTask(**body).allow_model_image_input)
+        body.update(native_production=False, execution_mode='typed-tools')
+        with self.assertRaises(ValidationError):
+            PrepareAgentTask(**body)
+
     def test_artifact_resolver_accepts_only_the_exact_task_browser_run(self):
         with TemporaryDirectory() as directory:
             root = Path(directory).resolve()
@@ -106,6 +116,24 @@ class ModelImageAuthorizationTests(TestCase):
             resolved = store.model_image_path(task, artifact.id, artifact.version, run_id)
 
             self.assertEqual(resolved, root / "production-artifacts" / artifact.id / f"{artifact.version}.png")
+
+            import base64
+            from unittest.mock import Mock
+            from sceneops_ai_agents.native_browser_image import browser_image_content
+            service = SimpleNamespace(production=store, check_grant=Mock(return_value=task))
+            evidence = {'run': {'id': run_id, 'status': 'succeeded', 'source_stale': False,
+                'observation': {'screenshot_artifact': artifact.model_dump(mode='json')}}}
+            content = browser_image_content(service, task, evidence)
+            self.assertEqual(content[0]['type'], 'image')
+            self.assertEqual(base64.b64decode(content[0]['data']), screenshot.read_bytes())
+            self.assertFalse(evidence['model_image_input']['visual_reviewed'])
+            evidence['run']['source_stale'] = True
+            self.assertEqual(browser_image_content(service, task, evidence), [])
+            evidence['run']['source_stale'] = False
+            task.grant.allow_model_image_input = False
+            self.assertEqual(browser_image_content(service, task, evidence), [])
+            self.assertEqual(evidence['model_image_input']['status'], 'not_authorized')
+
             with self.assertRaises(HarnessError) as caught:
                 store.model_image_path(task, artifact.id, artifact.version, "other_run")
             self.assertEqual(caught.exception.code, "MODEL_IMAGE_SCOPE_DENIED")

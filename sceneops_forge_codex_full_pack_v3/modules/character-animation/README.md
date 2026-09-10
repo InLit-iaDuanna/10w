@@ -101,3 +101,8 @@ npm audit --omit=dev
 - 当前规格基线缺少 core-kernel、module-runtime、Asset Library、Design Room、Production Planner、ForgeShell 和 engine-unity 实现，因此目录级注册、真实 Artifact Store、真实 Unity 写入和 Playwright shell E2E 仍是 `planned`/`blocked`；模块本地合同、服务、fixture 与组件测试不依赖这些实现。
 
 统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。
+
+
+## 七领域项目联通（2026-09-10）
+
+公开 AssetAnimationPreview，由 Shell 注入当前项目资产工作台；直接读取版本化 GLB 的真实动画片段进行预览，隐藏时暂停。预览不写入动画姿态或创建新的资产身份。

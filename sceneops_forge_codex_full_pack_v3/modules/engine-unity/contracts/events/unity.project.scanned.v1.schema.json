@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-event-type": "unity.project.scanned",
+  "x-event-version": 1,
+  "type": "object",
+  "$ref": "unity-events.v1.schema.json",
+  "properties": {
+    "event_type": {
+      "const": "unity.project.scanned"
+    }
+  }
+}

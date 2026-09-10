@@ -1,0 +1,15 @@
+button.composer-menu-trigger { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 8px; border:0; border-radius:8px; background:transparent; color:var(--text-secondary); font:inherit; font-size:12px; cursor:pointer; white-space:nowrap; }
+button.composer-menu-trigger:hover,button.composer-menu-trigger[aria-expanded=true] { background:var(--surface-hover); color:var(--text-primary); }
+button.composer-menu-trigger:disabled { opacity:.4; cursor:default; }
+.composer-menu-trigger > svg:not(.composer-menu-chevron) { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.5; }
+.composer-menu-trigger .composer-menu-chevron { width:12px; height:12px; margin-left:2px; fill:none; stroke:currentColor; stroke-width:1.4; opacity:.65; }
+.composer-menu-popup { position:fixed; z-index:10000; box-sizing:border-box; width:280px; max-width:calc(100vw - 24px); max-height:min(420px,65vh); overflow:auto; padding:6px; border:1px solid var(--border-default); border-radius:14px; background:var(--surface-2); color:var(--text-primary); box-shadow:0 12px 40px #0006,0 2px 6px #0004; font-family:inherit; }
+.composer-menu-heading { padding:8px 10px; font-size:11px; font-weight:500; color:var(--text-muted); }
+.composer-menu-popup > button { display:flex; width:100%; align-items:center; gap:10px; padding:10px; border:0; border-radius:9px; background:transparent; color:inherit; text-align:left; cursor:pointer; font:inherit; }
+.composer-menu-popup > button:hover,.composer-menu-popup > button:focus-visible { background:var(--surface-hover); outline:none; }
+.composer-menu-popup > button[aria-checked=true] { background:var(--surface-3); }
+.composer-menu-option-copy { display:grid; gap:4px; flex:1; min-width:0; }
+.composer-menu-option-copy strong { font-size:13px; font-weight:500; }
+.composer-menu-option-copy small { color:var(--text-secondary); font-size:11px; line-height:1.5; overflow-wrap:anywhere; }
+.composer-menu-check { width:15px; height:15px; fill:none; stroke:var(--text-primary); stroke-width:1.6; flex:none; }
+.composer-menu-popup svg { stroke-linecap:round; stroke-linejoin:round; }

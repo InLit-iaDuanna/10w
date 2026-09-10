@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Atlas100 v2 catalog",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "pack_id",
+    "version",
+    "assets",
+    "scenes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "pack_id": {
+      "const": "atlas100"
+    },
+    "version": {
+      "const": "2.0.0"
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 675,
+      "maxItems": 675,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "lods",
+          "uv_mapped",
+          "uv_sets",
+          "rigged",
+          "animations",
+          "physics_binding"
+        ],
+        "properties": {
+          "version": {
+            "const": "2.0.0"
+          },
+          "uv_mapped": {
+            "const": true
+          },
+          "uv_sets": {
+            "const": [
+              "TEXCOORD_0",
+              "TEXCOORD_1"
+            ]
+          },
+          "rigged": {
+            "type": "boolean"
+          },
+          "lods": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "required": [
+                "level",
+                "path",
+                "triangle_count",
+                "sha256",
+                "byte_size"
+              ],
+              "properties": {
+                "level": {
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "pattern": "^(assets|scenes|lods)/[a-zA-Z0-9_.-]+\\.glb$"
+                },
+                "triangle_count": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "byte_size": {
+                  "type": "integer",
+                  "minimum": 28
+                }
+              }
+            }
+          },
+          "animations": {
+            "type": "array"
+          },
+          "physics_binding": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 100,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": [
+          "schema_version",
+          "id",
+          "objects",
+          "coordinate_system",
+          "units",
+          "lods"
+        ],
+        "properties": {
+          "schema_version": {
+            "const": "2.0.0"
+          },
+          "coordinate_system": {
+            "const": "RH_Y_UP_Z_FORWARD"
+          },
+          "units": {
+            "const": "meter"
+          },
+          "objects": {
+            "type": "array",
+            "minItems": 38,
+            "maxItems": 38,
+            "items": {
+              "type": "object",
+              "required": [
+                "sceneops_id",
+                "asset_id",
+                "asset_version",
+                "position_m",
+                "rotation_euler_rad",
+                "scale"
+              ],
+              "properties": {
+                "sceneops_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "asset_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "asset_version": {
+                  "const": "2.0.0"
+                },
+                "position_m": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "rotation_euler_rad": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "scale": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "runtime_instantiated": {
+                  "const": false
+                }
+              }
+            }
+          },
+          "lods": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "required": [
+                "level",
+                "path",
+                "triangle_count",
+                "sha256",
+                "byte_size"
+              ],
+              "properties": {
+                "level": {
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "pattern": "^(assets|scenes|lods)/[a-zA-Z0-9_.-]+\\.glb$"
+                },
+                "triangle_count": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "byte_size": {
+                  "type": "integer",
+                  "minimum": 28
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

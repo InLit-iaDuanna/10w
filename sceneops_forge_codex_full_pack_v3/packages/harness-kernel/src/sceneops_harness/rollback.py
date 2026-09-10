@@ -3,7 +3,7 @@ import os
 from time import monotonic
 
 from .contracts import utc_now
-from .execution import await_handler
+from .execution import await_handler, duration_exhausted, remaining_duration, shortest_duration
 from .registry import HarnessError
 from .run_contracts import CapabilityResult, RollbackAttempt
 from .validation import validate_step
@@ -60,7 +60,7 @@ async def rollback_run(runtime, project_id, run_id, authority):
             if entry.state == "rolled_back" or not (cap.mode in ("mutate", "build") or cap.cross_system) or entry.attempts[-1].invocation.dry_run:
                 continue
             budget = run.definition.budget
-            if run.duration_seconds >= budget.max_duration_seconds:
+            if duration_exhausted(budget.max_duration_seconds, run.duration_seconds):
                 raise HarnessError("TIME_BUDGET_EXCEEDED", "Run execution-time budget exhausted before compensation")
             if cap.metered and run.metered_calls_used >= budget.max_metered_calls:
                 raise HarnessError("CALL_BUDGET_EXCEEDED", "Metered compensation call budget exhausted")
@@ -70,7 +70,7 @@ async def rollback_run(runtime, project_id, run_id, authority):
                 "max_metered_calls": max(0, run.definition.budget.max_metered_calls - run.metered_calls_used),
                 "max_tokens": max(0, run.definition.budget.max_tokens - run.tokens_used),
                 "max_cost_usd": max(0, run.definition.budget.max_cost_usd - run.cost_usd),
-                "max_duration_seconds": budget.max_duration_seconds - run.duration_seconds,
+                "max_duration_seconds": remaining_duration(budget.max_duration_seconds, run.duration_seconds),
             })
             invocation = entry.attempts[-1].invocation.model_copy(update={"authority": authority, "budget": remaining})
             token = runtime.executor.token(run)
@@ -88,7 +88,7 @@ async def rollback_run(runtime, project_id, run_id, authority):
             try:
                 with runtime.repository.resources(invocation, cap.required_integrations):
                     result = await await_handler(binding.rollback_handler(invocation, entry.result, token), token,
-                                                 min(cap.timeout_seconds, remaining.max_duration_seconds))
+                                                 shortest_duration(cap.timeout_seconds, remaining.max_duration_seconds))
                 result = CapabilityResult.model_validate(result)
                 entry.rollback_result = result
                 entry.rollback_attempts[-1].result = result

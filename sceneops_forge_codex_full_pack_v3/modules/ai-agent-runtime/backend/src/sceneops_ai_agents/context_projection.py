@@ -86,9 +86,20 @@ def project_action_history(actions, *, can_read_history: bool = True) -> list[di
     return history
 
 
+def project_context_without_preparation(context):
+    """Project facts stay available; a past selector catalogue is not current memory."""
+    return {key: deepcopy(value) for key, value in context.items()
+            if key not in ('production_preparation', 'production_preparation_context')}
+
+
 def project_observations(task, *, can_read_history: bool) -> dict:
     """Keep the latest exact tool result and reference superseded large results."""
     observations = deepcopy(task.observations)
+    observations.pop('production_preparation', None)
+    observations.pop('production_preparation_context', None)
+    for key in ('project_demo_context', 'card_context', 'production_card_context'):
+        if isinstance(observations.get(key), dict):
+            observations[key] = project_context_without_preparation(observations[key])
     if not can_read_history:
         return observations
     diagnostics = project_game_diagnostics(task)
@@ -254,6 +265,7 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
                          task.authorization_card.workspace_id),
         "task_profile": task.authorization_card.task_profile,
         "execution_mode": task.grant.execution_mode,
+        "source_write_paths": task.grant.source_write_paths,
         "completed_action_count": sum(entry.state == "succeeded" for entry in task.actions),
         "latest_action": ({"action_id": latest.action.action_id,
                            "capability_id": latest.action.capability_id,
@@ -269,14 +281,22 @@ def task_context_summary(task, *, can_read_history: bool = True) -> dict:
     }
     if task.authorization_card.allow_browser_observation or task.authorization_card.allow_browser_interaction:
         result["game_diagnostics"] = project_game_diagnostics(task)
+    preparation = (task.observations.get('production_preparation_context') or
+                   task.observations.get('production_preparation'))
+    if isinstance(preparation, dict):
+        result['production_preparation'] = deepcopy(preparation)
     if task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
         context = task.observations.get('project_demo_context')
         if isinstance(context, dict):
-            result['confirmed_direction'] = deepcopy(context)
+            result['confirmed_direction'] = project_context_without_preparation(context)
         requests = task.observations.get('demo_goals')
         if isinstance(requests, list) and requests:
             result['active_demo_request'] = deepcopy(requests[-1])
         result['selected_edit_target'] = deepcopy(task.observations.get('active_demo_target'))
+    if task.authorization_card.task_profile=='unity-asset-edit':
+        result['unity_target']=deepcopy(task.observations.get('unity_target'))
+        result['unity_content']=deepcopy(task.observations.get('unity_content'))
+        result['unity_exports']={k:{key:value for key,value in v.items() if key!='readback'} for k,v in task.observations.get('unity_exports',{}).items()}
     return result
 
 

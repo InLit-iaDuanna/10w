@@ -144,5 +144,7 @@
     "payload"
   ],
   "title": "UnityCharacterMappingAppliedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "unity.character.mapping.applied",
+  "x-event-version": 1
 }

@@ -292,6 +292,14 @@ export class DockviewPort implements DockingEnginePort {
     }
   }
 
+  moveRegionToWorkspaceEdge(instanceId: string, edge: DrawerState['edge']): void {
+    this.#requirePanel(instanceId).group.api.moveTo({ position: splitPositionForEdge(edge) });
+  }
+
+  regionElement(instanceId: string): HTMLElement {
+    return this.#requirePanel(instanceId).group.element;
+  }
+
   resizeRegion(instanceId: string, edge: DrawerState['edge'], size: number): void {
     const group = this.#requirePanel(instanceId).group;
     if (group.api.location.type !== 'grid') return;

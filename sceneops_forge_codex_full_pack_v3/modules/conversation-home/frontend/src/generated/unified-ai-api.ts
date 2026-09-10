@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/ai/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_ai_setup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/setup/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Install */
+        post: operations["install_api_ai_setup_install_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/setup/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_ai_setup_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/models": {
         parameters: {
             query?: never;
@@ -229,6 +280,12 @@ export interface components {
              * @default true
              */
             streaming: boolean;
+            /**
+             * Reasoning Effort
+             * @default low
+             * @enum {string}
+             */
+            reasoning_effort: "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
         };
         /** AIConnectionResult */
         AIConnectionResult: {
@@ -396,6 +453,18 @@ export interface components {
              * @enum {string}
              */
             alignment_detail: "concise" | "standard" | "deep";
+            /**
+             * Reasoning Effort
+             * @default low
+             * @enum {string}
+             */
+            reasoning_effort: "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
+            /** Agent Timeout Minutes */
+            agent_timeout_minutes?: number | null;
+            /** Selector Provider */
+            selector_provider?: ("codebuddycli" | "codexcli" | "openai-compatible") | null;
+            /** Selector Model */
+            selector_model?: string | null;
         };
         /** AISettingsUpdate */
         AISettingsUpdate: {
@@ -413,6 +482,14 @@ export interface components {
             streaming?: boolean | null;
             /** Alignment Detail */
             alignment_detail?: ("concise" | "standard" | "deep") | null;
+            /** Reasoning Effort */
+            reasoning_effort?: ("minimal" | "low" | "medium" | "high" | "xhigh" | "max") | null;
+            /** Agent Timeout Minutes */
+            agent_timeout_minutes?: number | null;
+            /** Selector Provider */
+            selector_provider?: ("codebuddycli" | "codexcli" | "openai-compatible") | null;
+            /** Selector Model */
+            selector_model?: string | null;
         };
         /** AdapterError */
         AdapterError: {
@@ -432,12 +509,78 @@ export interface components {
              */
             retryable: boolean;
         };
+        /** CLISetupStatus */
+        CLISetupStatus: {
+            /** Platform */
+            platform: string;
+            /** Install Supported */
+            install_supported: boolean;
+            /** Terminal Supported */
+            terminal_supported: boolean;
+            /** Npm Available */
+            npm_available: boolean;
+            /** Tools */
+            tools: components["schemas"]["CLIToolStatus"][];
+            operation: components["schemas"]["SetupOperation"];
+        };
+        /** CLIToolStatus */
+        CLIToolStatus: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codexcli" | "codebuddycli";
+            /** Label */
+            label: string;
+            /** Installed */
+            installed: boolean;
+            /** Compatible */
+            compatible: boolean;
+            /** Version */
+            version: string | null;
+            /** Install Package */
+            install_package: string;
+            /** Login Command */
+            login_command: string;
+            /** Docs Url */
+            docs_url: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** InstallRequest */
+        InstallRequest: {
+            /** Providers */
+            providers: ("codexcli" | "codebuddycli")[];
+        };
         JsonValue: unknown;
+        /** LoginRequest */
+        LoginRequest: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "codexcli" | "codebuddycli";
+        };
+        /** LoginResponse */
+        LoginResponse: {
+            /** Message */
+            message: string;
+        };
+        /** SetupOperation */
+        SetupOperation: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "idle" | "installing" | "succeeded" | "failed";
+            /** Message */
+            message: string;
+            /** Provider */
+            provider: ("codexcli" | "codebuddycli") | null;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -460,6 +603,92 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    status_api_ai_setup_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CLISetupStatus"];
+                };
+            };
+        };
+    };
+    install_api_ai_setup_install_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CLISetupStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_api_ai_setup_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     models_api_ai_models_get: {
         parameters: {
             query?: never;

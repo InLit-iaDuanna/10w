@@ -1,6 +1,8 @@
 from .service import (
     DEFAULT_CLI_MODEL,
     DEFAULT_OPENAI_MODEL,
+    DEFAULT_REASONING_EFFORT,
+    DEFAULT_SELECTOR_TIMEOUT_SECONDS,
     AlignmentDetail,
     ApiProtocol,
     ProviderFailure,
@@ -10,11 +12,18 @@ from .service import (
     ProviderService,
     ProviderSettings,
     ProviderId,
+    ReasoningEffort,
+    SelectorProviderSettings,
 )
+from .cli_setup import CLISetup, SetupFailure
 
 __all__ = [
+    'CLISetup',
+    'SetupFailure',
     'DEFAULT_CLI_MODEL',
     'DEFAULT_OPENAI_MODEL',
+    'DEFAULT_REASONING_EFFORT',
+    'DEFAULT_SELECTOR_TIMEOUT_SECONDS',
     'AlignmentDetail',
     'ApiProtocol',
     'ProviderFailure',
@@ -24,4 +33,6 @@ __all__ = [
     'ProviderService',
     'ProviderSettings',
     'ProviderId',
+    'ReasoningEffort',
+    'SelectorProviderSettings',
 ]

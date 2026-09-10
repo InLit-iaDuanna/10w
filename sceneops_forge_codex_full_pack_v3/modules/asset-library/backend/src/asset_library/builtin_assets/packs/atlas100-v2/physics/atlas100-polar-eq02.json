@@ -1,0 +1,371 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-polar-eq02",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 26.838,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-eq02:p0",
+      "center_m": [
+        0.0,
+        0.6259,
+        -0.054055
+      ],
+      "half_extents_m": [
+        0.43813,
+        0.6259,
+        0.06828
+      ],
+      "axes": [
+        [
+          -0.99999999999994,
+          -3.464102066193935e-07,
+          0.0
+        ],
+        [
+          3.464102066193935e-07,
+          -0.99999999999994,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-eq02:p1",
+      "center_m": [
+        0.0,
+        0.54624,
+        0.036985
+      ],
+      "half_extents_m": [
+        0.14225,
+        0.14225,
+        0.08535
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-eq02:p2",
+      "center_m": [
+        0.0,
+        0.54624,
+        0.093885
+      ],
+      "half_extents_m": [
+        0.019915,
+        0.36985,
+        0.02276
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use",
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "hand_right",
+      "grip_position_m": [
+        0.0,
+        0.25036,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      0,
+      0,
+      0
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                -0.31930878585700095,
+                0.0,
+                0.9476507264148157
+              ],
+              [
+                0.0,
+                -0.31930878585700095,
+                0.0,
+                0.9476507264148157
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.18,
+              0.7,
+              0.95
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "hand_right",
+      "grip_position_m": [
+        0.0,
+        0.25036,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "rigid weights, articulated parts",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-polar-eq02.glb",
+      "triangle_count": 76,
+      "part_count": 3,
+      "distance_m": 0.0,
+      "sha256": "c15f9744b6172e2da71bbc1f4dbc8fd8768c63b3436d7347ade1c334609a5d6f",
+      "byte_size": 45148
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-polar-eq02.lod1.glb",
+      "triangle_count": 54,
+      "part_count": 3,
+      "distance_m": 6.26,
+      "sha256": "3028325eeee3d61b4cab191d7574d3f3b640136004348be2c6cc825af4ad6238",
+      "byte_size": 38740
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-polar-eq02.lod2.glb",
+      "triangle_count": 30,
+      "part_count": 2,
+      "distance_m": 15.02,
+      "sha256": "982f0717bc2efbe9b3b298c53b50c93f75e7b5ff744b043444f9d8ea11a7d883",
+      "byte_size": 32704
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.43813,
+      -0.0,
+      -0.122335
+    ],
+    "max": [
+      0.43813,
+      1.2518,
+      0.122335
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

@@ -16,7 +16,8 @@ export function BrowserInteractionPanel({task}: {task: AgentTask}) {
   const revoke = useMutation({mutationFn:() => agentTasks.revokeInteraction(task.id)});
   const authorization = task.browser_interaction_authorization;
   const authorized = task.authorization_card.allow_browser_interaction && authorization
-    && !authorization.revoked && Date.parse(authorization.expires_at) > Date.now() && !revoke.isSuccess;
+    && !authorization.revoked
+    && (authorization.expires_at == null || Date.parse(authorization.expires_at) > Date.now()) && !revoke.isSuccess;
   const busy = build.isPending || check.isPending || ['running','queued'].includes(task.status);
   const run = query.data?.interaction;
   const result = run?.observation;

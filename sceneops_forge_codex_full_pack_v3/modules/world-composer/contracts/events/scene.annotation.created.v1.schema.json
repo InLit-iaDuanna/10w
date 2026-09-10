@@ -1,4 +1,6 @@
 {
+  "x-event-type": "scene.annotation.created",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.local/events/scene.annotation.created.v1.schema.json",
   "title": "scene.annotation.created@1 payload",

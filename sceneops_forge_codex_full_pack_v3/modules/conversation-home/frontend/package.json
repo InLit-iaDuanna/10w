@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "smoke": "node --no-warnings --experimental-strip-types src/tests/smoke.ts",
-    "test": "node --no-warnings --experimental-strip-types --test src/tests/*.test.ts"
+    "smoke": "node --import ../../../scripts/frontend-test-register.mjs src/tests/smoke.ts",
+    "test": "node ../../../scripts/frontend-test.mjs src/tests"
   },
   "peerDependencies": {
     "@sceneops/core-contracts": "workspace:*",

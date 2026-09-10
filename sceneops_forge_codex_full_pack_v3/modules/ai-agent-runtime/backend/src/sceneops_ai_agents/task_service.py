@@ -1,6 +1,9 @@
 """Server-owned task grants and lifecycle, composed around existing Harness runs."""
 import asyncio
+import json
 import os
+import sqlite3
+import subprocess
 from datetime import timedelta
 from pathlib import Path
 from typing import Literal
@@ -15,20 +18,39 @@ from .task_models import BrowserObservationAuthorization
 from .task_repository import AgentTaskRepository
 from .task_tools import TaskTools, contained
 from .production_store import ProductionStore
+from .workspace_changes import git_workspace_changes
+
+
+TERMINAL_TASK_STATES = {
+    'needs_approval', 'completed', 'review_required', 'failed', 'cancelled', 'interrupted',
+}
 
 
 class AgentTaskService:
     def __init__(self, database_path, workspace_repository, data_dir, *, provider=None,
                  blender_factory=None, unity_factory=None, card_context=None, game_runtime=None,
                  pnpm_executable=None, project_assets=None, environment_scenes=None,
-                 project_demo_context=None):
+                 builtin_asset_install=None, builtin_asset_install_selected=None,
+                 builtin_project_install_selected=None,
+                 project_asset_install_selected=None,
+                 project_demo_context=None, experience=None, export_context=None,
+                 production_preparation=None, lookdev=None, production_card_context=None):
         from . import AgentRuntime
         self.database_path = Path(database_path)
+        self.export_context = export_context
+        self.experience = experience
         self.workspace = workspace_repository
         self.card_context = card_context
         self.project_demo_context = project_demo_context
+        self.production_card_context = production_card_context
+        self.lookdev = lookdev
         self.project_assets = project_assets
         self.environment_scenes = environment_scenes
+        self.builtin_asset_install = builtin_asset_install
+        self.builtin_asset_install_selected = builtin_asset_install_selected
+        self.builtin_project_install_selected = builtin_project_install_selected
+        self.project_asset_install_selected = project_asset_install_selected
+        self.production_preparation = production_preparation
         self.data_dir = Path(data_dir).resolve()
         self.workspace_base = self.data_dir / "agent-workspaces"
         self.state_base = self.data_dir / "agent-tool-state"
@@ -50,6 +72,394 @@ class AgentTaskService:
         self.connection_checks = set()
         self.browser_jobs = {}
         self.recover_interrupted()
+
+    def is_project_busy(self, project_id):
+        return any(task.owner_pid is not None for task in self.records.list(project_id)
+                   if task.project_id == project_id)
+
+    def experience_context(self, task, *, call_key):
+        """Take a fresh immutable memory snapshot for each actual model request."""
+        if self.experience is None:
+            return None
+        use_key = f'task:{task.id}:call:{call_key}'
+        preparation = task.observations.get('production_preparation_context') or {}
+        snapshot = preparation.get('memory_context') or {}
+        staged = [item['content'] for item in preparation.get('selected_details', [])
+                  if item.get('identity', {}).get('kind') == 'experience' and item.get('status') == 'provided']
+        if snapshot or staged or preparation:
+            selected = []
+            for item in (staged or snapshot.get('items', [])):
+                try:
+                    entry = self.experience.get_entry(item['id'], task.project_id)
+                except (ValueError, sqlite3.Error) as error:
+                    return self.experience.unavailable_context(task.project_id, use_key,
+                        f'所选经验暂不可读取：{type(error).__name__}', origin_key=f'task:{task.id}')
+                if entry.enabled and entry.status != 'superseded':
+                    selected.append(entry.model_dump(mode='json'))
+            return self.experience.record_provided(task.project_id, use_key, selected,
+                                                  origin_key=f'task:{task.id}')
+        return self.experience.context(task.project_id, task.goal, use_key=use_key,
+                                       origin_key=f'task:{task.id}')
+
+    @staticmethod
+    def preparation_without_memory(preparation):
+        """Experience content is provided only by the current bounded snapshot."""
+        result = {key: value for key, value in preparation.items() if key != 'memory_context'}
+        if 'selected_details' in result:
+            result['selected_details'] = [item for item in result['selected_details']
+                if item.get('identity', {}).get('kind') != 'experience']
+        if isinstance(result.get('recommendation'), dict):
+            result['recommendation'] = {key: value for key, value in result['recommendation'].items()
+                                        if key != 'experiences'}
+        if isinstance(result.get('candidate_directory'), dict):
+            result['candidate_directory'] = {**result['candidate_directory'], 'candidates': [item
+                for item in result['candidate_directory'].get('candidates', []) if item.get('kind') != 'experience']}
+        return result
+
+    async def ensure_production_preparation(self, task_id):
+        task = self.get(task_id)
+        existing = task.observations.get('production_preparation')
+        if isinstance(existing, dict):
+            return existing
+        if self.production_preparation is None:
+            return None
+        from sceneops_ai_context import ProductionPreparationRequest
+        profile = task.authorization_card.task_profile
+        if profile == 'project-export-agent':
+            kind = 'export'
+        elif profile == 'environment-scene':
+            kind = 'scene'
+        elif profile == 'unity-asset-edit' or any(
+                capability.startswith('blender.asset.') for capability in task.authorization_card.capability_ids):
+            kind = 'modeling'
+        elif profile == 'project-demo-agent' and len(task.observations.get('demo_goals', [])) <= 1:
+            kind = 'game_create'
+        else:
+            kind = 'game_modify'
+        remaining_calls = max(0, task.grant.budget.max_metered_calls - task.model_calls_used)
+        remaining_time = (None if task.grant.expires_at is None else
+                          max(0.01, (task.grant.expires_at - now()).total_seconds()))
+        context = (task.observations.get('project_demo_context') or
+                   task.observations.get('card_context') or {})
+        target_platform = 'web'
+        if kind == 'export':
+            platforms = task.observations.get('export_context', {}).get('platforms', [])
+            target_platform = platforms[0].get('platform') if len(platforms) == 1 else None
+        preparation_capabilities = list(task.authorization_card.capability_ids)
+        if (profile == 'project-demo-agent' and task.grant.include_demo_assets
+                and self.builtin_project_install_selected is not None):
+            preparation_capabilities.append('code.demo_assets.install')
+        if (profile in ('project-demo-agent', 'card-development') and task.grant.include_demo_assets
+                and self.project_asset_install_selected is not None):
+            preparation_capabilities.append('project.asset.provide')
+        goals = task.observations.get('demo_goals')
+        active_request_id = (goals[-1].get('request_id')
+                             if isinstance(goals, list) and goals and isinstance(goals[-1], dict)
+                             else None)
+        request_key = (f'task-request:{task.id[-48:]}:{active_request_id}'
+                       if active_request_id else f'task:{task.id}')
+        request = ProductionPreparationRequest(
+            project_id=task.project_id, request_key=request_key, production_kind=kind,
+            requirement=task.goal[:20000], confirmed_direction=json.dumps(context, ensure_ascii=False)[:10000],
+            target_platform=target_platform,
+            current_state={'task_profile': profile, 'workspace_id': task.grant.workspace_id},
+            available_capability_ids=list(dict.fromkeys(preparation_capabilities)),
+            # Keep one metered call for the primary production agent. The selector
+            # is skipped when the request cannot afford both calls.
+            model_call_allowed=remaining_calls > 1, remaining_model_calls=remaining_calls,
+            remaining_time_seconds=remaining_time)
+        try:
+            result = await self.production_preparation.prepare(request)
+            selected_context = await self.production_preparation.selected_context(request, result, record_memory=False)
+            # Task skills are loaded through the runtime's controlled skill loader.
+            # Keep their identities here without injecting the same full text twice.
+            if task.grant.execution_mode not in ('codex-full-access', 'agent-full-access'):
+                for detail in selected_context.get('selected_details', []):
+                    identity = detail.get('identity') if isinstance(detail, dict) else None
+                    if isinstance(identity, dict) and identity.get('kind') == 'skill':
+                        detail['content'] = {'loaded_by': 'task_skill_loader'}
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            payload = {'status': 'failed', 'recommendation': None,
+                'failure_code': getattr(error, 'code', type(error).__name__),
+                'failure_message': f'制作推荐不可用：{error}；主 Agent 继续读取当前工程和目录自行选择。'}
+            self.records.update(task_id,
+                lambda current: current.observations.update({
+                    'production_preparation': payload,
+                    'production_preparation_context': payload,
+                }),
+                'agent.production_preparation.failed', {'code': payload['failure_code']})
+            return payload
+        payload = result.model_dump(mode='json')
+        attempted = result.call.status in ('succeeded', 'failed', 'cancelled')
+        tokens = (result.call.usage or {}).get('total_tokens') if attempted else None
+        def record(current):
+            current.observations['production_preparation'] = payload
+            current.observations['production_preparation_context'] = selected_context
+            if attempted:
+                current.model_calls_used += 1
+                if isinstance(tokens, int):
+                    current.model_tokens_known += tokens
+                else:
+                    current.budget_accounting_complete = False
+                if result.call.cost_usd is not None:
+                    current.cost_usd = (current.cost_usd or 0) + result.call.cost_usd
+        self.records.update(task_id, record, 'agent.production_preparation.completed',
+            {'status': result.status, 'preparation_id': result.preparation_id})
+        return payload
+
+    async def install_prepared_project_assets(self, task_id):
+        task = self.get(task_id)
+        profile = task.authorization_card.task_profile
+        if (profile not in ('project-demo-agent', 'card-development')
+                or not task.grant.include_demo_assets):
+            return None
+        preparation = task.observations.get('production_preparation')
+        recommendation = preparation.get('recommendation') if isinstance(preparation, dict) else None
+        builtin_selections = []
+        project_selections = []
+        if isinstance(recommendation, dict) and isinstance(recommendation.get('assets'), list):
+            for item in recommendation['assets']:
+                candidate_id = item.get('candidate_id') if isinstance(item, dict) else None
+                if (profile == 'project-demo-agent' and isinstance(candidate_id, str)
+                        and candidate_id.startswith('builtin:')):
+                    builtin_selections.append({'asset_id': candidate_id.removeprefix('builtin:'),
+                        'purpose': item.get('purpose'), 'reason': item.get('reason')})
+                elif isinstance(candidate_id, str) and candidate_id.startswith('project:'):
+                    project_selections.append({
+                        'project_asset_id': candidate_id.removeprefix('project:'),
+                        'version': item.get('version'), 'purpose': item.get('purpose'),
+                        'reason': item.get('reason')})
+        reports = {}
+        failures = []
+        if builtin_selections and self.builtin_project_install_selected is not None:
+            try:
+                reports['builtin'] = await asyncio.to_thread(
+                    self.builtin_project_install_selected, task.project_id, builtin_selections)
+            except asyncio.CancelledError:
+                raise
+            except Exception as error:
+                failures.extend({'candidate_id': f'builtin:{item["asset_id"]}',
+                    'state': 'not_provided', 'reason': str(error)} for item in builtin_selections)
+        if project_selections and self.project_asset_install_selected is not None:
+            try:
+                if profile == 'card-development':
+                    reports['project'] = await asyncio.to_thread(
+                        self.project_asset_install_selected, task.project_id,
+                        project_selections, task.grant.card_id)
+                else:
+                    reports['project'] = await asyncio.to_thread(
+                        self.project_asset_install_selected, task.project_id, project_selections)
+            except asyncio.CancelledError:
+                raise
+            except Exception as error:
+                failures.extend({'candidate_id': f'project:{item["project_asset_id"]}',
+                    'state': 'not_provided', 'reason': str(error)} for item in project_selections)
+        if not reports and not failures:
+            return None
+        entries = [entry for report in reports.values()
+                   for entry in report.get('catalog', {}).get('entries', [])]
+        materialization = ([item for report in reports.values()
+                            for item in report.get('materialization', [])] + failures)
+        report = {'sources': reports, 'entries': entries,
+                  'materialization': materialization,
+                  'installed_files': [path for source in reports.values()
+                                      for path in source.get('installed_files', [])],
+                  'preserved_files': [path for source in reports.values()
+                                      for path in source.get('preserved_files', [])],
+                  'catalog_paths': [source.get('catalog_path') for source in reports.values()
+                                    if source.get('catalog_path')],
+                  'provision_failures': failures}
+        def record(current):
+            current.observations['selected_prepared_assets'] = report
+            if 'builtin' in reports:
+                current.observations['selected_builtin_assets'] = reports['builtin']
+            if 'project' in reports:
+                current.observations['selected_project_assets'] = reports['project']
+            preparation = current.observations.get('production_preparation')
+            if isinstance(preparation, dict):
+                preparation['materialization'] = materialization
+            context = current.observations.get('production_preparation_context')
+            if isinstance(context, dict):
+                context['materialization'] = materialization
+        self.records.update(task_id, record,
+            'agent.production_assets.provided',
+            {'catalog_paths': report['catalog_paths'],
+             'installed_count': len(report['installed_files']),
+             'selected_count': len(builtin_selections) + len(project_selections),
+             'failure_count': len(failures)})
+        return report
+
+    def inspect_prepared_asset_usage(self, task_id, workspace_root):
+        """Record source-level references to selected assets without claiming runtime proof."""
+        task = self.get(task_id)
+        report = (task.observations.get('selected_prepared_assets') or
+                  task.observations.get('selected_builtin_assets'))
+        entries = report.get('entries') if isinstance(report, dict) else None
+        if entries is None and isinstance(report, dict):
+            catalog = report.get('catalog')
+            entries = catalog.get('entries') if isinstance(catalog, dict) else None
+        if not isinstance(entries, list) or not entries:
+            return None
+        root = Path(workspace_root).resolve(strict=True)
+        ignored = {'.git', 'node_modules', 'dist', '.sceneops', '.vite', 'coverage'}
+        readable_suffixes = {'.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json',
+                             '.html', '.css', '.scss', '.vue', '.svelte'}
+        source_files = []
+        catalog_paths = set(report.get('catalog_paths', [])) if isinstance(report, dict) else set()
+        if isinstance(report, dict) and report.get('catalog_path'):
+            catalog_paths.add(report['catalog_path'])
+        for directory, names, filenames in os.walk(root):
+            relative_directory = Path(directory).relative_to(root)
+            if relative_directory.parts[:2] == ('public', 'sceneops-assets'):
+                names[:] = []
+                continue
+            names[:] = [name for name in names if name not in ignored]
+            base = Path(directory)
+            for filename in filenames:
+                path = base / filename
+                if path.relative_to(root).as_posix() in catalog_paths:
+                    continue
+                if path.suffix.lower() not in readable_suffixes:
+                    continue
+                try:
+                    if path.is_symlink() or path.stat().st_size > 1_048_576:
+                        continue
+                    source_files.append((path, path.read_text(encoding='utf-8')))
+                except (OSError, UnicodeError):
+                    continue
+        references = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            asset_id = entry.get('source_asset_id') or entry.get('asset_id')
+            candidate_id = (f'project:{entry["project_asset_id"]}'
+                            if entry.get('project_asset_id') else f'builtin:{asset_id}')
+            url = entry.get('url')
+            needles = {str(asset_id) + '.glb'} if asset_id else set()
+            if isinstance(url, str):
+                needles.update({url, url.lstrip('/')})
+                if not entry.get('project_asset_id'):
+                    needles.add(Path(url).name)
+            paths = sorted({path.relative_to(root).as_posix()
+                            for path, text in source_files if any(needle in text for needle in needles)})
+            references.append({'candidate_id': candidate_id,
+                'actual_reference': 'referenced' if paths else 'not_observed',
+                'reference_paths': paths})
+
+        adjustments = [{'candidate_id': item.get('candidate_id'),
+            'state': 'provision_failed',
+            'reason': item.get('reason') or '所选资产未能提供，主制作不能假定该文件存在。',
+            'evidence_source': 'materialization'}
+            for item in report.get('materialization', [])
+            if isinstance(item, dict) and item.get('state') in ('not_provided', 'not_adopted')]
+        adjustments.extend({'candidate_id': item['candidate_id'],
+            'state': 'selected_reference_not_observed',
+            'reason': '源码扫描未观察到所选资产的真实 URL；这可能是未采用或需要进一步运行核查。',
+            'evidence_source': 'source-scan'}
+            for item in references if item['actual_reference'] == 'not_observed')
+
+        def record(current):
+            current.observations['selected_asset_usage'] = references
+            current.observations['production_preparation_adjustments'] = adjustments
+            preparation = current.observations.get('production_preparation')
+            if isinstance(preparation, dict):
+                preparation['actual_usage'] = references
+                preparation['adjustments'] = adjustments
+            context = current.observations.get('production_preparation_context')
+            if isinstance(context, dict):
+                context['actual_usage'] = references
+                context['adjustments'] = adjustments
+        self.records.update(task_id, record, 'agent.production_assets.inspected',
+                            {'referenced_count': sum(item['actual_reference'] == 'referenced'
+                                                     for item in references),
+                             'adjustment_count': len(adjustments)})
+        return references
+
+    def record_prepared_asset_runtime_status(self, task_id, delivery):
+        task = self.get(task_id)
+        if not isinstance(task.observations.get('selected_prepared_assets'), dict):
+            return None
+        run = delivery.get('run') if isinstance(delivery, dict) else None
+        status = {
+            'project_pipeline': ('passed' if isinstance(run, dict) and run.get('passed') is True
+                                 else 'failed' if isinstance(run, dict) else 'not_run'),
+            'asset_visual_validation': 'not_verified',
+            'reason': '工程检查或预览启动不能单独证明所选资产已在画面中正确加载。',
+        }
+        def record(current):
+            current.observations['selected_asset_runtime_validation'] = status
+            preparation = current.observations.get('production_preparation')
+            if isinstance(preparation, dict):
+                preparation['runtime_validation'] = status
+        self.records.update(task_id, record, 'agent.production_assets.runtime_status', status)
+        return status
+
+    def _memory_sources(self, task_id):
+        task = self.get(task_id)
+        goals = task.observations.get('demo_goals', [])
+        initial_goal = goals[0]['goal'] if goals else task.goal
+        sources = [dict(id=f'task:{task.id}:goal', kind='message', role='user',
+            text=initial_goal, created_at=task.created_at.isoformat(), evidence_status='user_statement')]
+        sources.extend(dict(id=f"task:{task.id}:request:{goal['request_id']}", kind='message',
+            role='user', text=goal['goal'], created_at=goal['accepted_at'], evidence_status='user_statement')
+            for goal in goals)
+        observed = {}
+        cursor = 0
+        while True:
+            page = self.events(task_id, cursor)
+            for event in page.events:
+                if event.event_type == 'agent.action.observed':
+                    observed[event.payload['action_id']] = event.occurred_at.isoformat()
+                if event.event_type == 'agent.codex.activity':
+                    activity = event.payload.get('activity', {})
+                    if activity.get('type') in ('message_completed', 'assistant_message') and activity.get('text'):
+                        sources.append(dict(id=f'task:{task.id}:event:{event.sequence}', kind='message',
+                            role='assistant', text=activity['text'], created_at=event.occurred_at.isoformat(),
+                            evidence_status='reported'))
+            if not page.events:
+                break
+            cursor = page.next_cursor
+        for entry in task.actions:
+            action_id = entry.action.action_id
+            if action_id not in observed:
+                continue
+            native = entry.action.capability_id in ('codex.task.execute', 'agent.task.execute')
+            status = 'unknown' if entry.state == 'uncertain' or entry.effect_state == 'UNKNOWN' else 'reported' if native else 'observed'
+            sources.append(dict(id=f'task:{task.id}:action:{action_id}:{observed[action_id]}', kind='action', role='tool',
+                text=json.dumps(dict(capability=entry.action.capability_id, state=entry.state,
+                    reason=entry.reason, result=entry.result, run_ids=entry.run_ids,
+                    source_ref=f'task-action://{action_id}/result'), ensure_ascii=False),
+                created_at=observed[action_id], evidence_status=status))
+            verification = entry.verification_result
+            if verification is not None:
+                verified = (verification.execution_status == 'COMPLETED'
+                    and verification.verdict in ('PASS', 'FAIL') and entry.effect_state != 'UNKNOWN')
+                sources.append(dict(id=f'task:{task.id}:verification:{action_id}:{observed[action_id]}', kind='verification',
+                    role='tool', text=verification.model_dump_json(), created_at=observed[action_id],
+                    evidence_status='verified' if verified else 'unknown'))
+        # Worker status is a runtime observation, never proof that the business goal passed.
+        sources.append(dict(id=f'task:{task.id}:settled:{task.updated_at.isoformat()}', kind='action',
+            role='tool', text=json.dumps(dict(task_id=task.id, status=task.status, reason=task.reason)),
+            created_at=task.updated_at.isoformat(), evidence_status='observed'))
+        for source in sources:
+            source['origin_key'] = f'task:{task.id}'
+        return sources
+
+    def memory_source(self, project_id, source_id):
+        # The task service owns source resolution, including project ownership.
+        task = next((item for item in self.list(project_id)
+                     if source_id.startswith(f'task:{item.id}:')), None)
+        if task is None:
+            return None
+        return next((source for source in self._memory_sources(task.id)
+                     if source['id'] == source_id), None)
+
+    def record_experience(self, task_id):
+        if self.experience is not None:
+            task = self.get(task_id)
+            self.experience.record_sources(task.project_id, self._memory_sources(task_id))
 
     def card_workspace(self, project_id, card_id, *, expected_root=None, expected_branch=None):
         try:
@@ -77,13 +487,33 @@ class AgentTaskService:
             raise HarnessError('TASK_SCOPE_DENIED', '项目 Demo 工作区登记已改变，需要重新审阅。')
         return record
 
+    async def run_export_task(self, task_id, *, on_event=None, cancel_event=None):
+        from .native_export import run_export_task
+        return await run_export_task(self, task_id, on_event=on_event, cancel_event=cancel_event)
+
+    def prepare_export_task(self, project_id, export_id, goal):
+        from .native_export import prepare_export_task
+        return prepare_export_task(self, project_id, export_id, goal)
+
     def prepare(self, request: PrepareAgentTask):
+        if request.task_profile == "project-export-agent":
+            return self.prepare_export_task(request.project_id, request.export_id, request.goal)
+        if request.task_profile=='unity-asset-edit':
+            raise HarnessError('TASK_SCOPE_DENIED','请从实际资产入口准备独立 Unity 目标。')
         if not request.goal.strip():
             raise HarnessError("TASK_GOAL_REQUIRED", "请输入任务目标。")
         settings = self.provider.settings()
+        if request.native_production and (request.task_profile != 'project-demo-agent'
+                or request.execution_mode != 'agent-full-access'
+                or settings.provider not in ('codexcli', 'codebuddycli', 'openai-compatible')):
+            raise HarnessError('CLI_PROVIDER_REQUIRED', '原生制作需要 Codex harness 或 CodeBuddy harness 和登记的游戏工作区。')
         if request.execution_mode == "codex-full-access" and settings.provider != "codexcli":
             raise HarnessError("CODEX_PROVIDER_REQUIRED", "完全权限任务需要先明确选择 Codex CLI 提供方。")
-        if request.allow_image_generation and request.execution_mode != "codex-full-access":
+        if request.execution_mode == "agent-full-access" and settings.provider not in ('codexcli', 'codebuddycli', 'openai-compatible'):
+            raise HarnessError('CLI_PROVIDER_REQUIRED', '当前提供方不支持 Agent 原生执行。')
+        if request.execution_mode == "agent-full-access" and request.task_profile not in ('card-development', 'project-demo-agent'):
+            raise HarnessError('TASK_SCOPE_DENIED', '原生会话需要已登记的卡片或项目工程。')
+        if request.allow_image_generation and request.execution_mode not in ("codex-full-access", "agent-full-access"):
             raise HarnessError("IMAGE_PROVIDER_REQUIRED", "登录态 GPT 图片目前需要明确选择 Codex CLI 完全权限；不会自动改用付费 API。")
         project = (self.workspace.get_project(request.project_id) if request.project_id
                    else self.workspace.create_project("Agent · " + request.goal.strip()[:60]))
@@ -99,6 +529,7 @@ class AgentTaskService:
         if not card_work and not scene_work and not project_work and request.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
             raise HarnessError("TYPED_CONTINUATION_NOT_CONNECTED", "此应用工程已有内容，受控 Blender/Unity 跨任务会话重绑定尚未接入。不会重放或覆盖；可在主对话明确选择 Codex 完全权限继续，或创建新项目。")
         card = AuthorizationCard(workspace_root=str(root), execution_mode=request.execution_mode,
+            source_write_paths=request.source_write_paths,
             allow_image_generation=request.allow_image_generation, allow_playtest=request.allow_playtest,
             allow_game_execution=request.allow_game_execution,
             include_demo_assets=request.include_demo_assets, alignment_id=request.alignment_id,
@@ -129,6 +560,8 @@ class AgentTaskService:
                         '网络访问仅用于工程声明的依赖。')
                 else:
                     card.scope += ' 本次未授权安装依赖；依赖缺失时 Agent 必须报告。'
+            if card.include_demo_assets:
+                card.scope += ' 本次另授权将内置角色、建筑和场景道具素材放入本卡片分支；已有素材文件保持不变。'
             if card.allow_browser_interaction:
                 card.scope += ' 本次允许测试构建、独立浏览器状态重置、暂停/恢复、有限键盘输入、诊断回读与截图；不包含任意脚本或外部访问，期限与本次授权相同，取消时撤销。'
             if card.allow_browser_observation:
@@ -188,14 +621,28 @@ class AgentTaskService:
         if not card_work and not scene_work and not project_work and self.records.owns_workspace(project.project_id, root):
             card.scope = ('继续本应用已登记的专用工程：仅执行本次确认的有界资产创建、检查、导出和 Unity 导入；'
                 '沿用产物版本记录，不修改其他工程，不构建、渲染或游测。')
-        if request.execution_mode == "codex-full-access":
-            card.capability_ids = ["codex.task.execute"]
+        if request.execution_mode in ("codex-full-access", "agent-full-access"):
+            card.capability_ids = ["agent.task.execute" if request.execution_mode == 'agent-full-access' else "codex.task.execute"]
+            if request.include_demo_assets and not project_work:
+                card.capability_ids.append('code.demo_assets.install')
             card.max_model_calls, card.max_cli_invocations, card.max_attempts_per_action = None, 1, 1
-            card.scope = ("Codex 完全权限：可自行读写文件、运行 Shell 和访问网络。从此独立任务目录开始，"
+            timeout_minutes = getattr(settings, 'agent_timeout_minutes', None)
+            card.max_duration_seconds = None if timeout_minutes is None else timeout_minutes * 60
+            duration_notice = '不设运行时限' if timeout_minutes is None else f'最长 {timeout_minutes} 分钟'
+            card.scope = ("Agent 原生执行权限：可自行读写文件、运行 Shell 和访问网络。从此独立任务目录开始，"
                 "但 danger-full-access 不是系统沙箱，技术上可以访问目录外。不得操作其他工程、安装系统软件、购买或发布。"
                 "本次仅授权目标所需操作；不自动加载用户全局 MCP、插件或 hooks。以任务级 ChangeSet 记录，CLI 内部操作不逐项审批。")
-            card.cost_notice = ("最多一次 CLI 启动、20 分钟、不自动重试；使用 low 轻量思考。"
-                "CLI 内部模型调用次数不可准确限制，不能承诺 8 次请求或美元上限。完成仅表示 CLI 结束，需审阅实际产物。")
+            card.cost_notice = (f"最多一次 CLI 启动、{duration_notice}、不自动重试；使用当前选择的模型与思考强度。"
+                "制作开始前最多另调用一次独立推荐模型。CLI 内部模型调用次数不可准确限制，"
+                "不能承诺 8 次请求或美元上限。完成仅表示 CLI 结束，需审阅实际产物。")
+        if project_work and request.execution_mode == 'agent-full-access':
+            card.scope += (' 本次绑定已登记项目工作目录，CLI 返回后由应用自动运行固定工程检查、构建和本地预览；'
+                '每步记录真实结果，失败停止后续步骤。')
+            if card.include_demo_assets:
+                card.scope += (' 本次另授权准备模型推荐的内置资产及其依赖；只复制所选条目，'
+                               '已有用户文件保持不变。')
+            card.scope += (' 本次允许工程声明的依赖准备，禁用安装脚本。'
+                if card.allow_dependency_install else ' 本次未授权安装依赖，缺失时必须报告。')
         if request.allow_playtest:
             card.scope += ' 本次另授权进入 Play Mode，通过玩家输入执行自动玩法检查并采集证据。'
         elif not card_work:
@@ -204,11 +651,32 @@ class AgentTaskService:
             card.scope += ' 本次不执行自动游测、不自动进入 Play Mode；制作与编译检查后交由用户手动试玩。'
         if card.allow_image_generation:
             card.scope += " 本任务另含原生 GPT 图片生成权限，复用 Codex 登录；仅登记真实图片文件，账户不支持时受阻，不改用付费 API。"
+        if request.source_write_paths is not None:
+            from .code_workspace import read_source
+            for path in request.source_write_paths:
+                if read_source(root, path) is None:
+                    raise HarnessError('CODE_FILE_MISSING', '精修范围必须选择当前工程中已有的源码文件。')
+            card.scope += ' 本次只允许修改以下文件：' + '、'.join(request.source_write_paths) + '。其他源码可读取作为上下文，不能修改；需要扩大范围时请结束并重新选择。'
         if card.allow_blender_edit:
             card.scope += ' 本次另允许 Blender 原生资产编辑，并按版本化三方合并升级登记工程的运行加载代码，保留不冲突的自定义修改。'
+        if request.native_production:
+            from .native_bridge import native_tool_capabilities
+            card.permission_mode = request.permission_mode
+            card.capability_ids = ['agent.task.execute', *native_tool_capabilities(card)]
+            if request.permission_mode == 'scoped':
+                card.scope = ('在登记游戏工作区完成已确认简报。采用 CLI 常规权限策略，不自动提升权限；'
+                    '仅使用本次授权的依赖、浏览器和领域工具，不操作其他工程、不购买、提交或发布。')
+        if request.native_production and card.allow_model_image_input:
+            card.scope += ' 本次浏览器截图以图片附件交给当前制作模型查看，仅限本任务登记截图。'
         task = AgentTaskRecord(project_id=project.project_id, goal=request.goal.strip(),
             authorization_card=card,
             provider_id=settings.provider, provider_model=settings.model)
+        if request.native_production:
+            from .native_inputs import resolve_native_inputs
+            task.observations['native_inputs'] = [{key: value for key, value in item.items()
+                if key != 'absolute_path'} for item in resolve_native_inputs(root, request.input_paths)]
+        if settings.provider == 'openai-compatible' and request.execution_mode == 'agent-full-access':
+            task.observations['native_api_route'] = {'base_url': settings.base_url, 'wire_api': 'responses'}
         if card_work:
             context = (self.card_context(project.project_id, request.card_id)
                 if self.card_context else card_work.get('card_brief', {}))
@@ -216,6 +684,9 @@ class AgentTaskService:
                 raise HarnessError('GAME_ARCHITECTURE_REQUIRED',
                     '第一次生成游戏代码前，请先在策划对话中选择游戏代码架构。不能从 Three.js 推断。')
             task.observations['card_context'] = context
+            if request.include_demo_assets:
+                from .demo_tasks import prepare_demo
+                prepare_demo(task, request, context)
             task.observations['development_workspace'] = {
                 'workspace_root': str(root), 'branch': card_work['branch'],
                 'instruction': '先检查当前源码和技术方案，在当前架构内增量修改；不要重新生成整个工程。',
@@ -240,6 +711,9 @@ class AgentTaskService:
                 'objects_at_prepare': [item.model_dump(mode='json') for item in selected],
                 'notice': '选择信息是任务上下文；只有确认授权卡后才产生所列对象的变换写入权限。',
             }
+        if request.native_production:
+            from .creation_brief import initialize_brief
+            initialize_brief(task)
         if request.alignment_id is not None:
             from .demo_tasks import create_demo_once
             return create_demo_once(self.records, task)
@@ -248,12 +722,51 @@ class AgentTaskService:
     def get(self, task_id):
         task = self.records.get(task_id)
         self.workspace.get_project(task.project_id)
-        return task
+        return self._capture_workspace_changes(task)
 
-    def list(self, project_id=None):
+    def archive(self, task_id, archived):
+        task = self.records.get(task_id)
+        self.workspace.get_project(task.project_id)
+        return self.records.archive(task_id, archived)
+
+    def list(self, project_id=None, archived=None):
         if project_id is not None:
             self.workspace.get_project(project_id)
-        return self.records.list(project_id)
+        return [self._capture_workspace_changes(task) for task in self.records.list(project_id, archived)]
+
+    def refresh_workspace_changes(self, project_id):
+        """Persist missing review snapshots before production rows are projected."""
+        self.workspace.get_project(project_id)
+        for task in self.records.list(project_id):
+            self._capture_workspace_changes(task)
+
+    def _capture_workspace_changes(self, task):
+        if ('native_workspace_changes' in task.observations
+                or task.status not in TERMINAL_TASK_STATES
+                or task.authorization_card.task_profile not in ('card-development', 'project-demo-agent')
+                or task.authorization_card.execution_mode not in ('codex-full-access', 'agent-full-access')
+                or task.grant is None):
+            return task
+        try:
+            if task.authorization_card.task_profile == 'project-demo-agent':
+                record = self.project_demo_workspace(task.project_id, task.grant.workspace_id,
+                    expected_root=task.grant.workspace_root)
+                root = record['workspace_root']
+            else:
+                record = self.card_workspace(task.project_id, task.grant.card_id,
+                    expected_root=task.grant.workspace_root, expected_branch=task.grant.branch)
+                root = record['worktree_path']
+            snapshot = git_workspace_changes(Path(root))
+        except (HarnessError, OSError, subprocess.SubprocessError):
+            return task
+
+        def capture(current):
+            if ('native_workspace_changes' not in current.observations
+                    and current.status in TERMINAL_TASK_STATES):
+                current.observations['native_workspace_changes'] = snapshot
+        return self.records.update(task.id, capture, 'agent.workspace_changes.captured', {
+            'file_count': len(snapshot['files']), 'available': snapshot['available'],
+        })
 
     def events(self, task_id, after=0):
         self.get(task_id)
@@ -305,20 +818,33 @@ class AgentTaskService:
     def check_grant(self, task_id, capability_id=None):
         task = self.get(task_id)
         grant = task.grant
-        if task.cancel_requested or grant is None or grant.revoked or grant.expires_at <= now():
+        if capability_id and capability_id.startswith('blender.') and task.observations.get('native_production'):
+            from datetime import datetime
+            expires = task.observations.get('native_blender_expires_at')
+            if not expires or datetime.fromisoformat(expires) <= now():
+                raise HarnessError('TASK_GRANT_INVALID', 'Blender 编辑时段已到期，请重新打开编辑。')
+        if (task.cancel_requested or grant is None or grant.revoked
+                or (grant.expires_at is not None and grant.expires_at <= now())):
             raise HarnessError("TASK_GRANT_INVALID", "任务授权不存在、已撤销、已取消或已到期。")
         if grant.task_id != task.id or grant.project_id != task.project_id:
             raise HarnessError("TASK_SCOPE_DENIED", "任务授权与当前任务或项目不符。")
+        if grant.source_write_paths != task.authorization_card.source_write_paths:
+            raise HarnessError('TASK_SCOPE_DENIED', '授权文件范围已改变，不能继续执行。')
+        if grant.source_write_paths is not None and grant.execution_mode != 'typed-tools':
+            raise HarnessError('TASK_SCOPE_DENIED', '文件精修不能使用完全访问模式。')
         if grant.execution_mode != task.authorization_card.execution_mode:
             raise HarnessError("TASK_SCOPE_DENIED", "执行权限与已确认授权卡不一致。")
         if task.authorization_card.task_profile == 'card-development':
-            expected_capabilities = card_code_capabilities(task.authorization_card)
+            expected_capabilities = (['agent.task.execute'] + (['code.demo_assets.install'] if grant.include_demo_assets else [])
+                if grant.execution_mode == 'agent-full-access' else card_code_capabilities(task.authorization_card))
             legacy_capabilities = [item for item in expected_capabilities if item != 'agent.history.read']
             if (grant.card_id != task.authorization_card.card_id or grant.branch != task.authorization_card.branch
                     or grant.workspace_root != task.authorization_card.workspace_root
-                    or grant.execution_mode != 'typed-tools'
+                    or grant.execution_mode not in ('typed-tools', 'agent-full-access')
                     or task.authorization_card.capability_ids not in (expected_capabilities, legacy_capabilities)
                     or grant.capability_ids != task.authorization_card.capability_ids
+                    or grant.include_demo_assets != task.authorization_card.include_demo_assets
+                    or grant.alignment_id != task.authorization_card.alignment_id
                     or grant.allow_game_execution != task.authorization_card.allow_game_execution
                     or grant.allow_blender_edit != task.authorization_card.allow_blender_edit
                     or grant.allow_browser_observation != task.authorization_card.allow_browser_observation
@@ -328,14 +854,22 @@ class AgentTaskService:
                 raise HarnessError('TASK_SCOPE_DENIED', '卡片授权范围与已确认授权卡不一致。')
             self.card_workspace(task.project_id, grant.card_id, expected_root=grant.workspace_root, expected_branch=grant.branch)
         elif task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
-            expected_capabilities = (project_demo_agent_capabilities(task.authorization_card)
+            expected_capabilities = (['agent.task.execute']
+                if grant.execution_mode == 'agent-full-access' and task.authorization_card.task_profile == 'project-demo-agent'
+                else project_demo_agent_capabilities(task.authorization_card)
                 if task.authorization_card.task_profile == 'project-demo-agent'
                 else project_demo_capabilities(task.authorization_card))
-            if (grant.workspace_id != task.authorization_card.workspace_id
+            if task.observations.get('native_production'):
+                from .native_bridge import native_tool_capabilities
+                expected_capabilities = ['agent.task.execute', *native_tool_capabilities(task.authorization_card)]
+            if (grant.permission_mode != task.authorization_card.permission_mode
+                    or grant.workspace_id != task.authorization_card.workspace_id
                     or not grant.workspace_id or grant.card_id is not None or grant.branch is not None
                     or grant.workspace_root != task.authorization_card.workspace_root
-                    or grant.execution_mode != 'typed-tools'
+                    or grant.execution_mode not in (('typed-tools', 'agent-full-access')
+                        if task.authorization_card.task_profile == 'project-demo-agent' else ('typed-tools',))
                     or task.authorization_card.capability_ids not in (expected_capabilities,
+                        [cap for cap in expected_capabilities if cap not in ('builtin.assets.list', 'code.demo_assets.install')],
                         [cap for cap in expected_capabilities if cap != 'environment.asset.rebind'],
                         [cap for cap in expected_capabilities if not cap.startswith('code.demo_runtime.')])
                     or grant.capability_ids != task.authorization_card.capability_ids
@@ -350,6 +884,12 @@ class AgentTaskService:
                 raise HarnessError('TASK_SCOPE_DENIED', '项目 Demo 授权与已确认方向或工作区不一致。')
             self.project_demo_workspace(task.project_id, grant.workspace_id,
                                         expected_root=grant.workspace_root)
+        elif task.authorization_card.task_profile == 'project-export-agent':
+            from .native_export import validate_export_grant
+            validate_export_grant(self, task)
+        elif task.authorization_card.task_profile == 'unity-asset-edit':
+            from .unity_tasks import validate_unity_grant
+            validate_unity_grant(self, task)
         elif task.authorization_card.task_profile == 'environment-scene':
             if (task.authorization_card.capability_ids != ENVIRONMENT_SCENE_CAPABILITIES
                     or grant.capability_ids != task.authorization_card.capability_ids
@@ -376,28 +916,43 @@ class AgentTaskService:
             permissions=["harness:approve", "harness:read", "harness:plan"])
 
     def authorize(self, task_id, request: AuthorizeAgentTask, *, actions=None, continue_with_agent=False):
-        self.get(task_id)
+        prepared = self.get(task_id)
+        # A same-conversation continuation can safely transfer only after the stopped
+        # native task has a current Git-status snapshot. Capture it before claiming so
+        # the first explicit retry does not depend on a prior UI refresh.
+        self.refresh_workspace_changes(prepared.project_id)
         def grant(task):
             if request.authorization_card_id != task.authorization_card.id:
                 raise HarnessError("AUTHORIZATION_CARD_CHANGED", "授权卡不匹配，请重新查看任务。")
-            if task.authorization_card.execution_mode == "codex-full-access" and not request.accept_full_access:
+            if task.authorization_card.execution_mode in ("codex-full-access", "agent-full-access") and task.authorization_card.permission_mode == "full" and not request.accept_full_access:
                 raise HarnessError("FULL_ACCESS_CONSENT_REQUIRED", "完全权限可能访问任务目录外，需要明确确认风险。")
+            from .creation_brief import confirm_brief
+            confirm_brief(task, request.creation_brief_version)
             if task.grant is not None:
                 if task.grant.revoked or task.status in ("cancelled", "interrupted", "needs_approval", "failed"):
                     raise HarnessError("TASK_REQUIRES_NEW_AUTHORIZATION", "此任务已停止，需要检查状态并创建新的任务授权。")
                 return
             if task.authorization_card.alignment_id is not None:
-                from .demo_tasks import validate_project_demo_alignment
-                context = self.project_demo_context(task.project_id) if self.project_demo_context else {}
-                validate_project_demo_alignment(task.authorization_card.alignment_id, context)
+                if task.authorization_card.task_profile in ('project-demo', 'project-demo-agent'):
+                    from .demo_tasks import validate_project_demo_alignment
+                    context = self.project_demo_context(task.project_id) if self.project_demo_context else {}
+                    validate_project_demo_alignment(task.authorization_card.alignment_id, context)
+                else:
+                    from .demo_tasks import validate_demo_alignment
+                    context = self.card_context(task.project_id, task.authorization_card.card_id) if self.card_context else {}
+                    validate_demo_alignment(task.authorization_card.alignment_id, context)
             if task.status != "awaiting_authorization":
                 raise HarnessError("TASK_STATE_CONFLICT", "任务当前不可授权。")
+            export_work = task.authorization_card.task_profile == 'project-export-agent'
             card_work = task.authorization_card.task_profile == 'card-development'
             project_work = task.authorization_card.task_profile in ('project-demo', 'project-demo-agent')
             if card_work:
                 record = self.card_workspace(task.project_id, task.authorization_card.card_id,
                     expected_root=task.authorization_card.workspace_root, expected_branch=task.authorization_card.branch)
                 root = Path(record['worktree_path'])
+            elif export_work:
+                from .native_export import export_workspace
+                root = export_workspace(self, task)
             elif project_work:
                 record = self.project_demo_workspace(task.project_id,
                     task.authorization_card.workspace_id,
@@ -405,15 +960,23 @@ class AgentTaskService:
                 root = Path(record['workspace_root'])
             else:
                 root = contained(task.authorization_card.workspace_root, self.workspace_base)
+            unity_work = task.authorization_card.task_profile == 'unity-asset-edit'
+            if unity_work:
+                from .unity_tasks import unity_target
+                unity_target(self, task)
             scene_work = task.authorization_card.task_profile == 'environment-scene'
-            if not card_work and not scene_work and not project_work and root.exists() and any(root.iterdir()) and not self.records.owns_workspace(task.project_id, root):
+            if not card_work and not scene_work and not project_work and not unity_work and not export_work and root.exists() and any(root.iterdir()) and not self.records.owns_workspace(task.project_id, root):
                 raise HarnessError("TASK_REQUIRES_EMPTY_WORKSPACE", "授权时工作区已非空，请创建新的独立项目。")
-            if not card_work and not scene_work and not project_work and task.authorization_card.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
+            if not card_work and not scene_work and not project_work and not unity_work and not export_work and task.authorization_card.execution_mode == "typed-tools" and root.exists() and any(root.iterdir()):
                 raise HarnessError("TYPED_CONTINUATION_NOT_CONNECTED", "此工程已开始生产；受控 Blender/Unity 跨任务重绑定尚未接入，不会覆盖或重放。请回主对话审阅下一步。")
+            duration_seconds = task.authorization_card.max_duration_seconds
             task.grant = TaskGrant(task_id=task.id, project_id=task.project_id, workspace_root=str(root),
+                export_id=task.authorization_card.export_id,
+                source_write_paths=task.authorization_card.source_write_paths,
                 workspace_id=task.authorization_card.workspace_id,
                 card_id=task.authorization_card.card_id, branch=task.authorization_card.branch,
                 execution_mode=task.authorization_card.execution_mode,
+                permission_mode=task.authorization_card.permission_mode,
                 max_repair_rounds=task.authorization_card.max_repair_rounds,
                 allow_image_generation=task.authorization_card.allow_image_generation,
                 allow_game_execution=task.authorization_card.allow_game_execution,
@@ -426,16 +989,22 @@ class AgentTaskService:
                 allow_dependency_install=task.authorization_card.allow_dependency_install,
                 capability_ids=list(task.authorization_card.capability_ids),
                 scene_write_object_ids=list(task.authorization_card.scene_write_object_ids),
-                expires_at=now() + timedelta(seconds=task.authorization_card.max_duration_seconds))
-            if task.grant.execution_mode == "codex-full-access":
-                task.grant.budget = RuntimeBudget(max_steps=1, max_attempts_per_step=1,
-                    max_duration_seconds=1200, max_metered_calls=1, usage_policy="bounded_calls")
+                expires_at=(now() + timedelta(seconds=duration_seconds)
+                            if duration_seconds is not None else None))
+            if task.observations.get('native_production') and task.authorization_card.allow_blender_edit:
+                task.observations['native_blender_expires_at'] = (now() + timedelta(minutes=30)).isoformat()
+            if task.grant.execution_mode in ("codex-full-access", "agent-full-access"):
+                task.grant.budget = RuntimeBudget(max_steps=2 if task.grant.include_demo_assets else 1, max_attempts_per_step=1,
+                    max_duration_seconds=task.authorization_card.max_duration_seconds,
+                    max_metered_calls=2, usage_policy="bounded_calls")
             elif task.authorization_card.max_model_calls is not None:
-                task.grant.budget = RuntimeBudget(max_steps=32,
+                task.grant.budget = RuntimeBudget(max_steps=64 if unity_work else 32,
                     max_attempts_per_step=task.authorization_card.max_attempts_per_action,
                     max_duration_seconds=task.authorization_card.max_duration_seconds,
                     max_metered_calls=task.authorization_card.max_model_calls, usage_policy='bounded_calls')
             renewing = bool(task.observations.get('demo_pending_authorization'))
+            if renewing:
+                task.grant.budget.max_steps = 32
             from .demo_continuation import apply_demo_continuation_window
             apply_demo_continuation_window(task)
             task.status, task.reason = ('review_required' if renewing else 'queued'), None
@@ -477,11 +1046,20 @@ class AgentTaskService:
         self.records.update(task_id, claim, "agent.task.started")
         try:
             profile = self.get(task_id).authorization_card.task_profile
+            if self.get(task_id).observations.get('native_delivery_only'):
+                from .native_production import rebuild_production
+                await rebuild_production(self, task_id)
+                return
+            await self.ensure_production_preparation(task_id)
+            await self.install_prepared_project_assets(task_id)
             if profile == 'project-demo' or (profile == 'project-demo-agent' and project_demo_update):
                 from .project_demo import run_project_demo
                 await run_project_demo(self, task_id,
                     initialize_fixture=True if profile == 'project-demo' and not project_demo_update else False)
                 return
+            from .demo_tasks import install_authorized_demo
+            if profile not in ('project-demo-agent', 'project-export-agent'):
+                await install_authorized_demo(self, task_id)
             if actions is None:
                 await execute_task(self, task_id)
             else:
@@ -513,7 +1091,9 @@ class AgentTaskService:
                     self.records.update(task_id,
                         lambda current: current.observations.update({'cleanup_uncertain': True,
                             'preview_cleanup_error': str(error)}), 'agent.preview.stop_failed')
-            if task.status != "blocked":
+            keep_unity = (task.authorization_card.task_profile=='unity-asset-edit'
+                          and task.status=='review_required' and not task.cancel_requested)
+            if task.status != "blocked" and not keep_unity:
                 stopped = await self.tools[task_id].stop()
                 if any(isinstance(result, BaseException) for result in stopped):
                     def uncertain_cleanup(current):
@@ -524,15 +1104,18 @@ class AgentTaskService:
                 elif self.get(task_id).cancel_requested:
                     def cancelled(current):
                         current.status, current.finished_at = 'cancelled', now()
-                        current.reason = '任务专用会话停止已确认；不承诺回滚已完成写入。'
+                        current.reason = ('本轮已停止；同一制作会话、当前工程和已有写入已保留，可继续下一轮。'
+                            if current.observations.get('native_production') else
+                            '任务专用会话停止已确认；不承诺回滚已完成写入。')
                     self.records.update(task_id, cancelled, 'agent.task.cancelled')
             def release(current):
                 current.owner_pid = None
                 if (current.grant and current.status != 'blocked'
                         and current.authorization_card.task_profile not in
-                            ('project-demo', 'project-demo-agent')):
+                            ('project-demo', 'project-demo-agent', 'unity-asset-edit')):
                     current.grant.revoked = True
             self.records.update(task_id, release, "agent.task.worker_released")
+            self.record_experience(task_id)
 
     def _stop_record(self, task_id, status, reason):
         observed = self.get(task_id)
@@ -609,7 +1192,9 @@ class AgentTaskService:
         if not failures and task.cancel_requested:
             def cancelled(current):
                 current.status, current.finished_at = 'cancelled', now()
-                current.reason = '任务专用会话停止已确认；保留历史产物。'
+                current.reason = ('本轮已停止；同一制作会话、当前工程和已有写入已保留，可继续下一轮。'
+                    if current.observations.get('native_production') else
+                    '任务专用会话停止已确认；保留历史产物。')
             task = self.records.update(task_id, cancelled, 'agent.task.cancelled')
         if not failures and self.records.safe_to_release(task):
             self.records.update(task_id, lambda current: None, 'agent.task.worker_released')
@@ -618,7 +1203,8 @@ class AgentTaskService:
         task = self.get(task_id)
         if task.status != "blocked" or not task.pending_action_id:
             raise HarnessError("TASK_STATE_CONFLICT", "仅工具连接阻断的任务可继续；不确定写入不能重放。")
-        if task.grant is None or task.grant.expires_at <= now():
+        if (task.grant is None
+                or (task.grant.expires_at is not None and task.grant.expires_at <= now())):
             raise HarnessError("GRANT_EXPIRED", "授权已过期；原文件保留，请重新准备独立任务并确认新授权卡。")
         self.check_grant(task_id)
         def checking(current):
@@ -652,6 +1238,11 @@ class AgentTaskService:
 
     def update_project_demo(self, task_id):
         task = self.get(task_id)
+        if task.observations.get('native_production'):
+            from .native_production import continue_production
+            from uuid import uuid4
+            return continue_production(self, task, ContinueProjectDemoRequest(
+                request_id=str(uuid4()), goal='物化工作台当前内容并更新试玩候选。'), build_only=True)
         if task.authorization_card.task_profile not in ('project-demo', 'project-demo-agent') or task.grant is None:
             raise HarnessError('PROJECT_DEMO_NOT_AUTHORIZED', '此任务不是已授权的项目 Demo。')
         if (task.grant.revoked or task.cancel_requested
@@ -677,6 +1268,9 @@ class AgentTaskService:
 
     def continue_project_demo(self, task_id, request: ContinueProjectDemoRequest):
         task = self.get(task_id)
+        if task.observations.get('native_production'):
+            from .native_production import continue_production
+            return continue_production(self, task, request)
         if task.authorization_card.task_profile != 'project-demo-agent' or task.grant is None:
             raise HarnessError('PROJECT_DEMO_AGENT_REQUIRED', '此任务不是已授权的 D3 自主项目 Demo。')
         if (task.grant.revoked or task.cancel_requested
@@ -733,6 +1327,12 @@ class AgentTaskService:
             history.append({'request_id': request.request_id, 'goal': current.goal,
                 'kind': 'follow-up', 'target': request.target.model_dump(mode='json') if request.target else None,
                 'accepted_at': now().isoformat()})
+            for key in ('production_preparation', 'production_preparation_context',
+                        'selected_prepared_assets', 'selected_builtin_assets',
+                        'selected_project_assets', 'selected_asset_usage',
+                        'selected_asset_runtime_validation',
+                        'production_preparation_adjustments'):
+                current.observations.pop(key, None)
             current.observations['active_goal_action_start'] = len(current.actions)
             current.status, current.reason, current.finished_at = 'queued', None, None
         task = self.records.update(task_id, queue, 'agent.project_demo.goal_added',
@@ -843,7 +1443,8 @@ class AgentTaskService:
         authorization = task.browser_interaction_authorization if interaction else task.browser_authorization
         allowed = (card.allow_browser_interaction and grant.allow_browser_interaction) if interaction else (card.allow_browser_observation and grant.allow_browser_observation)
         capability = 'code.browser.interact' if interaction else 'code.browser.observe'
-        if authorization and (authorization.revoked or task.cancel_requested or authorization.expires_at <= now()):
+        if authorization and (authorization.revoked or task.cancel_requested
+                              or (authorization.expires_at is not None and authorization.expires_at <= now())):
             raise HarnessError('BROWSER_AUTHORIZATION_EXPIRED', '浏览器执行需要未过期、未撤销的当前任务授权。')
         if (not authorization or not allowed
                 or capability not in grant.capability_ids

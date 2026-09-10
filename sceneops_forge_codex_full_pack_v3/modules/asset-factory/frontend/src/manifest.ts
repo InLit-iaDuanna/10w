@@ -42,13 +42,13 @@ export const moduleContribution = {
     ["asset.pipeline.cancel", "取消资产流水线", ["asset:write"]],
     ["asset.pipeline.retry", "重试资产流水线", ["asset:write"]],
     ["asset.pipeline.rollback", "回滚 Blender 快照", ["asset:write"]],
-    ["asset.version.publish", "发布资产版本", ["asset:publish"]],
+    ["asset.pipeline.publish", "发布资产版本", ["asset:publish"]],
   ].map(([id, title, requiredPermissions]) => ({
     id,
     title,
     requiredPermissions,
     requiredIntegrations: ["blender"],
-    inputContract: id === "asset.version.publish" ? "PublicationRequest" : "PipelineRequest",
+    inputContract: id === "asset.pipeline.publish" ? "PublicationRequest" : "PipelineRequest",
   })),
   navigation: [
     {

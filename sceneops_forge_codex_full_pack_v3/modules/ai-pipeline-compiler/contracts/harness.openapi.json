@@ -1783,9 +1783,16 @@
             "default": false
           },
           "timeout_seconds": {
-            "type": "number",
-            "maximum": 3600.0,
-            "exclusiveMinimum": 0.0,
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 31536000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Timeout Seconds",
             "default": 60
           },
@@ -3894,9 +3901,16 @@
             "default": 2
           },
           "max_duration_seconds": {
-            "type": "number",
-            "maximum": 86400.0,
-            "exclusiveMinimum": 0.0,
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 31536000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Max Duration Seconds",
             "default": 300
           },

@@ -89,6 +89,10 @@ export type LockAction = "acquired" | "released";
 
 export type ObserveApprovalRequest = { readonly "approval_id": string; readonly "subject_kind": string; readonly "subject_id": string; readonly "subject_version": number; readonly "current_base": VersionReference; };
 
+export type ProgressCard = { readonly "card_id": string; readonly "title": string; readonly "description": string; readonly "acceptance": string; readonly "dependencies"?: ReadonlyArray<string>; readonly "branches"?: ReadonlyArray<string>; };
+
+export type ProgressVersion = { readonly "number": number; readonly "title": string; readonly "confirmed_at": string; readonly "commit"?: string | null; };
+
 export type ProposeRollbackRequest = { readonly "review_id": string; readonly "target_commit": string; readonly "current_base": VersionReference; readonly "rationale": string; };
 
 export type ReleaseEvidenceLink = { readonly "link_id": string; readonly "review_id": string; readonly "approved_subject_id": string; readonly "approved_subject_version": number; readonly "approval_id": string; readonly "release_id": string; readonly "evidence_ids": ReadonlyArray<string>; readonly "linked_by": string; readonly "linked_at": string; readonly "mode": ExecutionMode; };
@@ -119,7 +123,7 @@ export type SemanticDiffLayer = { readonly "state": DiffState; readonly "failure
 
 export type SemanticEntity = { readonly "entity_id": string; readonly "entity_kind": string; readonly "schema_id": string; readonly "schema_version": number; readonly "artifact_id": string; readonly "producer_module": string; readonly "values": { readonly [key: string]: unknown; }; readonly "mode": ExecutionMode; };
 
-export type TreeProgress = { readonly "stage": string; readonly "confirmed_versions": number; readonly "planned_cards": number; readonly "card_branches": number; readonly "milestones": { readonly [key: string]: string; }; readonly "branch_labels": { readonly [key: string]: string; }; };
+export type TreeProgress = { readonly "stage": string; readonly "confirmed_versions": number; readonly "planned_cards": number; readonly "card_branches": number; readonly "milestones": { readonly [key: string]: string; }; readonly "branch_labels": { readonly [key: string]: string; }; readonly "cards"?: ReadonlyArray<ProgressCard>; readonly "versions"?: ReadonlyArray<ProgressVersion>; readonly "title"?: string | null; };
 
 export type ValidationError = { readonly "loc": ReadonlyArray<string | number>; readonly "msg": string; readonly "type": string; readonly "input"?: unknown; readonly "ctx"?: {  }; };
 

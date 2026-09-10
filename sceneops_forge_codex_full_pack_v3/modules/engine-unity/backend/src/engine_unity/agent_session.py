@@ -95,7 +95,17 @@ class UnityAgentSession:
                 raise UnityAgentSessionError('UNITY_AGENT_SCOPE_DENIED', 'Workspace ownership marker does not match.')
             self._config = config
             if config.get('grant') != self._grant:
-                raise UnityAgentSessionError('UNITY_AGENT_AUTH_DENIED', 'Existing session belongs to another task grant.')
+                previous=config.get('grant', {})
+                same_target=all(previous.get(k)==self._grant.get(k) for k in ('task_id','project_id','workspace_root','allowed_capabilities'))
+                if (not same_target or not config.get('closed') or self._owned_pid_alive()
+                        or 'unity.content.inspect' not in self._grant['allowed_capabilities']):
+                    raise UnityAgentSessionError('UNITY_AGENT_AUTH_DENIED', 'Existing session belongs to another task grant.')
+                for started in self.mailbox.glob('*.content-started.json'):
+                    receipt=started.with_name(started.name.replace('.content-started.json','.result.json'))
+                    if not receipt.is_file() or json.loads(receipt.read_text()).get('error_code')=='UNITY_OUTCOME_UNCERTAIN':
+                        raise UnityAgentSessionError('UNITY_OUTCOME_UNCERTAIN','Reauthorization cannot replay unresolved content writes.')
+                config['grant']=dict(self._grant)
+
             if config.get('closed'):
                 if self._owned_pid_alive():
                     raise UnityAgentSessionError('UNITY_AGENT_SCOPE_DENIED', 'Retired session still has an Editor process; reconcile before rebinding.')
@@ -110,23 +120,72 @@ class UnityAgentSession:
             return
         if self.project_root.exists() and any(self.project_root.iterdir()):
             raise UnityAgentSessionError('UNITY_AGENT_SCOPE_DENIED', 'Refusing to adopt an existing Unity project.')
-        self.project_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self._initialize_project()
         self.mailbox.mkdir(mode=0o700)
-        for directory in ('Assets', 'ProjectSettings', 'Packages', 'Staging'):
-            (self.project_root / directory).mkdir()
-        (self.project_root / 'ProjectSettings/ProjectVersion.txt').write_text('m_EditorVersion: 2022.3.62f3c1\n')
+        (self.project_root / 'Staging').mkdir()
         self._configure_package()
-        _write(self.project_root / 'Packages/manifest.json', {'dependencies': {
-            'com.sceneops.forge.unity': 'file:' + str(PACKAGE),
-            'com.unity.modules.physics': '1.0.0', 'com.unity.modules.ai': '1.0.0',
-            'com.unity.modules.audio': '1.0.0',
-            'com.unity.modules.imageconversion': '1.0.0', 'com.unity.modules.jsonserialize': '1.0.0',
-            'com.unity.modules.imgui': '1.0.0', 'com.unity.modules.screencapture': '1.0.0',
-            'com.unity.modules.uielements': '1.0.0'}})
         self._config = {'created_by': 'sceneops-agent-v1', 'project_root': str(self.project_root),
                         'project_id': self.workspace_root.name, 'session_id': 'session_' + uuid.uuid4().hex,
                         'token': secrets.token_urlsafe(32), 'grant': self._grant}
         _write(marker, self._config)
+
+    def _initialize_project(self, timeout=180) -> None:
+        """Let the installed Editor create its own project settings and built-in package set."""
+        self._validate_grant()
+        journal = _inside(self.workspace_root / 'unity-initialization.json', self.workspace_root)
+        log_path = _inside(self.workspace_root / 'unity-initialization.log', self.workspace_root)
+        if journal.exists():
+            raise UnityAgentSessionError('UNITY_INITIALIZATION_INCOMPLETE',
+                'A prior project initialization record exists; retain its project/log and use a fresh registered target.')
+        self.workspace_root.mkdir(parents=True, exist_ok=True)
+        record = {'project_root': str(self.project_root), 'task_id': self._grant['task_id'],
+                  'grant_id': self._grant['grant_id'], 'status': 'initializing'}
+        _write(journal, record)
+        try:
+            launcher = _inside(self.workspace_root / 'unity-initialization.launcher.log', self.workspace_root)
+            with launcher.open('xb') as output:
+                self._process = subprocess.Popen([str(self.executable), '-batchmode', '-quit',
+                    '-createProject', str(self.project_root), '-logFile', str(log_path)],
+                    stdout=output, stderr=output, start_new_session=True)
+                record['pid'] = self._process.pid
+                _write(journal, record)
+                deadline = time.monotonic() + timeout
+                while self._process.poll() is None:
+                    self._validate_grant()
+                    if self._cancel.is_set():
+                        raise UnityAgentSessionError('UNITY_CANCELLED', 'Owned project initialization was cancelled.')
+                    if time.monotonic() >= deadline:
+                        raise UnityAgentSessionError('UNITY_INITIALIZATION_TIMEOUT', 'Owned Editor project initialization timed out; retain its log and partial project.')
+                    time.sleep(.1)
+            self._validate_grant()
+            log_text = log_path.read_text(errors='replace')
+            if 'No valid Unity Editor license found.' in log_text:
+                raise UnityAgentSessionError('UNITY_LICENSE_REQUIRED', 'Unity project initialization requires an active Editor license.')
+            if self._process.returncode != 0:
+                raise UnityAgentSessionError('UNITY_INITIALIZATION_FAILED', 'The owned Editor could not create the project; inspect unity-initialization.log.')
+            version = _inside(self.project_root / 'ProjectSettings/ProjectVersion.txt', self.workspace_root)
+            manifest = _inside(self.project_root / 'Packages/manifest.json', self.workspace_root)
+            if not version.is_file() or not manifest.is_file() or 'm_EditorVersion: 2022.3.62f3c1' not in version.read_text():
+                raise UnityAgentSessionError('UNITY_INITIALIZATION_FAILED', 'Editor did not produce the expected project settings and package manifest.')
+            dependencies = json.loads(manifest.read_text()).get('dependencies', {})
+            if not dependencies or any(not name.startswith('com.unity.modules.') for name in dependencies):
+                raise UnityAgentSessionError('UNITY_UNEXPECTED_PACKAGES', 'Fresh Editor template contains packages outside its installed built-in modules; inspect before adoption.')
+            record['status'] = 'succeeded'
+            _write(journal, record)
+        except Exception as error:
+            if self._process is not None and self._process.poll() is None:
+                self._process.terminate()
+                try:
+                    self._process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    self._process.kill()
+                    self._process.wait(timeout=5)
+            record.update(status='failed', error_code=getattr(error, 'code', 'UNITY_INITIALIZATION_FAILED'))
+            _write(journal, record)
+            raise
+        finally:
+            if self._process is not None and self._process.poll() is not None:
+                self._process = None
 
     def _configure_package(self) -> None:
         # Fixed application code is read from the bundled package, never from model input.
@@ -154,8 +213,8 @@ class UnityAgentSession:
         with self._lock:
             if not self.executable.is_file():
                 raise UnityAgentSessionError('UNITY_EDITOR_UNAVAILABLE', 'Pinned Unity 2022.3.62f3c1 is not installed.')
-            self._prepare()
             self._cancel.clear()
+            self._prepare()
             if self._process is not None and self._process.poll() is not None:
                 self._process = None
             try:
@@ -247,6 +306,8 @@ class UnityAgentSession:
             if self._process is not None and self._process.poll() is not None:
                 raise UnityAgentSessionError('UNITY_EDITOR_EXITED', self._failure_reason())
             time.sleep(.1)
+        if command.startswith('unity.content.') and _inside(self.mailbox / (request_id + '.content-started.json'), self.workspace_root).exists():
+            raise UnityAgentSessionError('UNITY_OUTCOME_UNCERTAIN', 'Content dispatch started without a durable result; inspect before recovery.')
         if command == 'unity.asset.import' and _inside(self.mailbox / (request_id + '.started.json'), self.workspace_root).exists():
             raise UnityAgentSessionError('UNITY_OUTCOME_UNCERTAIN', 'Import dispatch started without a durable result; inspect the project before recovery.')
         raise UnityAgentSessionError('UNITY_SESSION_TIMEOUT', self._failure_reason())
@@ -340,6 +401,37 @@ class UnityAgentSession:
                 raise UnityAgentSessionError('UNITY_IDENTITY_READBACK_FAILED', 'Expected exactly one imported source identity.')
             return {**result, **objects[0], 'mode': 'cached' if replay else 'live', 'readback_mode': 'live', 'status': 'succeeded', 'objects': objects,
                 'errors': observed['errors'], 'scene_path': observed['scene_path'], 'session_id': state['session_id'], 'change_set': change}
+
+    def inspect_content(self):
+        from .content_session import inspect_content
+        return inspect_content(self)
+
+    def import_content(self, *, request_id, asset_id, source_version, expected_source_version, fbx_path, node_ids, instance_ids, authorization):
+        from .content_session import import_content
+        with self._lock:
+            return import_content(self, request_id=request_id, asset_id=asset_id, source_version=source_version,
+                expected_source_version=expected_source_version, fbx_path=fbx_path, node_ids=node_ids,
+                instance_ids=instance_ids, authorization=authorization)
+
+    def edit_content(self, *, request_id, instance_id, expected, authorization, position=None, interaction_distance=None, requires_key=None):
+        from .content_session import edit_content
+        with self._lock:
+            return edit_content(self, request_id=request_id, instance_id=instance_id, expected=expected,
+                position=position, interaction_distance=interaction_distance, requires_key=requires_key, authorization=authorization)
+
+    def focus_content(self, *, request_id, instance_id, authorization):
+        from .content_session import focus_content
+        return focus_content(self, request_id=request_id, instance_id=instance_id, authorization=authorization)
+
+    def save_content(self, *, request_id, reopen=False, authorization):
+        from .content_session import save_content
+        with self._lock:
+            return save_content(self, request_id=request_id, reopen=reopen, authorization=authorization)
+
+    def play_content(self, *, request_id, operation, input=None, authorization):
+        from .content_session import play_content
+        with self._lock:
+            return play_content(self, request_id=request_id, operation=operation, input=input, authorization=authorization)
 
     def stop(self) -> None:
         self._cancel.set()

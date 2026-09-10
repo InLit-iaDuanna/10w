@@ -34,6 +34,12 @@ def test_module_manifest_declares_public_surface_and_dependencies():
 
 def test_backend_public_entrypoint_is_explicit():
     assert set(concept_lab.__all__) == {
+        "CodeBuddyConceptAdvisor",
+        "ConceptCreateInput",
+        "ReviewAction",
+        "StyleEvidenceInput",
+        "ConceptReviewWorkspace",
+        "create_advisor_router",
         "AdapterHealth",
         "AssetSpecDraft",
         "ConceptChangeSet",

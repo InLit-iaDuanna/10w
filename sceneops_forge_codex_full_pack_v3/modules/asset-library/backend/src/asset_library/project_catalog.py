@@ -12,6 +12,8 @@ from typing import Literal, Optional, Union
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse, RedirectResponse
+from urllib.parse import quote
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
@@ -137,7 +139,7 @@ class RuntimeArtifactReference(ProjectAssetModel):
 class ProjectAssetVersion(ProjectAssetModel):
     source_version: int = Field(ge=1)
     asset_version_id: Optional[str] = Field(default=None, min_length=1)
-    source_kind: Literal["file", "procedural", "blender"] = "file"
+    source_kind: Literal["file", "procedural", "blender", "glb"] = "file"
     dimensions_m: tuple[float, float, float]
     vertex_count: int = Field(ge=0)
     triangle_count: int = Field(ge=0)
@@ -146,6 +148,9 @@ class ProjectAssetVersion(ProjectAssetModel):
     fbx_path: Optional[str] = Field(default=None, min_length=1)
     recipe: Optional[DoorRecipe] = None
     parent_source_version: Optional[int] = Field(default=None, ge=1)
+    geometry_source_version: int | None = Field(default=None, ge=1)
+    lookdev_document_id: str | None = None
+    lookdev_document_version: int | None = Field(default=None, ge=1)
     node_ids: dict[str, str] = Field(default_factory=dict)
     runtime_artifacts: list[RuntimeArtifactReference] = Field(default_factory=list)
     operation: Literal[
@@ -166,6 +171,13 @@ class ProjectAssetVersion(ProjectAssetModel):
                 raise ValueError("file asset versions require blend, preview, and fbx paths")
             if self.recipe is not None:
                 raise ValueError("file asset versions cannot contain a procedural recipe")
+        elif self.source_kind == "glb":
+            if not self.asset_version_id or not self.preview_path or self.recipe is not None:
+                raise ValueError("GLB versions require stable identity and a GLB source")
+            if not all(math.isfinite(v) and v >= 0 for v in self.dimensions_m):
+                raise ValueError("GLB dimensions must be finite and nonnegative")
+            if not any(a.artifact_type == "render" for a in self.runtime_artifacts):
+                raise ValueError("GLB versions require an immutable runtime artifact")
         elif self.source_kind == "blender":
             if not self.asset_version_id or not self.blend_path or not self.preview_path:
                 raise ValueError("Blender versions require a stable version ID, blend source and GLB")
@@ -466,6 +478,26 @@ def create_project_catalog_router(service: ProjectAssetCatalogService) -> APIRou
             raise HTTPException(404, "当前项目没有此资产库记录。") from error
         except ValueError as error:
             raise HTTPException(409, str(error)) from error
+
+    @router.get("/{entry_id}/versions/{version}/files/{kind}", operation_id="readProjectAssetFile")
+    def read_file(entry_id: str, version: int, kind: Literal["preview", "blend", "fbx"],
+                  project_id: str = Query(..., min_length=1)):
+        try:
+            entry = service.get(project_id, entry_id)
+        except LookupError as error:
+            raise HTTPException(404, "当前项目没有此资产库记录。") from error
+        selected = next((item for item in entry.versions if item.source_version == version), None)
+        if selected is None:
+            raise HTTPException(404, f"资产 {entry.title} 的 v{version} 不存在。")
+        if selected.source_kind == "file":
+            return RedirectResponse(f"/api/card-assets/{quote(entry.source_asset_id, safe='')}/files/{kind}?version={version}")
+        value = getattr(selected, f"{kind}_path")
+        if not value:
+            raise HTTPException(404, f"资产 {entry.title} v{version} 没有 {kind} 文件。")
+        path = Path(value)
+        if not path.is_absolute() or path.is_symlink() or not path.is_file():
+            raise HTTPException(404, f"资产 {entry.title} v{version} 的 {kind} 文件不可读取。")
+        return FileResponse(path, media_type="model/gltf-binary" if kind == "preview" else "application/octet-stream")
 
     @router.get("/{entry_id}", response_model=ProjectAssetEntry, operation_id="getProjectAsset")
     def get_asset(entry_id: str, project_id: str = Query(..., min_length=1)):

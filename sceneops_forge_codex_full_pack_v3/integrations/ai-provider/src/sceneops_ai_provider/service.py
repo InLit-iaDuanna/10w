@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import logging
 import os
 import sqlite3
 import stat
@@ -11,8 +12,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit, urlunsplit
+from uuid import uuid4
 
-from sceneops_codebuddy import MODEL_IDS, CodeBuddyFailure, available as cli_available
+from sceneops_codebuddy import EFFORT_LEVELS, MODEL_IDS, CodeBuddyFailure, available as cli_available
 from sceneops_codebuddy import invoke_json as cli_invoke_json
 from . import codex_cli
 
@@ -31,9 +33,32 @@ def instructions_for_purpose(purpose: str) -> str:
 ProviderId = Literal['codebuddycli', 'codexcli', 'openai-compatible']
 ApiProtocol = Literal['chat-completions', 'responses']
 AlignmentDetail = Literal['concise', 'standard', 'deep']
+ReasoningEffort = Literal['minimal', 'low', 'medium', 'high', 'xhigh', 'max']
 DEFAULT_CLI_MODEL = 'cli-default'
 DEFAULT_OPENAI_MODEL = 'gpt-5.6-sol'
 DEFAULT_TIMEOUT_SECONDS = 120.0
+DEFAULT_SELECTOR_TIMEOUT_SECONDS = 30.0
+DEFAULT_REASONING_EFFORT: ReasoningEffort = 'low'
+MAX_AGENT_TIMEOUT_MINUTES = 525_600
+
+
+def _audit_model(event_name: str, **fields: object) -> None:
+    """Send model-boundary records to the host application's audit sink."""
+    logging.getLogger('sceneops.ai').info(
+        event_name,
+        extra={'sceneops_audit': {'event': event_name, 'fields': fields}},
+    )
+
+
+def _audit_images(paths: list[Path]) -> list[dict[str, object]]:
+    result = []
+    for path in paths:
+        try:
+            size = path.stat().st_size
+        except OSError:
+            size = None
+        result.append({'name': path.name, 'suffix': path.suffix.lower(), 'size': size})
+    return result
 
 
 class ProviderFailure(Exception):
@@ -54,6 +79,22 @@ class ProviderSettings:
     api_protocol: ApiProtocol
     streaming: bool
     alignment_detail: AlignmentDetail
+    reasoning_effort: ReasoningEffort
+    agent_timeout_minutes: int | None
+    selector_provider: ProviderId | None
+    selector_model: str | None
+
+
+@dataclass(frozen=True)
+class SelectorProviderSettings:
+    """Credential-free, immutable route used by one production-selection call."""
+
+    provider: ProviderId
+    model: str
+    base_url: str | None
+    api_key_configured: bool
+    api_protocol: ApiProtocol
+    reasoning_effort: ReasoningEffort
 
 
 @dataclass(frozen=True)
@@ -99,6 +140,20 @@ def _validate_api_protocol(value: str) -> ApiProtocol:
 def _validate_alignment_detail(value: str) -> AlignmentDetail:
     if value not in ('concise', 'standard', 'deep'):
         raise ProviderFailure('ALIGNMENT_DETAIL_INVALID', '未知的对齐详细程度。', status_code=422)
+    return value
+
+
+def _validate_reasoning_effort(value: str) -> ReasoningEffort:
+    if value not in EFFORT_LEVELS:
+        raise ProviderFailure('REASONING_EFFORT_INVALID', '未知的思考强度。', status_code=422)
+    return value  # type: ignore[return-value]
+
+
+def _validate_agent_timeout_minutes(value: int | None) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= MAX_AGENT_TIMEOUT_MINUTES:
+        raise ProviderFailure('AGENT_TIMEOUT_INVALID', 'Agent 执行时限必须是 1 到 525600 分钟，或选择无限制。', status_code=422)
     return value
 
 
@@ -175,6 +230,10 @@ class ProviderService:
                 'api_protocol': "TEXT NOT NULL DEFAULT 'chat-completions'",
                 'streaming': 'INTEGER NOT NULL DEFAULT 1',
                 'alignment_detail': "TEXT NOT NULL DEFAULT 'standard'",
+                'reasoning_effort': "TEXT NOT NULL DEFAULT 'low'",
+                'agent_timeout_minutes': 'INTEGER',
+                'selector_provider': 'TEXT',
+                'selector_model': 'TEXT',
             }
             for name, definition in additions.items():
                 if name not in columns:
@@ -186,7 +245,7 @@ class ProviderService:
     def settings(self) -> ProviderSettings:
         with self._connect() as connection:
             row = connection.execute(
-                'SELECT provider,base_url,cli_model,codex_model,openai_model,api_protocol,streaming,alignment_detail '
+                'SELECT provider,base_url,cli_model,codex_model,openai_model,api_protocol,streaming,alignment_detail,reasoning_effort,agent_timeout_minutes,selector_provider,selector_model '
                 'FROM conversation_ai_settings WHERE id=1'
             ).fetchone()
         if row is None:
@@ -196,6 +255,10 @@ class ProviderService:
             api_protocol: ApiProtocol = 'chat-completions'
             streaming = True
             alignment_detail: AlignmentDetail = 'standard'
+            reasoning_effort: ReasoningEffort = DEFAULT_REASONING_EFFORT
+            agent_timeout_minutes = None
+            selector_provider = None
+            selector_model = None
         else:
             provider = row['provider']
             if provider not in ('codebuddycli', 'codexcli', 'openai-compatible'):
@@ -211,16 +274,49 @@ class ProviderService:
                 alignment_detail = _validate_alignment_detail(row['alignment_detail'])
             except ProviderFailure as error:
                 raise ProviderFailure('SETTINGS_INVALID', '已保存的对齐详细程度无效，请重新保存设置。') from error
+            try:
+                reasoning_effort = _validate_reasoning_effort(row['reasoning_effort'])
+            except ProviderFailure as error:
+                raise ProviderFailure('SETTINGS_INVALID', '已保存的思考强度无效，请重新保存设置。') from error
+            try:
+                agent_timeout_minutes = _validate_agent_timeout_minutes(row['agent_timeout_minutes'])
+            except ProviderFailure as error:
+                raise ProviderFailure('SETTINGS_INVALID', '已保存的 Agent 执行时限无效，请重新保存设置。') from error
+            selector_provider = row['selector_provider']
+            selector_model = row['selector_model']
+            if (selector_provider is None) != (selector_model is None):
+                raise ProviderFailure('SETTINGS_INVALID', '已保存的制作推荐模型设置不完整，请重新保存设置。')
+            if selector_provider is not None:
+                if selector_provider not in ('codebuddycli', 'codexcli', 'openai-compatible'):
+                    raise ProviderFailure('SETTINGS_INVALID', '已保存的制作推荐服务设置无效，请重新保存设置。')
+                try:
+                    selector_model = _validate_model(selector_model)
+                except ProviderFailure as error:
+                    raise ProviderFailure('SETTINGS_INVALID', '已保存的制作推荐模型设置无效，请重新保存设置。') from error
+                if (selector_provider == 'codebuddycli'
+                        and selector_model != DEFAULT_CLI_MODEL
+                        and selector_model not in MODEL_IDS):
+                    raise ProviderFailure('SETTINGS_INVALID',
+                                          '已保存的制作推荐模型不在 CodeBuddy 候选目录中，请重新保存设置。')
         return ProviderSettings(provider=provider, model=model, base_url=base_url,
                                 api_key_configured=self._read_api_key(base_url) is not None,
                                 api_protocol=api_protocol, streaming=streaming,
-                                alignment_detail=alignment_detail)
+                                alignment_detail=alignment_detail, reasoning_effort=reasoning_effort,
+                                agent_timeout_minutes=agent_timeout_minutes,
+                                selector_provider=selector_provider,
+                                selector_model=selector_model)
 
     def update_settings(self, *, provider: ProviderId | None = None, model: str | None = None,
                         base_url: str | None = None, api_key: str | None = None,
                         api_protocol: ApiProtocol | None = None,
                         streaming: bool | None = None,
-                        alignment_detail: AlignmentDetail | None = None) -> ProviderSettings:
+                        alignment_detail: AlignmentDetail | None = None,
+                        reasoning_effort: ReasoningEffort | None = None,
+                        agent_timeout_minutes: int | None = None,
+                        update_agent_timeout: bool = False,
+                        selector_provider: ProviderId | None = None,
+                        selector_model: str | None = None,
+                        update_selector: bool = False) -> ProviderSettings:
         current = self.settings()
         selected_provider = provider or current.provider
         if selected_provider not in ('codebuddycli', 'codexcli', 'openai-compatible'):
@@ -236,6 +332,32 @@ class ProviderService:
         selected_alignment_detail = _validate_alignment_detail(
             current.alignment_detail if alignment_detail is None else alignment_detail
         )
+        selected_reasoning_effort = _validate_reasoning_effort(
+            current.reasoning_effort if reasoning_effort is None else reasoning_effort
+        )
+        selected_agent_timeout = (_validate_agent_timeout_minutes(agent_timeout_minutes)
+                                  if update_agent_timeout else current.agent_timeout_minutes)
+        selector_update_requested = (update_selector or selector_provider is not None
+                                     or selector_model is not None)
+        selected_selector_provider = current.selector_provider
+        selected_selector_model = current.selector_model
+        if selector_update_requested:
+            if (selector_provider is None) != (selector_model is None):
+                raise ProviderFailure('SELECTOR_SETTINGS_INCOMPLETE',
+                                      '制作推荐服务与模型必须同时设置，或同时清除。', status_code=422)
+            if selector_provider is not None:
+                if selector_provider not in ('codebuddycli', 'codexcli', 'openai-compatible'):
+                    raise ProviderFailure('PROVIDER_INVALID', '未知的制作推荐服务类型。', status_code=422)
+                selected_selector_model = _validate_model(selector_model)
+                if (selector_provider == 'codebuddycli'
+                        and selected_selector_model != DEFAULT_CLI_MODEL
+                        and selected_selector_model not in MODEL_IDS):
+                    raise ProviderFailure('CLI_MODEL_INVALID',
+                                          '所选制作推荐模型不在 CodeBuddy CLI 候选目录中。',
+                                          status_code=422)
+            else:
+                selected_selector_model = None
+            selected_selector_provider = selector_provider
         validated_api_key = self._validate_api_key(api_key) if api_key is not None else None
         if validated_api_key is not None and not normalized_url:
             raise ProviderFailure('OPENAI_BASE_URL_REQUIRED', '保存 API Key 前请指定其服务地址。', status_code=422)
@@ -263,15 +385,37 @@ class ProviderService:
                 self._write_api_key(validated_api_key, normalized_url)
             connection.execute('''
                 INSERT INTO conversation_ai_settings(
-                    id,model,provider,base_url,cli_model,codex_model,openai_model,api_protocol,streaming,alignment_detail
-                ) VALUES(1,?,?,?,?,?,?,?,?,?)
+                id,model,provider,base_url,cli_model,codex_model,openai_model,api_protocol,streaming,alignment_detail,
+                    reasoning_effort,agent_timeout_minutes,selector_provider,selector_model
+                ) VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET model=excluded.model,provider=excluded.provider,
                     base_url=excluded.base_url,cli_model=excluded.cli_model,codex_model=excluded.codex_model,
                     openai_model=excluded.openai_model,api_protocol=excluded.api_protocol,
-                    streaming=excluded.streaming,alignment_detail=excluded.alignment_detail
+                    streaming=excluded.streaming,alignment_detail=excluded.alignment_detail,
+                    reasoning_effort=excluded.reasoning_effort,
+                    agent_timeout_minutes=excluded.agent_timeout_minutes,
+                    selector_provider=excluded.selector_provider,
+                    selector_model=excluded.selector_model
             ''', (active_model, selected_provider, normalized_url, cli_model, codex_model,
-                  openai_model, selected_api_protocol, int(selected_streaming), selected_alignment_detail))
+                  openai_model, selected_api_protocol, int(selected_streaming), selected_alignment_detail,
+                  selected_reasoning_effort, selected_agent_timeout, selected_selector_provider,
+                  selected_selector_model))
         return self.settings()
+
+    def selector_settings(self) -> SelectorProviderSettings | None:
+        """Capture the configured selector route without exposing its credential."""
+        settings = self.settings()
+        if settings.selector_provider is None or settings.selector_model is None:
+            return None
+        compatible = settings.selector_provider == 'openai-compatible'
+        return SelectorProviderSettings(
+            provider=settings.selector_provider,
+            model=settings.selector_model,
+            base_url=settings.base_url if compatible else None,
+            api_key_configured=settings.api_key_configured if compatible else False,
+            api_protocol=settings.api_protocol,
+            reasoning_effort=settings.reasoning_effort,
+        )
 
     def models(self) -> list[ProviderModel]:
         configured = self.settings()
@@ -282,8 +426,15 @@ class ProviderService:
             row = connection.execute(
                 'SELECT codex_model,openai_model FROM conversation_ai_settings WHERE id=1'
             ).fetchone()
+            codex_catalog = connection.execute('''
+                SELECT model_id,label FROM conversation_ai_model_catalog
+                WHERE provider=? AND base_url=? ORDER BY position,model_id
+            ''', ('codexcli', '')).fetchall()
+        models.extend(ProviderModel(item['model_id'], item['label'], 'codexcli')
+                      for item in codex_catalog)
         if row and row['codex_model'] != DEFAULT_CLI_MODEL:
-            models.append(ProviderModel(row['codex_model'], row['codex_model'], 'codexcli'))
+            if not any(item.provider == 'codexcli' and item.id == row['codex_model'] for item in models):
+                models.append(ProviderModel(row['codex_model'], row['codex_model'], 'codexcli'))
         if configured.provider == 'openai-compatible' or configured.base_url:
             openai_model = row['openai_model'] if row else DEFAULT_OPENAI_MODEL
             with self._connect() as connection:
@@ -333,22 +484,162 @@ class ProviderService:
                        purpose: str = 'chat',
                        on_event: codex_cli.EventCallback | None = None,
                        images: list[str | Path] | None = None,
-                       instructions: str | None = None) -> ProviderCompletion:
-        selected_instructions = instructions or instructions_for_purpose(purpose)
+                       instructions: str | None = None,
+                       timeout: float | None = None) -> ProviderCompletion:
+        call_id = str(uuid4())
         settings = self.settings()
         selected_model = _validate_model(model) if model is not None else settings.model
         image_paths = _validate_images(images or [])
-        if settings.provider in ('codebuddycli', 'codexcli'):
-            return await self._cli_generate(settings.provider, prompt, selected_model, schema,
-                                            on_event if settings.streaming else None, image_paths,
-                                            system_prompt=selected_instructions)
-        base_url, api_key = self._compatible_credentials(settings.base_url, None)
-        from .openai_compatible import generate_completion
-        return await generate_completion(base_url=base_url, api_key=api_key,
-            api_protocol=settings.api_protocol, prompt=prompt, model=selected_model,
-            schema=schema, image_paths=image_paths, timeout=self.timeout,
-            on_event=on_event if settings.streaming else None,
-            system_prompt=selected_instructions)
+        selected_instructions = instructions or instructions_for_purpose(purpose)
+        request_timeout = self.timeout if timeout is None else timeout
+        if request_timeout <= 0:
+            raise ProviderFailure('PROVIDER_TIMEOUT_INVALID', 'AI 请求超时必须大于 0 秒。', status_code=422)
+        _audit_model(
+            'model.request',
+            call_id=call_id,
+            provider=settings.provider,
+            model=selected_model,
+            purpose=purpose,
+            prompt=prompt,
+            system_prompt=selected_instructions,
+            schema=schema,
+            images=_audit_images(image_paths),
+            api_protocol=settings.api_protocol,
+            streaming=settings.streaming,
+            reasoning_effort=settings.reasoning_effort,
+            timeout_seconds=request_timeout,
+        )
+
+        async def observe(event: dict) -> None:
+            _audit_model('model.stream_event', call_id=call_id, stream_event=event)
+            if on_event is not None:
+                await on_event(event)
+
+        stream_callback = observe if on_event is not None and settings.streaming else None
+        try:
+            if settings.provider in ('codebuddycli', 'codexcli'):
+                result = await self._cli_generate(settings.provider, prompt, selected_model, schema,
+                                                 stream_callback, image_paths,
+                                                 settings.reasoning_effort, selected_instructions,
+                                                 request_timeout)
+            else:
+                base_url, api_key = self._compatible_credentials(settings.base_url, None)
+                from .openai_compatible import generate_completion
+                result = await generate_completion(base_url=base_url, api_key=api_key,
+                    api_protocol=settings.api_protocol, prompt=prompt, model=selected_model,
+                    schema=schema, image_paths=image_paths, timeout=request_timeout,
+                    on_event=stream_callback,
+                    system_prompt=selected_instructions, reasoning_effort=settings.reasoning_effort)
+        except BaseException as error:
+            _audit_model(
+                'model.error',
+                call_id=call_id,
+                provider=settings.provider,
+                model=selected_model,
+                purpose=purpose,
+                error_type=type(error).__name__,
+                error_code=getattr(error, 'code', None),
+                error=str(error),
+            )
+            raise
+        _audit_model(
+            'model.response',
+            call_id=call_id,
+            provider=result.provider,
+            model=result.model,
+            purpose=purpose,
+            response=result.text,
+            structured=result.structured,
+            usage=result.usage,
+            latency_ms=result.latency_ms,
+        )
+        return result
+
+    async def generate_for_selector(
+            self, prompt: str, *, schema: dict | None = None,
+            snapshot: SelectorProviderSettings | None = None,
+            instructions: str = SYSTEM_PROMPT,
+            timeout: float = DEFAULT_SELECTOR_TIMEOUT_SECONDS) -> ProviderCompletion:
+        """Run one selection call against an explicit route without changing chat settings."""
+        call_id = str(uuid4())
+        selected = snapshot or self.selector_settings()
+        if selected is None:
+            raise ProviderFailure('SELECTOR_MODEL_NOT_CONFIGURED',
+                                  '尚未配置制作推荐模型，本次不会调用主对话模型。',
+                                  status_code=422)
+        if selected.provider not in ('codebuddycli', 'codexcli', 'openai-compatible'):
+            raise ProviderFailure('SELECTOR_PROVIDER_INVALID', '制作推荐服务类型无效。', status_code=422)
+        selected_model = _validate_model(selected.model)
+        selected_effort = _validate_reasoning_effort(selected.reasoning_effort)
+        if (selected.provider == 'codebuddycli' and selected_model != DEFAULT_CLI_MODEL
+                and selected_model not in MODEL_IDS):
+            raise ProviderFailure('CLI_MODEL_INVALID',
+                                  '所选制作推荐模型不在 CodeBuddy CLI 候选目录中。',
+                                  status_code=422)
+        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
+            raise ProviderFailure('PROVIDER_TIMEOUT_INVALID',
+                                  '制作推荐请求超时必须大于 0 秒。', status_code=422)
+        _audit_model(
+            'model.request',
+            call_id=call_id,
+            provider=selected.provider,
+            model=selected_model,
+            purpose='production-selector',
+            prompt=prompt,
+            system_prompt=instructions,
+            schema=schema,
+            images=[],
+            api_protocol=selected.api_protocol,
+            streaming=False,
+            reasoning_effort=selected_effort,
+            timeout_seconds=timeout,
+        )
+        try:
+            if selected.provider in ('codebuddycli', 'codexcli'):
+                completion = await self._cli_generate(
+                    selected.provider, prompt, selected_model, schema, None, [],
+                    selected_effort, instructions, timeout)
+            else:
+                if not selected.api_key_configured:
+                    raise ProviderFailure('SELECTOR_CREDENTIALS_REQUIRED',
+                                          '制作推荐服务尚未配置当前地址的 API Key。',
+                                          status_code=422)
+                base_url, api_key = self._compatible_credentials(selected.base_url, None)
+                from .openai_compatible import generate_completion
+                completion = await generate_completion(
+                    base_url=base_url, api_key=api_key,
+                    api_protocol=_validate_api_protocol(selected.api_protocol),
+                    prompt=prompt, model=selected_model, schema=schema,
+                    image_paths=[], timeout=timeout, on_event=None,
+                    system_prompt=instructions,
+                    reasoning_effort=selected_effort)
+        except BaseException as error:
+            _audit_model(
+                'model.error',
+                call_id=call_id,
+                provider=selected.provider,
+                model=selected_model,
+                purpose='production-selector',
+                error_type=type(error).__name__,
+                error_code=getattr(error, 'code', None),
+                error=str(error),
+            )
+            raise
+        if (completion.provider, completion.model) != (selected.provider, selected_model):
+            raise ProviderFailure('SELECTOR_ROUTE_MISMATCH',
+                                  '制作推荐服务返回的提供方或模型与调用快照不一致。')
+        _audit_model(
+            'model.response',
+            call_id=call_id,
+            provider=completion.provider,
+            model=completion.model,
+            purpose='production-selector',
+            response=completion.text,
+            structured=completion.structured,
+            usage=completion.usage,
+            latency_ms=completion.latency_ms,
+        )
+        return completion
 
     async def discover_models(self, *, provider: ProviderId,
                               base_url: str | None = None,
@@ -357,47 +648,94 @@ class ProviderService:
             return [ProviderModel(DEFAULT_CLI_MODEL, 'CLI 默认模型', provider),
                     *(ProviderModel(item, item, provider) for item in MODEL_IDS)]
         if provider == 'codexcli':
-            configured = self.settings()
-            identifiers = [DEFAULT_CLI_MODEL]
-            if configured.provider == provider and configured.model != DEFAULT_CLI_MODEL:
-                identifiers.append(configured.model)
-            return [ProviderModel(item, 'CLI 默认模型' if item == DEFAULT_CLI_MODEL else item, provider)
-                    for item in identifiers]
+            try:
+                discovered = [ProviderModel(identifier, label, provider)
+                              for identifier, label in await codex_cli.list_models(
+                                  timeout=min(self.timeout, 10))]
+            except codex_cli.CodexFailure as error:
+                raise ProviderFailure(error.code, str(error)) from error
+            models = [ProviderModel(DEFAULT_CLI_MODEL, 'CLI 默认模型', provider), *discovered]
+            self._remember_model_catalog(provider, '', models[1:])
+            return models
         if provider != 'openai-compatible':
             raise ProviderFailure('PROVIDER_INVALID', '未知的 AI 服务类型。', status_code=422)
         normalized_url, resolved_key = self._compatible_credentials(base_url, api_key)
         from .openai_compatible import list_models
         models = await list_models(base_url=normalized_url, api_key=resolved_key,
                                    timeout=self.timeout)
-        self._remember_compatible_models(normalized_url, models)
+        self._remember_model_catalog('openai-compatible', normalized_url, models)
         return models
 
     async def check_connection(self, *, provider: ProviderId, model: str,
                                base_url: str | None = None, api_key: str | None = None,
                                api_protocol: ApiProtocol = 'chat-completions',
-                               streaming: bool = True) -> ProviderProbe:
+                               streaming: bool = True,
+                               reasoning_effort: ReasoningEffort = DEFAULT_REASONING_EFFORT) -> ProviderProbe:
+        call_id = str(uuid4())
         selected_model = _validate_model(model)
         selected_protocol = _validate_api_protocol(api_protocol)
+        selected_effort = _validate_reasoning_effort(reasoning_effort)
         received_delta = False
 
         async def observe(event: dict) -> None:
             nonlocal received_delta
             received_delta = received_delta or event.get('type') == 'text_delta'
+            _audit_model('model.stream_event', call_id=call_id, stream_event=event)
 
         callback = observe if streaming else None
         started = time.monotonic()
-        if provider in ('codebuddycli', 'codexcli'):
-            await self._cli_generate(provider, '只回复 OK，不要解释。', selected_model,
-                                     None, callback, [])
-        elif provider == 'openai-compatible':
-            normalized_url, resolved_key = self._compatible_credentials(base_url, api_key)
-            from .openai_compatible import generate_completion
-            await generate_completion(base_url=normalized_url, api_key=resolved_key,
-                api_protocol=selected_protocol, prompt='只回复 OK，不要解释。',
-                model=selected_model, schema=None, image_paths=[], timeout=self.timeout,
-                on_event=callback, system_prompt=SYSTEM_PROMPT)
-        else:
-            raise ProviderFailure('PROVIDER_INVALID', '未知的 AI 服务类型。', status_code=422)
+        _audit_model(
+            'model.request',
+            call_id=call_id,
+            provider=provider,
+            model=selected_model,
+            purpose='connection-check',
+            prompt='只回复 OK，不要解释。',
+            system_prompt=SYSTEM_PROMPT,
+            schema=None,
+            images=[],
+            api_protocol=selected_protocol,
+            streaming=streaming,
+            reasoning_effort=selected_effort,
+            timeout_seconds=self.timeout,
+        )
+        try:
+            if provider in ('codebuddycli', 'codexcli'):
+                completion = await self._cli_generate(provider, '只回复 OK，不要解释。', selected_model,
+                                                      None, callback, [], selected_effort)
+            elif provider == 'openai-compatible':
+                normalized_url, resolved_key = self._compatible_credentials(base_url, api_key)
+                from .openai_compatible import generate_completion
+                completion = await generate_completion(base_url=normalized_url, api_key=resolved_key,
+                    api_protocol=selected_protocol, prompt='只回复 OK，不要解释。',
+                    model=selected_model, schema=None, image_paths=[], timeout=self.timeout,
+                    on_event=callback, system_prompt=SYSTEM_PROMPT,
+                    reasoning_effort=selected_effort)
+            else:
+                raise ProviderFailure('PROVIDER_INVALID', '未知的 AI 服务类型。', status_code=422)
+        except BaseException as error:
+            _audit_model(
+                'model.error',
+                call_id=call_id,
+                provider=provider,
+                model=selected_model,
+                purpose='connection-check',
+                error_type=type(error).__name__,
+                error_code=getattr(error, 'code', None),
+                error=str(error),
+            )
+            raise
+        _audit_model(
+            'model.response',
+            call_id=call_id,
+            provider=completion.provider,
+            model=completion.model,
+            purpose='connection-check',
+            response=completion.text,
+            structured=completion.structured,
+            usage=completion.usage,
+            latency_ms=completion.latency_ms,
+        )
         if streaming and not received_delta:
             raise ProviderFailure('PROVIDER_STREAM_UNVERIFIED',
                                   '请求已完成，但没有收到文字增量，未验证流式输出。')
@@ -409,8 +747,10 @@ class ProviderService:
             message=f'连接成功；{label}{" 流式输出" if streaming else " 非流式输出"}已验证。')
 
     async def structured(self, prompt: str, schema: dict, model: str | None = None,
-                         purpose: str = 'planning', images: list[str | Path] | None = None) -> dict:
-        completion = await self.generate(prompt, model=model, schema=schema, purpose=purpose, images=images)
+                         purpose: str = 'planning', images: list[str | Path] | None = None,
+                         timeout: float | None = None) -> dict:
+        completion = await self.generate(prompt, model=model, schema=schema, purpose=purpose,
+                                         images=images, timeout=timeout)
         if completion.structured is not None:
             return completion.structured
         try:
@@ -422,23 +762,94 @@ class ProviderService:
         return value
 
     async def execute_task(self, goal: str, *, workspace_root: Path, model: str, authorized_scope: str,
-                           timeout: float, on_event: codex_cli.EventCallback | None = None,
-                           allow_image_generation: bool = False) -> dict:
+                           timeout: float | None, on_event: codex_cli.EventCallback | None = None,
+                           allow_image_generation: bool = False, expected_provider: str = "codexcli",
+                           execution_instructions: str | None = None,
+                           allow_environment_setup: bool = False, expected_base_url: str | None = None,
+                           native_production: bool = False, session_id: str | None = None,
+                           permission_mode: str = "full", mcp_config: dict | None = None,
+                           reference_images: tuple[Path, ...] = ()) -> dict:
         """Only the task-grant service calls this elevated path; chat never does."""
+        call_id = str(uuid4())
         settings = self.settings()
-        if settings.provider != 'codexcli' or settings.model != model:
+        _audit_model(
+            'model.request',
+            call_id=call_id,
+            provider=expected_provider,
+            model=model,
+            purpose='authorized-agent-task',
+            prompt=goal,
+            system_prompt=execution_instructions,
+            workspace_root=str(workspace_root),
+            authorized_scope=authorized_scope,
+            permission_mode=permission_mode,
+            native_production=native_production,
+            session_id=session_id,
+            mcp_config=mcp_config,
+            allow_image_generation=allow_image_generation,
+            reference_images=[{'name': path.name, 'suffix': path.suffix.lower()} for path in reference_images],
+            timeout_seconds=timeout,
+        )
+        if settings.provider != expected_provider or settings.model != model:
             raise ProviderFailure('CODEX_TASK_ROUTE_CHANGED', 'Codex 任务的提供方或模型配置已变化，请重新审阅授权。')
+        native_options = ({'native_production': True, 'session_id': session_id,
+                           'permission_mode': permission_mode, 'mcp_config': mcp_config}
+                          if native_production else {})
+        if not native_production and (session_id is not None or mcp_config is not None or permission_mode != 'full'):
+            raise ProviderFailure('NATIVE_PRODUCTION_REQUIRED', '会话与权限配置需要原生制作入口。')
+        async def observe(event: dict) -> None:
+            _audit_model('model.stream_event', call_id=call_id, stream_event=event)
+            if on_event is not None:
+                await on_event(event)
+
+        if expected_provider == 'codebuddycli':
+            from sceneops_codebuddy import invoke_agent
+            if allow_image_generation:
+                raise ProviderFailure('IMAGE_PROVIDER_REQUIRED', '当前原生图片生成授权只支持 Codex。')
+            try:
+                result = await invoke_agent(goal, workspace_root=workspace_root, model=model,
+                    authorized_scope=authorized_scope, reasoning_effort=settings.reasoning_effort,
+                    timeout=timeout, on_event=observe, system_prompt=execution_instructions, **native_options)
+            except CodeBuddyFailure as error:
+                _audit_model('model.error', call_id=call_id, provider=expected_provider,
+                             model=model, purpose='authorized-agent-task',
+                             error_type=type(error).__name__, error_code=error.code, error=str(error))
+                raise ProviderFailure(error.code, str(error)) from error
+            _audit_model('model.response', call_id=call_id, provider=expected_provider,
+                         model=model, purpose='authorized-agent-task', response=result)
+            return result
+        if expected_provider not in ('codexcli', 'openai-compatible'):
+            raise ProviderFailure('CLI_PROVIDER_REQUIRED', '当前提供方不支持原生执行。')
+        api_options = {}
+        if expected_provider == 'openai-compatible':
+            if not expected_base_url or settings.base_url != expected_base_url:
+                raise ProviderFailure('CODEX_TASK_ROUTE_CHANGED', '中转地址已变化，请按当前配置重新开始任务。')
+            if allow_image_generation:
+                raise ProviderFailure('IMAGE_PROVIDER_REQUIRED', '中转原生执行不使用 Codex 登录态图片生成。')
+            base_url, api_key = self._compatible_credentials(settings.base_url, None)
+            api_options = {'api_base_url': base_url, 'api_key': api_key}
+
         try:
-            return await codex_cli.invoke_agent(goal, workspace_root=workspace_root, model=model,
-                authorized_scope=authorized_scope, reasoning_effort='low', timeout=timeout,
-                on_event=on_event, allow_image_generation=allow_image_generation)
+            result = await codex_cli.invoke_agent(goal, workspace_root=workspace_root, model=model,
+                authorized_scope=authorized_scope, reasoning_effort=settings.reasoning_effort, timeout=timeout,
+                on_event=observe, allow_image_generation=allow_image_generation,
+                image_paths=reference_images,
+                system_prompt=execution_instructions, allow_environment_setup=allow_environment_setup, **api_options, **native_options)
         except codex_cli.CodexFailure as error:
+            _audit_model('model.error', call_id=call_id, provider=expected_provider,
+                         model=model, purpose='authorized-agent-task',
+                         error_type=type(error).__name__, error_code=error.code, error=str(error))
             raise ProviderFailure(error.code, str(error)) from error
+        _audit_model('model.response', call_id=call_id, provider=expected_provider,
+                     model=model, purpose='authorized-agent-task', response=result)
+        return result
 
     async def _cli_generate(self, provider: ProviderId, prompt: str, model: str,
                             schema: dict | None, on_event: codex_cli.EventCallback | None,
                             image_paths: list[Path],
-                            system_prompt: str = SYSTEM_PROMPT) -> ProviderCompletion:
+                            reasoning_effort: ReasoningEffort = DEFAULT_REASONING_EFFORT,
+                            system_prompt: str = SYSTEM_PROMPT,
+                            timeout: float | None = None) -> ProviderCompletion:
         if image_paths and provider == 'codebuddycli':
             raise ProviderFailure('CLI_IMAGE_INPUT_UNSUPPORTED',
                 '当前 CodeBuddy 文本通道没有可靠的本地图片输入合同；请选择 Codex CLI 或 OpenAI 兼容视觉模型。',
@@ -449,10 +860,12 @@ class ProviderService:
         try:
             options = {'on_event': on_event} if on_event is not None else {}
             options['system_prompt'] = system_prompt
+            if provider == 'codebuddycli':
+                options['effort'] = reasoning_effort
             if provider == 'codexcli' and image_paths:
                 options['image_paths'] = tuple(image_paths)
             envelope = await invoke(prompt, model, schema=schema,
-                                    timeout=int(self.timeout), **options)
+                                    timeout=int(self.timeout if timeout is None else timeout), **options)
         except (CodeBuddyFailure, codex_cli.CodexFailure) as error:
             raise ProviderFailure(error.code, str(error)) from error
         structured = envelope.get('structured_output') if schema is not None else None
@@ -481,19 +894,19 @@ class ProviderService:
                                   '请为当前兼容服务地址填写 API Key。', status_code=422)
         return normalized_url, resolved_key
 
-    def _remember_compatible_models(self, base_url: str,
-                                    models: list[ProviderModel]) -> None:
+    def _remember_model_catalog(self, provider: ProviderId, base_url: str,
+                                models: list[ProviderModel]) -> None:
         with self._connect() as connection:
             connection.execute('BEGIN IMMEDIATE')
             connection.execute(
                 'DELETE FROM conversation_ai_model_catalog WHERE provider=? AND base_url=?',
-                ('openai-compatible', base_url),
+                (provider, base_url),
             )
             connection.executemany('''
                 INSERT INTO conversation_ai_model_catalog(
                     provider,base_url,model_id,label,position
                 ) VALUES(?,?,?,?,?)
-            ''', (('openai-compatible', base_url, item.id, item.label, position)
+            ''', ((provider, base_url, item.id, item.label, position)
                   for position, item in enumerate(models)))
 
     def _read_secret_store(self) -> dict:

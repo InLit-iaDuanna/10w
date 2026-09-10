@@ -101,5 +101,7 @@
     "payload"
   ],
   "title": "AssetSpecDraftCompiledEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "concept.asset_spec_draft.compiled",
+  "x-event-version": 1
 }

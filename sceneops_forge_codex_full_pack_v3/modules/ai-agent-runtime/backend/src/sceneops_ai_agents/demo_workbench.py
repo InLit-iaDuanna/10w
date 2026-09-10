@@ -3,8 +3,7 @@ from sceneops_harness import HarnessError
 from asset_library import UpdateProjectAssetRecipeRequest
 from world_composer import (TransformObjectRequest, UpdateKeyDoorBehaviorRequest,
                             RebindAssetVersionRequest, EnvironmentSceneError)
-from .demo_workbench_models import DemoContentIndex, DemoSourceEntry, DemoContentSaved
-from .code_workspace import read_source, task_source_path
+from .demo_workbench_models import DemoContentIndex, DemoContentSaved
 
 
 def project_task(service, task_id):
@@ -24,18 +23,9 @@ def content_index(service, task_id):
     scene = service.environment_scenes.get(task.project_id)
     assets = [entry for entry in service.project_assets.list(task.project_id)
               if entry.workspace_id == card.workspace_id]
-    sources = {}
-    # Only actual successful writes establish source navigation, never file-name guessing.
-    for number, entry in enumerate(task.actions, 1):
-        if (entry.action.capability_id == 'code.file.write' and entry.state == 'succeeded'
-                and entry.effect_state == 'COMMITTED'):
-            path = entry.action.inputs['path']
-            task_source_path(task, path)
-            content = read_source(card.workspace_root, path)
-            if content is not None:
-                sources[path] = DemoSourceEntry(id=sources[path].id if path in sources else entry.request_id,
-                    latest_write_request_id=entry.request_id, path=path,
-                    content=content, source_version=number)
+    from .workspace_sources import workspace_sources
+    source_entries, truncated = workspace_sources(service, task)
+    sources = {entry.path: entry for entry in source_entries}
     _, _, candidate, _ = service.game._candidate_snapshot(task.project_id, card.workspace_id)
     asset_refs = {(item.asset_id, item.asset_version) for item in scene.objects}
     built_refs = ({(item['asset_id'], item['asset_version']) for item in candidate.asset_versions}
@@ -47,7 +37,8 @@ def content_index(service, task_id):
         if built_files is not None:
             changed |= source_file_versions(card.workspace_root) != built_files
         recorded = set(candidate.source_version.get('code_write_requests', []))
-        changed |= any(item.latest_write_request_id not in recorded for item in sources.values())
+        changed |= any(item.latest_write_request_id is not None and item.latest_write_request_id not in recorded
+                       for item in sources.values())
         # A user's unsent ordinary source edit must also make the source state dirty.
         for entry in task.actions:
             if entry.request_id in recorded and entry.action.capability_id == 'code.file.write':
@@ -59,10 +50,12 @@ def content_index(service, task_id):
     notice = '源内容有未运行修改' if changed else '源内容与当前可玩版本一致'
     if not changed and candidate and 'source_file_versions' not in candidate.source_version:
         notice = '已登记内容与可玩候选一致；历史候选未记录完整源码版本'
+    if truncated:
+        notice += '；源码列表达到浏览上限，未列出的文件不会被登记为删除'
     return DemoContentIndex(project_id=task.project_id, workspace_id=card.workspace_id,
         scene_version=scene.version, assets=assets, instances=scene.objects,
         sources=list(sources.values()), unbuilt_changes=bool(changed),
-        source_notice=notice)
+        source_notice=notice, sources_truncated=truncated)
 
 
 def resolve_target(service, task, target, *, check_version=True):
@@ -108,10 +101,11 @@ def save_content(service, task_id, body):
     task = project_task(service, task_id)
     if task.owner_pid is not None or task.status in ('queued', 'running', 'blocked'):
         raise HarnessError('TASK_BUSY', 'Agent 正在修改此作品，请稍后保存。')
-    with service.records.connect() as connection:
-        claim = connection.execute('SELECT task_id FROM agent_project_claims WHERE project_id=?', (task.project_id,)).fetchone()
-    if claim:
-        raise HarnessError('PROJECT_EXECUTION_BUSY', '作品有正在执行或待核查的修改，请先查看制作记录。')
+    with service.records.manual_edit(task):
+        return _save_content(service, task_id, task, body)
+
+
+def _save_content(service, task_id, task, body):
     index, selected = resolve_target(service, task, body.target)
     project_id = task.project_id
     affected = []
@@ -135,6 +129,21 @@ def save_content(service, task_id, body):
         except (ValueError, LookupError, EnvironmentSceneError) as error:
             raise HarnessError('DEMO_REBIND_CONFLICT',
                 f'配方 v{saved_version} 已保存，但引用更新未全部完成。重读当前源后再次保存可应用剩余引用。{error}') from error
+    elif body.target.kind == 'asset' and body.asset_version is not None:
+        if body.asset_version != selected.current_version:
+            raise HarnessError('DEMO_SOURCE_CONFLICT', '请重新读取资产当前版本后更新引用。')
+        scene_version = index.scene_version
+        versions = sorted({item.asset_version for item in index.instances
+            if item.asset_id == selected.id and item.asset_version != body.asset_version})
+        try:
+            for version in versions:
+                result = service.environment_scenes.rebind_asset_version(project_id, selected.id,
+                    RebindAssetVersionRequest(expected_version=scene_version,
+                        from_asset_version=version, to_asset_version=body.asset_version))
+                affected.extend(result.affected_object_ids)
+                scene_version = result.scene.version
+        except (ValueError, LookupError, EnvironmentSceneError) as error:
+            raise HarnessError('DEMO_REBIND_CONFLICT', '引用更新未全部完成，请重读当前场景后重试。' + str(error)) from error
     elif body.target.kind == 'instance' and body.transform is not None:
         service.environment_scenes.transform_object(project_id, selected.id,
             TransformObjectRequest(expected_version=index.scene_version, transform=body.transform))

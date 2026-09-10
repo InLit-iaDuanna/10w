@@ -6,7 +6,7 @@
 
 面向 Unity 工程师、技术美术、关卡设计、QA 和构建负责人。模块拥有 Unity 命令合同、执行策略、构建证据与 Unity 侧实现；不拥有 Blender 导出内部逻辑、ForgeShell、玩法图、AI playtest 或发布流程。
 
-应用运行时不提供任意 C#、shell、反射方法名或任意文件访问。所有外部操作通过 16 个固定命令之一进入；Python 适配器与 Unity Package 都维护同一白名单。
+应用运行时不提供任意 C#、shell、反射方法名或任意文件访问。所有外部操作通过 20 个固定命令之一进入；Python 适配器与 Unity Package 都维护同一白名单。
 
 ## 公共入口
 
@@ -15,7 +15,7 @@ Editor，并通过私有认证 mailbox 在 Unity 主线程执行类型化导入�
 协议、授权字段、定向验证和当前许可证阻塞见 [任务会话](docs/agent-session.md)。
 
 - 后端：`engine_unity`，公开 `UnityAdapter`、`UnityEngineService`、命令/结果模型和身份读模型。
-- 前端：`frontend/src/index.ts`，注册 5 个延迟加载编辑器、16 个命令与工具库条目。
+- 前端：`frontend/src/index.ts`，注册 5 个延迟加载编辑器、20 个命令与工具库条目。
 - Unity：UPM 包 `com.sceneops.forge.unity`，当前固定版本为 Unity `2022.3.62f3c1`。
 
 `create_router(service, context_provider)` 暴露 `/api/modules/engine-unity/capabilities`、`/commands/preview` 和 `/commands/execute`。`context_provider` 必须由 composition root 从服务端配置、认证上下文和审批存储构造，不能接收客户端提供的权限、允许根目录或审批记录。执行上下文中的 `approved_change_sets` 保存完整可信快照，而非仅保存可复用 ID。
@@ -36,6 +36,7 @@ Editor，并通过私有认证 mailbox 在 Unity 主线程执行类型化导入�
 
 | 类别 | 命令 |
 |---|---|
+| 原型 | `unity.prototype.compose`, `unity.prototype.inspect`, `unity.prototype.play`, `unity.prototype.capture` |
 | 连接/读取 | `unity.health`, `unity.project.scan`, `unity.game_object.inspect`, `unity.console.read` |
 | 资产/身份 | `unity.asset.import`, `unity.identity.map`, `unity.prefab.upsert` |
 | 安全变更 | `unity.component_property.set`, `unity.collider.upsert`, `unity.navmesh.run` |

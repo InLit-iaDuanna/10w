@@ -1,0 +1,821 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-atompunk-eq03",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 29.797,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p0",
+      "center_m": [
+        0.0,
+        0.30334,
+        -0.01046
+      ],
+      "half_extents_m": [
+        0.32426,
+        0.30334,
+        0.33995
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c0",
+      "center_m": [
+        0.19095774030239107,
+        0.377927665499887,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.05587010305900759,
+        0.041953925678867146,
+        0.04184
+      ],
+      "axes": [
+        [
+          -0.2618033657430328,
+          0.9651212347086873,
+          0.0
+        ],
+        [
+          -0.9651212347086872,
+          -0.26180336574303226,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c1",
+      "center_m": [
+        0.13979076799989332,
+        0.45276553742213216,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.0604237700481174,
+        0.039206795375546825,
+        0.04184
+      ],
+      "axes": [
+        [
+          -0.7071067811865474,
+          0.7071067811865476,
+          0.0
+        ],
+        [
+          -0.7071067811865475,
+          -0.7071067811865475,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c2",
+      "center_m": [
+        0.05116697230249773,
+        0.49597320292201913,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.0646575251446528,
+        0.03625208583477772,
+        0.04184
+      ],
+      "axes": [
+        [
+          -0.9651212347086867,
+          0.26180336574303253,
+          0.0
+        ],
+        [
+          -0.2618033657430326,
+          -0.9651212347086867,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c3",
+      "center_m": [
+        -0.05116697230249771,
+        0.49597320292201913,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.0646575251446528,
+        0.03625208583477773,
+        0.04184
+      ],
+      "axes": [
+        [
+          -0.9651212347086865,
+          -0.26180336574303226,
+          0.0
+        ],
+        [
+          0.26180336574303226,
+          -0.9651212347086866,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c4",
+      "center_m": [
+        -0.13979076799989332,
+        0.45276553742213216,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.06042377004811741,
+        0.039206795375546825,
+        0.04184
+      ],
+      "axes": [
+        [
+          -0.7071067811865476,
+          -0.7071067811865475,
+          0.0
+        ],
+        [
+          0.7071067811865475,
+          -0.7071067811865476,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c5",
+      "center_m": [
+        -0.19095774030239104,
+        0.37792766549988704,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.05587010305900759,
+        0.041953925678867146,
+        0.04184
+      ],
+      "axes": [
+        [
+          -0.2618033657430328,
+          -0.9651212347086873,
+          0.0
+        ],
+        [
+          0.9651212347086872,
+          -0.26180336574303226,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c6",
+      "center_m": [
+        -0.19095774030239107,
+        0.29151233450011305,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.05587010305900759,
+        0.041953925678867146,
+        0.04184
+      ],
+      "axes": [
+        [
+          0.2618033657430322,
+          -0.9651212347086865,
+          0.0
+        ],
+        [
+          0.9651212347086865,
+          0.26180336574303237,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c7",
+      "center_m": [
+        -0.1397907679998934,
+        0.21667446257786793,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.060423770048117394,
+        0.03920679537554683,
+        0.04184
+      ],
+      "axes": [
+        [
+          0.7071067811865467,
+          -0.7071067811865483,
+          0.0
+        ],
+        [
+          0.7071067811865483,
+          0.7071067811865467,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c8",
+      "center_m": [
+        -0.05116697230249771,
+        0.1734667970779809,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.0646575251446528,
+        0.03625208583477772,
+        0.04184
+      ],
+      "axes": [
+        [
+          0.9651212347086868,
+          -0.2618033657430327,
+          0.0
+        ],
+        [
+          0.2618033657430327,
+          0.9651212347086867,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c9",
+      "center_m": [
+        0.05116697230249764,
+        0.17346679707798088,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.0646575251446528,
+        0.03625208583477772,
+        0.04184
+      ],
+      "axes": [
+        [
+          0.9651212347086869,
+          0.2618033657430322,
+          0.0
+        ],
+        [
+          -0.2618033657430323,
+          0.9651212347086868,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c10",
+      "center_m": [
+        0.1397907679998933,
+        0.21667446257786785,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.0604237700481174,
+        0.039206795375546825,
+        0.04184
+      ],
+      "axes": [
+        [
+          0.7071067811865477,
+          0.7071067811865475,
+          0.0
+        ],
+        [
+          -0.7071067811865475,
+          0.7071067811865477,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p1:c11",
+      "center_m": [
+        0.19095774030239102,
+        0.2915123345001129,
+        0.28242
+      ],
+      "half_extents_m": [
+        0.05587010305900761,
+        0.041953925678867146,
+        0.04184
+      ],
+      "axes": [
+        [
+          0.26180336574303364,
+          0.9651212347086866,
+          0.0
+        ],
+        [
+          -0.9651212347086865,
+          0.2618033657430334,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p2",
+      "center_m": [
+        0.0,
+        0.33472,
+        0.30334
+      ],
+      "half_extents_m": [
+        0.17259,
+        0.13075,
+        0.04707
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p3",
+      "center_m": [
+        -0.3138,
+        0.32426,
+        -0.01046
+      ],
+      "half_extents_m": [
+        0.1046,
+        0.03661,
+        0.1046
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          0.9999999999999466,
+          0.0
+        ],
+        [
+          -0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-eq03:p4",
+      "center_m": [
+        0.3138,
+        0.32426,
+        -0.01046
+      ],
+      "half_extents_m": [
+        0.1046,
+        0.03661,
+        0.1046
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          0.9999999999999466,
+          0.0
+        ],
+        [
+          -0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use",
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "head",
+      "grip_position_m": [
+        0.0,
+        0.121336,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.11474668839366382,
+                0.0,
+                0.0,
+                0.9933947843142158
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3,
+              0.65
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "head",
+      "grip_position_m": [
+        0.0,
+        0.121336,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "rigid weights, articulated parts",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-atompunk-eq03.glb",
+      "triangle_count": 960,
+      "part_count": 5,
+      "distance_m": 0.0,
+      "sha256": "796681778ba6bdb146dee2c2629a26c01c3146ba70584a12afba1f86cd60f692",
+      "byte_size": 226524
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-atompunk-eq03.lod1.glb",
+      "triangle_count": 440,
+      "part_count": 4,
+      "distance_m": 3.5,
+      "sha256": "791811cbdfcc8f7ebe744bcc5b033362feb144a6392fdb2013aba679896b8692",
+      "byte_size": 123068
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-atompunk-eq03.lod2.glb",
+      "triangle_count": 240,
+      "part_count": 4,
+      "distance_m": 8.41,
+      "sha256": "b548bf3ecdb1c6a0efb282df1212ada4bc27a0457f2113e34db82cfcda3b9830",
+      "byte_size": 79264
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.35041,
+      0.0,
+      -0.35041
+    ],
+    "max": [
+      0.35041,
+      0.60668,
+      0.35041
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

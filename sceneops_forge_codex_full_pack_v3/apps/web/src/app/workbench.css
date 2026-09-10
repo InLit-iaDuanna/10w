@@ -49,8 +49,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .workbench-appbar-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; }
 .workbench-project-trigger { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; background: var(--surface-1); border-color: var(--border-subtle); }
 .workbench-project-trigger svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.workbench-project-trigger span { max-width:min(24vw,220px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .workbench-local { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 .workbench-local i { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); }
+.workbench-local[data-state="connected"] { color: var(--text-secondary); }
+.workbench-local[data-state="connected"] i { background: var(--success); box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 14%, transparent); }
+.workbench-local[data-state="disconnected"] i { background: var(--critical); }
 .workbench-stage { position: relative; flex: 1; min-height: 0; min-width: 0; }
 .workbench-error { position: fixed; bottom: 22px; left: 22px; max-width: calc(100vw - 44px); padding: 12px 16px; border: 1px solid var(--critical); border-radius: 9px; color: var(--critical); background: var(--surface-1); z-index: 100; }
 .is-chat-only .forge-area-header, .is-chat-only .dv-tabs-and-actions-container { display: none; }
@@ -91,3 +95,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .integrated-agent-scope { color: var(--text-muted, #a0a0a0); font-size: 12px; line-height: 1.6; margin: 12px 0; }
 .integrated-module-advanced { margin: 16px 0; border-top: 1px solid var(--border-subtle, #383838); padding-top: 12px; }
 .integrated-module-advanced > summary { cursor: pointer; color: var(--text-muted, #a0a0a0); }
+.journey-game-preview-host { height:100%; min-height:0; display:flex; flex-direction:column; background:#111; }
+.journey-game-preview-host > header { min-height:42px; display:flex; align-items:center; gap:9px; padding:8px 12px; border-bottom:1px solid var(--border-default); background:var(--canvas); }
+.journey-game-preview-host > header small { color:var(--text-muted); }
+.journey-game-preview-host > header a { margin-left:auto; color:var(--text-secondary); font-size:12px; }
+.journey-game-preview-host > iframe { flex:1; min-height:0; width:100%; border:0; background:#111; }
+.journey-game-preview-empty { display:grid; place-content:center; height:100%; padding:24px; text-align:center; color:var(--text-muted); }
+.journey-game-preview-empty strong { color:var(--text-primary); }

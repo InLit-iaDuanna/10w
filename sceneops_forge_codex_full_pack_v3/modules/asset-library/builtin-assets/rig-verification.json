@@ -1,0 +1,386 @@
+{
+  "characters": 14,
+  "shared_skeleton": true,
+  "shared_clip_source": "sceneops-basic-locomotion-v1",
+  "retargeting_required": false,
+  "checks": [
+    {
+      "asset_id": "sceneops-haven-kit-character-player",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.022240308791979257
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-enemy",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.022240308791979257
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-npc",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.022240308791979257
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-ally",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.022240308791979257
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-medic",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.02500185700094728
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.3280427296826584
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4507049598635755
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.9955286977762258
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-engineer",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.02681917163806218
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.3070581058212059
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.42714989735566433
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.9756188595069867
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-chef",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.033665021784504
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.7308286717833016
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-guard",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.025128132900227168
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-explorer",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.028698524470498296
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-astronaut",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.026224537486199604
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.2937900229801186
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4231732207264292
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.671709615837457
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-robot",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.032802068126134384
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.30145420995854805
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4335759461810702
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.7495920835249584
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-voxel",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.02597676136073664
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.29563798861258905
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4256673203067747
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.7211504557938533
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-clay",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.025110223371760776
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.27913594390589175
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4012614740675321
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.7374679761250444
+        }
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-enamel",
+      "bones": 16,
+      "normalized_weights": true,
+      "clips": [
+        {
+          "name": "Idle",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.032802068126134384
+        },
+        {
+          "name": "Walk",
+          "duration_seconds": 1,
+          "max_deformation_m": 0.30145420995854805
+        },
+        {
+          "name": "Run",
+          "duration_seconds": 0.6666666865348816,
+          "max_deformation_m": 0.4335759461810702
+        },
+        {
+          "name": "Wave",
+          "duration_seconds": 2,
+          "max_deformation_m": 0.7495920835249584
+        }
+      ]
+    }
+  ]
+}

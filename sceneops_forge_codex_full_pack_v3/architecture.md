@@ -1,5 +1,9 @@
 # SceneOps Forge Architecture
 
+当前新制作主线（2026-09-09）：**SceneOps 对齐目标 → 确认可编辑制作简报与权限 → Codex／CodeBuddy 原生制作 → 工作台接回实际文件、资产和试玩候选 → 准确会话续改**。新工程使用轻量 Three.js / TypeScript / Vite / pnpm 起点。历史任务与编辑服务继续保留；本轮不接 App Server、SDK 或多 Agent 编排。接口、配置与故障处理见 [原生 CLI 制作](modules/ai-agent-runtime/docs/native-cli-production.md)，实际验收见 [验收报告](NATIVE_CLI_PRODUCTION_ACCEPTANCE.md)。
+
+首次环境配置（2026-09-08）：Conversation Home 拥有向导与 `/api/ai/setup` 路由，AI Provider 公开 `CLISetup` 负责固定工具安装与官方终端登录；CodeBuddy 集成公开的路径解析器供两个提供方的对话和 Agent 执行共同使用。安装目录与全局 CLI 隔离，工作台优先读取独立安装。Shell 仅组合入口，沿用本地令牌、Origin 校验与生成客户端。详见 [环境配置](modules/conversation-home/docs/environment-setup.md)。
+
 ## 1. Architecture goals
 
 - full-chain 3D game production without a monolithic codebase;
@@ -415,3 +419,27 @@ See `V5_HANDOFF.md`, `V5_SMOKE.md`, `CURRENT_CAPABILITY_CATALOG.md` and `PROTOTY
 # 单人策划旅程增量（2026-09-06）
 
 新文件夹项目以 workspace 公开存储接口绑定本地根目录。Design Room 的 PlanningJourneyService 拥有单人策划状态、消息、大纲和制作卡片提案，不执行生产任务。模型只由明确命令调用，沿用 ProviderService。持久导出记录衔接 SQLite 与项目内 JSON，最终提交使用 revision 比较，快照仅在用户确认后创建。旧项目继续原有路径。详细协议与局限见 `PLANNING_JOURNEY_STAGE1.md`。
+
+## 本地多平台导出
+
+Build Release 持有导出任务、持久记录及平台适配器；AI Agent Runtime 提供有界结构化导出对话；API 和 Web 宿主组合二者。共享 Web 快照后分别运行 Capacitor / Electron 本地构建。参见 [导出交付](PLAYABLE_EXPORTS_MILESTONE.md)。
+
+
+## 2026-09-09：中转 GPT 原生执行
+
+完全访问下，OpenAI 兼容中转 GPT 使用 Codex CLI 原生执行，向保存服务的 Responses 接口发送请求。每次独立临时 HOME/CODEX_HOME；真实上游 Key 留在后端，CLI 使用固定目标与模型的临时本地凭据，Shell 不继承该凭据。默认不设总时限、内部模型请求与动作次数不限，可随时停止。
+
+所有项目 Agent 直接显示实际文字、命令、文件与状态。旧 typed 任务保留历史和源码；在相同方向、工作区且无未决写入时，新原生授权可原子接管。未将旧任务改成已成功。
+
+本机 Codex CLI 加本地 Responses 夹具完成真实命令写文件、事件输出与凭据/配置清理；前端原生路由、旧任务交接、对话静态渲染定向冒烟通过。没有调用用户的真实中转模型或构建游戏。组件测试运行器因已有 picomatch 错误未启动。细节见根目录 NATIVE_API_EXECUTION.md。
+
+
+## 2026-09-09：原生 CLI 制作主线
+
+新游戏制作采用「方向对齐 → 确认可编辑制作简报 → Codex/CodeBuddy 原生会话 → 工作台回流 → 准确会话续改」。权限独立选择 scoped/full；完整权限也需要确认简报。旧任务和领域编辑服务保留，新制作入口不再使用逐动作 JSON 规划器。
+
+工作区级源码登记与任务级 MCP 桥连接真实源码、GLB 资产版本、场景实例和试玩候选；新工程采用所选架构的轻量起点。手动修改后的「更新作品」只执行物化和构建，不调用模型。详见 [原生制作说明](modules/ai-agent-runtime/docs/native-cli-production.md)。
+
+## 对话记忆整合（2026-09-09）
+
+ai-run-distiller 通过公开来源与项目状态回调聚合记忆；Design Room 保持决定的唯一存储，Conversation Home/Agent Runtime 提供自身持久来源。制作准备与对话复用同一有界提供快照，事件关联消息、任务、批次与修订。类型从 Pydantic/OpenAPI 生成；事务、幂等及验证边界见 [对话记忆](docs/conversation-memory.md)。

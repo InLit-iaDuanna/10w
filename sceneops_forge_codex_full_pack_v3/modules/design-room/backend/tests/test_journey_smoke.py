@@ -1,6 +1,7 @@
 """One isolated planning path and boundary checks, with a labelled provider fixture."""
 import json
 import asyncio
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,7 +11,8 @@ from sceneops_ai_provider import ProviderFailure
 from sceneops_project_workspace import GitProjectError, SqliteWorkspaceRepository
 from sceneops_design_ai import PlanningJourneyService
 from sceneops_design_ai.journey_models import (JourneyCommand, Outline, JourneyVersion,
-    ProductionCard, GrillReply)
+    ProductionCard, GrillReply, GameTechnicalPlan, GameProjectScaffold, JourneyMessage,
+    PlanningQuestion, QuestionOption)
 
 
 class FixtureProvider:
@@ -22,6 +24,7 @@ class FixtureProvider:
                                alignment_detail=self.alignment_detail)
     async def generate(self, prompt, **kwargs):
         self.calls += 1
+        self.last_prompt = prompt
         schema = kwargs.get('schema')
         if schema and schema['title'] == 'Outline':
             text = Outline(title='烟测策划', experience='探索', core_loop='移动到出口', scope='一个场景', acceptance='到达出口').model_dump_json()
@@ -36,12 +39,12 @@ class FixtureProvider:
         elif schema and schema['title'] == 'RevisionReply':
             text = json.dumps({'text':'已提出地图修改，等待确认。', 'revised_outline':None,
                 'revised_cards':[{'id':'map','title':'森林地图','description':'森林空间','dependencies':[], 'acceptance':'存在出口','status':'planned'}], 'rationale':'按用户要求改为森林。'})
-        elif schema and schema['title'] == 'CompactCardProposal':
+        elif schema and schema['title'] == 'DomainCardProposal':
             text = json.dumps({'cards': [
-                {'id':'world-3d', 'title':'3D 世界', 'description':'场景与资产', 'dependencies':[], 'acceptance':'世界可见', 'status':'planned'},
-                {'id':'core-gameplay', 'title':'核心玩法', 'description':'移动与交互', 'dependencies':['world-3d'], 'acceptance':'玩法可运行', 'status':'planned'},
-                {'id':'growth-feedback', 'title':'成长与反馈', 'description':'界面与反馈', 'dependencies':['core-gameplay'], 'acceptance':'反馈清晰', 'status':'planned'},
-                {'id':'demo-delivery', 'title':'完成 Demo', 'description':'整合与交付', 'dependencies':['growth-feedback'], 'acceptance':'可以交付', 'status':'planned'},
+                {'id':'world-3d', 'domain_ids':['assets-animation','world','lookdev'], 'title':'3D 世界', 'description':'场景与资产', 'dependencies':[], 'acceptance':'世界可见', 'status':'planned'},
+                {'id':'core-gameplay', 'domain_ids':['gameplay'], 'title':'核心玩法', 'description':'移动与交互', 'dependencies':['world-3d'], 'acceptance':'玩法可运行', 'status':'planned'},
+                {'id':'growth-feedback', 'domain_ids':['ui-audio'], 'title':'成长与反馈', 'description':'界面与反馈', 'dependencies':['core-gameplay'], 'acceptance':'反馈清晰', 'status':'planned'},
+                {'id':'demo-delivery', 'domain_ids':['delivery'], 'title':'完成 Demo', 'description':'整合与交付', 'dependencies':['growth-feedback'], 'acceptance':'可以交付', 'status':'planned'},
             ]})
         elif schema:
             text = json.dumps({'cards': [{'id':'map', 'title':'地图', 'description':'基础空间', 'dependencies':[], 'acceptance':'存在出口', 'status':'planned'}]})
@@ -51,7 +54,44 @@ class FixtureProvider:
         return SimpleNamespace(text=text, provider='codebuddycli', model='fixture')
 
 
+class FixturePreparation:
+    def __init__(self):
+        self.calls = []
+
+    async def prepare(self, request):
+        self.calls.append(request)
+        return SimpleNamespace(call=SimpleNamespace(status='succeeded'),
+            model_dump=lambda **_kwargs: {'status':'succeeded', 'recommendation':{
+                'assets':[], 'experiences':[{'candidate_id':'camera-single-screen',
+                    'revision':1, 'purpose':'镜头', 'adoption':'reference', 'reason':'匹配'}],
+                'skills':[], 'production_advice':[], 'conflicts':[], 'gaps':[]}})
+
+    async def selected_context(self, request, result):
+        return {'status':'succeeded', 'recommendation':result.model_dump()['recommendation'],
+                'selected_details':[{'identity':{'candidate_id':'camera-single-screen'},
+                                     'content':{'body':'固定看到完整可玩区域'}}]}
+
+
 class JourneySmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_planning_uses_one_preparation_call_without_bulk_experience_injection(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root / 'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = FixtureProvider()
+            preparation = FixturePreparation()
+            service = PlanningJourneyService(root / 'state.sqlite3', folders, provider,
+                                             production_preparation=preparation)
+            state = service.get(project.project_id)
+
+            result = await service.generate(state, '讨论一屏收集游戏')
+
+            self.assertIn('固定看到完整可玩区域', provider.last_prompt)
+            self.assertNotIn('experience_context', provider.last_prompt)
+            self.assertEqual(len(preparation.calls), 1)
+            self.assertEqual(state.model_calls, 2)
+            self.assertEqual(state.production_preparation['status'], 'succeeded')
+
     async def test_short_demo_direction_creates_project_without_outline_cards_and_reopens(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
@@ -106,6 +146,29 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(service.project_demo_context(project.project_id)['direction_id'],
                              changed.initial_demo_direction.direction_id)
 
+    async def test_moved_project_returns_current_root_in_saved_journey(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root / 'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            service = PlanningJourneyService(root / 'state.sqlite3', folders, FixtureProvider())
+            state = service.get(project.project_id)
+            state.technical_plan = GameTechnicalPlan(code_architecture='object-component',
+                architecture_label='对象／组件式', selection_method='manual', rationale='测试',
+                tradeoffs=['测试'], scaffold=GameProjectScaffold(root_path=project.root_path,
+                    initialization_status='generated'), selected_at='2026-09-07T00:00:00Z')
+            with service.connection() as database:
+                database.execute('INSERT OR REPLACE INTO design_journeys VALUES (?,?)',
+                                 (project.project_id, state.model_dump_json()))
+            moved_root = root / 'moved'
+            shutil.move(project.root_path, moved_root)
+            folders.recover_folder_project(moved_root, 'move')
+
+            moved = service.get(project.project_id)
+
+            self.assertEqual(moved.root_path, str(moved_root))
+            self.assertEqual(moved.technical_plan.scaffold.root_path, str(moved_root))
+
     async def test_recovered_project_imports_its_saved_conversation(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
@@ -153,6 +216,140 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
 
             with self.assertRaisesRegex(HTTPException, '属于另一个项目'):
                 recovered_service.get(project.project_id)
+
+    async def test_card_discussion_is_saved_in_its_own_conversation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root / 'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            service = PlanningJourneyService(root / 'state.sqlite3', folders, FixtureProvider())
+            state = service.get(project.project_id)
+            state.stage = 'cards'
+            state.outline = Outline(title='探索', experience='移动', core_loop='移动与交互',
+                scope='一个场景', acceptance='可以完成目标')
+            state.versions = [JourneyVersion(number=1, confirmed_at='2026-09-07T00:00:00Z',
+                outline=state.outline)]
+            state.cards = [ProductionCard(id='gameplay', title='核心玩法', description='移动与交互',
+                dependencies=[], acceptance='玩法可运行', status='planned')]
+            await service.apply(state, JourneyCommand(request_id='select', expected_revision=0,
+                operation='select_card', card_id='gameplay', main_scroll_top=412.5))
+            self.assertEqual(state.main_scroll_top, 412.5)
+            with service.connection() as database:
+                database.execute('INSERT INTO design_journeys VALUES (?,?)',
+                    (project.project_id, state.model_dump_json()))
+
+            replied = await service.command(project.project_id, JourneyCommand(
+                request_id='card-chat', expected_revision=0, operation='message', text='如何实现'))
+
+            self.assertEqual(replied.messages, [])
+            self.assertEqual([message.role for message in replied.card_messages['gameplay']],
+                             ['user', 'assistant'])
+            self.assertEqual(replied.card_messages['gameplay'][0].text, '如何实现')
+            self.assertIn('已提出地图修改', replied.card_messages['gameplay'][1].text)
+            with self.assertRaisesRegex(HTTPException, '完成本轮实现对齐'):
+                service.development_context(project.project_id, 'gameplay')
+            replied.card_alignment_summaries['gameplay'] = '只实现移动到出口的可试玩切片。'
+            with service.connection() as database:
+                database.execute('UPDATE design_journeys SET payload=? WHERE project_id=?',
+                    (replied.model_dump_json(), project.project_id))
+            context = service.development_context(project.project_id, 'gameplay')
+            self.assertEqual([message['role'] for message in context['card_discussion']],
+                             ['user', 'assistant'])
+            self.assertEqual(context['card_alignment_summary'], '只实现移动到出口的可试玩切片。')
+
+    async def test_card_coding_requires_completed_bounded_alignment(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root / 'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            service = PlanningJourneyService(root / 'state.sqlite3', folders, FixtureProvider())
+            state = service.get(project.project_id)
+            state.stage = 'cards'
+            state.outline = Outline(title='探索', experience='移动', core_loop='移动与交互',
+                scope='一个场景', acceptance='可以完成目标')
+            state.versions = [JourneyVersion(number=1, confirmed_at='2026-09-07T00:00:00Z',
+                outline=state.outline)]
+            state.technical_plan = GameTechnicalPlan(code_architecture='ecs', architecture_label='ECS',
+                selection_method='manual', rationale='测试技术方案', tradeoffs=['测试'], ecs_library='miniplex',
+                scaffold=GameProjectScaffold(root_path=str(root / 'project'), initialization_status='generated'),
+                selected_at='2026-09-07T00:00:00Z')
+            state.cards = [ProductionCard(id='gameplay', title='核心玩法', description='移动与交互',
+                dependencies=[], acceptance='玩法可运行', status='planned')]
+            state.active_card_id = 'gameplay'
+
+            # The implementation-alignment command must start with one question and cannot unlock Coding early.
+            await service.apply(state, JourneyCommand(request_id='align', expected_revision=0,
+                operation='start_card_alignment'))
+            self.assertIsNotNone(state.card_messages['gameplay'][-1].question)
+            self.assertNotIn('gameplay', state.card_alignment_summaries)
+
+            for turn in range(4):
+                question = state.card_messages['gameplay'][-1]
+                await service.apply(state, JourneyCommand(request_id=f'answer-{turn}', expected_revision=0,
+                    operation='message', question_message_id=question.id, option_index=0))
+
+            self.assertEqual(state.card_alignment_summaries['gameplay'],
+                '已按当前详细程度完成对齐，可以生成下一步方案。')
+            self.assertIsNone(state.card_messages['gameplay'][-1].question)
+            self.assertIn('确认执行后才会开始', state.card_messages['gameplay'][-1].text)
+            self.assertEqual(state.card_alignment_summary_ids['gameplay'], state.card_messages['gameplay'][-1].id)
+
+            await service.apply(state, JourneyCommand(request_id='realign', expected_revision=0,
+                operation='start_card_alignment'))
+            next_round = state.card_messages['gameplay'][-1]
+            await service.apply(state, JourneyCommand(request_id='realign-answer', expected_revision=0,
+                operation='message', question_message_id=next_round.id, option_index=0))
+            self.assertNotIn('gameplay', state.card_alignment_summaries)
+            self.assertIsNotNone(state.card_messages['gameplay'][-1].question)
+
+    async def test_card_entry_alignment_and_manual_finish_are_bounded(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root / 'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = FixtureProvider()
+            service = PlanningJourneyService(root / 'state.sqlite3', folders, provider)
+            state = service.get(project.project_id)
+            state.stage = 'cards'
+            state.outline = Outline(title='探索', experience='移动', core_loop='移动到出口',
+                scope='一个场景', acceptance='找到出口')
+            state.versions = [JourneyVersion(number=1, confirmed_at='2026-09-07T00:00:00Z', outline=state.outline)]
+            state.technical_plan = GameTechnicalPlan(code_architecture='ecs', architecture_label='ECS',
+                selection_method='manual', rationale='测试方案', tradeoffs=['测试'], ecs_library='miniplex',
+                scaffold=GameProjectScaffold(root_path=str(root / 'project'), initialization_status='generated'),
+                selected_at='2026-09-07T00:00:00Z')
+            for card_id in ('world-3d', 'core-gameplay', 'growth-feedback', 'demo-delivery'):
+                state.cards.append(ProductionCard(id=card_id, title=card_id, description='小切片',
+                    dependencies=[], acceptance='可以试玩', status='planned'))
+                calls = provider.calls
+                command = JourneyCommand(request_id=card_id, expected_revision=0,
+                    operation='select_card', card_id=card_id)
+                await service.apply(state, command)
+                self.assertEqual(provider.calls, calls + 1)
+                first = state.card_messages[card_id][-1]
+                self.assertEqual(state.card_alignment_start_ids[card_id], first.id)
+                await service.apply(state, command)
+                self.assertEqual(provider.calls, calls + 1)
+                with self.assertRaisesRegex(HTTPException, '先讨论'):
+                    await service.apply(state, JourneyCommand(request_id='empty', expected_revision=0,
+                        operation='finish_card_alignment'))
+                await service.apply(state, JourneyCommand(request_id='answer', expected_revision=0,
+                    operation='message', question_message_id=first.id, option_index=0))
+                await service.apply(state, JourneyCommand(request_id='finish', expected_revision=0,
+                    operation='finish_card_alignment'))
+                summary_id = state.card_alignment_summary_ids[card_id]
+                self.assertEqual(summary_id, state.card_messages[card_id][-1].id)
+                self.assertIn('是否现在按这个范围制作可试玩 Demo', state.card_messages[card_id][-1].text)
+                self.assertEqual(service._development_context(state, card_id)['card_alignment_id'], summary_id)
+                calls = provider.calls
+                await service.apply(state, JourneyCommand(request_id='repeat-finish', expected_revision=0,
+                    operation='finish_card_alignment'))
+                self.assertEqual(provider.calls, calls)
+                await service.apply(state, JourneyCommand(request_id='scope-change', expected_revision=0,
+                    operation='message', text='缩小范围，只做出口标记。'))
+                self.assertNotIn(card_id, state.card_alignment_summaries)
+                self.assertNotIn(card_id, state.card_alignment_summary_ids)
+                self.assertIsNotNone(state.card_messages[card_id][-1].question)
 
     async def test_structured_failure_retries_once_with_feedback(self):
         class FailOnceProvider(FixtureProvider):
@@ -205,6 +402,88 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(provider.calls, 2)
             self.assertEqual(service.get(project.project_id).model_calls, 2)
+
+    async def test_schema_invalid_json_is_corrected_before_command_is_saved(self):
+        class MissingFieldsProvider(FixtureProvider):
+            async def generate(self, prompt, **kwargs):
+                if self.calls == 0:
+                    self.calls += 1
+                    return SimpleNamespace(text='{}', provider='openai-compatible', model='fixture')
+                self.correction = prompt
+                return await super().generate(prompt, **kwargs)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = MissingFieldsProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            state = service.get(project.project_id)
+            state.stage = 'grill'
+            await service.apply(state, JourneyCommand(request_id='outline', expected_revision=0,
+                operation='generate_outline'))
+            self.assertEqual(state.outline.title, '烟测策划')
+            self.assertEqual(provider.calls, 2)
+            self.assertEqual(service.get(project.project_id).model_calls, 2)
+            self.assertIn('JOURNEY_STRUCTURED_INVALID', provider.correction)
+            self.assertIn('missing', provider.correction)
+
+    async def test_schema_invalid_retries_stop_with_upstream_failure(self):
+        class InvalidProvider(FixtureProvider):
+            async def generate(self, prompt, **kwargs):
+                self.calls += 1
+                return SimpleNamespace(text='{}', provider='openai-compatible', model='fixture')
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = InvalidProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            with self.assertRaises(ProviderFailure) as caught:
+                await service.generate(service.get(project.project_id), '生成大纲。', Outline)
+            self.assertEqual(caught.exception.code, 'JOURNEY_STRUCTURED_INVALID')
+            self.assertEqual(caught.exception.status_code, 502)
+            self.assertIn('自动纠正重试仍未通过结构校验', str(caught.exception))
+            self.assertEqual(provider.calls, 2)
+            self.assertEqual(service.get(project.project_id).model_calls, 2)
+            self.assertIsNone(service.get(project.project_id).outline)
+
+    async def test_domain_invalid_question_is_rejected_inside_retry(self):
+        class InvalidRecommendationProvider(FixtureProvider):
+            async def generate(self, prompt, **kwargs):
+                result = await super().generate(prompt, **kwargs)
+                value = json.loads(result.text)
+                value['question']['recommended_index'] = 2
+                result.text = json.dumps(value)
+                return result
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = InvalidRecommendationProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            with self.assertRaisesRegex(ProviderFailure, '推荐项不存在'):
+                await service.generate(service.get(project.project_id), '生成问题。', GrillReply)
+            self.assertEqual(provider.calls, 2)
+
+    async def test_transport_failure_is_not_retried(self):
+        class OfflineProvider(FixtureProvider):
+            async def generate(self, prompt, **kwargs):
+                self.calls += 1
+                raise ProviderFailure('OPENAI_NETWORK_ERROR', '无法连接服务。')
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = OfflineProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            with self.assertRaises(ProviderFailure) as caught:
+                await service.generate(service.get(project.project_id), '生成问题。', GrillReply)
+            self.assertEqual(caught.exception.code, 'OPENAI_NETWORK_ERROR')
+            self.assertEqual(provider.calls, 1)
 
     async def test_concise_alignment_stops_after_two_questions(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -270,6 +549,32 @@ class JourneySmoke(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(state.messages[-2].reply_to, question.id)
             with self.assertRaises(HTTPException):
                 await service.command(project.project_id, JourneyCommand(request_id='duplicate-answer', expected_revision=state.revision, operation='message', question_message_id=question.id, option_index=1))
+
+    async def test_question_cannot_be_answered_after_its_step_has_ended(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            folders = SqliteWorkspaceRepository(root/'state.sqlite3')
+            project = folders.create_folder_project(root, 'project')
+            provider = FixtureProvider()
+            service = PlanningJourneyService(root/'state.sqlite3', folders, provider)
+            state = service.get(project.project_id)
+            question = JourneyMessage(id='old-question', role='assistant', text='先确定属性。',
+                created_at='2026-09-07T00:00:00Z', question=PlanningQuestion(
+                    prompt='角色属性项怎么设计？', recommended_index=0,
+                    options=[QuestionOption(label='少量可感属性', description='四到五项'),
+                             QuestionOption(label='细分多属性', description='七项以上')]))
+            state.messages = [question]
+            state.stage = 'cards'
+            with service.connection() as database:
+                database.execute('INSERT OR REPLACE INTO design_journeys VALUES (?,?)',
+                                 (project.project_id, state.model_dump_json()))
+            with self.assertRaises(HTTPException) as caught:
+                await service.command(project.project_id, JourneyCommand(request_id='stale-answer',
+                    expected_revision=0, operation='message', question_message_id=question.id,
+                    option_index=0))
+            self.assertEqual(caught.exception.status_code, 409)
+            self.assertIn('步骤已经结束', caught.exception.detail)
+            self.assertEqual(provider.calls, 0)
 
     async def test_folder_to_v1_cards_and_reopen(self):
         with tempfile.TemporaryDirectory() as temporary:

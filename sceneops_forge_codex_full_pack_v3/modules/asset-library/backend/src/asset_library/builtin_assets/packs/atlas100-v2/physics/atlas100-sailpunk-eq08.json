@@ -1,0 +1,546 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-sailpunk-eq08",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 19.749,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 1,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-eq08:p0",
+      "center_m": [
+        -0.18564,
+        0.0819,
+        0.00819
+      ],
+      "half_extents_m": [
+        0.1365,
+        0.0819,
+        0.25662
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 1,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-eq08:p1",
+      "center_m": [
+        -0.18564,
+        0.34944,
+        -0.12285
+      ],
+      "half_extents_m": [
+        0.13104,
+        0.22932,
+        0.14196
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 1,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-eq08:p2",
+      "center_m": [
+        -0.18564,
+        0.52416,
+        0.03003
+      ],
+      "half_extents_m": [
+        0.1092,
+        0.03276,
+        0.0273
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": 2,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-eq08:p3",
+      "center_m": [
+        0.18564,
+        0.0819,
+        0.00819
+      ],
+      "half_extents_m": [
+        0.1365,
+        0.0819,
+        0.25662
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 2,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-eq08:p4",
+      "center_m": [
+        0.18564,
+        0.34944,
+        -0.12285
+      ],
+      "half_extents_m": [
+        0.13104,
+        0.22932,
+        0.14196
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": 2,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-eq08:p5",
+      "center_m": [
+        0.18564,
+        0.52416,
+        0.03003
+      ],
+      "half_extents_m": [
+        0.1092,
+        0.03276,
+        0.0273
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "feet_pair",
+      "grip_position_m": [
+        0.0,
+        0.11575200000000002,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "left_ankle",
+        "parent": 0,
+        "pivot": [
+          -0.16107,
+          0.260442,
+          0.0
+        ]
+      },
+      {
+        "name": "right_ankle",
+        "parent": 0,
+        "pivot": [
+          0.16107,
+          0.260442,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": true,
+        "tracks": [
+          {
+            "joint": 1,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0,
+              0.25,
+              0.5,
+              0.75,
+              1.0
+            ]
+          },
+          {
+            "joint": 2,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0,
+              0.25,
+              0.5,
+              0.75,
+              1.0
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "feet_pair",
+      "grip_position_m": [
+        0.0,
+        0.11575200000000002,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "rigid weights, articulated parts",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-sailpunk-eq08.glb",
+      "triangle_count": 72,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "dc633c10d9ea72aa331d178a0c7afead0020ddc44f3f10f3739ea9074348d01a",
+      "byte_size": 43336
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-sailpunk-eq08.lod1.glb",
+      "triangle_count": 60,
+      "part_count": 5,
+      "distance_m": 3.22,
+      "sha256": "ce5422fdbe6303e95fd28be867206e5476e5b55d3d4d9323d7641cc81c338c2c",
+      "byte_size": 41860
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-sailpunk-eq08.lod2.glb",
+      "triangle_count": 48,
+      "part_count": 4,
+      "distance_m": 7.73,
+      "sha256": "0122a10c181174baeda19b9ba46bcf1e192229230dfd2982156ec8a78a9c61d2",
+      "byte_size": 40384
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.32214,
+      0.0,
+      -0.26481
+    ],
+    "max": [
+      0.32214,
+      0.57876,
+      0.26481
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

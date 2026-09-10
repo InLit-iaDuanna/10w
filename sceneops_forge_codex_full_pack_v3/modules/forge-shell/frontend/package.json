@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test src/tests/*.test.ts",
+    "test": "node ../../../scripts/frontend-test.mjs src/tests",
     "test:bridge": "node --experimental-strip-types --test ../../../apps/web/src/shell/tests/*.test.ts",
     "typecheck": "tsc --project tsconfig.json"
   },

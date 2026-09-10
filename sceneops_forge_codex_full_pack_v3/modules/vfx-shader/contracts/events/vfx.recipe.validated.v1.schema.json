@@ -1,4 +1,6 @@
 {
+  "x-event-type": "vfx.recipe.validated",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://vfx-shader/events/vfx.recipe.validated@1",
   "title": "VFX recipe validated event intent",

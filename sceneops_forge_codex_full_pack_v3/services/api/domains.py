@@ -68,7 +68,16 @@ def compose_domains(app, repository, data_dir: Path):
                 planned_cards=len(state.cards), card_branches=len(state.card_branches),
                 milestones={version.commit: f"策划 v{version.number}" for version in state.git_versions},
                 branch_labels={branch.branch: card_titles.get(branch.card_id, branch.card_id)
-                    for branch in state.card_branches})
+                    for branch in state.card_branches},
+                title=state.outline.title if state.outline else None,
+                cards=tuple(dict(card_id=card.id, title=card.title, description=card.description,
+                    acceptance=card.acceptance, dependencies=tuple(card.dependencies),
+                    branches=tuple(branch.branch for branch in state.card_branches if branch.card_id == card.id))
+                    for card in state.cards),
+                versions=tuple(dict(number=version.number, title=version.outline.title,
+                    confirmed_at=version.confirmed_at,
+                    commit=next((item.commit for item in state.git_versions if item.number == version.number), None))
+                    for version in state.versions))
 
         def compose_review(sample):
             router = review_router(database, project_id, sample)

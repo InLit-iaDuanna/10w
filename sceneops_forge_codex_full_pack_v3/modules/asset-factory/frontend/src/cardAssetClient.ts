@@ -42,7 +42,8 @@ export const cardAssetClient = {
   plan: (projectId: string, cardId: string, body: {session_id:string; transcript:{role:string;text:string}[]; reference_id?:string}) =>
     requestJson<CardAssetProposal>(`/api/card-assets/${encodeURIComponent(projectId)}/${encodeURIComponent(cardId)}/plans`, {body}),
   liveUpdate: (projectId: string, cardId: string, body: LiveModelUpdateRequest) =>
-    requestJson<LiveModelUpdateResult>(`/api/card-assets/${encodeURIComponent(projectId)}/${encodeURIComponent(cardId)}/live-updates`, {body}),
+    requestJson<LiveModelUpdateResult>(`/api/card-assets/${encodeURIComponent(projectId)}/${encodeURIComponent(cardId)}/live-updates`,
+      {body, timeoutMs:610000}),
   generate: (proposalId: string) => requestJson<CardAssetRecord>(
     `/api/card-assets/proposals/${encodeURIComponent(proposalId)}/generate`, {body:{}}),
   normalize: (assetId: string, target: number) => requestJson<CardAssetRecord>(

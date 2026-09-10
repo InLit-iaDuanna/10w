@@ -1,10 +1,11 @@
 """Contract/persistence/provider cases; only explicitly reported focused cases are run."""
 import asyncio
+import json
 import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from conversation_home.ai_repository import AIRepository
 from conversation_home.unified_router import ADVICE_PROMPTS
@@ -74,6 +75,24 @@ class UnifiedPersistenceTests(unittest.TestCase):
             self.assertFalse(reopened.settings().streaming)
             self.assertEqual(reopened.settings().alignment_detail, 'concise')
 
+    def test_codebuddy_reasoning_effort_is_persisted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'workspace.sqlite3'
+            service = ProviderService(path)
+            service.update_settings(reasoning_effort='high')
+            reopened = ProviderService(path)
+            self.assertEqual(reopened.settings().reasoning_effort, 'high')
+
+    def test_agent_timeout_defaults_to_unlimited_and_can_be_changed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'workspace.sqlite3'
+            service = ProviderService(path)
+            self.assertIsNone(service.settings().agent_timeout_minutes)
+            service.update_settings(agent_timeout_minutes=90, update_agent_timeout=True)
+            self.assertEqual(ProviderService(path).settings().agent_timeout_minutes, 90)
+            service.update_settings(agent_timeout_minutes=None, update_agent_timeout=True)
+            self.assertIsNone(ProviderService(path).settings().agent_timeout_minutes)
+
     def test_external_plain_http_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             service = ProviderService(Path(directory) / 'workspace.sqlite3')
@@ -83,16 +102,26 @@ class UnifiedPersistenceTests(unittest.TestCase):
 
 
 class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
+    def stream_process(self, stdout, stderr=b'', *, returncode=0):
+        process = Mock()
+        process.returncode = returncode
+        process.stdin = Mock(drain=AsyncMock())
+        process.stdout, process.stderr = asyncio.StreamReader(), asyncio.StreamReader()
+        process.wait = AsyncMock(return_value=0)
+        process.stdout.feed_data(stdout)
+        process.stdout.feed_eof()
+        process.stderr.feed_data(stderr)
+        process.stderr.feed_eof()
+        return process
+
     async def test_default_model_omitted_and_tools_disabled(self):
-        process = AsyncMock()
-        process.returncode = 0
-        process.communicate.return_value = (b'''[
-            {"type":"message","role":"user","content":"fixture prompt"},
-            {"type":"reasoning","content":"fixture reasoning"},
-            {"type":"message","role":"assistant","content":"fixture text"},
-            {"type":"result","subtype":"success","result":"fixture text","is_error":false}
-        ]''', b'credential-like diagnostic')
-        with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
+        process = self.stream_process(b'\n'.join(json.dumps(event).encode() for event in [
+            {"type": "message", "role": "user", "content": "fixture prompt"},
+            {"type": "reasoning", "content": "fixture reasoning"},
+            {"type": "message", "role": "assistant", "content": "fixture text"},
+            {"type": "result", "subtype": "success", "result": "fixture text", "is_error": False},
+        ]), b'credential-like diagnostic')
+        with patch('sceneops_codebuddy.provider.resolve_cli_executable', return_value='/fixture/codebuddy'), \
              patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process) as spawn:
             self.assertEqual(await complete('fixture prompt'), 'fixture text')
         args = spawn.call_args.args
@@ -101,22 +130,20 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('--strict-mcp-config', args)
         self.assertEqual(args[args.index('--mcp-config') + 1], '{"mcpServers":{}}')
         self.assertNotIn('--dangerously-skip-permissions', args)
-        process.communicate.assert_awaited_once_with(b'fixture prompt')
+        process.stdin.write.assert_called_once_with(b'fixture prompt')
+        process.stdin.drain.assert_awaited_once()
+        process.stdin.close.assert_called_once()
 
     async def test_single_result_object_remains_compatible(self):
-        process = AsyncMock()
-        process.returncode = 0
-        process.communicate.return_value = (
-            b'{"type":"result","subtype":"success","result":"legacy fixture","is_error":false}', b'')
-        with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
+        process = self.stream_process(
+            b'{"type":"result","subtype":"success","result":"legacy fixture","is_error":false}')
+        with patch('sceneops_codebuddy.provider.resolve_cli_executable', return_value='/fixture/codebuddy'), \
              patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process):
             self.assertEqual(await complete('fixture prompt'), 'legacy fixture')
 
     async def test_failed_cli_is_categorized_without_stderr(self):
-        process = AsyncMock()
-        process.returncode = 1
-        process.communicate.return_value = (b'', b'401 secret credential')
-        with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
+        process = self.stream_process(b'', b'401 secret credential', returncode=1)
+        with patch('sceneops_codebuddy.provider.resolve_cli_executable', return_value='/fixture/codebuddy'), \
              patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process):
             with self.assertRaises(CodeBuddyFailure) as failure:
                 await complete('fixture prompt', 'hy3')
@@ -124,11 +151,10 @@ class UnifiedProviderTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('secret', str(failure.exception))
 
     async def test_cancellation_stops_process(self):
-        process = AsyncMock()
+        process = self.stream_process(b'', returncode=None)
         process.pid = 123
-        process.returncode = None
-        process.communicate.side_effect = asyncio.CancelledError()
-        with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
+        process.stdout.set_exception(asyncio.CancelledError())
+        with patch('sceneops_codebuddy.provider.resolve_cli_executable', return_value='/fixture/codebuddy'), \
              patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process), \
              patch('sceneops_codebuddy.provider.os.killpg') as kill:
             with self.assertRaises(asyncio.CancelledError):

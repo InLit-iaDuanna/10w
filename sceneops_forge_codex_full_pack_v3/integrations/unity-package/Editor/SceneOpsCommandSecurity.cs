@@ -22,6 +22,7 @@ namespace SceneOps.Forge.Unity.Editor
     {
         internal static readonly HashSet<string> CommandAllowlist = new HashSet<string>(StringComparer.Ordinal)
         {
+            "unity.content.import", "unity.content.inspect", "unity.content.edit", "unity.content.focus", "unity.content.save", "unity.content.play",
             "unity.prototype.compose", "unity.prototype.inspect", "unity.prototype.play", "unity.prototype.capture",
             "unity.health",
             "unity.project.scan",
@@ -43,6 +44,7 @@ namespace SceneOps.Forge.Unity.Editor
 
         internal static readonly HashSet<string> MutatingCommands = new HashSet<string>(StringComparer.Ordinal)
         {
+            "unity.content.import", "unity.content.edit", "unity.content.focus", "unity.content.save", "unity.content.play",
             "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
             "unity.asset.import",
             "unity.identity.map",
@@ -58,6 +60,7 @@ namespace SceneOps.Forge.Unity.Editor
 
         internal static readonly HashSet<string> ApprovalCommands = new HashSet<string>(StringComparer.Ordinal)
         {
+            "unity.content.import", "unity.content.edit", "unity.content.focus", "unity.content.save", "unity.content.play",
             "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
             "unity.asset.import",
             "unity.identity.map",

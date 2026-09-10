@@ -53,6 +53,7 @@ export interface IntegratedWorkbenchProps {
     payload: Record<string, JsonValue>;
   };
   onSave(payload: Record<string, JsonValue>): Promise<void>;
+  onRegisterInput?(file:File):Promise<{id:string;path:string;name:string}>;
   onContextChange(patch: Partial<WorkbenchContext>): void;
   onDirtyChange(dirty: boolean): void;
   suspended: boolean;
@@ -313,3 +314,11 @@ export interface AreaHeaderContract {
   >;
 }
 export { MarkdownMessage } from './MarkdownMessage.tsx';
+
+export { ComposerMenu } from './ComposerMenu.tsx';
+
+export { ChatComposer } from './ChatComposer.tsx';
+export { ChatMessageActions } from './ChatMessageActions.tsx';
+
+export { DomainConversationTarget, DomainConversationTurns, useDomainConversation } from './DomainConversation';
+export type { DomainConversationPort } from './DomainConversation';

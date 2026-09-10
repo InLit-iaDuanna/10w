@@ -46,6 +46,7 @@ class ManifestAndContractTests(unittest.TestCase):
             "VersionCollaborationService",
             "VersionReference",
             "create_router",
+            "create_demo_app",
             "version_collaboration_exception_handler",
         }
 

@@ -1,0 +1,12 @@
+SceneOps Haven Kit — original procedural geometry, scene layouts and previews
+Copyright 2026 SceneOps contributors
+
+To the extent possible under law, the authors have waived all copyright and
+related or neighboring rights to the assets, metadata, previews and generator
+source in this kit under CC0 1.0 Universal.
+
+You may copy, modify, distribute and use this work, including commercially,
+without asking permission. The work is provided without warranty.
+
+Full legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+No third-party meshes, textures, fonts, models or image assets are included.

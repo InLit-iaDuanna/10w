@@ -9,6 +9,16 @@ from sceneops_ai_provider.service import SYSTEM_PROMPT
 
 
 class ProviderSwitchSmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_codex_discovery_is_cached_for_the_model_picker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            service = ProviderService(Path(directory) / 'settings.sqlite3')
+            with patch('sceneops_ai_provider.codex_cli.list_models', new=AsyncMock(
+                    return_value=[('gpt-a', 'GPT A'), ('gpt-b', 'GPT B')])):
+                discovered = await service.discover_models(provider='codexcli')
+            self.assertEqual([item.id for item in discovered], ['cli-default', 'gpt-a', 'gpt-b'])
+            self.assertIn(('gpt-a', 'GPT A'), [(item.id, item.label) for item in service.models()
+                                               if item.provider == 'codexcli'])
+
     async def test_round_trip_keeps_models_and_routes_codex(self):
         with tempfile.TemporaryDirectory() as directory:
             service = ProviderService(Path(directory) / 'settings.sqlite3')

@@ -14,6 +14,7 @@ from .service import (
     ProviderCompletion,
     ProviderFailure,
     ProviderModel,
+    ReasoningEffort,
     SYSTEM_PROMPT,
     _safe_usage,
 )
@@ -31,7 +32,8 @@ def _image_url(path: Path) -> str:
 
 
 def _chat_payload(prompt: str, model: str, schema: dict | None,
-                  image_paths: list[Path], system_prompt: str) -> dict[str, Any]:
+                  image_paths: list[Path], system_prompt: str,
+                  reasoning_effort: ReasoningEffort) -> dict[str, Any]:
     user_content: str | list[dict[str, Any]] = prompt
     if image_paths:
         user_content = [{'type': 'text', 'text': prompt}]
@@ -43,6 +45,7 @@ def _chat_payload(prompt: str, model: str, schema: dict | None,
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_content},
         ],
+        'reasoning_effort': reasoning_effort,
     }
     if schema is not None:
         payload['response_format'] = {
@@ -53,7 +56,8 @@ def _chat_payload(prompt: str, model: str, schema: dict | None,
 
 
 def _responses_payload(prompt: str, model: str, schema: dict | None,
-                       image_paths: list[Path], system_prompt: str) -> dict[str, Any]:
+                       image_paths: list[Path], system_prompt: str,
+                       reasoning_effort: ReasoningEffort) -> dict[str, Any]:
     input_value: str | list[dict[str, Any]] = prompt
     if image_paths:
         content: list[dict[str, Any]] = [{'type': 'input_text', 'text': prompt}]
@@ -65,6 +69,7 @@ def _responses_payload(prompt: str, model: str, schema: dict | None,
         'instructions': system_prompt,
         'input': input_value,
         'store': False,
+        'reasoning': {'effort': reasoning_effort},
     }
     if schema is not None:
         payload['text'] = {'format': {
@@ -78,10 +83,13 @@ def _responses_payload(prompt: str, model: str, schema: dict | None,
 
 def build_payload(api_protocol: ApiProtocol, prompt: str, model: str,
                   schema: dict | None, image_paths: list[Path],
-                  system_prompt: str = SYSTEM_PROMPT) -> dict[str, Any]:
+                  system_prompt: str = SYSTEM_PROMPT,
+                  reasoning_effort: ReasoningEffort = 'low') -> dict[str, Any]:
     if api_protocol == 'responses':
-        return _responses_payload(prompt, model, schema, image_paths, system_prompt)
-    return _chat_payload(prompt, model, schema, image_paths, system_prompt)
+        return _responses_payload(prompt, model, schema, image_paths, system_prompt,
+                                  reasoning_effort)
+    return _chat_payload(prompt, model, schema, image_paths, system_prompt,
+                         reasoning_effort)
 
 
 def _raise_for_status(response: httpx.Response, api_protocol: ApiProtocol | None = None) -> None:
@@ -154,9 +162,11 @@ def _structured(text: str, schema: dict | None) -> dict | None:
 async def generate_completion(*, base_url: str, api_key: str, api_protocol: ApiProtocol,
                               prompt: str, model: str, schema: dict | None,
                               image_paths: list[Path], timeout: float,
-                              on_event=None, system_prompt: str = SYSTEM_PROMPT) -> ProviderCompletion:
+                              on_event=None, system_prompt: str = SYSTEM_PROMPT,
+                              reasoning_effort: ReasoningEffort = 'low') -> ProviderCompletion:
     endpoint = base_url + ('/responses' if api_protocol == 'responses' else '/chat/completions')
-    payload = build_payload(api_protocol, prompt, model, schema, image_paths, system_prompt)
+    payload = build_payload(api_protocol, prompt, model, schema, image_paths,
+                            system_prompt, reasoning_effort)
     started = time.monotonic()
     if on_event is not None:
         from .openai_stream import stream_completion

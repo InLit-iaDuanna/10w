@@ -121,27 +121,30 @@ async def _chat_events(response, on_event):
 
 
 async def _response_events(response, on_event):
-    content, final_response = [], None
+    final_response = None
     async for data in _events(response):
+        if data == '[DONE]':
+            break
         event = json.loads(data)
         if not isinstance(event, dict):
             raise ValueError('Invalid response event')
         event_type = event.get('type')
         if event_type == 'response.output_text.delta':
             delta = event.get('delta')
-            if not isinstance(delta, str) or not delta:
+            if not isinstance(delta, str):
                 raise ValueError('Invalid text delta')
-            content.append(delta)
-            await on_event({'type': 'text_delta', 'text': delta})
+            if delta:
+                await on_event({'type': 'text_delta', 'text': delta})
         elif event_type == 'response.completed':
             final_response = event.get('response')
             break
         elif event_type in ('response.failed', 'response.incomplete', 'error'):
             raise ProviderFailure('OPENAI_RESPONSE_FAILED',
                                   '兼容服务未完成本次 Response，请检查模型与服务状态。')
+    if final_response is None:
+        raise ProviderFailure('OPENAI_STREAM_INCOMPLETE',
+                              '兼容服务流已结束，但未收到 response.completed 完成事件；本次回复未保存，请重试。')
     final_text = _response_text(final_response)
-    if ''.join(content) != final_text:
-        raise ValueError('Streamed text does not match completed response')
     usage = _safe_usage(final_response.get('usage')) if isinstance(final_response, dict) else None
     return final_text, usage
 

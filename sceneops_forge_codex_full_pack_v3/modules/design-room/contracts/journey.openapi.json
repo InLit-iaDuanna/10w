@@ -218,6 +218,70 @@
         ],
         "title": "CardBranch"
       },
+      "CardConversation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyMessage"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "summary_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary Id"
+          },
+          "start_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Id"
+          },
+          "draft": {
+            "type": "string",
+            "title": "Draft",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "CardConversation"
+      },
       "CardModelingSession": {
         "properties": {
           "id": {
@@ -273,6 +337,62 @@
         ],
         "title": "CardModelingSession",
         "description": "A card-owned design conversation, never evidence of a produced model."
+      },
+      "DemoDirectionDraft": {
+        "properties": {
+          "core_experience": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Core Experience"
+          },
+          "perspective_style": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Perspective Style"
+          },
+          "simplified_scope": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Simplified Scope"
+          },
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "camera_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fit-scene",
+                  "follow-player",
+                  "first-person",
+                  "side-scroll"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "core_experience",
+          "perspective_style",
+          "simplified_scope",
+          "code_architecture"
+        ],
+        "title": "DemoDirectionDraft"
       },
       "GameProjectScaffold": {
         "properties": {
@@ -525,6 +645,80 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "InitialDemoDirection": {
+        "properties": {
+          "direction_id": {
+            "type": "string",
+            "pattern": "^direction_[a-f0-9]{32}$",
+            "title": "Direction Id"
+          },
+          "core_experience": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Core Experience"
+          },
+          "perspective_style": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Perspective Style"
+          },
+          "target_platform": {
+            "type": "string",
+            "const": "web",
+            "title": "Target Platform",
+            "default": "web"
+          },
+          "code_architecture": {
+            "type": "string",
+            "enum": [
+              "object-component",
+              "ecs"
+            ],
+            "title": "Code Architecture"
+          },
+          "simplified_scope": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Simplified Scope"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": true
+          },
+          "camera_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fit-scene",
+                  "follow-player",
+                  "first-person",
+                  "side-scroll"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "direction_id",
+          "core_experience",
+          "perspective_style",
+          "code_architecture",
+          "simplified_scope"
+        ],
+        "title": "InitialDemoDirection",
+        "description": "A confirmed first-demo scope; it is not a full GDD or production result."
+      },
       "JourneyChange": {
         "properties": {
           "id": {
@@ -615,14 +809,22 @@
               "message",
               "save_draft",
               "start_grill",
+              "start_card_alignment",
+              "finish_card_alignment",
               "generate_outline",
               "save_outline",
+              "confirm_demo_direction",
+              "discuss_game",
+              "set_execution_policy",
+              "organize_production",
               "confirm_version",
               "confirm_stack",
               "recommend_architecture",
               "confirm_technical_plan",
               "generate_cards",
               "save_cards",
+              "save_domain",
+              "assign_card_domains",
               "accept_change",
               "reject_change",
               "select_card",
@@ -632,15 +834,83 @@
               "new_modeling",
               "open_modeling",
               "close_modeling",
-              "confirm_demo_direction"
+              "new_conversation",
+              "select_conversation",
+              "delete_conversation"
             ],
             "title": "Operation"
+          },
+          "domain_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "planning",
+                  "assets-animation",
+                  "world",
+                  "gameplay",
+                  "lookdev",
+                  "ui-audio",
+                  "delivery"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Id"
+          },
+          "domain_work": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductionDomainWork"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "domain_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "planning",
+                    "assets-animation",
+                    "world",
+                    "gameplay",
+                    "lookdev",
+                    "ui-audio",
+                    "delivery"
+                  ]
+                },
+                "type": "array",
+                "maxItems": 7
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Ids"
           },
           "text": {
             "type": "string",
             "maxLength": 16000,
             "title": "Text",
             "default": ""
+          },
+          "main_scroll_top": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Main Scroll Top"
           },
           "outline": {
             "anyOf": [
@@ -707,6 +977,17 @@
             ],
             "title": "Card Id"
           },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
           "change_id": {
             "anyOf": [
               {
@@ -756,36 +1037,6 @@
             ],
             "title": "Context Draft"
           },
-          "code_architecture": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "object-component",
-                  "ecs"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Code Architecture"
-          },
-          "selection_method": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "manual",
-                  "ai"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Selection Method"
-          },
           "core_experience": {
             "anyOf": [
               {
@@ -821,6 +1072,68 @@
               }
             ],
             "title": "Simplified Scope"
+          },
+          "code_architecture": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object-component",
+                  "ecs"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Architecture"
+          },
+          "selection_method": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "manual",
+                  "ai"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selection Method"
+          },
+          "execution_policy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ask",
+                  "full-access"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Policy"
+          },
+          "camera_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "fit-scene",
+                  "follow-player",
+                  "first-person",
+                  "side-scroll"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Mode"
           }
         },
         "additionalProperties": false,
@@ -1093,12 +1406,70 @@
             "title": "Stage",
             "default": "idea"
           },
+          "production_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductionBasis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "messages": {
             "items": {
               "$ref": "#/components/schemas/JourneyMessage"
             },
             "type": "array",
             "title": "Messages"
+          },
+          "card_conversations": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/CardConversation"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Card Conversations"
+          },
+          "active_conversation_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Active Conversation Ids"
+          },
+          "card_messages": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/JourneyMessage"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Card Messages"
+          },
+          "card_alignment_summaries": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Card Alignment Summaries"
+          },
+          "card_alignment_summary_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Card Alignment Summary Ids"
+          },
+          "card_alignment_start_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Card Alignment Start Ids"
           },
           "outline": {
             "anyOf": [
@@ -1129,6 +1500,35 @@
             ],
             "title": "Stack"
           },
+          "initial_demo_direction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InitialDemoDirection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "demo_direction_draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemoDirectionDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "execution_policy": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "full-access"
+            ],
+            "title": "Execution Policy",
+            "default": "ask"
+          },
           "technical_plan": {
             "anyOf": [
               {
@@ -1156,6 +1556,24 @@
             "type": "array",
             "title": "Cards"
           },
+          "domain_work": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ProductionDomainWork"
+            },
+            "propertyNames": {
+              "enum": [
+                "planning",
+                "assets-animation",
+                "world",
+                "gameplay",
+                "lookdev",
+                "ui-audio",
+                "delivery"
+              ]
+            },
+            "type": "object",
+            "title": "Domain Work"
+          },
           "composer_draft": {
             "type": "string",
             "title": "Composer Draft",
@@ -1165,6 +1583,18 @@
             "type": "integer",
             "title": "Model Calls",
             "default": 0
+          },
+          "production_preparation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Production Preparation"
           },
           "git_versions": {
             "items": {
@@ -1190,6 +1620,12 @@
               }
             ],
             "title": "Active Card Id"
+          },
+          "main_scroll_top": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Main Scroll Top",
+            "default": 0
           },
           "changes": {
             "items": {
@@ -1220,16 +1656,6 @@
             "type": "string",
             "title": "Cost Notice",
             "default": "每次发送或生成通常调用一次所选模型；结构化结果校验失败时，系统会把错误原因告知同一模型并自动重试一次。费用未知，不自动切换提供方。"
-          },
-          "initial_demo_direction": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/InitialDemoDirection"
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         },
         "additionalProperties": false,
@@ -1273,6 +1699,25 @@
         ],
         "title": "PlanningQuestion"
       },
+      "ProductionBasis": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "workspace_id"
+        ],
+        "title": "ProductionBasis"
+      },
       "ProductionCard": {
         "properties": {
           "id": {
@@ -1311,6 +1756,31 @@
             "const": "planned",
             "title": "Status",
             "default": "planned"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Source Ids"
+          },
+          "domain_ids": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "planning",
+                "assets-animation",
+                "world",
+                "gameplay",
+                "lookdev",
+                "ui-audio",
+                "delivery"
+              ]
+            },
+            "type": "array",
+            "maxItems": 7,
+            "title": "Domain Ids"
           }
         },
         "additionalProperties": false,
@@ -1322,6 +1792,30 @@
           "acceptance"
         ],
         "title": "ProductionCard"
+      },
+      "ProductionDomainWork": {
+        "properties": {
+          "brief": {
+            "type": "string",
+            "maxLength": 8000,
+            "title": "Brief",
+            "default": ""
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "not-started",
+              "graybox",
+              "refinement",
+              "review"
+            ],
+            "title": "Stage",
+            "default": "not-started"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ProductionDomainWork"
       },
       "QuestionOption": {
         "properties": {
@@ -1385,63 +1879,6 @@
           "type"
         ],
         "title": "ValidationError"
-      },
-      "InitialDemoDirection": {
-        "properties": {
-          "direction_id": {
-            "type": "string",
-            "pattern": "^direction_[a-f0-9]{32}$",
-            "title": "Direction Id"
-          },
-          "core_experience": {
-            "type": "string",
-            "maxLength": 8000,
-            "minLength": 1,
-            "title": "Core Experience"
-          },
-          "perspective_style": {
-            "type": "string",
-            "maxLength": 4000,
-            "minLength": 1,
-            "title": "Perspective Style"
-          },
-          "target_platform": {
-            "type": "string",
-            "const": "web",
-            "title": "Target Platform",
-            "default": "web"
-          },
-          "code_architecture": {
-            "type": "string",
-            "enum": [
-              "object-component",
-              "ecs"
-            ],
-            "title": "Code Architecture"
-          },
-          "simplified_scope": {
-            "type": "string",
-            "maxLength": 8000,
-            "minLength": 1,
-            "title": "Simplified Scope"
-          },
-          "confirmed": {
-            "type": "boolean",
-            "title": "Confirmed",
-            "default": true
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "direction_id",
-          "core_experience",
-          "perspective_style",
-          "code_architecture",
-          "simplified_scope"
-        ],
-        "title": "InitialDemoDirection",
-        "description": "A confirmed first-demo scope; it is not a full GDD or production result."
       }
     }
   }

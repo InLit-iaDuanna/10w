@@ -13,6 +13,7 @@ export type AIConnectionResult = components['schemas']['AIConnectionResult'];
 export type AIProviderModelsRequest = components['schemas']['AIProviderModelsRequest'];
 export type AIProviderModels = components['schemas']['AIProviderModels'];
 export type AIModuleDocument = Record<string, components['schemas']['JsonValue']>;
+export type LocalApiRepairResult = { state: 'ready'; message: string };
 export const aiKeys = {
   models: ['unified-ai', 'models'] as const,
   settings: ['unified-ai', 'settings'] as const,
@@ -26,6 +27,10 @@ export const readProviderModels = (body: AIProviderModelsRequest, signal: AbortS
   requestJson<AIProviderModels>('/api/ai/provider/models', { body, signal });
 export const checkProvider = (body: AIConnectionRequest, signal: AbortSignal) =>
   requestJson<AIConnectionResult>('/api/ai/provider/check', { body, signal });
+export const repairLocalApi = (signal: AbortSignal) =>
+  requestJson<LocalApiRepairResult>('/__sceneops/runtime/restart-api', {
+    body: {}, signal, timeoutMs: 70000,
+  });
 export const readConversation = (projectId: string | null, signal?: AbortSignal) =>
   requestJson<AIConversation>(`/api/ai/conversation${projectId ? `?project_id=${encodeURIComponent(projectId)}` : ''}`, { signal });
 

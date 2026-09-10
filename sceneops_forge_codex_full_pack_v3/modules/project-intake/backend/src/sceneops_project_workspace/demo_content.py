@@ -16,16 +16,24 @@ EMPTY_DEMO_CONTENT = {
 
 
 def demo_content_source(manifest: dict) -> str:
+    from world_composer import scene_lighting_game_source
+    runtime = GLB_RUNTIME
+    lookdev_import = ''
+    if manifest.get('lookdev'):
+        lookdev_import = "import {applyProjectLookdev} from './sceneops-lookdev'"
+        runtime = runtime.replace('  const root = new THREE.Group(); root.add(gltf.scene); root.animations = gltf.animations',
+            '  await applyProjectLookdev(gltf,asset.asset_id,asset.asset_version,options?.instanceId,options?.validate)\n  const root = new THREE.Group(); root.add(gltf.scene); root.animations = gltf.animations')
     payload = json.dumps(manifest, ensure_ascii=False, allow_nan=False, indent=2)
     return f"""// Generated from SceneOps asset and scene versions. Edit those sources, then update the Demo.
 import * as THREE from 'three'
 import {{ GLTFLoader }} from 'three/examples/jsm/loaders/GLTFLoader.js'
+{lookdev_import}
 
 export type DoorRecipe = {{ kind: 'door-v1'; seed: 0; width_m: number; height_m: number; thickness_m: number; material: {{ color_hex: string; roughness: number; metalness: number }} }}
 export type KeyDoorBehavior = {{ behavior_instance_id: string; kind: 'KeyDoor'; definition_id: 'KeyDoor@1'; required_key_asset_id: string; interaction_distance_m: number; open_angle_deg: number }}
-export type DemoAsset = {{ asset_id: string; asset_version: number; asset_version_id: string | null; source_kind: 'file'|'procedural'|'blender'; dimensions_m: [number,number,number]; recipe: DoorRecipe | null; runtime_artifacts: Array<{{ artifact_id: string; artifact_type: 'render'|'collision'|'module'; project_relative_path: string; export_name?: string | null }}> }}
+export type DemoAsset = {{ asset_id: string; asset_version: number; asset_version_id: string | null; source_kind: 'file'|'procedural'|'blender'|'glb'; dimensions_m: [number,number,number]; recipe: DoorRecipe | null; runtime_artifacts: Array<{{ artifact_id: string; artifact_type: 'render'|'collision'|'module'; project_relative_path: string; export_name?: string | null }}> }}
 export type DemoObject = {{ id: string; asset_id: string; asset_version: number; asset_version_id: string | null; transform: {{ position_m: [number,number,number]; rotation_y_deg: number; scale: number }}; behavior: KeyDoorBehavior | null }}
-export type DemoContent = {{ schema_version: 1; project_id: string; workspace_id: string; scene_id: string; scene_version: number; assets: DemoAsset[]; objects: DemoObject[] }}
+export type DemoContent = {{ schema_version: 1; project_id: string; workspace_id: string; scene_id: string; scene_version: number; assets: DemoAsset[]; objects: DemoObject[]; entities?: Array<{{id:string;project_id:string;workspace_id:string;title:string;asset_reference:{{project_id:string;workspace_id:string;type:'asset';id:string;version:number;part_id:string|null}};material_interfaces:Record<string,string[]>;source_ids:string[];required_node_ids:string[];adoptions:Array<Record<string,unknown>>;builds:Array<Record<string,unknown>>;asset_id:string;adopted_asset_version:number;revision:number;feature_id:string}}> }}
 
 export const demoContent = {payload} as DemoContent
 
@@ -39,7 +47,8 @@ export function createDoorMesh(recipe: DoorRecipe) {{
   return mesh
 }}
 
-{GLB_RUNTIME}
+{runtime}
+{scene_lighting_game_source(manifest.get('lighting'))}
 export function distanceToDoor(player: THREE.Vector3, door: THREE.Object3D) {{
   const at = new THREE.Vector3(); door.getWorldPosition(at); at.y = player.y
   return at.distanceTo(player)
@@ -77,7 +86,7 @@ export function prepareDemoAsset(root: THREE.Object3D) {
   return root
 }
 
-export async function createDemoAsset(asset: DemoAsset): Promise<THREE.Object3D> {
+export async function createDemoAsset(asset: DemoAsset, options?: {instanceId?:string;entityDefinitionId?:string;validate?:(root:THREE.Object3D)=>Promise<void>}): Promise<THREE.Object3D> {
   if (asset.source_kind === 'procedural' && asset.recipe) {
     const root = new THREE.Group(), hinge = new THREE.Group(), leaf = createDoorMesh(asset.recipe)
     hinge.position.x = -asset.recipe.width_m / 2; leaf.position.x = asset.recipe.width_m / 2
@@ -91,8 +100,10 @@ export async function createDemoAsset(asset: DemoAsset): Promise<THREE.Object3D>
   if (!path || !path.startsWith('public/') || !path.endsWith('.glb') || path.split('/').some(part => part === '..' || !part) || path.includes('\\')) throw new Error('模型缺少有效 GLB 运行文件')
   const url = '/' + path.slice(7).split('/').map(encodeURIComponent).join('/')
   const gltf = await new GLTFLoader().loadAsync(url)
-  const root = new THREE.Group(); root.add(gltf.scene)
-  return prepareDemoAsset(root)
+  const root = new THREE.Group(); root.add(gltf.scene); root.animations = gltf.animations
+  let hasDoorRoles = false
+  root.traverse(node => { if (['frame','leaf','hinge'].includes(node.userData.sceneops_role)) hasDoorRoles = true })
+  return hasDoorRoles && !options?.entityDefinitionId ? prepareDemoAsset(root) : root
 }
 
 export function setDemoDoorOpen(root: THREE.Object3D, angleRadians: number) {

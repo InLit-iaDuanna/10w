@@ -1,10 +1,10 @@
 .workspace-folder-intake {
   position: relative;
   box-sizing: border-box;
-  height: 100%;
+  height: auto;
   min-width: 0;
   overflow: auto;
-  padding: clamp(18px, 3cqw, 32px);
+  padding: 28px;
 }
 
 .workspace-folder-intake svg {
@@ -123,6 +123,55 @@
   white-space: normal;
 }
 
+.workspace-folder-intake .workspace-recent-project-card {
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.workspace-folder-intake .workspace-recent-project-card.is-selected {
+  border-color: var(--accent-blue);
+}
+
+.workspace-project-open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  align-self: stretch;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.workspace-project-open > b {
+  flex: none;
+  white-space: nowrap;
+}
+
+.workspace-project-delete {
+  align-self: stretch;
+  min-width: 62px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.workspace-project-delete:hover:not(:disabled) {
+  background: color-mix(in srgb, #ef6a6a 10%, transparent);
+  color: #ef8b8b;
+}
+
 .workspace-projects-legacy {
   max-width: 760px;
   margin-top: 22px;
@@ -142,26 +191,14 @@
 }
 
 .workspace-project-dialog-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: start center;
-  overflow: auto;
-  padding: clamp(32px, 8vh, 84px) 18px 32px;
-  background: rgb(17 17 17 / 76%);
-  backdrop-filter: blur(4px);
+  display: block;
 }
 
 .workspace-project-dialog {
   display: grid;
-  gap: 18px;
-  width: min(520px, 100%);
-  padding: 20px;
-  border: 1px solid var(--border-default);
-  border-radius: 14px;
-  background: var(--surface-1);
-  box-shadow: 0 22px 70px rgb(0 0 0 / 38%);
+  gap: 22px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .workspace-project-dialog > header,
@@ -271,7 +308,7 @@
 }
 
 .workspace-folder-browser {
-  width: min(620px, 100%);
+  width: 100%;
   max-height: 100%;
   grid-template-rows: auto auto auto minmax(96px, 1fr) auto auto auto;
   overflow: hidden;
@@ -307,7 +344,7 @@
 }
 
 .workspace-folder-browser .workspace-folder-list {
-  max-height: none;
+  max-height: min(300px, 35vh);
 }
 
 .workspace-folder-list > button {
@@ -436,4 +473,60 @@
   .workspace-project-dialog-layer {
     padding: 12px;
   }
+}
+
+.workspace-project-modal {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--border-default);
+  border-radius: 20px;
+  background: var(--surface-1, #222);
+  color: var(--text-primary, #eee);
+  box-shadow: 0 28px 100px #0009, 0 0 0 1px #ffffff04;
+  font: inherit;
+  color-scheme: dark;
+}
+.workspace-project-modal::backdrop { background: #0008; backdrop-filter: blur(5px); }
+.workspace-delete-project > label { display: flex; align-items: center; gap: 8px; }
+.workspace-delete-project > p { color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+.workspace-delete-project .workspace-delete-path { overflow-wrap: anywhere; color: var(--text-primary); }
+.workspace-delete-project > .workspace-project-name { display: grid; }
+.workspace-project-modal button, .workspace-project-modal input { font: inherit; }
+.workspace-project-modal button { cursor: pointer; }
+.workspace-project-modal button:disabled { cursor: default; opacity: .45; }
+.workspace-project-modal button:focus-visible, .workspace-project-modal input:focus-visible, .workspace-project-modal summary:focus-visible { outline: 2px solid var(--text-secondary); outline-offset: 3px; }
+.workspace-project-modal .workspace-icon-button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: var(--text-muted); border-radius: 8px; }
+.workspace-modal-close { position: absolute; top: 18px; right: 18px; }
+.workspace-heading-icon { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: 18px; border: 1px solid var(--border-default); border-radius: 12px; background: var(--surface-2); }
+.workspace-heading-icon svg { width: 23px; height: 23px; }
+.workspace-project-modal .workspace-projects-toolbar { display: grid; gap: 24px; margin: 0 0 28px; }
+.workspace-projects-toolbar h2 { font-size: 22px; font-weight: 600; letter-spacing: -.5px; }
+.workspace-project-modal .workspace-projects-toolbar p { margin: 8px 0 0; font-size: 13px; color: var(--text-muted); }
+.workspace-project-modal .workspace-projects-toolbar-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+.workspace-project-modal .workspace-projects-toolbar-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 43px; border-radius: 10px; }
+.workspace-project-modal .workspace-project-list { gap: 4px; }
+.workspace-project-modal .workspace-recent-project-card { gap: 0; border-color: transparent; background: transparent; border-radius: 10px; }
+.workspace-project-modal .workspace-recent-project-card.is-selected { background: var(--surface-2); border-color: var(--border-subtle); }
+.workspace-project-modal .workspace-recent-project-card:hover { background: var(--surface-2); }
+.workspace-project-modal .workspace-project-open { padding: 13px 10px; gap: 12px; background: transparent; }
+.workspace-project-modal .workspace-recent-icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 8px; background: var(--surface-3); color: var(--text-secondary); }
+.workspace-project-modal .workspace-project-label { flex: 1; }
+.workspace-project-modal .workspace-project-label strong { font-size: 13px; font-weight: 550; }
+.workspace-project-modal .workspace-project-label small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
+.workspace-project-modal .workspace-project-delete { align-self: center; min-width: 28px; width: 28px; height: 28px; margin-right: 8px; padding: 5px; border: 0; border-radius: 6px; }
+.workspace-project-modal .workspace-projects-legacy { margin-top: 16px; font-size: 12px; }
+.workspace-project-modal .workspace-projects-codex-empty { min-height: 160px; padding: 20px 12px; }
+.workspace-project-modal .workspace-projects-codex-empty > div { display: none; }
+.workspace-project-modal .workspace-project-create { grid-template-columns: 1fr; }
+.workspace-project-modal .workspace-project-dialog h3 { font-size: 20px; font-weight: 600; }
+.workspace-project-modal .workspace-project-dialog header p { margin-top: 8px; line-height: 1.6; }
+.workspace-project-modal .workspace-project-name input { min-height: 44px; box-sizing: border-box; width: 100%; border-radius: 10px; padding: 10px 12px; }
+.workspace-project-modal .workspace-project-dialog footer { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--border-subtle); }
+.workspace-project-modal .workspace-project-dialog footer button { min-height: 38px; padding: 8px 16px; border-radius: 9px; }
+@media (max-width: 560px) {
+  .workspace-project-modal .workspace-folder-intake { padding: 24px 20px; }
+  .workspace-project-modal .workspace-project-dialog-layer { padding: 0; }
 }

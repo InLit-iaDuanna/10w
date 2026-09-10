@@ -54,12 +54,19 @@ async def dispatch(tools, invocation, cancellation):
                   if v['status'] in ('opening', 'editing')]
         if active:
             raise HarnessError('BLENDER_SOURCE_BUSY', '已有人工或 Agent 编辑候选，请先保存回流或取消。')
-        source = next(v for v in asset.versions if v.source_version == body.expected_version)
-        if source.source_kind not in ('procedural', 'blender'):
+        selected = next(v for v in asset.versions if v.source_version == body.expected_version)
+        source = selected
+        if source.geometry_source_version is not None:
+            source = next(v for v in asset.versions if v.source_version == source.geometry_source_version)
+        # Until a native source exists, import the selected GLB with its registered
+        # material-slot identities. An older raw geometry GLB may predate Lookdev.
+        if source.source_kind == 'glb' and selected.lookdev_document_id:
+            source = selected.model_copy(update={'source_kind':'glb'})
+        if source.source_kind not in ('procedural', 'blender', 'glb'):
             raise HarnessError('BLENDER_SOURCE_UNSUPPORTED', '此资产尚无受支持的 Blender 编辑源。')
         session, auth = await authorized_session()
         cid = 'blend_' + uuid4().hex
-        nodes = source.node_ids or {role: 'node_' + uuid4().hex for role in ('frame', 'leaf', 'hinge')}
+        nodes = source.node_ids or ({role: 'node_' + uuid4().hex for role in ('frame', 'leaf', 'hinge')} if source.source_kind == 'procedural' else {})
         value = {'asset_id': asset.id, 'base_version': body.expected_version, 'owner': body.owner,
                  'status': 'opening', 'request_id': request_id, 'node_ids': nodes}
         store(service, task.id, cid, value)
@@ -67,6 +74,14 @@ async def dispatch(tools, invocation, cancellation):
             result = await tools.sync(session, 'bootstrap_door', request_id=request_id,
                 asset_id=asset.id, candidate_id=cid, node_ids=nodes,
                 recipe=source.recipe.model_dump(mode='json', exclude={'kind','seed'}), authorization=auth)
+        elif source.source_kind == 'glb':
+            from pathlib import Path
+            if service.lookdev is None:
+                raise HarnessError('LOOKDEV_UNAVAILABLE', '模型身份登记服务不可用，保留当前源。')
+            registered = service.lookdev.source(task.project_id, asset.id, body.expected_version)
+            await tools.sync(session, 'register_glb', candidate_id=cid, data=Path(registered).read_bytes())
+            result = await tools.sync(session, 'import_source', request_id=request_id,
+                asset_id=asset.id, candidate_id=cid, authorization=auth)
         else:
             await tools.sync(session, 'register_source', candidate_id=cid, source_path=source.blend_path)
             result = await tools.sync(session, 'open_source', request_id=request_id,
@@ -79,7 +94,7 @@ async def dispatch(tools, invocation, cancellation):
     value = candidate(task, cid, asset.id)
     if invocation.capability_id == 'blender.asset.edit':
         body = BlenderEditInput.model_validate(data)
-        if value['owner'] != 'agent' or value['status'] != 'editing':
+        if (value['owner'] != 'agent' and not is_manual) or value['status'] != 'editing':
             raise HarnessError('BLENDER_SOURCE_BUSY', '人工或已完成源不能被 Agent 并发覆盖。')
         session, auth = await authorized_session()
         result = await tools.sync(session, 'edit_nodes', request_id=request_id,
@@ -92,7 +107,7 @@ async def dispatch(tools, invocation, cancellation):
     body = BlenderPublishInput.model_validate(data)
     if value['owner'] == 'manual' and not is_manual:
         raise HarnessError('BLENDER_SOURCE_BUSY', '人工候选只能由手工同步入口保存。')
-    if value['status'] not in ('editing', 'exported', 'saved', 'applied'):
+    if value['status'] not in ('editing', 'exported', 'saved', 'saved_only', 'applied'):
         raise HarnessError('ACTION_UNCERTAIN', '候选操作未确认，请先回读。')
     if value['status'] == 'editing':
         session, auth = await authorized_session()
@@ -104,10 +119,30 @@ async def dispatch(tools, invocation, cancellation):
     cancellation.raise_if_cancelled()
     if value['status'] == 'exported':
         result = value['export']
-        files = preserve_native_source(task.grant.workspace_root, cid, result['blend_path'], result['glb_path'])
+        from pathlib import Path
+        base = next(v for v in asset.versions if v.source_version == value['base_version'])
+        glb_path = result['glb_path']
+        if base.lookdev_document_id:
+            if service.lookdev is None:
+                raise HarnessError('LOOKDEV_UNAVAILABLE', '材质服务不可用，保留几何候选。')
+            from vfx_shader import LookdevError
+            try:
+                composed = service.lookdev.compose_geometry_materials(task.project_id, base, Path(glb_path).read_bytes())
+            except LookdevError as error:
+                return {'tool':'blender', 'mode':'live', 'effect_state':'COMMITTED',
+                    'candidate_id':cid, **value, 'outcome':'incompatible',
+                    'notice':str(error), 'code':error.code, 'affected_instance_ids':[]}
+            combined = Path(glb_path).with_name(cid + '-material.glb')
+            if combined.exists() and combined.read_bytes() != composed:
+                raise HarnessError('SOURCE_VERSION_CONFLICT', '已保存候选内容不同，保留双方。')
+            combined.write_bytes(composed)
+            glb_path = str(combined)
+        files = preserve_native_source(task.grant.workspace_root, cid, result['blend_path'], glb_path)
         version = ProjectAssetVersion(source_version=value['base_version'] + 1,
             asset_version_id='aver_' + cid, source_kind='blender', operation='blender-edit',
-            parent_source_version=value['base_version'], node_ids=value['node_ids'],
+            parent_source_version=value['base_version'],
+            lookdev_document_id=base.lookdev_document_id, lookdev_document_version=base.lookdev_document_version,
+            node_ids={n['sceneops_id']:n['sceneops_id'] for n in result.get('objects', []) if n.get('sceneops_id')},
             dimensions_m=result['dimensions_m'], vertex_count=result['vertex_count'],
             triangle_count=result['triangle_count'], blend_path=files['blend_path'],
             preview_path=files['preview_path'], runtime_artifacts=[RuntimeArtifactReference(
@@ -125,6 +160,11 @@ async def dispatch(tools, invocation, cancellation):
                     'notice':str(error)}
         value.update(status='saved', source_version=version.source_version, files=files)
         store(service, task.id, cid, value)
+    if not body.apply_to_scene:
+        value.update(status='saved_only')
+        store(service, task.id, cid, value)
+        return {'tool':'blender', 'mode':'live', 'effect_state':'COMMITTED',
+                'candidate_id':cid, **value, 'outcome':'saved', 'affected_instance_ids':[]}
     scene = service.environment_scenes.get(task.project_id)
     refs = [o for o in scene.objects if o.asset_id == asset.id and
             (body.object_ids is None or o.id in body.object_ids)]

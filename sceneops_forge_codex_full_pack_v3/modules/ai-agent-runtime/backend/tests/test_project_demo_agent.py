@@ -182,10 +182,15 @@ def d3_workspace():
 def make_pnpm(root):
     executable = root / "fixture-pnpm"
     executable.write_text(f'''#!{Path(sys.executable).resolve()}
-import pathlib, sys
+import pathlib, sys, json
 root=pathlib.Path.cwd()
 if sys.argv[1]=='install':
  target=root/'node_modules/.bin';target.mkdir(parents=True,exist_ok=True);(target/'tsc').write_text('x');(target/'vite').write_text('x')
+ manifest=json.loads((root/'package.json').read_text())
+ for name in ('three','@types/three'):
+  version=manifest.get('dependencies',{{}}).get(name) or manifest.get('devDependencies',{{}}).get(name)
+  if version:
+   target=root/'node_modules'/name;target.mkdir(parents=True,exist_ok=True);(target/'package.json').write_text(json.dumps({{'version':version}}))
 elif sys.argv[1:3]==['exec','tsc']:
  broken=any('BROKEN_SWITCH' in path.read_text(errors='ignore') for path in (root/'src').rglob('*.ts'))
  print('src/game/behaviors/OrderedSwitches.ts:14:1 - error TS2304: Cannot find name BROKEN_SWITCH' if broken else 'fixture check')

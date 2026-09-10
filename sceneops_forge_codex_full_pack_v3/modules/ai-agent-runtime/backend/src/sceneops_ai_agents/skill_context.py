@@ -14,6 +14,32 @@ CONSULT = re.compile(r"^(?:请|帮我|please\s+)?(?:解释|讨论|比较|分析�
 VERIFY = re.compile(r"^(?:请|帮我|please\s+)?(?:检查|验证|验收|复查|测试|check\b|verify\b|test\b|review\b)", re.I)
 TIMING = re.compile(r"冷却|冲刺|暂停|重开|计时|cooldown|dash|sprint|pause|restart|timer", re.I)
 
+PRODUCTION_SKILLS = {
+    'sceneops-demo-composer': {'path': 'sceneops-demo-composer/SKILL.md', 'summary': '组合可编辑的游戏 Demo 内容、源码和试玩交付。', 'production_kinds': ['game_create', 'game_modify', 'planning']},
+    'sceneops-editable-content': {'path': 'sceneops-editable-content/SKILL.md', 'summary': '在现有作品中保留可编辑内容与稳定引用。', 'production_kinds': ['game_create', 'game_modify', 'modeling', 'scene']},
+    'sceneops-threejs-gameplay': {'path': 'sceneops-threejs-gameplay/SKILL.md', 'summary': '实现 Three.js 游戏控制、状态、时间和玩法反馈。', 'production_kinds': ['game_create', 'game_modify', 'planning'], 'platforms': ['web']},
+    'sceneops-threejs-qa': {'path': 'sceneops-threejs-qa/SKILL.md', 'summary': '基于实际构建与浏览器证据检查 Three.js 游戏。', 'production_kinds': ['game_create', 'game_modify'], 'platforms': ['web']},
+    'sceneops-threejs-debug': {'path': 'sceneops-threejs-debug/SKILL.md', 'summary': '定位并修复 Three.js 运行、画面与交互问题。', 'production_kinds': ['game_modify'], 'platforms': ['web']},
+    'sceneops-blender-technical-artist': {'path': 'sceneops-blender-technical-artist/SKILL.md', 'summary': '制作、修改并验证可用于游戏的 Blender 资产。', 'production_kinds': ['modeling', 'scene', 'game_create', 'game_modify']},
+    'sceneops-unity-project-engineer': {'path': 'sceneops-unity-project-engineer/SKILL.md', 'summary': '在已登记 Unity 工程中导入、修改并回读内容。', 'production_kinds': ['modeling', 'scene', 'game_modify'], 'platforms': ['unity']},
+    'sceneops-export-environment': {'path': 'sceneops-export-environment/SKILL.md', 'summary': '检查并补齐本地导出环境。', 'production_kinds': ['export']},
+    'sceneops-export-android': {'path': 'sceneops-export-android/SKILL.md', 'summary': '导出 Android APK 或 AAB 并处理平台问题。', 'production_kinds': ['export'], 'platforms': ['android']},
+    'sceneops-export-desktop': {'path': 'sceneops-export-desktop/SKILL.md', 'summary': '导出 macOS 或 Windows 桌面应用。', 'production_kinds': ['export'], 'platforms': ['mac-arm64', 'mac-x64', 'win-x64']},
+    'sceneops-release-publish': {'path': 'sceneops-release-publish/SKILL.md', 'summary': '在明确发布要求下处理签名、渠道与上线。', 'production_kinds': ['export']},
+}
+
+
+def production_skill_catalog():
+    return [{'id': skill_id, **{key: value for key, value in item.items() if key != 'path'}}
+            for skill_id, item in PRODUCTION_SKILLS.items()]
+
+
+def production_skill_detail(skill_id):
+    item = PRODUCTION_SKILLS.get(skill_id)
+    if item is None:
+        raise KeyError(skill_id)
+    return files('sceneops_ai_agents').joinpath('skills', item['path']).read_text(encoding='utf-8')
+
 
 @dataclass
 class SkillContext:
@@ -86,11 +112,21 @@ def load_skill_context(data) -> SkillContext:
     phase, selected = select_skills(data)
     context = SkillContext(phase=phase)
     paths = []
+    if data.context_summary.get('task_profile')=='unity-asset-edit':
+        paths.append("sceneops-unity-project-engineer/SKILL.md")
     if data.context_summary.get('task_profile') == 'project-demo-agent':
         paths.extend(['sceneops-demo-composer/SKILL.md',
                       'sceneops-editable-content/SKILL.md'])
-    if any(item["id"].startswith("blender.asset.") for item in data.capabilities):
+    if data.context_summary.get("task_profile") != "unity-asset-edit" and any(item["id"].startswith("blender.asset.") for item in data.capabilities):
         paths.append("sceneops-blender-technical-artist/SKILL.md")
+    preparation = data.context_summary.get('production_preparation', {})
+    recommendation = preparation.get('recommendation', {}) if isinstance(preparation, dict) else {}
+    recommended_skills = recommendation.get('skills', []) if isinstance(recommendation, dict) else []
+    for selection in recommended_skills if isinstance(recommended_skills, list) else []:
+        skill_id = selection.get('candidate_id') if isinstance(selection, dict) else None
+        item = PRODUCTION_SKILLS.get(skill_id)
+        if item is not None:
+            paths.append(item['path'])
     paths.extend(f"sceneops-threejs-{name}/SKILL.md" for name in selected)
     if "gameplay" in selected and TIMING.search(data.goal):
         paths.append("sceneops-threejs-gameplay/references/time-and-state.md")

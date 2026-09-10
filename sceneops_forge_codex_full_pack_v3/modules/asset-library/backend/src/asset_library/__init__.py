@@ -1,5 +1,15 @@
 """Public backend surface for the Asset Library module."""
 
+from .builtin_catalog import (
+    AdoptBuiltinAsset,
+    BuiltinAsset,
+    BuiltinAssetCatalog,
+    BuiltinAssetLod,
+    BuiltinCatalog,
+    BuiltinPackSummary,
+    create_builtin_asset_router,
+)
+
 from .repository import AssetRepository, InMemoryAssetRepository
 from .router import create_router
 from .schemas import (
@@ -48,6 +58,13 @@ from .project_catalog import (
 )
 
 __all__ = [
+    "AdoptBuiltinAsset",
+    "BuiltinAsset",
+    "BuiltinAssetCatalog",
+    "BuiltinAssetLod",
+    "BuiltinCatalog",
+    "BuiltinPackSummary",
+    "create_builtin_asset_router",
     "AIProvenance",
     "ArtifactOutput",
     "ArtifactProvenance",
@@ -92,3 +109,4 @@ __all__ = [
     "door_recipe_definition",
     "simple_asset_name",
 ]
+from .glb_identity import assign_glb_identities

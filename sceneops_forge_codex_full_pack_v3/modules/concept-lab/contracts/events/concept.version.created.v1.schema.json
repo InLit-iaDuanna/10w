@@ -103,5 +103,7 @@
     "payload"
   ],
   "title": "ConceptVersionCreatedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "concept.version.created",
+  "x-event-version": 1
 }

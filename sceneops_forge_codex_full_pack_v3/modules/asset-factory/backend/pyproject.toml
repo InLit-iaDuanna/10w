@@ -7,12 +7,14 @@ name = "sceneops-asset-factory"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+  "httpx>=0.27,<1",
   "fastapi>=0.100,<1",
   "pydantic>=2.8,<3",
   "sceneops-concept-lab==0.1.0",
   "sceneops-asset-library==0.1.0",
   "sceneops-blender-adapter==0.1.0",
   "sceneops-ai-provider==0.1.0",
+  "sceneops-ai-context-engine==0.5.0",
 ]
 
 [tool.setuptools.packages.find]

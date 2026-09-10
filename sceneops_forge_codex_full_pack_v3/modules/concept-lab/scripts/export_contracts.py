@@ -48,10 +48,13 @@ def serialize(value: object) -> str:
 
 
 def expected_outputs() -> Dict[Path, str]:
-    outputs = {
-        relative: serialize(model.model_json_schema())
-        for relative, model in SCHEMAS.items()
-    }
+    outputs = {}
+    for relative, model in SCHEMAS.items():
+        schema = model.model_json_schema()
+        if relative.parent.name == "events":
+            schema["x-event-type"] = schema["properties"]["event_type"]["const"]
+            schema["x-event-version"] = schema["properties"]["event_version"]["const"]
+        outputs[relative] = serialize(schema)
     app = FastAPI(title="SceneOps Concept Lab API", version="0.1.0")
     app.add_exception_handler(ConceptLabError, concept_lab_error_handler)
     app.include_router(create_router(ConceptLabService()))

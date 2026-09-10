@@ -35,3 +35,24 @@ envelope 格式失败使用稳定错误类别；未知失败不猜测成功或�
 `--tools ""`、`--strict-mcp-config`、`--mcp-config`、`--no-session-persistence`、
 `--permission-mode default`、`--max-turns`、`--system-prompt`；官方 `--json-schema` 行为与本机问题单独记录，不继续依赖该执行路径。
 网站正文直接打开超时，官方页面搜索索引可读；本机 2.144.0 的帮助输出由整合主代理核实。
+
+## 原生执行会话
+
+`invoke_agent` 是单独的授权执行入口，与无工具的 `invoke_json` 分离。调用方必须先验证 `agent-full-access` 任务授权，绑定提供方、模型和登记卡片分支；普通讨论不能调用它。CLI 使用原生 Bash/Read/Write/Edit/Glob/Grep、自身 agent loop 和当前思考强度。普通回复无 JSON Schema；`stream-json` 只承载 CLI 的文字增量、工具事件和结束信号。严格空 MCP、禁用 hooks、不继承应用凭据环境；不新增子 agent。完全访问不是文件系统沙箱，需明确授权。单次启动、时间上限、取消与无自动重试仍有效。
+
+原生工具事件按 tool-use ID 关联起止状态和输入参数；界面显示读取路径、命令、描述及搜索条件，不记录 Write/Edit 的文件正文。已有仅含工具名的记录不推测缺失参数。
+
+`invoke_agent(..., system_prompt=None)` 允许可信产品运行时追加执行规范，通过真实 `--append-system-prompt` 参数与既有中文交付、凭据保护规范一起传入。此参数不得来自用户目标或项目正文；目标继续只走 stdin。未传入时保持原指令与安全参数。
+
+原生制作可显式传 `native_production=True`，并选择 `permission_mode='scoped'`（`acceptEdits`）
+或明确授权的 `'full'`（`bypassPermissions`）。生产模式保留项目技能、增加原生 `Skill` 工具，
+移除 `--no-session-persistence`；可信 `mcp_config` 替换严格空 MCP 配置，hooks 仍禁用。
+`session_id` 只作为 `--resume <准确 ID>`，绝不使用 `--continue` 或最近会话。
+首个实际 `session_id` 立即通过 `session_started` 回调交给调用方持久化；结果包含 ID 和本机版本。
+未收到 ID 或返回其他会话时以 `CLI_SESSION_MISSING` / `CLI_SESSION_MISMATCH` 失败，禁止自动重放。
+默认聊天与旧导出行为保持不变。`acceptEdits` 不隔离文件系统，也不自动授予所有 Bash 命令。
+
+制作工具白名单包含 `ToolSearch`、`DeferExecuteTool`、`WaitForMcpServers`，用于 CLI 原生延迟 MCP 发现与调用。
+配置任务绑定的 `sceneops` 桥时，仅追加 `--allowedTools DeferExecuteTool(mcp__sceneops__*) mcp__sceneops__*`。
+不会放行任意 `DeferExecuteTool` 或其他 MCP；桥内每次调用仍验证任务授权、工作区及能力。
+本机 CLI 的 wrapper 将 `toolName` 作为权限匹配参数；全局放行 wrapper 会跳过目标权限，故禁止使用。

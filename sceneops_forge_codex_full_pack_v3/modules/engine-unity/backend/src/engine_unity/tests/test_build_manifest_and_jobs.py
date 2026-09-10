@@ -25,7 +25,7 @@ class BuildManifestAndJobTests(unittest.TestCase):
         manifest = yaml.safe_load((MODULE_ROOT / "module.yaml").read_text(encoding="utf-8"))
         self.assertEqual("engine-unity", manifest["id"])
         self.assertEqual("engine_unity", manifest["feature_flag"])
-        self.assertEqual(16, len(manifest["contributes"]["commands"]))
+        self.assertEqual(20, len(manifest["contributes"]["commands"]))
         self.assertEqual("engine_unity", manifest["entrypoints"]["backend"])
 
         security_source = (

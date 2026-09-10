@@ -68,6 +68,9 @@ def module_commands(module_id):
     root_tests = module_root / "tests"
     if root_tests.is_dir():
         test_directories.append(root_tests)
+    backend_tests = module_root / "backend" / "tests"
+    if backend_tests.is_dir():
+        test_directories.append(backend_tests)
     if backend:
         package_tests = (
             module_root / "backend" / "src" / Path(*backend.split(".")) / "tests"
@@ -79,26 +82,15 @@ def module_commands(module_id):
             [
                 sys.executable,
                 "-m",
-                "unittest",
-                "discover",
-                "-s",
+                "pytest",
                 str(test_directory.relative_to(ROOT)),
-                "-p",
-                "test_*.py",
             ]
         )
-    frontend_tests = sorted(
-        (module_root / "frontend" / "src" / "tests").glob("*.test.ts")
-    )
+    frontend = module_root / "frontend"
+    frontend_tests = sorted(path for path in frontend.rglob("*.test.*")
+                            if "node_modules" not in path.parts and path.suffix in {".ts", ".tsx", ".mjs"})
     if frontend_tests:
-        commands.append(
-            [
-                "node",
-                "--experimental-strip-types",
-                "--test",
-                *(str(path.relative_to(ROOT)) for path in frontend_tests),
-            ]
-        )
+        commands.append(["node", "scripts/frontend-test.mjs", *(str(path.relative_to(ROOT)) for path in frontend_tests)])
     if not commands:
         raise RuntimeError(f"module has no independent tests: {module_id}")
     return commands
@@ -106,7 +98,11 @@ def module_commands(module_id):
 
 def run(command, environment):
     print("+ " + " ".join(command), flush=True)
-    return subprocess.run(command, cwd=ROOT, env=environment, check=False).returncode
+    process_environment = environment.copy()
+    if "pytest" in command:
+        test_directory = ROOT / command[command.index("pytest") + 1]
+        process_environment["PYTHONPATH"] = str(test_directory) + os.pathsep + environment["PYTHONPATH"]
+    return subprocess.run(command, cwd=ROOT, env=process_environment, check=False).returncode
 
 
 def main():
@@ -127,7 +123,7 @@ def main():
     module_python_paths = [
         ROOT / "modules" / module_id / "backend" / "src" for module_id in modules
     ]
-    paths = [str(path) for path in [*BASE_PYTHON_PATHS, *module_python_paths]]
+    paths = [str(path) for path in [*BASE_PYTHON_PATHS, *module_python_paths, *sorted((ROOT / "integrations").glob("*/src")), *sorted((ROOT / "packages").glob("*/src"))]]
     if existing:
         paths.append(existing)
     environment["PYTHONPATH"] = os.pathsep.join(paths)

@@ -70,7 +70,9 @@ def _source_version(root: Path) -> dict:
 
 
 def _manifest(service, task, scene):
-    asset_ids = {item.asset_id for item in scene.objects}
+    from sceneops_project_workspace import EntityStore
+    entities = EntityStore(service.workspace).list(task.project_id, task.grant.workspace_id)
+    asset_ids = {item.asset_id for item in scene.objects} | {item.asset_id for item in entities}
     assets = []
     version_by_ref = {}
     for asset_id in sorted(asset_ids):
@@ -80,7 +82,7 @@ def _manifest(service, task, scene):
         for version in entry.versions:
             version_by_ref[(entry.id, version.source_version)] = version
         referenced_versions = sorted({item.asset_version for item in scene.objects
-                                      if item.asset_id == entry.id})
+                                      if item.asset_id == entry.id} | {item.adopted_asset_version for item in entities if item.asset_id == entry.id})
         for number in referenced_versions:
             version = version_by_ref.get((entry.id, number))
             if version is None:
@@ -108,6 +110,8 @@ def _manifest(service, task, scene):
         "schema_version": 1, "project_id": task.project_id,
         "workspace_id": task.grant.workspace_id, "scene_id": scene.scene_id,
         "scene_version": scene.version, "assets": assets, "objects": objects,
+        "lighting": scene.lighting.model_dump(mode='json') if scene.lighting else None,
+        "entities": [item.model_dump(mode="json") for item in entities],
     }
 
 
@@ -120,11 +124,27 @@ def materialize_project_demo(service, task):
                                                expected_root=task.grant.workspace_root)
     scene = service.environment_scenes.get(task.project_id)
     manifest = _manifest(service, task, scene)
+    if service.lookdev is not None:
+        referenced={(asset['asset_id'],asset['asset_version']) for asset in manifest['assets']}
+        bindings=[]
+        for binding in service.lookdev.runtime_bindings(task.project_id, task.grant.workspace_id):
+            if (binding['asset_id'],binding['asset_version']) not in referenced:
+                continue
+            entry=service.project_assets.get(task.project_id,binding['asset_id'])
+            version=next(v for v in entry.versions if v.source_version==binding['asset_version'])
+            binding={**binding,'source_path':version.preview_path}
+            bindings.append(binding)
+        manifest['lookdev']=bindings
+        from vfx_shader import requires_game_runtime
+        if any(requires_game_runtime(binding['state']) for binding in bindings):
+            from vfx_shader import prepare_lookdev_runtime
+            prepare_lookdev_runtime(workspace['workspace_root'])
     report = service.workspace.materialize_demo_content(
         task.project_id, task.grant.workspace_id, manifest)
     root = Path(workspace["workspace_root"])
     materialization = {
         **report, "source_version": _source_version(root),
+        "entity_versions": [{"id": item["id"], "revision": item["revision"], "asset_version": item["adopted_asset_version"]} for item in manifest["entities"]],
         "asset_versions": [{"asset_id": item["asset_id"],
                             "asset_version": item["asset_version"],
                             "asset_version_id": item["asset_version_id"]}
@@ -182,14 +202,14 @@ async def run_project_demo(service, task_id, *, initialize_fixture: bool | None 
     if not service.game.dependencies_ready(task.grant.workspace_root):
         if not task.grant.allow_dependency_install:
             raise HarnessError("DEPENDENCIES_NOT_READY", "工程依赖尚未准备，且本次未授权依赖准备。")
-        steps.append((f"{prefix}_dependencies", "code.dependencies.prepare", "准备登记游戏工程声明的依赖。"))
+        steps.insert(0,(f"{prefix}_dependencies", "code.dependencies.prepare", "准备登记游戏工程声明的依赖。"))
     steps.extend([
         (f"{prefix}_check", "code.project.check", "检查当前物化内容与所选代码架构。"),
         (f"{prefix}_build", "code.project.build", "为本次内容请求生成独立试玩候选。"),
         (f"{prefix}_preview", "code.preview.start", "让最新成功候选成为当前作品的本地试玩。"),
     ])
     failure = None
-    for action_id, capability, rationale in steps:
+    for step_index, (action_id, capability, rationale) in enumerate(steps):
         record_action(service, task_id, AgentAction(
             action_id=action_id, capability_id=capability, rationale=rationale, inputs={}))
         await execute_action(service, task_id, action_id)
@@ -197,6 +217,10 @@ async def run_project_demo(service, task_id, *, initialize_fixture: bool | None 
                      if item.action.action_id == action_id)
         evidence = (entry.result or {}).get("evidence", {})
         run = evidence.get("run", {}) if isinstance(evidence, dict) else {}
+        if capability == 'code.demo_content.materialize' and not service.game.dependencies_ready(task.grant.workspace_root):
+            if not task.grant.allow_dependency_install:
+                raise HarnessError('DEPENDENCIES_NOT_READY', '材质运行依赖已更新，本次任务未授权依赖准备。')
+            steps.insert(step_index+1,(f'{prefix}_material_dependencies','code.dependencies.prepare','准备材质运行所需的工程依赖版本。'))
         if capability.startswith(("code.project.", "code.preview.")) and run.get("passed") is not True:
             failure = run.get("failure_code") or "DEMO_UPDATE_FAILED"
             break

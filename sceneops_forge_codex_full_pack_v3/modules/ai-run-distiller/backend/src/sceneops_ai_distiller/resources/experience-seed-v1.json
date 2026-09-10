@@ -1,0 +1,1189 @@
+{
+  "bundle_id": "sceneops-experience-20260908-v1",
+  "entries": [
+    {
+      "id": "seed-exp-01",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "把“导出、编译、签名、安装、启动、实际可玩”分开",
+      "content": "**历史问题：** Capacitor 和 Unity 都出现过构建成功但不能装机；也出现安装成功但锁屏导致启动失败。旧回复曾把最低部署版本覆盖 iOS 18，表述成“可以在 iOS 18 运行”，但当时并没有对应运行时验证。\n\n**可复用做法：** 每次交付分别记录 Web/Unity 资源生成、Xcode 编译、签名、目标设备安装、进程启动、首屏及关键交互。无签名真机架构编译只证明编译链路，不证明设备授权和运行兼容性。遇到失败，从失败阶段排查，不要一律重做游戏代码。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "Unity 或 Web 应用导出 iOS、装机失败、交付运行兼容性结论时。",
+      "domains": [
+        "build",
+        "构建",
+        "verification",
+        "验证"
+      ],
+      "platforms": [
+        "unity",
+        "ios",
+        "xcode",
+        "capacitor"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S01",
+          "summary": "历史记录：iOS 编译与实际运行的阶段差异。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f0d69-dc4c-75b1-80cb-8bbcc4498caa:77",
+          "verification": "historical"
+        },
+        {
+          "id": "S02",
+          "summary": "历史记录：安装成功但锁屏不能启动。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1e66-6500-7873-bc0d-fa7b0346a601:3148",
+          "verification": "historical"
+        },
+        {
+          "id": "S03",
+          "summary": "历史记录：Unity 导出、无签名编译、字体资源。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f203d-1af5-7ad0-bbfe-90cb933c2af8:1003",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "build_delivery"
+      ]
+    },
+    {
+      "id": "seed-exp-02",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "换 iPad 时，先分清设备连接和签名授权",
+      "content": "**历史问题：** 新设备经历了 unpaired、connected/no DDI、Developer Mode disabled、profile 不包含设备等不同阻塞。证书存在不代表 provisioning profile 授权了新设备。\n\n**可复用做法：** 核对真实目标设备 → 配对/信任 → 开发者模式与开发镜像 → Team/签名身份 → profile 的 App ID、有效期和目标设备范围。设备名称不足以区分多台 iPad，应使用工具返回的目标标识。旧包直接安装失败若指向同一 profile 问题，就是授权链的证据。\n\n历史中还发现 profile 位于 Xcode 的 `UserData/Provisioning Profiles`，不能只查旧目录；路径和命令需按实际安装版本确认。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "更换 iPad 或真机连接、配对、签名授权失败时；目录与命令需现场核对。",
+      "domains": [
+        "build",
+        "签名",
+        "device",
+        "设备"
+      ],
+      "platforms": [
+        "ios",
+        "ipad",
+        "xcode"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S04",
+          "summary": "历史记录：新设备 provisioning 授权阻塞。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f2027-9d2b-76d2-ac8a-cd538d7b5dc9:142",
+          "verification": "historical"
+        },
+        {
+          "id": "S05",
+          "summary": "历史记录：多台 iPad 的目标辨认。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f2037-e2db-7db3-9177-43187700e773:74",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "build_delivery"
+      ]
+    },
+    {
+      "id": "seed-exp-03",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "完整 Xcode、Command Line Tools、缓存残留是三回事",
+      "content": "**历史问题：** 搜索结果曾找到一个约 4.3 MB 的 `Xcode.app` 缓存，它不是完整应用；后来安装包展开、应用安装、开发者目录切换和首次启动组件配置才逐步完成。\n\n**可复用做法：** 以实际开发者目录、应用内容、`xcodebuild` 输出及初始化结果判断工具链。版本、SDK、Unity 的 iOS Build Support 是现场事实，不沿用上次对话的判断。安装 Xcode 本身也不等于 Unity 对应平台模块已经存在。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "诊断 Xcode 安装、开发者目录、SDK 和 Unity 平台模块时。",
+      "domains": [
+        "build",
+        "工具链"
+      ],
+      "platforms": [
+        "xcode",
+        "unity",
+        "ios",
+        "macos"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S06",
+          "summary": "历史记录：Xcode 安装与初始化完成。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb1cc-fa4b-7813-84e2-832c5ce6ba78:222",
+          "verification": "historical"
+        },
+        {
+          "id": "S07",
+          "summary": "历史记录：Unity 平台模块与旧导出审查。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f480c-3414-7223-b0b1-c7b757bcdad5:211",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "build_delivery"
+      ]
+    },
+    {
+      "id": "seed-exp-04",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "case",
+      "title": "codesign 元数据异常先做最小复现，不大范围清理",
+      "content": "**历史问题：** UnityFramework 签名遇到 Finder/扩展属性相关错误。旧记录包含清属性、隐藏标记、尝试重签等多轮操作；一个小实验显示另一执行来源生成的测试 framework 可以签名，但该段对话结束时完整构建仍在运行。\n\n**可复用做法：** 保留准确错误，检查报错产物的实际元数据，用最小 framework/文件实验定位差异，再重新生成受影响产物。不要把“某执行来源必然造成 provenance 问题”写成普遍结论，也不要默认删除整个工程的属性、锁或缓存。\n\n**证据等级：** 历史局部实验；没有据此认定该轮完整安装成功。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "出现 codesign 元数据错误时参考最小实验；不推断完整构建或安装已成功。",
+      "domains": [
+        "build",
+        "签名",
+        "metadata"
+      ],
+      "platforms": [
+        "unity",
+        "xcode",
+        "ios",
+        "macos"
+      ],
+      "status": "unverified",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S08",
+          "summary": "历史记录：签名元数据最小实验，完整构建尚在运行。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f2037-e2db-7db3-9177-43187700e773:227",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "build_delivery"
+      ]
+    },
+    {
+      "id": "seed-exp-05",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "生成器也是源码；修复必须穿过下一次重建",
+      "content": "**历史问题：** 字体、首页遮罩、灯光、场景入口的修改会被 `MapWalkBuild.cs` 再次生成。仅改运行中对象或序列化场景，下一次出包可能恢复旧行为。\n\n**可复用做法：** 明确生成器、输入资产、生成场景、Xcode 导出、最终包之间的关系；修改源头并重新生成验证。字体案例最终加入随包字体，覆盖运行时 UI 和编辑器生成 UI，而不是只把字体文件放进目录。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "修改会由生成器重建的 UI、场景、字体或导出资源时。",
+      "domains": [
+        "generation",
+        "生成器",
+        "ui",
+        "字体"
+      ],
+      "platforms": [
+        "unity",
+        "ios",
+        "xcode"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S03",
+          "summary": "历史记录：Unity 导出、无签名编译、字体资源。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f203d-1af5-7ad0-bbfe-90cb933c2af8:1003",
+          "verification": "historical"
+        },
+        {
+          "id": "S09",
+          "summary": "历史记录：字体修复需同步场景生成器。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f203d-1af5-7ad0-bbfe-90cb933c2af8:161",
+          "verification": "historical"
+        },
+        {
+          "id": "S10",
+          "summary": "历史记录：修改生成器并重新生成首页。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1e64-432f-7681-84be-02204751b85f:1727",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "engineering_workflow",
+        "build_delivery"
+      ]
+    },
+    {
+      "id": "seed-exp-06",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "复用整条四元数链，不只复制一个换算函数",
+      "content": "**历史迭代：** 最初只调整 `alpha` 与罗盘输入优先级，测试通过后用户仍指出没有完整复用正常示例。后续查出水平回正符号不一致，而且相机端还将姿态拆成 yaw/pitch，倾斜握持会串轴。\n\n**最终历史链路：** `alpha/beta/gamma → YXZ 四元数 → 设备相机修正 → 屏幕旋转补偿 → 水平航向回正 → 完整四元数传给相机 → 渲染帧 slerp`。引导页的 yaw/pitch 统计与真实相机姿态分开。标准 `alpha` 存在时不被罗盘值覆盖。\n\n旧实现以 `1 - exp(-delta * 12)` 作为随帧间隔变化的插值权重；可迁移的是时间相关平滑形式，`12` 是项目参数。四元数乘法次序、坐标系和屏幕补偿要成套迁移，不能单独复制正负号。\n\n**历史验证：** 与参考 Three.js 算法动态对照的最大分量差约 `2.2e-16`，当轮 59 项通过、1 项跳过；这证明数学一致性，不等于当前已验证手机手感。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "迁移 DeviceOrientation 到相机姿态链路时；必须成套核对坐标系、乘法次序和屏幕方向。",
+      "domains": [
+        "motion",
+        "体感",
+        "quaternion",
+        "四元数",
+        "camera"
+      ],
+      "platforms": [
+        "threejs",
+        "web",
+        "ios"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S11",
+          "summary": "历史记录：完整四元数链路迁移的最终汇报。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb15d-ff66-7342-a29a-cc2b8c3233cd:218",
+          "verification": "historical"
+        },
+        {
+          "id": "S12",
+          "summary": "历史记录：原有测试通过却未发现方向符号错误。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb15d-ff66-7342-a29a-cc2b8c3233cd:160",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-07",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "case",
+      "title": "方向反了，先检查物理握持与系统方向锁",
+      "content": "**最关键的反例：** 新 iPad 方向异常时曾增加自动适配、完整姿态校准和稳定等待，随后用户明确说“我发现是屏幕方向锁的原因”，要求恢复原逻辑，新增实现被撤回。\n\n**可复用做法：** 记录设备物理方向、系统方向锁、App 允许方向、运行时屏幕方向和校准时姿态，再测左右/上下动作。先排除环境不一致，再改映射。不要按 iPad 型号硬编码反转，也不要把已撤回方案当成跨设备算法。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "设备方向异常时参考环境排查及用户纠正；撤回的自动适配不作为通用实现。",
+      "domains": [
+        "motion",
+        "体感",
+        "orientation",
+        "方向锁"
+      ],
+      "platforms": [
+        "unity",
+        "ios",
+        "ipad"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S13",
+          "summary": "历史用户原话确认屏幕方向锁是原因（第417行）；同任务第436行记载自动适配已撤回，脚本验证工具当时未跑成。此用户纠正有历史依据，未进行新的设备验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f2027-9d2b-76d2-ac8a-cd538d7b5dc9:417",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-08",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "计步检测与步态分类分层，阈值重新采样",
+      "content": "`hks-game` 已有可分离的两层：传感器采集、去重力、滤波、校准、峰值步事件；然后用滑窗 RMS 和频带能量分类 idle/sneak/walk/run/startled。提供 playground，比盲调阈值更有复用价值。\n\n后来“跑起来仍算潜行”导致频带和强度阈值被调整，说明最初设计数字不是通用常量。**复用接口、数据采集和测试方式；重新采目标设备、握持、静止及实际动作数据。** 不直接复制后来增加的强度兜底，也不把合成波测试通过当作人群准确率。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "设计计步采集和步态分类、调校目标设备阈值时；需实际动作数据。",
+      "domains": [
+        "motion",
+        "计步",
+        "gait",
+        "步态",
+        "sensors"
+      ],
+      "platforms": [
+        "web",
+        "mobile"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S14",
+          "summary": "历史记录：传感器与步态分层实现。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019e7ad0-ac09-7520-b084-aa4dc16ffc33:502",
+          "verification": "historical"
+        },
+        {
+          "id": "S15",
+          "summary": "历史记录：步态阈值再次调整。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019e7ad0-ac09-7520-b084-aa4dc16ffc33:2028",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-09",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "离散步事件需要时间连续的移动模型",
+      "content": "**历史问题：** 一步瞬移一段不顺滑；追逐中把一次步事件只算一帧努力，玩家持续踏步仍容易被追上。\n\n**可复用做法：** 输入事件产生距离或运动量，移动系统按时间推进并处理碰撞；停止后如何衰减、是否保留未消耗距离要由玩法定义。测试同一输入在不同帧率下的移动距离、停止响应和碰墙行为，避免一帧事件直接决定整帧游戏状态。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。\n历史验证范围：L1 有类型检查、lint 和 E2E 通过记录；L4 部分 E2E 受当时 HMR 干扰，未全部通过。",
+      "applicability": "将离散计步或输入事件转为连续移动、追逐与碰撞响应时。",
+      "domains": [
+        "motion",
+        "移动",
+        "collision",
+        "碰撞"
+      ],
+      "platforms": [
+        "web",
+        "threejs",
+        "mobile"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S16",
+          "summary": "历史记录：步事件变成逐帧移动。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019e7b03-852e-70d1-9398-f8e817808c6d:2400",
+          "verification": "historical"
+        },
+        {
+          "id": "S17",
+          "summary": "历史记录：一帧体感努力与追逐问题。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019e7b1a-441e-74b2-97d6-5f66e1e8e898:4871",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-10",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "“不能走”未必是 IMU：逐层看输入、目标位移、实际位移",
+      "content": "**明确根因：** 某轮起步每帧约 `0.001m`，碰撞系统却要求至少 `0.015m` 才算移动成功，于是刚起步就被判 blocked 并清零速度。继续调计步灵敏度不会解决这个问题。\n\n**可复用做法：** 同步记录输入事件、期望位移、碰撞命中、实际位移、地面状态和停止原因。判定应与数值精度和运动算法一致，不能拿一个固定厘米阈值否决所有微小合法移动。日志记录状态变化，避免静止时每帧刷 hard stop。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "输入已到达但角色不能起步、位移被误判为阻塞时。",
+      "domains": [
+        "motion",
+        "移动",
+        "collision",
+        "碰撞",
+        "debugging"
+      ],
+      "platforms": [
+        "unity",
+        "ios"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S18",
+          "summary": "历史记录：每帧微小位移被碰撞阈值误判。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f0d71-069c-7ca1-bdf0-72a301a5e74d:9348",
+          "verification": "historical"
+        },
+        {
+          "id": "S19",
+          "summary": "历史记录：虚拟地面曾恢复移动的历史汇报。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1666-0d1d-7ad0-a53e-bf401b0d1047:1205",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-11",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "case",
+      "title": "产品语义分组必须与动画技术分组分开",
+      "content": "**历史问题：** 模型的 UUID 名称不利于编辑；`top_pair` 等技术组与参考图的五件产品并非天然一一对应。只按空间位置分组也曾导致误归类。\n\n**可复用做法：** 先盘点 mesh、材质、边界、层级、动画和相机；再用参考图确定产品归属，保留原始名称与新集合的映射。命名和分组写回生成脚本，使重建可重复。\n\n**原经验整理记录的额外核对：** 最终审计 JSON 的五组仍为 `top_pair/glove/crown/bicycle/bottom_set`。所以可以确认五个技术集合及零件映射存在，不能仅凭 `five_product_collections_ok` 宣称参考图五件产品语义已完全拆对。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "按参考图拆分产品和技术集合时；已有五技术组不证明产品语义完全正确。",
+      "domains": [
+        "assets",
+        "资产",
+        "hierarchy",
+        "产品分组"
+      ],
+      "platforms": [
+        "blender"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S20",
+          "summary": "历史记录：产品语义与技术分组的不一致。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8b67-d1e0-7970-8b91-6fae64b68e81:1199",
+          "verification": "historical"
+        },
+        {
+          "id": "S21",
+          "summary": "历史记录：保留原层级后的最终交付。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8ee0-0939-73a1-8269-afc8a397cc0b:455",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "scene_animation",
+        "asset_performance"
+      ]
+    },
+    {
+      "id": "seed-exp-12",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "合并镜头时保留原层级，避免父级变换重复生效",
+      "content": "**历史问题：** 单场景融合后多个镜头产品出画，根因集中在把原零件重挂到新控制器，以及插入镜头关键帧边界处理。不是再挪相机就能可靠解决。\n\n**最终历史做法：** 保留原层级，仅给插入镜头补局部动画关键帧；同步迁移相机、焦段、灯光、显隐和时间段。检查切镜前后帧，不只检查镜头中点。需要改父级时，明确世界与局部变换的转换，不能只保留某一静止帧的外观。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "合并多版本镜头或将镜头迁入单场景时，尤其已有父子变换和局部动画。",
+      "domains": [
+        "animation",
+        "动画",
+        "hierarchy",
+        "层级",
+        "camera"
+      ],
+      "platforms": [
+        "blender"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S21",
+          "summary": "历史记录：保留原层级后的最终交付。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8ee0-0939-73a1-8269-afc8a397cc0b:455",
+          "verification": "historical"
+        },
+        {
+          "id": "S22",
+          "summary": "历史记录：结构通过但实际产品出画。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8ee0-0939-73a1-8269-afc8a397cc0b:164",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "scene_animation"
+      ]
+    },
+    {
+      "id": "seed-exp-13",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "“可渲染”不等于“在画面里”，结构检查不等于成片检查",
+      "content": "**历史问题：** 第 4、12 镜头曾几乎只有背景，但结构审计仍显示对象可渲染。后来真实渲染又揭示其他镜头的出画风险。\n\n**可复用做法：** 分别验证对象结构、动作采样、相机视锥和真实渲染。20 张代表帧联系表能快速定位问题，但整段节奏、模糊和过渡还需要视频检查。把构图采样作为诊断，不把“至少一个零件入框”当作视觉质量充分条件。\n\n原经验整理记录记载的历史审计为 `all_checks_pass: true`、20 个镜头、1–1152 帧、25fps，即 **46.08 秒**，不是精确 40 秒。这也是应核算实际时间线、不能相信旧文件名的例子。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "检查对象可见性、构图、镜头边界和最终成片时；结构审计不能替代真实画面。",
+      "domains": [
+        "render",
+        "渲染",
+        "camera",
+        "构图",
+        "verification"
+      ],
+      "platforms": [
+        "blender"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S21",
+          "summary": "历史记录：保留原层级后的最终交付。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8ee0-0939-73a1-8269-afc8a397cc0b:455",
+          "verification": "historical"
+        },
+        {
+          "id": "S22",
+          "summary": "历史记录：结构通过但实际产品出画。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8ee0-0939-73a1-8269-afc8a397cc0b:164",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "scene_animation",
+        "engineering_workflow"
+      ]
+    },
+    {
+      "id": "seed-exp-14",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "用“事件—运动—停留”设计镜头，版本融合先写时间表",
+      "content": "可复用分镜字段：来源版本、来源帧段、目标帧段、产品、事件、相机、组件动作、灯光、转场。把“装配、揭示、落位、掠光”转成运动目的，比每镜重复同一种环绕更有效。\n\n历史中保留插入镜头原时长后总帧数曾变成 1047，后续交付又是 1152；不同阶段不能混为同一时长。VSE 转单场景是这次交付需求的选择，不是“VSE 普遍不适合交付”。最终确有空 Sequencer 残留，应按项目约定清理并验证。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "设计镜头运动或融合不同版本时间线时；VSE 或单场景选择依项目要求。",
+      "domains": [
+        "animation",
+        "分镜",
+        "timeline",
+        "version"
+      ],
+      "platforms": [
+        "blender"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S23",
+          "summary": "历史记录：镜头融合时长计算。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8b68-6ae5-70c1-bf30-0a457bb30cb0:251",
+          "verification": "historical"
+        },
+        {
+          "id": "S24",
+          "summary": "历史记录：空 Sequencer 数据块残留。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f8d89-b231-7b13-9c7b-395931313ed8:197",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "scene_animation"
+      ]
+    },
+    {
+      "id": "seed-exp-15",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "资产优化是目标设备实验，不是永远选最小文件",
+      "content": "**历史问题：** 大 SVG 曾造成题板/资源负担；地图压缩版本能缩小 ZIP，但解码依赖又给 WebView 带来风险；过度替换碰撞形状则改变玩法。\n\n**可复用做法：** 保留原资产，脚本生成运行资产；分别记录传输体积、解码/加载、内存、draw calls、视觉和碰撞结果。几何问题在建模/资产层处理，灯光和风格在渲染层处理。碰撞资源与视觉资源可分离，但必须共享明确坐标变换。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "优化模型、SVG、运行包或独立碰撞资源时；以目标设备视觉、加载和物理表现为依据。",
+      "domains": [
+        "assets",
+        "优化",
+        "collision",
+        "碰撞",
+        "performance"
+      ],
+      "platforms": [
+        "threejs",
+        "unity",
+        "webview",
+        "mobile"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S25",
+          "summary": "历史记录：大 SVG 转运行时题板并验证尺寸。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019ee4d2-28dc-7291-9f6d-f93f72e5f647:688",
+          "verification": "historical"
+        },
+        {
+          "id": "S26",
+          "summary": "历史记录：UCX 碰撞资源独立生成。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019ee462-e13f-7a61-a0bf-2537249ff132:938",
+          "verification": "historical"
+        },
+        {
+          "id": "S27",
+          "summary": "历史记录：撤回代理碰撞替换，改 layer 与相机优化。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1f2a-3ff8-7803-a750-582a1a7fcdef:1211",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "asset_performance"
+      ]
+    },
+    {
+      "id": "seed-exp-16",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "case",
+      "title": "地面查询要满足几何语义，不用虚拟地面掩盖缺口",
+      "content": "**历史修复：** 爷爷落地射线起点过低、错误 layer mask、草地顶层被排除、命中缓存不足，都曾造成下陷。后来按地图上界采样、核对有效地面和运行时 mask 才定位具体问题。\n\n**反例：** “沿上一帧高度继续走”的 virtual ground 一度让真机恢复移动，但后续审查发现它绕过了 1.25m 缺口限制，允许持续悬空。\n\n**可复用做法：** 明确可行走表面、坡度、台阶和跨层规则，用真实几何查询验证。修 collider 或查询算法；不能把恢复移动当作物理正确，也不把最高命中面当作所有多层地图的通用地面算法。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "诊断下陷、地面查询或跨缺口悬空时；虚拟地面恢复移动的旧结论已被反证，不推荐添加虚拟地面。",
+      "domains": [
+        "collision",
+        "碰撞",
+        "ground",
+        "地面",
+        "motion"
+      ],
+      "platforms": [
+        "unity",
+        "ios"
+      ],
+      "status": "disputed",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S28",
+          "summary": "历史记录：地面射线、mask、草地与命中数量。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f145a-e578-72c3-8c21-406c158d70db:1709",
+          "verification": "historical"
+        },
+        {
+          "id": "S19",
+          "summary": "历史记录：虚拟地面曾恢复移动的历史汇报。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1666-0d1d-7ad0-a53e-bf401b0d1047:1205",
+          "verification": "historical"
+        },
+        {
+          "id": "S29",
+          "summary": "历史记录：虚拟地面绕过缺口限制的反证。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f481a-12c6-7a91-888f-3f4ba00a0407:214",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction",
+        "scene_animation"
+      ]
+    },
+    {
+      "id": "seed-exp-17",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "小地图标记与相机投影同源",
+      "content": "**历史问题：** 手动偏移标记反复调不准，最后改成 `MiniMapCamera.WorldToViewportPoint()` 对齐实际小地图视图。\n\n**可复用做法：** 世界坐标经小地图相机投影，再转换到 UI 矩形坐标；明确 RectTransform、pivot、缩放和可见区域。相机渲染可按需求降低更新频率，标记更新独立，不用固定像素补偿误差。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "将世界物体位置映射到小地图 UI 时；需明确同源相机、矩形坐标、pivot 与缩放。",
+      "domains": [
+        "ui",
+        "小地图",
+        "camera",
+        "projection"
+      ],
+      "platforms": [
+        "unity"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S30",
+          "summary": "历史记录：小地图标记采用同一相机投影。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f198a-2f84-73b3-84ac-2f4a8d922700:2928",
+          "verification": "historical"
+        },
+        {
+          "id": "S27",
+          "summary": "历史记录：撤回代理碰撞替换，改 layer 与相机优化。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1f2a-3ff8-7803-a750-582a1a7fcdef:1211",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "scene_animation"
+      ]
+    },
+    {
+      "id": "seed-exp-18",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "“跳关能播”不证明正常剧情能播",
+      "content": "**历史根因：** 正常路线触发 `P02 CommunityVideo`，但父面板 inactive，播放器报 `Cannot Play a disabled VideoPlayer`；跳关重置恰好激活了面板，因此掩盖问题。\n\n**可复用做法：** 明确播放入口负责的对象生命周期；正常路径、跳过、重进、结束、错误都走清晰的状态转换。自然完成和用户跳过应进入同一个后续剧情入口，但不重复触发。\n\n另一轮审查指出 Unity 2022.3 项目将导入式 VideoClip 用于 WebGL，编译成功不能证明浏览器播放。复用前按实际目标平台核对视频来源和打包方式，不能从 iOS 正常推断 WebGL 正常。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "剧情视频正常路径、跳过、重进与结束状态不一致时；视频来源按目标平台核对。",
+      "domains": [
+        "story",
+        "剧情",
+        "video",
+        "生命周期"
+      ],
+      "platforms": [
+        "unity",
+        "ios",
+        "webgl"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S31",
+          "summary": "历史记录：正常剧情 VideoPlayer 被禁用。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1d2e-5b61-7961-ba36-a174fce5029d:3194",
+          "verification": "historical"
+        },
+        {
+          "id": "S32",
+          "summary": "历史记录：WebGL 视频来源的历史版本审查。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f4819-f22a-7f70-8b26-1c922ac9b7a0:209",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "runtime_lifecycle"
+      ]
+    },
+    {
+      "id": "seed-exp-19",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "优化先减少无效工作，保持已验证的几何和画面",
+      "content": "**历史修正：** 一轮误增至 551 个 BoxCollider 的代理替换被收回，最终保留原碰撞规模，改做 ground/obstacle/character layer 分流。小地图相机改手动刷新，清理多余相机和 AudioListener，关闭无用资产导入内容。\n\n**可复用做法：** 先测物理查询、重复渲染、资源导入和 draw calls，再决定优化点。未跑 iPad FPS/发热时，只报告编辑器验证，不能声称移动性能已改善。用户要求保画质时，不默认启用 safe mode 或换假模型。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "保持原画质和几何行为的性能优化；无设备实测时不得声明 FPS 或发热改善。",
+      "domains": [
+        "performance",
+        "优化",
+        "collision",
+        "render",
+        "audio"
+      ],
+      "platforms": [
+        "unity",
+        "threejs",
+        "ios",
+        "ipad"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S27",
+          "summary": "历史记录：撤回代理碰撞替换，改 layer 与相机优化。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f1f2a-3ff8-7803-a750-582a1a7fcdef:1211",
+          "verification": "historical"
+        },
+        {
+          "id": "S33",
+          "summary": "历史记录：用户要求撤回 safe mode 和分块。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019eee34-1f76-76e1-a412-afdaee9c8053:1110",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "asset_performance"
+      ]
+    },
+    {
+      "id": "seed-exp-20",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "能力探针至少验证“存在、调用、结果、持续性”",
+      "content": "**历史案例：** 摄像头 track 仍为 live、回调持续，但关闭宿主画面后像素冻结；蓝牙测试则是根本没有 JS 入口，并非用户拒绝权限。震动实验也区分了真实手指点击产生的系统触感与脚本触发。\n\n**可复用做法：** 每份报告记录设备、系统、宿主版本、接口暴露、授权结果、真实业务数据、前后台恢复和错误。摄像头用新鲜图像变化验证；BLE 要到连接和读写回传；不能用 API 布尔值代替能力成功。没有接口时，不把猜测的桥接方案写成成果。\n\n**边界：** 上述都是当时特定宿主环境的实验，不是当前平台支持承诺；技术上能调用与作品允许发布也须分别确认。无需照搬历史像素哈希或开关覆盖技巧。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "验证宿主摄像头、BLE、触感等能力时；历史特定宿主结果不代表当前平台支持或发布许可。",
+      "domains": [
+        "capability",
+        "能力探针",
+        "camera",
+        "bluetooth",
+        "haptics"
+      ],
+      "platforms": [
+        "webview",
+        "mobile"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S34",
+          "summary": "历史记录：轨道 live 但像素冻结。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f9f88-ea5f-7101-98a5-8ba08cab9f6a:1806",
+          "verification": "historical"
+        },
+        {
+          "id": "S35",
+          "summary": "历史记录：蓝牙入口不存在的实测结论。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fa01e-43ed-7ac3-a17c-1fbbe3198793:2631",
+          "verification": "historical"
+        },
+        {
+          "id": "S36",
+          "summary": "历史记录：系统触感与脚本点击的区别。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fa7d7-d0da-7311-9d22-7f74cc50b57f:5650",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "runtime_lifecycle",
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-21",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "眼控最有价值的是校准验证分离，不是更多补偿参数",
+      "content": "历史实现从五点校准发展到九点校准加三个留出验证点，输出真实像素误差；算法与设备 API 分离，可测试停留触发的一次性、重置、失效样本和滤波恢复。\n\n**可复用做法：** 留出点检验泛化；分清模型拟合与业务命中；报告丢失/恢复后的行为。不要只用校准点评估精度，也不要把不断追加的补偿、扩大命中区域和在线偏移修正当作已证明必要的算法。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "设计眼控校准、留出验证及停留触发生命周期时；合成数据不代表真实精度。",
+      "domains": [
+        "gaze",
+        "眼控",
+        "calibration",
+        "校准",
+        "verification"
+      ],
+      "platforms": [
+        "webview",
+        "web",
+        "mobile"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S37",
+          "summary": "历史记录：九点校准、留出验证和生命周期。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fa8c3-db26-7a41-b726-5146796d0882:731",
+          "verification": "historical"
+        },
+        {
+          "id": "S38",
+          "summary": "历史记录：眼控合成测试覆盖范围。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fa8c5-b485-7483-ac22-39b13a098c8d:2698",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "motion_interaction"
+      ]
+    },
+    {
+      "id": "seed-exp-22",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "包体压缩必须连同解码路径一起验证",
+      "content": "**历史问题：** 已经切到不含 Draco 的模型后，后续版本又引回 Draco 与 Blob Worker；离线扫描仍通过，审计文档还声称没有 Worker。另有 demo 直接报 `No DRACOLoader instance provided`。\n\n**可复用做法：** 检查真正被入口引用的模型、解码器和 Worker，而不是只看目录里有没有兼容版本。解压最终 ZIP，在目标容器验证加载与关键交互；构建脚本的检查范围要对应真实失败，不增加无关门禁。\n\n30 MB、8 MB 等数字是这些历史项目的不同要求，不作为当前平台规范。不同目标可以选择不同编码；没有证据就不宣称所有 WebView 都禁用 Draco/Worker。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "模型编码、离线包与目标容器加载验证；历史包体限额不作为当前平台规范。",
+      "domains": [
+        "assets",
+        "压缩",
+        "draco",
+        "worker",
+        "build"
+      ],
+      "platforms": [
+        "threejs",
+        "webview",
+        "web"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S39",
+          "summary": "历史记录：Draco Worker 再引入及审计失配。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fbf07-5e12-79b2-b6f4-c44304ab9ed1:2834",
+          "verification": "historical"
+        },
+        {
+          "id": "S40",
+          "summary": "历史记录：姿态测试通过但模型加载仍失败。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb113-c9d0-75a0-a791-f3d0c4922119:484",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "asset_performance",
+        "build_delivery",
+        "runtime_lifecycle"
+      ]
+    },
+    {
+      "id": "seed-exp-23",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "音频初始化、暂停、切关、销毁是一整条生命周期",
+      "content": "**具体错误：** 一轮审查发现对象未创建时，`undefined !== 'closed'` 使初始化提前返回；另一轮发现全局静音没有传入部分 iframe 任务，碰撞长音不断叠加，切关时旧声音仍播放。\n\n**可复用做法：** 分开处理“尚未创建”和“已存在且可复用”；由明确的所有者控制 AudioContext、Gain 和声源。统一暂停、静音、恢复、退出接口，旧异步解码完成后不得回放已过期场景事件。音频需要真实操作验证：首个动作能响、全局静音生效、重进不重复、后台不残留。\n\n不要只加更长节流掩盖声源生命周期问题；历史审查不代表所有后续问题已修复。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "实现音频创建、暂停、静音、切关、iframe 任务与销毁时；历史审查不等于全部修复完成。",
+      "domains": [
+        "audio",
+        "音频",
+        "生命周期",
+        "ui"
+      ],
+      "platforms": [
+        "web",
+        "webview",
+        "threejs"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S41",
+          "summary": "历史记录：音频对象为空导致初始化跳过。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fbed2-c517-7960-8956-68ceae1cbf69:2957",
+          "verification": "historical"
+        },
+        {
+          "id": "S42",
+          "summary": "历史记录：碰撞声音暂停与叠加问题。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fbeac-f87c-73f1-848b-597354cd88e2:1879",
+          "verification": "historical"
+        },
+        {
+          "id": "S43",
+          "summary": "历史记录：全局静音没有覆盖 iframe 任务。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fbed2-7967-7f12-8c53-f89147cf21f8:2366",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "runtime_lifecycle"
+      ]
+    },
+    {
+      "id": "seed-exp-24",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "找“最后完整版本”要证明行为和来源",
+      "content": "**历史成果：** 通过构建时间线、三关任务结构及浏览器行为找回 2026-07-30 11:13 的完整 Web 构建，排除了独立 demo 和后来的迷宫玩法。仓库当时无提交，所以找回的是运行包，不是对应源码提交。\n\n**可复用做法：** 先写目标行为指纹（关卡数、任务、UI、不要的后续改动），再查 Git、生成脚本、构建记录和包内内容。`maze` 在 Base64 内的偶然命中不代表迷宫代码；文件大小、名称和修改时间也不能单独证明版本。恢复包作行为对照，源码继续从可靠源头维护。\n\n常规项目优先用 Git 提交、版本号及明确产物路径保留对应关系，不默认引入新哈希系统。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "定位最后完整版本、恢复运行包或区分源码与产物时；优先 Git 和版本记录。",
+      "domains": [
+        "version",
+        "版本恢复",
+        "git",
+        "build"
+      ],
+      "platforms": [
+        "web",
+        "threejs"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S44",
+          "summary": "历史记录：恢复完整三关运行包与源码界限。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb1e6-0e13-7660-91bf-cc447c89abe7:182",
+          "verification": "historical"
+        },
+        {
+          "id": "S45",
+          "summary": "历史记录：三关、25 项测试和不同版本的区分。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fbec2-8f81-7f82-b47e-c6e0b71e6496:2060",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "engineering_workflow",
+        "build_delivery"
+      ]
+    },
+    {
+      "id": "seed-exp-25",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "验证应该穿过真正出错的边界",
+      "content": "这批对话反复出现四种“局部通过，整体仍错”：陀螺仪测试预设方向也写错；门的任务数据正确但加载后节点名变化；iframe 组件存在但旧服务未初始化；Blender 对象可渲染却出画。\n\n**可复用做法：** 选择独立的验证依据，测试到最终结果：参考姿态到相机、真实 GLB 到碰撞、真实拖拽到任务完成和开门、真实相机到渲染图。关卡门打开既要视觉消失，也要碰撞可通行，重进还要正确复位。\n\n调试跳关帮助定位，但至少走一次正常用户路径。`hkstest` 的 smoke 和 `game` 的实际点击通关是可复用的验证形态，工具调用或测试条数不能替代行为证据。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。",
+      "applicability": "局部测试通过但最终画面或交互失败时；选择独立依据并走正常用户路径。",
+      "domains": [
+        "verification",
+        "验证",
+        "motion",
+        "collision",
+        "ui",
+        "render"
+      ],
+      "platforms": [
+        "threejs",
+        "blender",
+        "unity",
+        "web"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S12",
+          "summary": "历史记录：原有测试通过却未发现方向符号错误。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb15d-ff66-7342-a29a-cc2b8c3233cd:160",
+          "verification": "historical"
+        },
+        {
+          "id": "S46",
+          "summary": "历史记录：模型节点加载后的命名差异。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb176-9e7b-7dd1-abbc-097b1c044710:2825",
+          "verification": "historical"
+        },
+        {
+          "id": "S47",
+          "summary": "历史记录：真实 iframe 交互与旧构建定位。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019fb41e-aced-79f2-99cc-62404150f828:2587",
+          "verification": "historical"
+        },
+        {
+          "id": "S48",
+          "summary": "历史记录：路演模式、smoke、桌面移动端验证。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f3b46-84e3-7042-87ba-30688d7dc45b:321",
+          "verification": "historical"
+        },
+        {
+          "id": "S49",
+          "summary": "历史记录：真实点击通关与移动端验证。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019ebb1e-f81f-7390-8614-a1c9f4a4824f:1270",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "engineering_workflow"
+      ]
+    },
+    {
+      "id": "seed-exp-26",
+      "project_id": null,
+      "scope": "shared",
+      "kind": "procedure",
+      "title": "跨端数据流要明确谁拥有正文、状态和写入权限",
+      "content": "**历史问题：** 信件展示后提交时重新取正文，有可能提交内容与已展示内容不同；dashboard 又曾将私密记忆字段直接公开、写操作未鉴权。后续服务端修复记录包含展示字段白名单、写入/管理权限分离和按 ID 去重。\n\n**可复用做法：** 展示、签收、提交使用同一份确定的内容快照；公开接口只返回展示所需字段。用稳定 ID 和普通幂等逻辑处理重复提交，权限在服务端验证。后端测试通过后仍需单独核对部署配置和线上行为。\n\n证据边界：以上为历史对话提炼，未重新运行工具或设备验证；旧版本和项目参数不自动适用于当前项目。\n适用边界：来自具体历史漏洞，不扩展为无关安全检查。",
+      "applicability": "展示后签收提交、公开 dashboard、写入权限和重复提交场景；修复后仍需验证部署配置。",
+      "domains": [
+        "backend",
+        "后端",
+        "ui",
+        "数据流",
+        "authorization",
+        "权限"
+      ],
+      "platforms": [
+        "unity",
+        "web"
+      ],
+      "status": "supported",
+      "enabled": true,
+      "evidence": [
+        {
+          "id": "S50",
+          "summary": "历史记录：展示信件与提交正文的历史审查。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f3548-4373-7f80-8884-b9f29ca35f64:78",
+          "verification": "historical"
+        },
+        {
+          "id": "S51",
+          "summary": "历史记录：dashboard 权限与展示字段修复。仅保留当时记录，不表示当前重新验证。",
+          "source_kind": "historical_chat",
+          "source_project_id": null,
+          "source_ref": "codex:019f4821-3f13-7e50-a326-037e851e49c1:593",
+          "verification": "historical"
+        }
+      ],
+      "topics": [
+        "engineering_workflow"
+      ]
+    }
+  ]
+}

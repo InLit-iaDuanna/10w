@@ -1,0 +1,436 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-clockwork-eq03",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-eq03:p0",
+      "center_m": [
+        0.0,
+        0.31001,
+        -0.005345
+      ],
+      "half_extents_m": [
+        0.33139,
+        0.31001,
+        0.347425
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-eq03:p1",
+      "center_m": [
+        0.0,
+        0.39553,
+        0.315355
+      ],
+      "half_extents_m": [
+        0.2138,
+        0.05345,
+        0.037415
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-eq03:p2",
+      "center_m": [
+        0.0,
+        0.19242,
+        0.315355
+      ],
+      "half_extents_m": [
+        0.23518,
+        0.04276,
+        0.037415
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-eq03:p3",
+      "center_m": [
+        -0.3207,
+        0.33139,
+        -0.005345
+      ],
+      "half_extents_m": [
+        0.1069,
+        0.037415,
+        0.1069
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          0.9999999999999466,
+          0.0
+        ],
+        [
+          -0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-eq03:p4",
+      "center_m": [
+        0.3207,
+        0.33139,
+        -0.005345
+      ],
+      "half_extents_m": [
+        0.1069,
+        0.037415,
+        0.1069
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          0.9999999999999466,
+          0.0
+        ],
+        [
+          -0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use",
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "head",
+      "grip_position_m": [
+        0.0,
+        0.124004,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.11474668839366382,
+                0.0,
+                0.0,
+                0.9933947843142158
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3,
+              0.65
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "head",
+      "grip_position_m": [
+        0.0,
+        0.124004,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "rigid weights, articulated parts",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-clockwork-eq03.glb",
+      "triangle_count": 240,
+      "part_count": 5,
+      "distance_m": 0.0,
+      "sha256": "b3a8e029be0e17a3b7a69bc82d19dc59834249a9e3f4773f936938f770f6b710",
+      "byte_size": 76192
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-clockwork-eq03.lod1.glb",
+      "triangle_count": 110,
+      "part_count": 4,
+      "distance_m": 3.58,
+      "sha256": "14c8cffe2fcf7be20664cfdf56cd7c3557fa60d69757c8c57381894caafce496",
+      "byte_size": 49016
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-clockwork-eq03.lod2.glb",
+      "triangle_count": 68,
+      "part_count": 4,
+      "distance_m": 8.59,
+      "sha256": "ae0216b6c8c5d171ab1d0399593a18471d2f3799754b562809fafeca11cb6fcb",
+      "byte_size": 40500
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.358115,
+      0.0,
+      -0.35277
+    ],
+    "max": [
+      0.358115,
+      0.62002,
+      0.35277
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

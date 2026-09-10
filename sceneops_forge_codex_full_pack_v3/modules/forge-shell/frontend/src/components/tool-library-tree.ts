@@ -4,6 +4,7 @@ export interface ToolTreeNode {
   readonly id: string;
   readonly title: string;
   readonly description: string;
+  readonly icon?: string;
   readonly sequence?: number;
   readonly editor: EditorDefinition;
 }
@@ -23,15 +24,18 @@ export interface ToolLibraryCatalog {
 }
 
 export interface ToolLibraryCatalogEntry {
+  readonly group?: string;
   readonly editorId: string;
   readonly title: string;
   readonly description: string;
+  readonly icon?: string;
 }
 
 interface ToolNodeDefinition {
   readonly editorId: string;
   readonly title: string;
   readonly description: string;
+  readonly icon?: string;
 }
 
 const productionFlow: readonly ToolNodeDefinition[] = [
@@ -75,6 +79,7 @@ function createNodes(definitions: readonly ToolNodeDefinition[], editorsById: Re
     return editor ? [{
       id: definition.editorId,
       title: definition.title,
+      icon: definition.icon ?? editor.icon,
       description: definition.description,
       ...(numbered ? { sequence: index + 1 } : {}),
       editor,
@@ -95,13 +100,14 @@ export function createToolLibraryTree(
 ): ToolTreeBranch[] {
   const editorsById = new Map(editors.map(editor => [editor.id, editor]));
   if (catalog) {
-    return filterBranches([{
-      id: 'current-workflow',
-      title: catalog.title,
+    const groups = [...new Set(catalog.entries.map(entry => entry.group ?? catalog.title))];
+    return filterBranches(groups.map((group,index) => ({
+      id: groups.length === 1 ? 'current-workflow' : `current-workflow-${index}`,
+      title: group,
       description: catalog.description,
-      kind: 'production',
-      nodes: createNodes(catalog.entries, editorsById, true),
-    }], rawQuery);
+      kind: 'production' as const,
+      nodes: createNodes(catalog.entries.filter(entry => (entry.group ?? catalog.title) === group), editorsById, true),
+    })), rawQuery);
   }
   const knownIds = new Set([
     ...productionFlow.map(node => node.editorId),

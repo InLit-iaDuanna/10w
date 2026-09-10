@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CardModelPreview, MODEL_ROTATION_IDENTITY, type CardModelPreviewHandle, type ModelRotationQuaternion } from './CardModelPreview.tsx';
 import { cardAssetClient, cardAssetFileUrl, cardAssetKey, projectAssetLibraryKey, type CardAssetList, type CardAssetRecord } from './cardAssetClient.ts';
 import './card-asset-workflow.css';
+import { TripoCreator } from './TripoCreator';
+import { ProductionPreparationSummary } from '../../../ai-agent-runtime/frontend/src/index.ts';
 
 type Message = { id: string; role: string; text: string; replyTo?: string; modelingBlock?: string };
 type LiveUpdateJob = { triggerMessageId: string; modelingBlock: string;
@@ -27,11 +29,13 @@ function sameRotation(left: ModelRotationQuaternion, right: ModelRotationQuatern
 
 export type CardAssetWorkflowProps = { projectId: string; cardId: string; source: 'import'|'create';
   sessionId: string; messages: Message[]; onCreateAnother?: () => void; onOpenEnvironment?: () => void;
-  observeConversation?: boolean; presentation?: 'workflow'|'scene' };
+  onEditMaterial?: (target:{assetId:string;assetVersion:number})=>void; observeConversation?: boolean; presentation?: 'workflow'|'scene' };
 
 export function CardAssetWorkflow({projectId, cardId, source, sessionId, messages, onCreateAnother, onOpenEnvironment,
-  observeConversation = true, presentation = 'workflow'}: CardAssetWorkflowProps) {
+  onEditMaterial, observeConversation = true, presentation = 'workflow'}: CardAssetWorkflowProps) {
   const cache = useQueryClient();
+  const channelKey=['model-generation-channel',projectId,sessionId];
+  const channel=useQuery<'local'|'tripo'>({queryKey:channelKey,initialData:'local',enabled:false});
   const key = cardAssetKey(projectId, cardId);
   const query = useQuery({queryKey:key, queryFn:({signal}) => cardAssetClient.list(projectId, cardId, signal), retry:false});
   const libraryKey = projectAssetLibraryKey(projectId);
@@ -130,7 +134,7 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     }, onError:error => setNotice({text:error.message,kind:'error'})});
 
   useEffect(() => {
-    if (!observeConversation) {
+    if (!observeConversation || channel.data==='tripo') {
       observed.current = null;
       setQueue([]);
       setFailedJob(null);
@@ -156,13 +160,13 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
           .map(item => ({role:item.role,text:item.text}))};
     });
     setQueue(current => [...current, ...jobs.filter(job => !current.some(item => item.triggerMessageId === job.triggerMessageId))]);
-  }, [messages, observeConversation, sessionId, source, hasSessionDraft]);
+  }, [messages, observeConversation, sessionId, source, hasSessionDraft, channel.data]);
 
   useEffect(() => {
-    if (!observeConversation || source !== 'create' || !query.isSuccess || liveUpdated.isPending || failedJob || !queue.length) return;
+    if (!observeConversation || channel.data==='tripo' || source !== 'create' || !query.isSuccess || liveUpdated.isPending || failedJob || !queue.length) return;
     setNotice(null);
     liveUpdated.mutate(queue[0]!);
-  }, [source, query.isSuccess, queue, failedJob, liveUpdated.isPending, observeConversation]);
+  }, [source, query.isSuccess, queue, failedJob, liveUpdated.isPending, observeConversation, channel.data]);
 
   const latestProposal = query.data?.proposals.find(item => item.session_id === sessionId) ?? null;
   const completedBlocks = useMemo(() => {
@@ -194,9 +198,14 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
     : undefined;
   const sceneVersionSaved = !!sceneLibraryVersion && sameRotation(
     versionRotation(sceneLibraryVersion), sceneModelRotation);
+  const channelPicker=source==='create'&&<label className="model-generation-channel">创建渠道<select aria-label="创建模型渠道" value={channel.data} disabled={busy} onChange={event=>cache.setQueryData(channelKey,event.target.value)}><option value="local">本地 Blender · 对话建模</option><option value="tripo">Tripo · AI 3D 生成</option></select></label>;
+  if(source==='create' && channel.data==='tripo') return <section className="model-tripo-workflow">{channelPicker}<TripoCreator key={sessionId} projectId={projectId} cardId={cardId} sessionId={sessionId} initialPrompt={messages.filter(item=>item.role==='user').at(-1)?.text??''} onReady={()=>{void refresh();}}/>
+    {!!assets.length && <button onClick={()=>cache.setQueryData(channelKey,'local')}>查看已导入模型与入库操作</button>}
+  </section>;
   if (presentation === 'scene') return <section ref={sceneRoot} className="card-model-scene-workflow"
     style={{'--card-model-scene-share':`${sceneShare}%`} as CSSProperties} aria-label="当前模型场景">
     <section className="card-model-scene-card" aria-label="当前模型预览">
+      {channelPicker}
       <div className="card-model-scene-status"><div className="card-model-scene-title"><span>{sceneVersion ? `模型 v${sceneVersion.number}` : '模型草稿'}</span>
         <strong>{sceneAsset?.title ?? (sceneGenerationPending ? '正在生成模型' : '等待确认建模')}</strong></div>
         <div className="card-model-scene-meta">{sceneGenerationPending
@@ -254,6 +263,7 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
   </section>;
 
   return <section className="card-asset-workflow" aria-label={source === 'import' ? '导入模型工作流' : '实时新建模型工作流'}>
+    {channelPicker}
     {source === 'create' ? <>
       <ol className="card-model-blocks" aria-label="建模对齐阶段">{MODELING_BLOCKS.map((block, index) => <li key={block.id}
         data-state={completedBlocks.has(block.id) ? 'done' : currentBlock === block.id ? 'current' : 'pending'}>
@@ -298,6 +308,7 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
           <div className="card-asset-next-actions">
             <button type="button" className="primary" disabled={busy || versionSaved}
               onClick={() => {setNotice(null);savedToLibrary.mutate({assetId:asset.id,version:version.number,modelRotation});}}>{versionSaved ? '已存资产库' : '存入资产库'}</button>
+            {versionSaved && libraryEntry && onEditMaterial && <button type="button" disabled={busy} onClick={()=>onEditMaterial({assetId:libraryEntry.id,assetVersion:version.number})}>编辑材质</button>}
             {versionSaved && source === 'create' && onCreateAnother && <button type="button" disabled={busy} onClick={onCreateAnother}>继续新建</button>}
             {versionSaved && onOpenEnvironment && <button type="button" disabled={busy} onClick={onOpenEnvironment}>搭建环境 →</button>}
           </div>
@@ -311,6 +322,8 @@ export function CardAssetWorkflow({projectId, cardId, source, sessionId, message
         {asset.error && <p role="alert">{asset.error}</p>}
       </article>;
     })}</div> : !liveUpdated.isPending && <p className="card-asset-empty">{source === 'create' ? '发送第一轮模型描述后，这里会出现 v1 的真实 Three.js 预览。' : '选择 GLB 或 FBX 后，这里显示检查结果。'}</p>}
+    {source === 'create' && latestProposal?.production_preparation &&
+      <ProductionPreparationSummary value={latestProposal.production_preparation} />}
     {source === 'create' && latestProposal && <details className="card-latest-plan"><summary>当前版本的结构化方案</summary><h3>{latestProposal.title}</h3><p>{latestProposal.summary}</p><small>{latestProposal.parts.length} 个原语 · {latestProposal.provider} / {latestProposal.model}</small></details>}
     {library.error && <p role="alert" className="card-asset-notice" data-kind="error">资产库读取失败：{library.error.message}</p>}
     <footer>{source === 'create' ? '每轮成功都追加版本；不会覆盖旧模型，也不会自动提交 Git。' : '导入保留原件；归一化会追加版本。'}</footer>

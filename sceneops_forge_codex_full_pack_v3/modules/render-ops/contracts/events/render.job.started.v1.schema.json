@@ -1,4 +1,6 @@
 {
+  "x-event-type": "render.job.started",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://render-ops/events/render.job.started@1",
   "title": "render.job.started@1 payload",

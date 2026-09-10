@@ -113,5 +113,7 @@
     "payload"
   ],
   "title": "ConceptVariantReviewedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "concept.variant.reviewed",
+  "x-event-version": 1
 }

@@ -1,6 +1,7 @@
 """Single-user planning journey; production execution is deliberately separate."""
 from typing import Literal
 import re
+from sceneops_project_workspace import ProductionDomainId
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -28,6 +29,8 @@ class ProductionCard(JourneyModel):
     dependencies: list[str] = Field(default_factory=list, max_length=30)
     acceptance: str = Field(min_length=1, max_length=4000)
     status: Literal['planned'] = 'planned'
+    source_ids: list[str] = Field(default_factory=list, max_length=60)
+    domain_ids: list[ProductionDomainId] = Field(default_factory=list, max_length=7, exclude_if=lambda value: not value)
 
 
 class CardProposal(JourneyModel):
@@ -63,6 +66,34 @@ class CompactCardProposal(CardProposal):
         actual = {card.id for card in self.cards}
         if actual != expected:
             raise ValueError('制作方案必须使用四个固定主线 ID：world-3d、core-gameplay、growth-feedback、demo-delivery。')
+        return self
+
+
+class DomainProductionCard(ProductionCard):
+    domain_ids: list[ProductionDomainId] = Field(min_length=1, max_length=7)
+
+
+class DomainCardProposal(CardProposal):
+    cards: list[DomainProductionCard] = Field(min_length=1, max_length=30)
+
+
+class ProductionDomainWork(JourneyModel):
+    brief: str = Field(default='', max_length=8000)
+    stage: Literal['not-started', 'graybox', 'refinement', 'review'] = 'not-started'
+
+
+class ProductionBasis(JourneyModel):
+    task_id: str
+    workspace_id: str
+
+
+class ExistingProductionPlan(DomainCardProposal):
+    outline: Outline
+
+    @model_validator(mode='after')
+    def source_bindings(self):
+        if any(not card.source_ids for card in self.cards):
+            raise ValueError('每张制作卡必须关联当前工程中至少一个真实源码 ID。')
         return self
 
 
@@ -130,6 +161,29 @@ class InitialDemoDirection(JourneyModel):
     code_architecture: Literal['object-component', 'ecs']
     simplified_scope: str = Field(min_length=1, max_length=8000)
     confirmed: bool = True
+    camera_mode: Literal['fit-scene', 'follow-player', 'first-person', 'side-scroll'] | None = None
+
+
+class DemoDirectionDraft(JourneyModel):
+    core_experience: str = Field(min_length=1, max_length=8000)
+    perspective_style: str = Field(min_length=1, max_length=4000)
+    simplified_scope: str = Field(min_length=1, max_length=8000)
+    code_architecture: Literal['object-component', 'ecs']
+    camera_mode: Literal['fit-scene', 'follow-player', 'first-person', 'side-scroll'] | None = None
+
+
+class ProjectDiscussionReply(JourneyModel):
+    text: str = Field(min_length=1, max_length=8000)
+    question: PlanningQuestion | None = None
+    direction: DemoDirectionDraft | None = None
+
+    @model_validator(mode='after')
+    def one_next_step(self):
+        if self.question is not None and self.direction is not None:
+            raise ValueError('尚有待回答的问题时，不能同时提交制作摘要。')
+        if self.direction is not None and self.direction.camera_mode is None:
+            raise ValueError('制作摘要必须明确相机策略 camera_mode。')
+        return self
 
 
 class GameProjectScaffold(JourneyModel):
@@ -199,25 +253,47 @@ class JourneyChange(JourneyModel):
     status: Literal['pending', 'accepted', 'rejected'] = 'pending'
 
 
+class CardConversation(JourneyModel):
+    id: str
+    title: str
+    messages: list[JourneyMessage] = Field(default_factory=list)
+    summary: str | None = None
+    summary_id: str | None = None
+    start_id: str | None = None
+    draft: str = ''
+
+
 class PlanningJourney(JourneyModel):
     project_id: str
     root_path: str
     revision: int = 0
     collaboration: Literal['solo'] = 'solo'
     stage: Literal['idea', 'grill', 'outline', 'stack', 'cards'] = 'idea'
+    production_basis: ProductionBasis | None = None
     messages: list[JourneyMessage] = Field(default_factory=list)
+    card_conversations: dict[str, list[CardConversation]] = Field(default_factory=dict)
+    active_conversation_ids: dict[str, str] = Field(default_factory=dict)
+    card_messages: dict[str, list[JourneyMessage]] = Field(default_factory=dict)
+    card_alignment_summaries: dict[str, str] = Field(default_factory=dict)
+    card_alignment_summary_ids: dict[str, str] = Field(default_factory=dict)
+    card_alignment_start_ids: dict[str, str] = Field(default_factory=dict)
     outline: Outline | None = None
     versions: list[JourneyVersion] = Field(default_factory=list)
     stack: Literal['threejs'] | None = None
     initial_demo_direction: InitialDemoDirection | None = None
+    demo_direction_draft: DemoDirectionDraft | None = None
+    execution_policy: Literal['ask', 'full-access'] = 'ask'
     technical_plan: GameTechnicalPlan | None = None
     architecture_recommendation: ArchitectureRecommendation | None = None
     cards: list[ProductionCard] = Field(default_factory=list)
+    domain_work: dict[ProductionDomainId, ProductionDomainWork] = Field(default_factory=dict)
     composer_draft: str = ''
     model_calls: int = 0
+    production_preparation: dict | None = None
     git_versions: list[GitVersion] = Field(default_factory=list)
     card_branches: list[CardBranch] = Field(default_factory=list)
     active_card_id: str | None = None
+    main_scroll_top: float = Field(default=0, ge=0)
     changes: list[JourneyChange] = Field(default_factory=list)
     modeling_sessions: list[CardModelingSession] = Field(default_factory=list)
     active_modeling_id: str | None = None
@@ -227,19 +303,25 @@ class PlanningJourney(JourneyModel):
 class JourneyCommand(JourneyModel):
     request_id: str = Field(pattern=r'^[a-zA-Z0-9_-]{1,100}$')
     expected_revision: int = Field(ge=0)
-    operation: Literal['message', 'save_draft', 'start_grill', 'generate_outline', 'save_outline',
-        'confirm_demo_direction',
+    operation: Literal['message', 'save_draft', 'start_grill', 'start_card_alignment', 'finish_card_alignment', 'generate_outline', 'save_outline',
+        'confirm_demo_direction', 'discuss_game', 'set_execution_policy', 'organize_production',
         'confirm_version', 'confirm_stack', 'recommend_architecture', 'confirm_technical_plan',
-        'generate_cards', 'save_cards',
+        'generate_cards', 'save_cards', 'save_domain', 'assign_card_domains',
         'accept_change', 'reject_change', 'select_card', 'clear_card', 'enable_git',
-        'choose_model_source', 'new_modeling', 'open_modeling', 'close_modeling']
+        'choose_model_source', 'new_modeling', 'open_modeling', 'close_modeling',
+        'new_conversation', 'select_conversation', 'delete_conversation']
+    domain_id: ProductionDomainId | None = None
+    domain_work: ProductionDomainWork | None = None
+    domain_ids: list[ProductionDomainId] | None = Field(default=None, max_length=7)
     text: str = Field(default='', max_length=16000)
+    main_scroll_top: float | None = Field(default=None, ge=0)
     outline: Outline | None = None
     cards: list[ProductionCard] | None = Field(default=None, max_length=30)
     accept_assumptions: bool = False
     question_message_id: str | None = None
     option_index: int | None = Field(default=None, ge=0, le=2)
     card_id: str | None = None
+    conversation_id: str | None = None
     change_id: str | None = None
     model_source: Literal['import', 'create'] | None = None
     modeling_id: str | None = None
@@ -249,6 +331,8 @@ class JourneyCommand(JourneyModel):
     simplified_scope: str | None = Field(default=None, max_length=8000)
     code_architecture: Literal['object-component', 'ecs'] | None = None
     selection_method: Literal['manual', 'ai'] | None = None
+    execution_policy: Literal['ask', 'full-access'] | None = None
+    camera_mode: Literal['fit-scene', 'follow-player', 'first-person', 'side-scroll'] | None = None
 
 
 class JourneyStreamEvent(JourneyModel):

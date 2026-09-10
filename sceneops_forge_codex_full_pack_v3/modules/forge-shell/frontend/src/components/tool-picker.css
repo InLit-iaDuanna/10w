@@ -8,50 +8,48 @@
   background: var(--canvas, #1b1b1b);
 }
 
-/* A pulled-out area is a selector, not a landing page. Keep the first choices
-   immediately below one toolbar, with only the choices scrolling. */
+/* One scrolling list shared by all four region placements. */
 .picker-tool-library {
   container-type: size;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
+  min-width: 0;
+  gap: 10px;
+  padding: 12px;
   overflow: hidden;
 }
-.picker-toolbar { display: flex; flex: 0 0 auto; min-width: 0; gap: 8px; }
-.picker-toolbar .picker-search-control { flex: 1; min-width: 0; min-height: 32px; padding: 0 8px; }
-.picker-toolbar .picker-search-control input { padding: 5px 0; font-size: 12px; }
-.picker-toolbar > select { width: 105px; min-width: 0; padding: 4px 6px; font-size: 11px; border-radius: 6px; }
-.picker-options { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1px 2px 4px 1px; }
-.picker-tool-library .picker-feedback { flex: 0 0 auto; margin: 0; }
-
-@container (max-height: 220px) {
-  .picker-tree-node { min-height: 32px; padding: 4px 8px; }
-  .picker-tree-node-copy small, .picker-tree-branch-header small { display: none; }
-}
-
-.picker-tool-tree { display: grid; align-content: start; gap: 16px; }
+.picker-toolbar { display: flex; flex: 0 0 auto; min-width: 0; }
+.picker-toolbar .picker-search-control { flex: 1; min-width: 0; min-height: 34px; padding: 0 10px; }
+.picker-toolbar .picker-search-control input { padding: 6px 0; font-size: 12px; }
+.picker-tool-library .picker-placement { flex: 0 0 auto; margin: 0; }
+.picker-options { flex: 1; min-height: 0; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 2px; }
+.picker-tool-library .picker-feedback { flex: 0 0 auto; margin: 0; overflow-wrap: anywhere; }
+.picker-tool-tree { display: grid; align-content: start; gap: 16px; min-width: 0; }
 .picker-tree-branch { min-width: 0; }
-.picker-tree-branch-header { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 8px; min-height: 34px; }
-.picker-tree-junction { width: 9px; height: 9px; margin-left: 4px; border: 1px solid var(--border-strong); border-radius: 50%; background: var(--surface-2); }
-.picker-tree-branch-header > span:last-child, .picker-tree-node-copy { display: grid; min-width: 0; gap: 2px; }
-.picker-tree-branch-header strong, .picker-tree-node-copy strong { color: var(--text-primary); font-size: 12px; font-weight: 650; }
-.picker-tree-branch-header small, .picker-tree-node-copy small { overflow: hidden; color: var(--text-muted); font-size: 10px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
-.picker-tree-nodes { position: relative; display: grid; gap: 5px; margin: 2px 0 0; padding: 0 0 0 27px; list-style: none; }
-.picker-tree-nodes::before { position: absolute; top: -5px; bottom: 21px; left: 8px; width: 1px; background: var(--border-default); content: ''; }
-.picker-tree-nodes > li { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
-.picker-tree-nodes > li::before { position: absolute; top: 21px; left: -19px; width: 19px; height: 1px; background: var(--border-default); content: ''; }
-.picker-tree-step { position: absolute; z-index: 1; top: 12px; left: -24px; display: grid; place-items: center; width: 12px; height: 18px; color: var(--text-muted); background: var(--surface-1); font-size: 9px; font-variant-numeric: tabular-nums; }
-.picker-tree-node { display: grid; grid-template-columns: minmax(0, 1fr) 15px; align-items: center; gap: 8px; min-width: 0; min-height: 43px; padding: 6px 8px; color: inherit; text-align: left; border: 1px solid var(--border-subtle); border-radius: 5px; background: var(--surface-1); transition: background 140ms ease, border-color 140ms ease; }
-.picker-tree-node:hover { border-color: var(--border-strong); background: var(--surface-hover); }
-.picker-tree-node:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
-.picker-tree-node:hover .picker-open-arrow { stroke: var(--text-primary); transform: translateX(2px); }
-
-@container (min-width: 680px) {
-  .picker-tool-tree { grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); }
-  .picker-tree-branch.is-production { grid-row: span 3; }
-  .picker-tree-branch.is-production .picker-tree-nodes { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 12px; }
-  .picker-tree-branch.is-production .picker-tree-nodes::before { bottom: 0; }
+.picker-tree-branch-header { padding: 4px 8px 8px; }
+.picker-tree-branch-header > span { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; }
+.picker-tree-branch-header strong { color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+.picker-tree-branch-header small { color: var(--text-muted); font-size: 10px; }
+.picker-tree-nodes { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.picker-tree-nodes > li { display: grid; min-width: 0; }
+.picker-tree-node { display: grid; grid-template-columns: 28px minmax(0, 1fr) 15px; align-items: center; gap: 10px; min-width: 0; padding: 10px 8px; color: inherit; text-align: left; border: 1px solid transparent; border-radius: 6px; background: transparent; transition: background 140ms ease; }
+.picker-tree-node:hover { background: var(--surface-hover); }
+.picker-tree-node:focus-visible { outline: 2px solid var(--focus-ring, var(--border-strong)); outline-offset: -2px; }
+.picker-tree-node-copy { display: grid; min-width: 0; gap: 4px; }
+.picker-tree-node-copy strong { color: var(--text-primary); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.picker-tree-node-copy small { color: var(--text-muted); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.picker-node-status { display: flex; flex-wrap: wrap; min-width: 0; color: var(--text-muted); }
+.picker-node-status:empty { display: none; }
+.picker-node-status > * { margin: 0; white-space: normal; overflow-wrap: anywhere; }
+.picker-tree-node:hover .picker-open-arrow { stroke: var(--text-primary); }
+@container (min-width: 560px) {
+  .picker-tree-nodes { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 16px; }
+}
+@container (max-height: 220px) {
+  .picker-tree-node { padding: 6px 8px; }
+  .picker-tree-node-copy small { display: none; }
+  .picker-tree-branch-header { padding-block: 2px; }
 }
 
 .picker-header {
@@ -193,4 +191,20 @@
   .picker-group header p { display: none; }
   .picker-tool-grid { grid-template-columns: minmax(0, 1fr); }
   .picker-list-meta span:last-child { display: none; }
+}
+
+.picker-entry-icon { display: grid; place-items: center; align-self: start; width: 28px; height: 28px; color: var(--text-secondary); }
+.picker-entry-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.picker-tree-node:hover .picker-entry-icon { color: var(--text-primary); }
+
+@container (max-width: 200px) {
+  .picker-tree-node { grid-template-columns: 24px minmax(0, 1fr); gap: 6px; padding: 8px 2px; }
+  .picker-tree-node > .picker-open-arrow, .picker-tree-node-copy small { display: none; }
+  .picker-tree-node-copy strong { font-size: 12px; }
+  .picker-entry-icon { width: 24px; }
+  .picker-tree-branch-header { padding-inline: 2px; }
+}
+@container (max-width: 120px) {
+  .picker-tree-node { grid-template-columns: minmax(0, 1fr); }
+  .picker-entry-icon { display: none; }
 }

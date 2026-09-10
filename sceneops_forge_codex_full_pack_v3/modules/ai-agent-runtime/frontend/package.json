@@ -9,7 +9,8 @@
   "dependencies": {
     "@sceneops/api-client": "workspace:*",
     "@tanstack/react-query": "5.90.21",
-    "react": "19.2.8"
+    "react": "19.2.8",
+    "@sceneops/core-ui": "workspace:*"
   },
   "devDependencies": {
     "jsdom": "26.1.0",

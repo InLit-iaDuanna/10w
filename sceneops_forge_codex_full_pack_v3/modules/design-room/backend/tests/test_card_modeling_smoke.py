@@ -5,12 +5,35 @@ from pathlib import Path
 from uuid import uuid4
 from fastapi import HTTPException
 from sceneops_design_ai import PlanningJourneyService
-from sceneops_design_ai.journey_models import JourneyCommand, CardBranch, ProductionCard
+from sceneops_design_ai.journey_models import JourneyCommand, Outline, ProductionCard
 from sceneops_project_workspace import SqliteWorkspaceRepository
 from test_journey_smoke import FixtureProvider
 
 
 class CardModelingSmoke(unittest.IsolatedAsyncioTestCase):
+    async def prepare_modeling_card(self, service, project_id):
+        state = service.get(project_id)
+        state.stage = 'outline'
+        state.outline = Outline(title='建模测试', experience='探索', core_loop='移动',
+                                scope='一个场景', acceptance='可见模型')
+        with service.connection() as db:
+            db.execute('INSERT INTO design_journeys VALUES (?,?)',
+                       (project_id, state.model_dump_json()))
+        card = ProductionCard(id='map', title='地图', description='空间', acceptance='检查')
+        for operation, values in (
+            ('confirm_version', {}),
+            ('confirm_technical_plan', {'code_architecture': 'object-component', 'selection_method': 'manual'}),
+            ('save_cards', {'cards': [card]}),
+            ('select_card', {'card_id': 'map'}),
+        ):
+            state = await service.command(project_id, JourneyCommand(operation=operation,
+                expected_revision=state.revision, request_id=uuid4().hex, **values))
+        branch = state.card_branches[0]
+        self.assertTrue(Path(branch.worktree_path).is_dir())
+        self.assertEqual(service.folders.get_card_worktree(project_id, 'map')['base_commit'],
+                         branch.base_commit)
+        return state
+
     async def test_deep_modeling_alignment_uses_eight_question_budget(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
@@ -18,15 +41,7 @@ class CardModelingSmoke(unittest.IsolatedAsyncioTestCase):
             folder = folders.create_folder_project(root, 'project')
             service = PlanningJourneyService(root / 'state.sqlite3', folders,
                                              FixtureProvider(alignment_detail='deep'))
-            state = service.get(folder.project_id)
-            state.stage = 'cards'
-            state.cards = [ProductionCard(id='map', title='地图', description='空间', acceptance='检查')]
-            state.card_branches = [CardBranch(card_id='map', branch='codex/card-map',
-                worktree_path=str(root / 'fixture'), base_commit='fixture')]
-            state.active_card_id = 'map'
-            with service.connection() as db:
-                db.execute('INSERT INTO design_journeys VALUES (?,?)',
-                           (state.project_id, state.model_dump_json()))
+            state = await self.prepare_modeling_card(service, folder.project_id)
 
             async def act(operation, **values):
                 nonlocal state
@@ -50,15 +65,7 @@ class CardModelingSmoke(unittest.IsolatedAsyncioTestCase):
             folder = folders.create_folder_project(root, 'project')
             service = PlanningJourneyService(root / 'state.sqlite3', folders,
                                              FixtureProvider(alignment_detail='standard'))
-            state = service.get(folder.project_id)
-            state.stage = 'cards'
-            state.cards = [ProductionCard(id='map', title='地图', description='空间', acceptance='检查')]
-            state.card_branches = [CardBranch(card_id='map', branch='codex/card-map',
-                worktree_path=str(root / 'fixture'), base_commit='fixture')]
-            state.active_card_id = 'map'
-            with service.connection() as db:
-                db.execute('INSERT INTO design_journeys VALUES (?,?)',
-                           (state.project_id, state.model_dump_json()))
+            state = await self.prepare_modeling_card(service, folder.project_id)
 
             async def act(operation, **values):
                 nonlocal state
@@ -89,15 +96,7 @@ class CardModelingSmoke(unittest.IsolatedAsyncioTestCase):
             folder = folders.create_folder_project(root, 'project')
             service = PlanningJourneyService(root / 'state.sqlite3', folders,
                                              FixtureProvider(alignment_detail='concise'))
-            state = service.get(folder.project_id)
-            state.stage = 'cards'
-            state.cards = [ProductionCard(id='map', title='地图', description='空间', acceptance='检查')]
-            state.card_branches = [CardBranch(card_id='map', branch='codex/card-map',
-                worktree_path=str(root / 'fixture'), base_commit='fixture')]
-            state.active_card_id = 'map'
-            with service.connection() as db:
-                db.execute('INSERT INTO design_journeys VALUES (?,?)',
-                           (state.project_id, state.model_dump_json()))
+            state = await self.prepare_modeling_card(service, folder.project_id)
 
             async def act(operation, **values):
                 nonlocal state
@@ -123,14 +122,9 @@ class CardModelingSmoke(unittest.IsolatedAsyncioTestCase):
             folder = folders.create_folder_project(root, 'project')
             provider = FixtureProvider()
             service = PlanningJourneyService(root / 'state.sqlite3', folders, provider)
-            state = service.get(folder.project_id)
-            state.stage = 'cards'
-            state.cards = [ProductionCard(id='map', title='地图', description='空间', acceptance='检查')]
-            state.card_branches = [CardBranch(card_id='map', branch='codex/card-map', worktree_path=str(root / 'fixture'), base_commit='fixture')]
-            state.active_card_id = 'map'
-            state.composer_draft = '项目总对话草稿'
-            with service.connection() as db:
-                db.execute('INSERT INTO design_journeys VALUES (?,?)', (state.project_id, state.model_dump_json()))
+            state = await self.prepare_modeling_card(service, folder.project_id)
+            state = await service.command(state.project_id, JourneyCommand(operation='save_draft',
+                expected_revision=state.revision, request_id=uuid4().hex, text='项目总对话草稿'))
 
             async def act(operation, **values):
                 nonlocal state

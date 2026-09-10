@@ -81,10 +81,16 @@ def render_frontend_catalog(graph: ModuleGraph, output_path: Path) -> str:
         lines.append(
             f'import {{ moduleContribution as {variable} }} from {json.dumps(import_path)};'
         )
+        manifest_path = _relative_import(
+            source.directory / "frontend/src/generated/module-manifest.ts", output_path.parent
+        )
+        lines.append(
+            f'import {{ generatedModuleManifest as {variable}Manifest }} from {json.dumps(manifest_path)};'
+        )
         contributions.append((source.manifest.id, variable))
     lines.extend(["", "export const generatedFrontendModuleCatalog = ["])
     for module_id, variable in contributions:
-        lines.append(f"  {variable}, // {module_id}")
+        lines.append(f"  {{ ...{variable}, manifest: {variable}Manifest }}, // {module_id}")
     lines.extend(
         [
             "] as const;",
@@ -105,20 +111,19 @@ def render_backend_catalog(graph: ModuleGraph) -> str:
         entrypoint = source.manifest.entrypoints.backend
         if entrypoint is None:
             continue
-        variable = _python_name(source.manifest.id) + "_contribution"
-        lines.append(
-            f"from {entrypoint} import backend_module_contribution as {variable}"
-        )
-        contributions.append((source.manifest.id, variable))
+        variable = _python_name(source.manifest.id) + "_module"
+        lines.append(f"import {entrypoint} as {variable}")
+        contributions.append((source.manifest, variable))
     lines.extend(["", "GENERATED_BACKEND_MODULE_CATALOG = ("])
-    for module_id, variable in contributions:
-        lines.append(f"    {variable},  # {module_id}")
+    for manifest, variable in contributions:
+        value = pprint.pformat(_manifest_data(manifest), sort_dicts=True, width=100)
+        lines.append(f'    {{"manifest": {value}, "module": {variable}}},')
     lines.extend(
         [
             ")",
             "",
             "GENERATED_BACKEND_MODULE_IDS = tuple(",
-            "    contribution[\"manifest\"][\"id\"]",
+            '    contribution["manifest"]["id"]',
             "    for contribution in GENERATED_BACKEND_MODULE_CATALOG",
             ")",
             "",

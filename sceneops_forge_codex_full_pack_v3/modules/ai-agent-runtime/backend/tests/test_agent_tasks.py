@@ -253,18 +253,29 @@ class AgentTaskTests(IsolatedAsyncioTestCase):
         service = self.service(self.production_actions())
         task = service.prepare(PrepareAgentTask(goal="Cube to Unity"))
         self.authorize(service, task)
-        completed = await self.settled(service, task)
         tools = service.tools[task.id]
-        tools.sessions.pop("blender")
-        tools.session_states.pop("blender")
-        writes, calls = list(self.world["writes"]), service.provider.calls
-        grant = completed.grant.model_dump()
-        evidence = await tools.finish(completed)
-        self.assertTrue(evidence["verified"])
-        self.assertIn("blender", tools.sessions)
-        self.assertEqual(self.world["writes"], writes)
-        self.assertEqual(service.provider.calls, calls)
-        self.assertEqual(service.get(task.id).grant.model_dump(), grant)
+        original_finish = tools.finish
+        captured = {}
+
+        async def finish_with_lost_cache(current):
+            tools.sessions.pop("blender")
+            tools.session_states.pop("blender")
+            writes, calls = list(self.world["writes"]), service.provider.calls
+            grant = current.grant.model_dump()
+            evidence = await original_finish(current)
+            self.assertTrue(evidence["verified"])
+            self.assertIn("blender", tools.sessions)
+            self.assertEqual(self.world["writes"], writes)
+            self.assertEqual(service.provider.calls, calls)
+            self.assertEqual(service.get(task.id).grant.model_dump(), grant)
+            captured["verified"] = True
+            return evidence
+
+        tools.finish = finish_with_lost_cache
+        completed = await self.settled(service, task)
+        self.assertEqual(completed.status, "completed", completed.reason)
+        self.assertTrue(captured["verified"])
+        self.assertEqual(tools.sessions, {})
         events = service.events(task.id).events
         self.assertIn("agent.session.restored_for_verification", [event.event_type for event in events])
 
@@ -296,7 +307,9 @@ class AgentTaskTests(IsolatedAsyncioTestCase):
         self.authorize(service, task)
         self.assertEqual(service.execution_status(), "running")
         await self.settled(service, task)
-        self.assertEqual(service.execution_status(), "connected")
+        self.assertEqual(service.execution_status(), "idle")
+        self.assertEqual(service.tools[task.id].sessions, {})
+        self.assertCountEqual(self.world["stops"], ["blender", "unity"])
         starts, calls = list(self.world["starts"]), service.provider.calls
         service.execution_status()
         self.assertEqual(self.world["starts"], starts)

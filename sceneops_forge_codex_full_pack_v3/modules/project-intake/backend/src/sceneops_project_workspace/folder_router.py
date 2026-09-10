@@ -1,13 +1,14 @@
 """Authenticated composition roots can expose bounded local-folder project intake."""
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 
-from .models import (FolderListing, FolderProject, FolderProjectCreate, FolderProjectIdentityInspection,
+from .models import (FolderListing, FolderProject, FolderProjectCreate, FolderProjectDeleteFiles, FolderProjectIdentityInspection,
     FolderProjectInspect, FolderProjectList, FolderProjectRecover, WorkspaceError)
 from .repository import (FolderProjectConflict, FolderProjectIdentityConflict,
     InvalidFolderPath, WorkspaceRepository)
 from .git_projects import GitProjectError
+from .errors import FolderProjectRequired, ProjectNotFound
 
 
 def create_folder_router(repository: WorkspaceRepository):
@@ -68,9 +69,37 @@ def create_folder_router(repository: WorkspaceRepository):
     def get_folder_project(project_id: str):
         try:
             return repository.get_folder_project(project_id)
-        except KeyError as error:
+        except ProjectNotFound as error:
             raise HTTPException(404, "文件夹项目不存在。") from error
+        except FolderProjectRequired as error:
+            raise HTTPException(409, str(error)) from error
         except InvalidFolderPath as error:
             raise HTTPException(409, str(error)) from error
+
+    @router.delete("/folder-projects/{project_id}", status_code=204,
+        operation_id="workspaceForgetFolderProject")
+    def forget_folder_project(project_id: str):
+        try:
+            repository.forget_folder_project(project_id)
+        except ProjectNotFound as error:
+            raise HTTPException(404, "文件夹项目不存在。") from error
+        except FolderProjectRequired as error:
+            raise HTTPException(409, str(error)) from error
+        return Response(status_code=204)
+
+    @router.post("/folder-projects/{project_id}/delete-files", status_code=204,
+        operation_id="workspaceDeleteFolderProjectFiles")
+    def delete_folder_project_files(project_id: str, body: FolderProjectDeleteFiles, request: Request):
+        tasks = getattr(request.app.state, "agent_tasks", None)
+        if tasks is not None and tasks.execution_status() == "running":
+            raise HTTPException(409, "仍有制作任务正在执行，请先停止任务再删除本地项目文件。")
+        try:
+            repository.delete_folder_project_files(project_id, body.confirmed_root_path)
+        except ProjectNotFound as error:
+            raise HTTPException(404, "文件夹项目不存在。") from error
+        except (FolderProjectRequired, FolderProjectConflict, FolderProjectIdentityConflict,
+                InvalidFolderPath) as error:
+            raise HTTPException(409, str(error)) from error
+        return Response(status_code=204)
 
     return router

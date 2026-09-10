@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { environmentAssetUrl, type EnvironmentObject, type ProjectAssetEntry } from './environment-client.ts';
+import { environmentAssetUrl, type EnvironmentObject, type ProjectAssetEntry,type SceneLighting } from './environment-client.ts';
+import {applySceneLighting} from './scene-lighting';
 
 
-export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}: {
+export function EnvironmentScenePreview({objects, assets, selectedId, onSelect, loadAppearance,lighting}: {
+  lighting?:SceneLighting|null;
+  loadAppearance?: (object:EnvironmentObject,asset:ProjectAssetEntry)=>Promise<THREE.Object3D>;
   objects: EnvironmentObject[]; assets: ProjectAssetEntry[]; selectedId: string | null; onSelect: (id: string | null) => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
@@ -27,8 +30,8 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
     const element = host.current;
     if (!element) return;
     setFailure('');
-    let renderer: THREE.WebGLRenderer;
-    try { renderer = new THREE.WebGLRenderer({antialias:true}); }
+    let renderer: THREE.WebGPURenderer;
+    try { renderer = new THREE.WebGPURenderer({antialias:true}); }
     catch { setFailure('当前浏览器无法创建 Three.js 场景。'); return; }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -41,9 +44,12 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1.5, -3);
     controls.enableDamping = false;
+    if(lighting){renderer.toneMapping=THREE.ACESFilmicToneMapping;applySceneLighting(scene,renderer,lighting);}
+    else {
     scene.add(new THREE.HemisphereLight('#ffffff', '#242424', 2.1));
     const key = new THREE.DirectionalLight('#fff8ec', 3.4);
     key.position.set(8, 14, 7); key.castShadow = true; scene.add(key);
+    }
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({color:'#222522',roughness:1}));
     ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
     const grid = new THREE.GridHelper(80, 80, '#484848', '#303030'); grid.position.y = .002; scene.add(grid);
@@ -53,12 +59,16 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
     selectionRef.current = selection;
     let disposed = false;
     let visible = true;
+    let ready = false;
+    let drawing = false;
     const draw = () => {
-      if (disposed || !visible || document.hidden || !element.clientWidth || !element.clientHeight) return;
+      if (!ready || drawing || disposed || !visible || document.hidden || !element.clientWidth || !element.clientHeight) return;
       renderer.setSize(element.clientWidth, element.clientHeight, false);
       camera.aspect = element.clientWidth / element.clientHeight; camera.updateProjectionMatrix();
-      renderer.render(scene, camera);
+      drawing=true;
+      void renderer.renderAsync(scene,camera).catch(error=>{if(!disposed)setFailure(`场景渲染失败：${error.message}`);}).finally(()=>{drawing=false;});
     };
+    void renderer.init().then(()=>{if(disposed){renderer.dispose();return;}ready=true;renderer.setAnimationLoop(draw);draw();}).catch(error=>{if(!disposed)setFailure(`场景渲染初始化失败：${error.message}`);});
     drawRef.current = draw;
     controls.addEventListener('change', draw);
     const loader = new GLTFLoader();
@@ -73,7 +83,9 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
         mesh.position.y=recipe.height_m/2;mesh.userData.colliderDimensionsM=[recipe.width_m,recipe.height_m,recipe.thickness_m];
         return Promise.resolve(mesh);
       }
-      const url = environmentAssetUrl(object.source_asset_id, object.asset_version);
+      if (!asset || !version) throw new Error(`场景对象 ${object.id} 引用的资产 ${object.asset_id} v${object.asset_version} 不存在。`);
+      if(loadAppearance)return loadAppearance(object,asset);
+      const url = environmentAssetUrl(asset.project_id, asset.id, object.asset_version);
       let promise = loaded.get(url);
       if (!promise) {
         promise = loader.loadAsync(url).then(result => result.scene);
@@ -95,6 +107,7 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
       if (disposed) return;
       const bounds = new THREE.Box3().setFromObject(root);
       if (!bounds.isEmpty()) {
+        ground.position.y=bounds.min.y-.05;grid.position.y=bounds.min.y-.048;
         const center = bounds.getCenter(new THREE.Vector3());
         const size = bounds.getSize(new THREE.Vector3());
         const radius = Math.max(size.x, size.y, size.z, 4);
@@ -105,7 +118,7 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
       const selected = selectedRef.current ? groups.get(selectedRef.current) : undefined;
       if (selected) { selection.setFromObject(selected); selection.visible = true; }
       draw();
-    }).catch(() => { if (!disposed) setFailure('场景中的 GLB 读取失败，请检查资产版本。'); });
+    }).catch(error => { if (!disposed) setFailure(`场景读取失败：${error instanceof Error ? error.message : String(error)}`); });
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const click = (event: PointerEvent) => {
@@ -137,10 +150,10 @@ export function EnvironmentScenePreview({objects, assets, selectedId, onSelect}:
       ground.geometry.dispose(); (ground.material as THREE.Material).dispose();
       grid.geometry.dispose(); (grid.material as THREE.Material).dispose();
       selection.geometry.dispose(); (selection.material as THREE.Material).dispose();
-      renderer.dispose(); renderer.domElement.remove();
+      renderer.setAnimationLoop(null); renderer.dispose(); renderer.domElement.remove();
       groupsRef.current = new Map(); selectionRef.current = null; drawRef.current = () => undefined;
     };
-  }, [objects, assets, onSelect]);
+  }, [objects, assets, onSelect, loadAppearance,lighting]);
   return <div className="environment-scene-preview" ref={host} aria-label="Three.js 环境场景预览">
     {failure && <p role="alert">{failure}</p>}
     {!failure && objects.length === 0 && <span>场景为空 · 从资产库加入模型，或在左侧让 AI 搭建</span>}

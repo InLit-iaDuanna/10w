@@ -101,6 +101,7 @@ class CardAssetProposal(ModelPlanContent):
     status: Literal["planned", "generated", "failed"] = "planned"
     created_at: str = Field(default_factory=utc_now)
     error: str | None = None
+    production_preparation: dict | None = None
 
     @field_validator("model_rotation_quaternion_xyzw")
     @classmethod

@@ -1,6 +1,7 @@
 """Product game runtime: fixed commands, exact card worktree and repair evidence."""
 import asyncio
 import json
+import sys
 from pathlib import Path
 import stat
 import tempfile
@@ -49,14 +50,20 @@ class GameProjectRuntimeSmoke(unittest.IsolatedAsyncioTestCase):
                 encoding='utf-8')
             (project / 'src/main.ts').write_text('export const value: number = 1;\n', encoding='utf-8')
         self.pnpm = self.root / 'fixture-pnpm'
-        self.pnpm.write_text(f'''#!{Path(__import__('sys').executable).resolve()}
-import pathlib, sys
+        self.pnpm.write_text(f'''#!{Path(sys.executable).resolve()}
+import pathlib, sys, json
 root = pathlib.Path.cwd()
 if sys.argv[1] == 'install':
+    (root / '.install-args').write_text(' '.join(sys.argv[2:]))
     target = root / 'node_modules/.bin'
     target.mkdir(parents=True, exist_ok=True)
     (target / 'tsc').write_text('fixture')
     (target / 'vite').write_text('fixture')
+    manifest=json.loads((root/'package.json').read_text())
+    for name in ('three','@types/three'):
+        version=manifest.get('dependencies',{{}}).get(name) or manifest.get('devDependencies',{{}}).get(name)
+        if version:
+            target=root/'node_modules'/name;target.mkdir(parents=True,exist_ok=True);(target/'package.json').write_text(json.dumps({{'version':version}}))
     print('dependencies prepared')
 elif sys.argv[1:3] == ['exec', 'tsc']:
     bad = [p for p in root.rglob('*.ts') if 'TYPE_ERROR' in p.read_text()]
@@ -98,6 +105,16 @@ else:
     async def authorize_empty(self, task):
         return await self.run_actions(task, [])
 
+    async def test_renderer_version_change_requires_dependency_prepare(self):
+        task=self.prepare()
+        await self.run_actions(task,[action('deps','code.dependencies.prepare')])
+        root=self.worktrees/'card_one'
+        self.assertTrue(self.service.game.dependencies_ready(root))
+        package=json.loads((root/'package.json').read_text())
+        package['dependencies']['three']='0.185.1'
+        (root/'package.json').write_text(json.dumps(package))
+        self.assertFalse(self.service.game.dependencies_ready(root))
+
     async def test_source_only_tasks_preserve_old_semantics(self):
         task = self.prepare(execution=False)
         self.assertEqual(task.authorization_card.max_model_calls, 8)
@@ -131,6 +148,9 @@ else:
             action('finish', 'agent.finish', summary='fixed and running'),
         ])
         self.assertEqual(result.status, 'review_required', result.reason)
+        install_args = (self.worktrees / 'card_one/.install-args').read_text()
+        self.assertIn('--ignore-workspace', install_args)
+        self.assertIn('--no-lockfile', install_args)
         self.assertEqual(result.observations['game_project']['delivery_status'], 'build_ready')
         failed_check = result.actions[2]
         self.assertEqual(failed_check.state, 'succeeded')

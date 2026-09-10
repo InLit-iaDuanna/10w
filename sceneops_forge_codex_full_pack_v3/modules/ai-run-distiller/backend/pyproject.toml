@@ -5,6 +5,6 @@ build-backend = "hatchling.build"
 name = "sceneops-ai-run-distiller"
 version = "0.5.0"
 requires-python = ">=3.12"
-dependencies = ["sceneops-harness==0.5.0"]
+dependencies = ["sceneops-harness==0.5.0", "fastapi>=0.115,<1", "sceneops-observability==0.1.0"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/sceneops_ai_distiller"]

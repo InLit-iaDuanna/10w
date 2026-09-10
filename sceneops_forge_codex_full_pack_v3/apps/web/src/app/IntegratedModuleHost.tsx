@@ -1,15 +1,17 @@
 import React, { lazy, Suspense, useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ProductionModuleView, type ProductionSelection } from '@sceneops/ai-agent-runtime';
+import { agentTasks, ProjectProductionTool, ProductionModuleView, type ProductionSelection } from '@sceneops/ai-agent-runtime';
 import type { EditorHostProps, IntegratedWorkbenchProps, WorkbenchContext } from '@sceneops/core-ui';
 import { workspaceClient, type ModuleId } from '@sceneops/workspace-client';
 
 export interface IntegratedActions {
+  projectAssets(projectId:string,suspended:boolean):React.ReactNode;
   selectProject(id: string | null): void;
   openProjects(): void;
   updateContext(instanceId: string, patch: Partial<WorkbenchContext>): void;
   setDirty(instanceId: string, source: string, dirty: boolean): void;
   discuss(selection: ProductionSelection): void;
+  produceDocument(projectId:string,moduleId:ModuleId,revision:number,payload:unknown):void;
 }
 
 export function createIntegratedModuleHost(moduleId: ModuleId, title: string,
@@ -48,12 +50,16 @@ export function createIntegratedModuleHost(moduleId: ModuleId, title: string,
       <header className="integrated-module-header"><strong>{title}</strong> <small>{project.name} · 生产记录</small>
       </header>
       {error && <p role="alert">{error}</p>}
-      <ProductionModuleView projectId={id} moduleId={moduleId} onDiscuss={actions.discuss} />
+      {!saved.sample_id&&<button disabled={!Object.keys(saved.payload??{}).length} onClick={()=>actions.produceDocument(id,moduleId,saved.revision,saved.payload)}>按已保存配置修改当前游戏 →</button>}
+      <p>保存配置后可交给当前项目的 AI 制作会话。已生成模型使用资产引用；界面、声音、动画和逻辑配置需要实际制作、构建与试玩后才算应用。</p>
+      {moduleId==='character-animation'&&actions.projectAssets(id,props.suspended)}
+      <ProjectProductionTool projectId={id} compact/>
       <details className="integrated-module-advanced" onToggle={event => { if (event.currentTarget.open) setAdvancedOpened(true); }}>
         <summary>高级 · 手动配置与原工作台</summary>
         {!saved.sample_id && <details><summary>手动导入 Mock 示例</summary><button disabled={importing} onClick={() => void importSample('remember-home')}>回家之路 · Mock</button> <button disabled={importing} onClick={() => void importSample('warehouse-escape')}>仓库逃生 · Mock</button></details>}
         {advancedOpened && <Suspense fallback={<p>正在加载工作台…</p>}><Workbench key={`${id}:${saved.sample_id ?? 'empty'}`} context={props.context} project={project} document={saved as IntegratedWorkbenchProps['document']}
           suspended={props.suspended} onContextChange={contextChanged} onDirtyChange={dirty}
+          onRegisterInput={file=>agentTasks.uploadProjectInput(id,file)}
           onSave={async payload => { cache.setQueryData(key, await workspaceClient.save(id, moduleId, { expected_revision: saved.revision, payload })); }} /></Suspense>}
       </details>
     </section>;

@@ -93,6 +93,7 @@ class ChatStreamingTests(unittest.IsolatedAsyncioTestCase):
             'content': [{'type': 'output_text', 'text': '你好'}]}],
             'usage': {'input_tokens': 2, 'output_tokens': 1, 'total_tokens': 3}}
         frames = [
+            {'type': 'response.output_text.delta', 'delta': ''},
             {'type': 'response.output_text.delta', 'delta': '你'},
             {'type': 'response.output_text.delta', 'delta': '好'},
             {'type': 'response.completed', 'response': completed},
@@ -106,6 +107,33 @@ class ChatStreamingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(text, '你好')
         self.assertEqual(usage, {'input_tokens': 2, 'output_tokens': 1, 'total_tokens': 3})
         self.assertEqual([call.args[0]['text'] for call in received.await_args_list], ['你', '好'])
+
+    async def test_responses_done_without_completion_remains_failure(self):
+        from sceneops_ai_provider.service import ProviderFailure
+        class Response:
+            async def aiter_bytes(self):
+                yield b'data: [DONE]\n\n'
+        with self.assertRaises(ProviderFailure) as caught:
+            await _response_events(Response(), AsyncMock())
+        self.assertEqual(caught.exception.code, 'OPENAI_STREAM_INCOMPLETE')
+
+    async def test_responses_completed_text_wins_over_tentative_deltas(self):
+        completed = {'status': 'completed', 'output': [{'type': 'message',
+            'content': [{'type': 'output_text', 'text': '你好'}]}]}
+        frames = [
+            {'type': 'response.output_text.delta', 'delta': '额'},
+            {'type': 'response.output_text.delta', 'delta': '你好'},
+            {'type': 'response.completed', 'response': completed},
+        ]
+        class Response:
+            async def aiter_bytes(self):
+                yield ''.join(f'data: {json.dumps(frame, ensure_ascii=False)}\n\n'
+                              for frame in frames).encode()
+        received = AsyncMock()
+        text, usage = await _response_events(Response(), received)
+        self.assertEqual(text, '你好')
+        self.assertIsNone(usage)
+        self.assertEqual([call.args[0]['text'] for call in received.await_args_list], ['额', '你好'])
 
     def test_only_actual_text_and_reasoning_are_forwarded(self):
         self.assertIsNone(_chat_event({'type': 'item.completed', 'item': {

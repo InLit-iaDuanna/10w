@@ -86,6 +86,7 @@ from .card_asset_models import (
 )
 from .card_asset_router import create_card_asset_router
 from .card_asset_service import CardAssetService
+from .builtin_assets import BuiltinAssetSelection, BuiltinProjectAssets
 
 __all__ += ["ConceptAssetHandoff", "asset_spec_from_concept", "build_workflow_plan",
             "ConceptAssetLab", "LabAction", "LabSnapshot", "create_lab_router",
@@ -93,6 +94,8 @@ __all__ += ["ConceptAssetHandoff", "asset_spec_from_concept", "build_workflow_pl
             "CardAssetReference", "CardAssetVersion", "LiveModelUpdateRequest", "LiveModelUpdateResult",
             "ModelPlanContent", "ModelPlanRequest",
             "NormalizeRequest", "PrimitivePart", "SaveToLibraryRequest",
-            "CardAssetService", "create_card_asset_router"]
+            "CardAssetService", "create_card_asset_router", "BuiltinAssetSelection",
+            "BuiltinProjectAssets"]
 
 from .native_source import inspect_native_glb, preserve_native_source
+from .native_source import register_glb_identity_bytes

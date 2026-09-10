@@ -1,4 +1,6 @@
 {
+  "x-event-type": "logic.code_change.proposed",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.example/schemas/logic-studio/events/logic.code_change.proposed.v1.schema.json",
   "title": "logic.code_change.proposed@1",

@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Public UI Studio contribution declarations; runtime is composed by ForgeShell.",
   "scripts": {
-    "test": "node --test tests/*.test.mjs"
+    "test": "node ../../../scripts/frontend-test.mjs tests"
   },
   "engines": {
     "node": ">=22.18.0"

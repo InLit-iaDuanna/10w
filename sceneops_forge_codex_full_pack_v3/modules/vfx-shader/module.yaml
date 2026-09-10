@@ -10,6 +10,8 @@ requires:
   modules:
     - core-kernel
     - module-runtime
+    - world-composer
+    - asset-library
   integrations: []
   optional_integrations:
     - unity
@@ -20,7 +22,9 @@ contributes:
     - vfx.recipe
     - shader.parameters
     - vfx.preview
+    - lookdev.material
   commands:
+    - lookdev.open
     - vfx.recipe.validate
     - vfx.preview.plan
     - vfx.recipe.publish

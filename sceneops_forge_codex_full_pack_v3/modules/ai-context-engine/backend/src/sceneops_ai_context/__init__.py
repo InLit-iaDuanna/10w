@@ -2,6 +2,20 @@
 import json
 from sceneops_harness import ContextBundle, ContextItem, ProductionIntent, ResourceRef
 
+from .preparation_models import (
+    CallStatus, CandidateDetail, CandidateDetailRequest, CandidateDirectory, CandidateIdentity,
+    CandidateKind, CandidateSearchRequest, CandidateScope, CandidateSummary, PreparationStatus,
+    ProductionKind, ProductionPreparationRequest,
+    ProductionPreparationResult, ProductionRecommendationDraft, RecommendationCallRecord,
+    RecommendationModelConfig, RecommendationProviderResponse, RecommendationSelection,
+)
+from .preparation_repository import PreparationError, PreparationRepository
+from .preparation_router import create_preparation_router
+from .preparation_service import (
+    CANDIDATE_CHARACTER_BUDGET, CandidateProvider, ProductionPreparationService,
+    RecommendationProvider,
+)
+
 
 class ContextEngine:
     def __init__(self, workspace):
@@ -29,4 +43,31 @@ class ContextEngine:
         return bundle
 
 
-__all__ = ["ContextEngine"]
+__all__ = [
+    "CANDIDATE_CHARACTER_BUDGET",
+    "CallStatus",
+    "CandidateDetail",
+    "CandidateDetailRequest",
+    "CandidateDirectory",
+    "CandidateIdentity",
+    "CandidateKind",
+    "CandidateProvider",
+    "CandidateSearchRequest",
+    "CandidateScope",
+    "CandidateSummary",
+    "ContextEngine",
+    "PreparationError",
+    "PreparationRepository",
+    "PreparationStatus",
+    "ProductionKind",
+    "ProductionPreparationRequest",
+    "ProductionPreparationResult",
+    "ProductionPreparationService",
+    "ProductionRecommendationDraft",
+    "RecommendationCallRecord",
+    "RecommendationModelConfig",
+    "RecommendationProvider",
+    "RecommendationProviderResponse",
+    "RecommendationSelection",
+    "create_preparation_router",
+]

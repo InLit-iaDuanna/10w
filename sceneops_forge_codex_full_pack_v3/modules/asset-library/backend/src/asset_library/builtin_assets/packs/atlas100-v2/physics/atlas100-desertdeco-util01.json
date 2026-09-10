@@ -1,0 +1,225 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-desertdeco-util01",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-util01:p0",
+      "center_m": [
+        0.0,
+        0.1023,
+        0.0
+      ],
+      "half_extents_m": [
+        0.28644,
+        0.1023,
+        0.28644
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-util01:p1",
+      "center_m": [
+        0.0,
+        1.17645,
+        0.0
+      ],
+      "half_extents_m": [
+        0.056265,
+        1.07415,
+        0.056265
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-util01:p2",
+      "center_m": [
+        0.0,
+        2.29152,
+        0.0
+      ],
+      "half_extents_m": [
+        0.34782,
+        0.15345,
+        0.34782
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-util01:p3",
+      "center_m": [
+        0.0,
+        2.1483,
+        0.0
+      ],
+      "half_extents_m": [
+        0.14322,
+        0.179025,
+        0.14322
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-desertdeco-util01.glb",
+      "triangle_count": 144,
+      "part_count": 4,
+      "distance_m": 0.0,
+      "sha256": "324034c1f70f1dcab935a7a746b4a4746a8f228e5ef9a44598b612f88541934f",
+      "byte_size": 59972
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-desertdeco-util01.lod1.glb",
+      "triangle_count": 90,
+      "part_count": 4,
+      "distance_m": 12.22,
+      "sha256": "8f5627685fb1b7c0b3a62915da13af26a592a67272e1b6c593cd8e12a3773fd6",
+      "byte_size": 51604
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-desertdeco-util01.lod2.glb",
+      "triangle_count": 42,
+      "part_count": 3,
+      "distance_m": 29.34,
+      "sha256": "7f31224cce0e0612fc0dab1b3b8adc533f632080f48b3bba3772bb3e3d479c62",
+      "byte_size": 43868
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.34782,
+      0.0,
+      -0.34782
+    ],
+    "max": [
+      0.34782,
+      2.44497,
+      0.34782
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

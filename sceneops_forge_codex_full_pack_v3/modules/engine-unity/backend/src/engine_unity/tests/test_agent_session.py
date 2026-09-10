@@ -19,6 +19,16 @@ class AgentSessionTests(unittest.TestCase):
                           workspace_root=str(self.root), allowed_capabilities=['unity.asset.import', 'unity.scene.inspect'],
                           expires_at=(datetime.now(timezone.utc) + timedelta(minutes=20)).isoformat())
         self.session.bind_authorization(self.grant)
+        self.native_init = patch.object(UnityAgentSession, '_initialize_project', self.create_fixture_project)
+        self.native_init.start()
+        self.addCleanup(self.native_init.stop)
+
+    @staticmethod
+    def create_fixture_project(session, timeout=180):
+        for name in ('Assets', 'Packages', 'ProjectSettings'):
+            (session.project_root / name).mkdir(parents=True, exist_ok=True)
+        (session.project_root / 'ProjectSettings/ProjectVersion.txt').write_text('m_EditorVersion: 2022.3.62f3c1\n')
+        _write(session.project_root / 'Packages/manifest.json', {'dependencies': {'com.unity.modules.physics': '1.0.0'}})
 
     def tearDown(self):
         self.temporary.cleanup()

@@ -47,6 +47,11 @@ class FolderProjectCreate(WorkspaceModel):
     name: str = Field(min_length=1, max_length=160, pattern=r".*\S.*")
 
 
+class FolderProjectDeleteFiles(WorkspaceModel):
+    confirmed_root_path: str = Field(min_length=1)
+    confirm_permanent_delete: Literal[True]
+
+
 class FolderProject(WorkspaceModel):
     project_id: str
     name: str

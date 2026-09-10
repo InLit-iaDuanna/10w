@@ -28,7 +28,8 @@ class PipelineHappyPathTests(unittest.TestCase):
         module_root = Path(__file__).resolve().parents[2]
         manifest = yaml.safe_load((module_root / "module.yaml").read_text())
         self.assertEqual(manifest["id"], "asset-factory")
-        self.assertEqual(manifest["requires"]["modules"][-1], "asset-library")
+        self.assertEqual(set(manifest["requires"]["modules"]),
+                         {"core-kernel", "module-runtime", "asset-library", "concept-lab"})
         self.assertEqual([job.id for job in JOBS], [
             "asset.preflight",
             "asset.blender.process",

@@ -10,7 +10,8 @@
     "modules": [
       "core-kernel",
       "module-runtime",
-      "project-intake"
+      "project-intake",
+      "ai-run-distiller"
     ],
     "integrations": [],
     "optional_integrations": [

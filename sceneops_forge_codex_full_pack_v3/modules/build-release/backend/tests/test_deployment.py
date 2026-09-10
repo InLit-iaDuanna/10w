@@ -272,7 +272,7 @@ class LocalFileAdapterTests(unittest.TestCase):
             )
             active = json.loads((scope / "active.json").read_text(encoding="utf-8"))
             self.assertEqual(active["operation_id"], command.operation_id)
-            self.assertEqual(len(list((target / "releases").rglob("player.bin"))), 1)
+            self.assertEqual(len(list((scope / "releases").rglob("player.bin"))), 1)
 
             newer_command = command.model_copy(
                 update={

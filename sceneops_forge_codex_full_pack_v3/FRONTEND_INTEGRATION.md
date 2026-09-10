@@ -1,5 +1,15 @@
 # SceneOps Forge Frontend Integration Guide
 
+当前新制作主线（2026-09-09）：**SceneOps 对齐目标 → 确认可编辑制作简报与权限 → Codex／CodeBuddy 原生制作 → 工作台接回实际文件、资产和试玩候选 → 准确会话续改**。新工程使用轻量 Three.js / TypeScript / Vite / pnpm 起点。历史任务与编辑服务继续保留；本轮不接 App Server、SDK 或多 Agent 编排。接口、配置与故障处理见 [原生 CLI 制作](modules/ai-agent-runtime/docs/native-cli-production.md)，实际验收见 [验收报告](NATIVE_CLI_PRODUCTION_ACCEPTANCE.md)。
+
+## 首次配置入口（2026-09-08）
+
+Shell 在同一 QueryClient 内组合 Conversation Home 公开 `EnvironmentSetup`，首次自动显示并保留右上角入口；`onOpenChange` 暂停边缘工具教学，配置关闭后再继续。AI 设置中复用同一组件。类型从 `/api/ai/setup` 的 Pydantic/OpenAPI 生成；React 不执行 CLI，安装与登录交给后端固定适配器。详见 [环境配置](modules/conversation-home/docs/environment-setup.md)。
+
+## 2026-09-08：卡片源码精修
+
+卡片源码精修通过 `PlanningJourneyGate.development.renderSourceEditor(projectId, cardId, onDirtyChange)` 组合运行模块公开 `CardSourceEditor`。Design Room 不直接访问源码 API；宿主传入当前卡片身份，组件按身份重置，折叠保留草稿。详见 [接口与范围](modules/ai-agent-runtime/docs/CARD_SOURCE_EDITOR.md)。
+
 Version: 2.0
 
 最新统一宿主启用 `ForgeShell.onRegionSplit`：各 editor 内拉手以原 instanceId 调用 split，新增区域仍用已注册工具库。`DockviewPort.enableRegionSplits` 迁移旧全局边栏；`resizeRegion` 仅调用原生尺寸接口。统一应用不再从四边创建全局抽屉，以下 drawer-change 说明仅适用于兼容入口。详见 `NESTED_REGION_VERIFICATION.md`。
@@ -516,3 +526,49 @@ Shell 通过 Design Room 公开 `PlanningJourneyGate` 为文件夹项目承载�
 Design Room 的 `PlanningJourneyGate.development` 由宿主传入任务准备和时间线渲染函数，保持设计模块不依赖运行模块。共享主输入框区分讨论/开发；prepare仅生成授权卡，不立即执行。任务时间线按选中card_id过滤；退出卡片仍保留项目任务入口。`ProductionAutoOpen` 不为 card-development 任务自动弹出模块页面。
 
 版本管理增量（2026-09-06）：当前功能目录新增 `workbench.version-review`，标题「版本管理」。其 IntegratedWorkbench 默认展示模块自有 VersionTree，旧评审草稿折叠保留；同一项目作用域客户端读取生成的 tree API 类型，不改变初始对话或自动打开工具。
+
+项目聊天公共视图（2026-09-08）：Core UI 公开 ChatComposer（input/options/actions/notice 插槽）与 ChatMessageActions。Design Room 全部阶段和 UnifiedConversation 使用同一实现，业务保留草稿、异步状态、权限和提交回调；chat.css 是公共外观来源，工作流只定义侧栏、预览与定位。
+
+## 2026-09-08：完整项目工具入口
+
+工具库由四项扩展为八项，分为「策划与制作」「游戏内容」「试玩与版本」。新增策划与制作卡片、制作进度、架构与源码、游戏试玩；保留原有四项。策划面板读取大纲和卡片，进入卡片仍使用现有 Journey 命令；源码面板选择登记 worktree 并固定卡片上下文；进度面板按任务折叠详情；试玩复用已有工程状态、构建和预览操作，过期源码不会冒充当前试玩。
+
+环境场景改成无套层边框的画布与可调整高度的资产栏。空场景提供内置资产和导入入口，资产区使用紧凑标题、计数与图标操作。场景对象与资产服务写入语义未修改。
+
+验证：工具分组与搜索 5 项、源码草稿保护、卡片上下文固定、后端源码读取与限定写入最小烟测通过；改动入口定向类型检查。浏览器实际读取当前项目的源码、策划、运行记录与任务列表，并目视检查环境场景及资产空态。本轮没有发起模型生成、保存用户源码、运行构建或试玩。
+
+## 主对话直接制作（2026-09-08）
+
+PlanningJourneyGate.development.prepareProjectDemo 增加 policy（ask/full-access）与 continuation 参数。Design Room 的 discuss_game 只生成问题或制作摘要；set_execution_policy 单独保存用户选择。“开始制作”确认结构化方向后通过宿主进入项目任务，不生成生产卡片。宿主将完全访问映射为 project-demo-agent/agent-full-access 并提交明确授权；询问模式保留 typed-tools 授权。DemoWorkbench 在主对话直接显示原生执行记录与真实运行器预览。
+
+## 多平台导出入口
+
+`build.export` 由 Build Release 贡献，统一宿主注入游戏开发对话交接。Web 导出页面不受旧 Unity 发布工具的连接条件限制，旧发布操作的检查保持不变。对话与项目菜单调用相同打开命令。导出页面使用服务端 SSE 与 TanStack Query；公开类型由 `pnpm generate:exports` 生成。
+
+## 原生导出对话
+
+ExportWorkbench 默认原生创建/发送，显式发送 execution_mode 与 accept_full_access；旧 API 调用缺省保持固定构建/仅讨论。宿主注入 UnifiedModelPicker；同页 SSE 显示 native_runs 实际操作、取消与最终回复。不自动发起额外游戏制作，不混用固定构建下载授权。
+
+
+## 2026-09-09：中转 GPT 原生执行
+
+完全访问下，OpenAI 兼容中转 GPT 使用 Codex CLI 原生执行，向保存服务的 Responses 接口发送请求。每次独立临时 HOME/CODEX_HOME；真实上游 Key 留在后端，CLI 使用固定目标与模型的临时本地凭据，Shell 不继承该凭据。默认不设总时限、内部模型请求与动作次数不限，可随时停止。
+
+所有项目 Agent 直接显示实际文字、命令、文件与状态。旧 typed 任务保留历史和源码；在相同方向、工作区且无未决写入时，新原生授权可原子接管。未将旧任务改成已成功。
+
+本机 Codex CLI 加本地 Responses 夹具完成真实命令写文件、事件输出与凭据/配置清理；前端原生路由、旧任务交接、对话静态渲染定向冒烟通过。没有调用用户的真实中转模型或构建游戏。组件测试运行器因已有 picomatch 错误未启动。细节见根目录 NATIVE_API_EXECUTION.md。
+
+
+## 2026-09-09：原生 CLI 制作主线
+
+新游戏制作采用「方向对齐 → 确认可编辑制作简报 → Codex/CodeBuddy 原生会话 → 工作台回流 → 准确会话续改」。权限独立选择 scoped/full；完整权限也需要确认简报。旧任务和领域编辑服务保留，新制作入口不再使用逐动作 JSON 规划器。
+
+工作区级源码登记与任务级 MCP 桥连接真实源码、GLB 资产版本、场景实例和试玩候选；新工程采用所选架构的轻量起点。手动修改后的「更新作品」只执行物化和构建，不调用模型。详见 [原生制作说明](modules/ai-agent-runtime/docs/native-cli-production.md)。
+
+## 初版整理与原工程卡片续改（2026-09-09）
+
+Journey 增加 `organize_production`，`ProductionCard.source_ids` 和可空的 `production_basis`，旧数据缺省兼容。生成结果保持草稿，经现有大纲确认进入 cards；原生来源卡片跳过 Git 分支初始化，旧卡片行为保留。`PlanningJourneyGate.development.renderProductionCard` 注入当前工程源码、按卡片与对话过滤的执行记录和游戏试玩。`prepareProjectDemo` 追加可选 planningCardId，传给 `ContinueProjectDemoRequest.planning_card_id`。服务端从当前策划解析关联内容并核对工作区，写入任务 observations，不接受客户端伪造源码上下文。缺少可续改会话时卡片入口报错，不另建初版任务。
+
+## 消息内记忆（2026-09-09）
+
+Agent Runtime 公开 ExperienceReferences / MemoryMessage；普通对话、策划卡片及任务记录复用同一组件。使用精确 originKey/useKey，任务仅显式聚合自己的调用前缀；运行任务终态触发学习状态刷新。无内容不占位，纠正读取当前版本，历史依据保持原快照。集中管理与来源/撤销说明见 [对话记忆](docs/conversation-memory.md)。

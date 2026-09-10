@@ -191,3 +191,7 @@ python3 modules/build-release/backend/scripts/export_contracts.py
 完整旧套件本轮 **not run / pending approval**。调用工作台后端时需同时将 `modules/engine-unity/backend/src` 加入 Python 路径（独立入口已负责）。
 
 统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。
+
+## 2026-09-08：Agent 多平台本地导出
+
+新增独立项目导出 API、SQLite 任务/对话/执行记录、隔离源码和 APK/桌面 ZIP 产物下载。各平台独立重试、取消与人工设备验收，真实 Agent 由宿主注入；不替代既有正式发布审批。设置默认不授权安装依赖，缺失工具明确阻断。详见 [本地导出接口与恢复说明](docs/playable-exports.md)。

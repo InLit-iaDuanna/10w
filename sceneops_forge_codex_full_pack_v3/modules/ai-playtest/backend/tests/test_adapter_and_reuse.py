@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import test_support
+
 import unittest
 
 from test_support import load_test_case, make_adapter, run_fixture
@@ -129,7 +131,7 @@ class ReuseTests(unittest.TestCase):
     def test_warehouse_escape_runs_from_project_configuration_only(self):
         warehouse = TestCase.model_validate_json(
             (
-                __import__("test_support").EXAMPLES
+                test_support.EXAMPLES
                 / "warehouse-escape.test-case.json"
             ).read_text(encoding="utf-8")
         )

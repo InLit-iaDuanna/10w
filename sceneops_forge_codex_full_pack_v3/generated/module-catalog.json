@@ -89,6 +89,1641 @@
     {
       "contributes": {
         "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u76ee\u6807\u7406\u89e3",
+      "entrypoints": {
+        "backend": "sceneops_ai_intent",
+        "frontend": null
+      },
+      "feature_flag": "ai_intent_compiler",
+      "id": "ai-intent-compiler",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u76ee\u6807\u7406\u89e3",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u8fd0\u884c\u6a21\u578b\u8def\u7531",
+      "entrypoints": {
+        "backend": "sceneops_ai_routing",
+        "frontend": null
+      },
+      "feature_flag": "ai_model_router",
+      "id": "ai-model-router",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u8fd0\u884c\u6a21\u578b\u8def\u7531",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "playtest.run",
+          "playtest.cancel",
+          "playtest.issue.open-backpin",
+          "playtest.issue.review-backpin",
+          "playtest.changeset.propose",
+          "playtest.regression.compare"
+        ],
+        "editors": [
+          "playtest.game-view",
+          "playtest.agent-monitor",
+          "playtest.trajectory",
+          "playtest.step-log",
+          "playtest.issue-browser",
+          "playtest.regression"
+        ],
+        "events": [
+          "playtest.run.started@1",
+          "playtest.step.recorded@1",
+          "playtest.issue.created@1",
+          "playtest.issue.backpin.resolved@1",
+          "playtest.regression.compared@1"
+        ],
+        "jobs": [
+          "playtest.execute",
+          "playtest.regression.compare"
+        ],
+        "policy_gates": [
+          "playtest.action-bounds",
+          "playtest.destructive-containment",
+          "playtest.exact-regression-config"
+        ],
+        "workflows": [
+          "playtest-regression"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Runs bounded AI playtests, records evidence, backpins issues, and compares exact test reruns.",
+      "entrypoints": {
+        "backend": "ai_playtest",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "ai_playtest",
+      "id": "ai-playtest",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "playtest:read",
+        "playtest:run",
+        "playtest:cancel",
+        "issue:read",
+        "issue:write",
+        "changeset:propose"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "unity-playtest-runner",
+          "artifact-store",
+          "llm-provider"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "AI Playtest",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u6062\u590d\u89c4\u5212",
+      "entrypoints": {
+        "backend": "sceneops_ai_recovery",
+        "frontend": null
+      },
+      "feature_flag": "ai_recovery_planner",
+      "id": "ai-recovery-planner",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u6062\u590d\u89c4\u5212",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u6a21\u677f\u6c89\u6dc0",
+      "entrypoints": {
+        "backend": "sceneops_ai_distiller",
+        "frontend": null
+      },
+      "feature_flag": "ai_run_distiller",
+      "id": "ai-run-distiller",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u6a21\u677f\u6c89\u6dc0",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u8fd0\u884c\u89c2\u5bdf",
+      "entrypoints": {
+        "backend": "sceneops_ai_observer",
+        "frontend": null
+      },
+      "feature_flag": "ai_run_observer",
+      "id": "ai-run-observer",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u8fd0\u884c\u89c2\u5bdf",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "asset.search",
+          "asset.version.publish"
+        ],
+        "editors": [
+          "asset.builtin-library",
+          "asset.browser",
+          "asset.inspector"
+        ],
+        "events": [
+          "asset.version.published@1"
+        ],
+        "jobs": [],
+        "policy_gates": [
+          "asset.publication-quality"
+        ],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Searchable, versioned 3D asset catalog with usage and provenance.",
+      "entrypoints": {
+        "backend": "asset_library",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "asset_library",
+      "id": "asset-library",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "asset:read",
+        "asset:publish"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "artifact-store",
+          "unity"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Asset Library",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "audio.spec.create",
+          "audio.asset.inspect",
+          "audio.event.bind",
+          "audio.mapping.propose",
+          "audio.mapping.publish"
+        ],
+        "editors": [
+          "audio.studio"
+        ],
+        "events": [
+          "audio.spec.created@1",
+          "audio.asset.inspected@1",
+          "audio.event.bound@1",
+          "audio.mapping.published@1"
+        ],
+        "jobs": [
+          "audio.analysis"
+        ],
+        "policy_gates": [],
+        "workflows": [
+          "hero-key-door-audio"
+        ]
+      },
+      "default_enabled": true,
+      "description": "\u7ba1\u7406\u53ef\u5ba1\u67e5\u7684\u6e38\u620f\u97f3\u9891\u4efb\u52a1\u3001\u5206\u6790\u3001\u4e8b\u4ef6\u7ed1\u5b9a\u4e0e Unity \u6620\u5c04\u3002",
+      "entrypoints": {
+        "backend": "audio_studio",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "audio_studio",
+      "id": "audio-studio",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "audio:read",
+        "audio:write",
+        "audio:publish"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "unity",
+          "artifact-store",
+          "media-generation"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Audio Studio",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "unity.content.import",
+          "unity.content.inspect",
+          "unity.content.edit",
+          "unity.content.focus",
+          "unity.content.save",
+          "unity.content.play",
+          "unity.prototype.compose",
+          "unity.prototype.inspect",
+          "unity.prototype.play",
+          "unity.prototype.capture",
+          "unity.health",
+          "unity.project.scan",
+          "unity.asset.import",
+          "unity.identity.map",
+          "unity.prefab.upsert",
+          "unity.game_object.inspect",
+          "unity.component_property.set",
+          "unity.collider.upsert",
+          "unity.navmesh.run",
+          "unity.play.enter",
+          "unity.play.exit",
+          "unity.capture",
+          "unity.console.read",
+          "unity.tests.run",
+          "unity.profiler.snapshot",
+          "unity.build.run"
+        ],
+        "editors": [
+          "unity.inspector",
+          "unity.prefab.inspector",
+          "unity.build.matrix",
+          "unity.build.console",
+          "unity.profiler"
+        ],
+        "events": [
+          "unity.project.scanned@1",
+          "unity.asset.imported@1",
+          "unity.identity.mapped@1",
+          "unity.prefab.updated@1",
+          "unity.test_run.completed@1",
+          "unity.profile.captured@1",
+          "unity.build.completed@1",
+          "unity.build.failed@1"
+        ],
+        "jobs": [
+          "unity.tests",
+          "unity.build"
+        ],
+        "policy_gates": [
+          "unity.project_root",
+          "unity.command_allowlist",
+          "unity.model_import_allowlist",
+          "unity.changeset_approval",
+          "unity.trusted_approval_snapshot",
+          "unity.version_compatibility",
+          "unity.build_id_immutability"
+        ],
+        "workflows": [
+          "published-asset-to-unity",
+          "unity-build-and-verify"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Safely maps SceneOps assets and identities into Unity, validates projects, and runs tests, profiling, and builds.",
+      "entrypoints": {
+        "backend": "engine_unity",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "engine_unity",
+      "id": "engine-unity",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "unity:read",
+        "unity:write",
+        "unity:execute",
+        "unity:build"
+      ],
+      "requires": {
+        "integrations": [
+          "unity",
+          "artifact-store"
+        ],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Unity Engine Integration",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "logic.editor.open",
+          "logic.graph.validate",
+          "logic.interaction.compile",
+          "logic.test_plan.generate",
+          "logic.code_change.propose",
+          "logic.code_change.approve",
+          "logic.code_change.apply",
+          "logic.code_change.rollback"
+        ],
+        "editors": [
+          "logic.feature",
+          "logic.state_graph",
+          "logic.interaction_graph",
+          "logic.quest_dialogue",
+          "logic.code_diff",
+          "logic.test_cases"
+        ],
+        "events": [
+          "logic.graph.validated@1",
+          "logic.test_plan.generated@1",
+          "logic.code_change.proposed@1",
+          "logic.code_change.rolled_back@1"
+        ],
+        "jobs": [
+          "logic.graph.validate",
+          "logic.test_plan.generate",
+          "logic.unity.code.validate"
+        ],
+        "policy_gates": [
+          "logic.graph.valid",
+          "logic.code_change.approved",
+          "logic.compile_tests.passed"
+        ],
+        "workflows": [
+          "logic-feature-to-validated-unity"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Builds, validates, reviews, and tests inspectable gameplay logic graphs.",
+      "entrypoints": {
+        "backend": "logic_studio",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "logic_studio",
+      "id": "logic-studio",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "logic:read",
+        "logic:write",
+        "logic:test",
+        "logic:code:review",
+        "logic:code:approve"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "unity"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Logic Studio",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "observability.logs.search",
+          "observability.diagnostic.export"
+        ],
+        "editors": [
+          "observability.logs"
+        ],
+        "events": [
+          "job.progress.reported@1",
+          "observability.log.recorded@1"
+        ],
+        "jobs": [],
+        "policy_gates": [
+          "observability.diagnostic-redaction"
+        ],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Correlates progress, structured logs, traces, and safe diagnostic exports.",
+      "entrypoints": {
+        "backend": "observability",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "observability",
+      "id": "observability",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "observability:read",
+        "observability:write",
+        "observability:export"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "artifact-store"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Observability",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "integration.health.refresh",
+          "integration.open_logs",
+          "integration.open_setup",
+          "job.cancel",
+          "job.retry",
+          "job.resume",
+          "worker.restart.guidance"
+        ],
+        "editors": [
+          "integration.health",
+          "worker.monitor"
+        ],
+        "events": [
+          "integration.health.changed@1",
+          "job.recovery.requested@1"
+        ],
+        "jobs": [],
+        "policy_gates": [
+          "job.safe-retry"
+        ],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Explains integration and worker availability and coordinates safe recovery.",
+      "entrypoints": {
+        "backend": "integration_center",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "integration_center",
+      "id": "integration-center",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "integration:read",
+        "integration:operate",
+        "job:read",
+        "job:operate",
+        "observability:read"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "observability"
+        ],
+        "optional_integrations": [
+          "blender",
+          "unity",
+          "comfyui",
+          "git",
+          "artifact-store"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Integration Center",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "project.intake.create_new_draft",
+          "project.intake.draft_from_conversation",
+          "project.intake.scan_existing",
+          "project.intake.confirm_field"
+        ],
+        "editors": [
+          "project.intake"
+        ],
+        "events": [
+          "project.intake.drafted@1",
+          "project.intake.field_confirmed@1"
+        ],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Turns a new-project brief or an existing-project scan into confirmed production intent.",
+      "entrypoints": {
+        "backend": null,
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "project_intake",
+      "id": "project-intake",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "project:read",
+        "project:write",
+        "project:scan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "unity",
+          "blender"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Project Intake",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u9879\u76ee\u4e0a\u4e0b\u6587",
+      "entrypoints": {
+        "backend": "sceneops_ai_context",
+        "frontend": null
+      },
+      "feature_flag": "ai_context_engine",
+      "id": "ai-context-engine",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "project-intake"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u9879\u76ee\u4e0a\u4e0b\u6587",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "design.project_bible.save_version",
+          "design.gdd.save",
+          "design.feature_spec.draft_from_conversation",
+          "design.feature_spec.save_version",
+          "design.change.propose",
+          "design.change.approve",
+          "design.feature_spec.mark_ready",
+          "design.decision.create",
+          "design.decision.reject_alternative",
+          "design.decision.accept_alternative"
+        ],
+        "editors": [
+          "project.bible",
+          "design.gdd",
+          "design.feature_spec"
+        ],
+        "events": [
+          "design.project_bible.versioned@1",
+          "design.feature_spec.versioned@1",
+          "design.feature_spec.marked_ready@1",
+          "design.decision.recorded@1"
+        ],
+        "jobs": [],
+        "policy_gates": [
+          "design.ai_change_approval",
+          "design.planning_readiness"
+        ],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Owns structured Project Bibles, GDDs, Feature Specs, decisions, and design history.",
+      "entrypoints": {
+        "backend": "sceneops_design_ai",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "design_room",
+      "id": "design-room",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "design:read",
+        "design:write",
+        "design:approve"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "project-intake",
+          "ai-run-distiller"
+        ],
+        "optional_integrations": [
+          "codebuddycli"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Design Room",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "concept.open",
+          "concept.style_bible.open",
+          "concept.create",
+          "concept.change.propose",
+          "concept.change.approve",
+          "concept.change.apply",
+          "concept.reference.import",
+          "concept.variant.import",
+          "concept.variant.generate",
+          "concept.variant.compare",
+          "concept.variant.comment",
+          "concept.variant.review",
+          "concept.style.check",
+          "concept.asset_spec_draft.compile"
+        ],
+        "editors": [
+          "concept.moodboard",
+          "concept.style_bible"
+        ],
+        "events": [
+          "concept.version.created@1",
+          "concept.variant.recorded@1",
+          "concept.variant.reviewed@1",
+          "concept.asset_spec_draft.compiled@1"
+        ],
+        "jobs": [
+          "concept.variant.generate"
+        ],
+        "policy_gates": [
+          "concept.reference.permission",
+          "concept.required_views"
+        ],
+        "workflows": [
+          "concept-to-asset-spec-draft"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Produces and reviews traceable concepts and AssetSpec drafts.",
+      "entrypoints": {
+        "backend": "concept_lab",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "concept_lab",
+      "id": "concept-lab",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "concept:read",
+        "concept:write",
+        "concept:review",
+        "asset-spec:draft"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "design-room"
+        ],
+        "optional_integrations": [
+          "artifact-store",
+          "image-generation",
+          "codebuddy-cli"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Concept Lab",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "asset.pipeline.preview",
+          "asset.pipeline.run",
+          "asset.pipeline.cancel",
+          "asset.pipeline.retry",
+          "asset.pipeline.rollback",
+          "asset.pipeline.publish"
+        ],
+        "editors": [
+          "asset.factory",
+          "asset.validation"
+        ],
+        "events": [
+          "asset.pipeline.started@1",
+          "asset.pipeline.progressed@1",
+          "asset.pipeline.failed@1",
+          "asset.pipeline.completed@1"
+        ],
+        "jobs": [
+          "asset.preflight",
+          "asset.blender.process",
+          "asset.validate",
+          "asset.publish"
+        ],
+        "policy_gates": [
+          "asset.geometry",
+          "asset.uv-material",
+          "asset.identity"
+        ],
+        "workflows": [
+          "asset-to-engine-ready"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Processes, validates, and publishes engine-ready 3D asset versions.",
+      "entrypoints": {
+        "backend": "asset_factory",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "asset_factory",
+      "id": "asset-factory",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "asset:read",
+        "asset:write",
+        "asset:publish"
+      ],
+      "requires": {
+        "integrations": [
+          "blender",
+          "artifact-store"
+        ],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "asset-library",
+          "concept-lab"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Asset Factory",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Turns Feature Specs into reviewable production task dependency graphs.",
+      "entrypoints": {
+        "backend": "sceneops_production_planner",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "production_planner",
+      "id": "production-planner",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "production-plan:read",
+        "production-plan:write",
+        "production-plan:approve"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "design-room"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Production Planner",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "character.inspect",
+          "character.version.compare",
+          "character.version.review",
+          "animation.preview.capture",
+          "animation.retarget.preview",
+          "character.unity-mapping.propose",
+          "character.unity-mapping.execute"
+        ],
+        "editors": [
+          "character.editor",
+          "character.rig-inspector",
+          "character.skin-qa",
+          "animation.timeline",
+          "animation.retarget-preview",
+          "animation.animator-graph"
+        ],
+        "events": [
+          "character.inspected@1",
+          "rig.version.approved@1",
+          "animation.clip.approved@1",
+          "animation.preview.captured@1",
+          "unity.character.mapping.applied@1"
+        ],
+        "jobs": [
+          "character.inspect",
+          "animation.preview.capture",
+          "character.unity.map"
+        ],
+        "policy_gates": [
+          "character.skeleton",
+          "character.skin-weights",
+          "animation.clip",
+          "character.version-approval"
+        ],
+        "workflows": [
+          "imported-character-to-unity"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Inspects, versions, previews, retargets, and maps imported character animation data.",
+      "entrypoints": {
+        "backend": "sceneops_character_animation",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "character_animation",
+      "id": "character-animation",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "character:read",
+        "character:write",
+        "character:review",
+        "animation:read",
+        "animation:write",
+        "animation:review",
+        "unity:write"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "asset-library",
+          "design-room",
+          "production-planner"
+        ],
+        "optional_integrations": [
+          "artifact-store",
+          "blender",
+          "unity",
+          "automatic-rigging",
+          "retargeting"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Character and Animation",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "render.brief.create",
+          "render.aov.capture",
+          "render.recipe.run",
+          "render.job.cancel",
+          "render.job.retry",
+          "render.variant.approve",
+          "render.writeback.propose",
+          "render.writeback.apply",
+          "render.validation.run"
+        ],
+        "editors": [
+          "render.viewer",
+          "render.aov-viewer",
+          "render.recipe",
+          "render.queue",
+          "render.comparison",
+          "render.provenance"
+        ],
+        "events": [
+          "render.job.started@1",
+          "render.job.progressed@1",
+          "render.job.failed@1",
+          "render.job.cancelled@1",
+          "render.variant.created@1",
+          "render.writeback.proposed@1",
+          "render.validation.completed@1"
+        ],
+        "jobs": [
+          "render.aov.capture",
+          "render.variant.generate",
+          "render.writeback.apply",
+          "render.validation.capture"
+        ],
+        "policy_gates": [
+          "render.writeback.approval",
+          "render.protected-regions"
+        ],
+        "workflows": [
+          "render.asset-turntable",
+          "render.material-variant",
+          "render.lighting-visibility",
+          "render.fixed-camera-regression",
+          "render.marketing-still"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Captures deterministic AOVs, creates traceable AI-assisted render variants, proposes approved editable writebacks, and validates fixed-camera changes.",
+      "entrypoints": {
+        "backend": "render_ops",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "render_ops",
+      "id": "render-ops",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "render:read",
+        "render:run",
+        "render:approve",
+        "render:writeback"
+      ],
+      "requires": {
+        "integrations": [
+          "artifact-store"
+        ],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "comfyui",
+          "blender",
+          "unity"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Render Ops",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "runtime.fixture.run"
+        ],
+        "editors": [
+          "runtime.fixture"
+        ],
+        "events": [
+          "runtime.fixture.completed@1"
+        ],
+        "jobs": [
+          "runtime.fixture.execute"
+        ],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "Proves deterministic registration, enablement, and explicit success and failure states.",
+      "entrypoints": {
+        "backend": "runtime_fixture",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "runtime_fixture",
+      "id": "runtime-fixture",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "runtime-fixture:read",
+        "runtime-fixture:execute"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "fixture-renderer"
+        ]
+      },
+      "schema_version": 1,
+      "status": "experimental",
+      "title": "Runtime Fixture",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "review.session.create",
+          "review.comment.add",
+          "review.assignment.record",
+          "review.decision.record",
+          "review.approval.record",
+          "review.lock.acquire",
+          "review.lock.release",
+          "review.rollback.propose",
+          "review.rollback.execute",
+          "review.release.link"
+        ],
+        "editors": [
+          "review.version-diff",
+          "review.session",
+          "review.activity"
+        ],
+        "events": [
+          "review.session.created@1",
+          "review.revision.published@1",
+          "review.comment.added@1",
+          "review.assignment.recorded@1",
+          "review.decision.recorded@1",
+          "review.approval.recorded@1",
+          "review.lock.recorded@1",
+          "review.rollback.proposed@1",
+          "review.rollback.executed@1",
+          "review.release.linked@1"
+        ],
+        "jobs": [],
+        "policy_gates": [
+          "review.stale-base",
+          "review.binary-lock",
+          "review.rollback-approval"
+        ],
+        "workflows": [
+          "review-to-release"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Auditable Git/LFS review, collaboration, four-layer diff, locks, approvals, and rollback proposals.",
+      "entrypoints": {
+        "backend": "version_collaboration",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "version_collaboration",
+      "id": "version-collaboration",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "review:read",
+        "review:create",
+        "review:comment",
+        "review:assign",
+        "review:approve",
+        "version:lock",
+        "version:rollback"
+      ],
+      "requires": {
+        "integrations": [
+          "git"
+        ],
+        "modules": [
+          "core-kernel",
+          "module-runtime"
+        ],
+        "optional_integrations": [
+          "git-lfs",
+          "render-ops",
+          "ai-playtest",
+          "build-release"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Version and Collaboration",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "build.matrix.create",
+          "build.manifest.record",
+          "release.candidate.create",
+          "release.candidate.approve",
+          "release.patch-note.generate",
+          "release.patch-note.edit",
+          "release.deploy",
+          "release.deploy.retry",
+          "release.rollback.plan",
+          "release.rollback.execute"
+        ],
+        "editors": [
+          "build.export",
+          "build.matrix",
+          "build.console",
+          "release.gates",
+          "release.center",
+          "release.patch-notes"
+        ],
+        "events": [
+          "build.manifest.recorded@1",
+          "release.candidate.created@1",
+          "release.candidate.readied@1",
+          "release.deployment.succeeded@1",
+          "release.deployment.failed@1",
+          "release.rollback.executed@1"
+        ],
+        "jobs": [
+          "build.manifest.verify",
+          "release.candidate.assemble",
+          "release.deployment.publish",
+          "release.rollback.execute"
+        ],
+        "policy_gates": [
+          "release.asset",
+          "release.scene",
+          "release.code",
+          "release.render",
+          "release.unity-tests",
+          "release.performance",
+          "release.ai-regression"
+        ],
+        "workflows": [
+          "build-to-release-candidate",
+          "rollback-known-good"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Creates traceable release candidates, deployments, patch notes, and rollback evidence.",
+      "entrypoints": {
+        "backend": "build_release",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "build_release",
+      "id": "build-release",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "build:read",
+        "build:record",
+        "release:read",
+        "release:write",
+        "release:approve",
+        "release:deploy",
+        "release:rollback"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "engine-unity",
+          "version-collaboration"
+        ],
+        "optional_integrations": [
+          "artifact-store",
+          "git",
+          "unity",
+          "build-runner"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "Build and Release",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "scene.annotation.create",
+          "scene.object.place.propose",
+          "scene.issue.restore",
+          "scene.capture.fixed.request",
+          "scene.level.validate",
+          "scene.world.update.propose",
+          "scene.recipe.apply.propose"
+        ],
+        "editors": [
+          "scene.viewport.3d",
+          "scene.outliner",
+          "scene.object.inspector",
+          "scene.annotations",
+          "scene.world.graph",
+          "scene.path-region",
+          "scene.navmesh",
+          "scene.lighting"
+        ],
+        "events": [
+          "scene.annotation.created@1",
+          "scene.object.placement_proposed@1",
+          "scene.level.validated@1"
+        ],
+        "jobs": [
+          "world.level.validate"
+        ],
+        "policy_gates": [
+          "world.level"
+        ],
+        "workflows": [
+          "asset-to-world-placement",
+          "world-level-validation"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Composes and validates traceable 3D worlds, annotations, paths, regions, navigation, and lighting targets.",
+      "entrypoints": {
+        "backend": "world_composer",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "world_composer",
+      "id": "world-composer",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "scene:read",
+        "scene:annotate",
+        "scene:write",
+        "scene:validate"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "asset-library",
+          "logic-studio"
+        ],
+        "optional_integrations": [
+          "artifact-store",
+          "blender",
+          "unity"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "World Composer",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [
+          "lookdev.open",
+          "vfx.recipe.validate",
+          "vfx.preview.plan",
+          "vfx.recipe.publish",
+          "vfx.binding.set_enabled"
+        ],
+        "editors": [
+          "vfx.recipe",
+          "shader.parameters",
+          "vfx.preview",
+          "lookdev.material"
+        ],
+        "events": [
+          "vfx.recipe.validated@1",
+          "vfx.preview.planned@1",
+          "vfx.recipe.published@1",
+          "vfx.binding.changed@1"
+        ],
+        "jobs": [
+          "vfx.preview.plan",
+          "vfx.recipe.publish"
+        ],
+        "policy_gates": [
+          "vfx.budget",
+          "vfx.approval"
+        ],
+        "workflows": [
+          "approved-highlight-to-unity"
+        ]
+      },
+      "default_enabled": true,
+      "description": "Defines reviewable VFX recipes, deterministic previews, budgets, event bindings, and approved Unity publication.",
+      "entrypoints": {
+        "backend": "vfx_shader",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "vfx_shader",
+      "id": "vfx-shader",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "vfx:read",
+        "vfx:write",
+        "vfx:publish"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "world-composer",
+          "asset-library"
+        ],
+        "optional_integrations": [
+          "unity",
+          "render"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "VFX and Shader Studio",
+      "version": "0.1.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 \u8fd0\u884c\u4e13\u5bb6",
+      "entrypoints": {
+        "backend": "sceneops_ai_agents",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "ai_agent_runtime",
+      "id": "ai-agent-runtime",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan",
+        "harness:approve"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "ai-model-router",
+          "project-intake",
+          "engine-unity",
+          "asset-factory",
+          "asset-library",
+          "world-composer",
+          "vfx-shader"
+        ],
+        "optional_integrations": [
+          "blender",
+          "unity"
+        ]
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "\u8fd0\u884c\u4e13\u5bb6",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
+        "editors": [
+          "harness.pipeline"
+        ],
+        "events": [],
+        "jobs": [],
+        "policy_gates": [],
+        "workflows": []
+      },
+      "default_enabled": true,
+      "description": "V5 AI \u751f\u4ea7\u8ba1\u5212",
+      "entrypoints": {
+        "backend": "sceneops_ai_pipeline",
+        "frontend": "./frontend/src/index.ts"
+      },
+      "feature_flag": "ai_pipeline_compiler",
+      "id": "ai-pipeline-compiler",
+      "missing_integration_fields": {
+        "optional": "requires.optional_integrations",
+        "required": "requires.integrations"
+      },
+      "permissions": [
+        "harness:read",
+        "harness:plan"
+      ],
+      "requires": {
+        "integrations": [],
+        "modules": [
+          "core-kernel",
+          "module-runtime",
+          "ai-intent-compiler",
+          "ai-context-engine",
+          "ai-agent-runtime",
+          "ai-model-router",
+          "ai-run-observer",
+          "ai-recovery-planner",
+          "ai-run-distiller"
+        ],
+        "optional_integrations": []
+      },
+      "schema_version": 1,
+      "status": "active",
+      "title": "AI \u751f\u4ea7\u8ba1\u5212",
+      "version": "0.5.0"
+    },
+    {
+      "contributes": {
+        "commands": [],
         "editors": [
           "assistant.conversation"
         ],
@@ -117,7 +1752,9 @@
         "integrations": [],
         "modules": [
           "core-kernel",
-          "module-runtime"
+          "module-runtime",
+          "ai-agent-runtime",
+          "ai-run-distiller"
         ],
         "optional_integrations": [
           "llm-provider"
@@ -189,58 +1826,98 @@
     {
       "contributes": {
         "commands": [
-          "runtime.fixture.run"
+          "ui.flow.validate",
+          "ui.mapping.propose",
+          "ui.changeset.approve",
+          "ui.changeset.publish"
         ],
         "editors": [
-          "runtime.fixture"
+          "ui.flow",
+          "ui.preview"
         ],
         "events": [
-          "runtime.fixture.completed@1"
+          "ui.flow.validated@1",
+          "ui.mapping.proposed@1",
+          "ui.changeset.published@1"
         ],
         "jobs": [
-          "runtime.fixture.execute"
+          "ui.validation.run"
         ],
-        "policy_gates": [],
-        "workflows": []
+        "policy_gates": [
+          "ui.changeset.approval"
+        ],
+        "workflows": [
+          "hero-key-door-ui"
+        ]
       },
       "default_enabled": true,
-      "description": "Proves deterministic registration, enablement, and explicit success and failure states.",
+      "description": "\u5b9a\u4e49\u53ef\u9a8c\u8bc1\u7684\u6e38\u620f\u754c\u9762\u6d41\u7a0b\u3001\u63d0\u793a\u4e0e Unity UI \u6620\u5c04\u3002",
       "entrypoints": {
-        "backend": "runtime_fixture",
+        "backend": "ui_studio",
         "frontend": "./frontend/src/index.ts"
       },
-      "feature_flag": "runtime_fixture",
-      "id": "runtime-fixture",
+      "feature_flag": "ui_studio",
+      "id": "ui-studio",
       "missing_integration_fields": {
         "optional": "requires.optional_integrations",
         "required": "requires.integrations"
       },
       "permissions": [
-        "runtime-fixture:read",
-        "runtime-fixture:execute"
+        "ui:read",
+        "ui:write",
+        "ui:publish"
       ],
       "requires": {
         "integrations": [],
         "modules": [
           "core-kernel",
-          "module-runtime"
+          "module-runtime",
+          "audio-studio",
+          "vfx-shader"
         ],
         "optional_integrations": [
-          "fixture-renderer"
+          "unity"
         ]
       },
       "schema_version": 1,
-      "status": "experimental",
-      "title": "Runtime Fixture",
+      "status": "active",
+      "title": "UI Studio",
       "version": "0.1.0"
     }
   ],
   "registration_order": [
     "core-kernel",
     "module-runtime",
+    "ai-intent-compiler",
+    "ai-model-router",
+    "ai-playtest",
+    "ai-recovery-planner",
+    "ai-run-distiller",
+    "ai-run-observer",
+    "asset-library",
+    "audio-studio",
+    "engine-unity",
+    "logic-studio",
+    "observability",
+    "integration-center",
+    "project-intake",
+    "ai-context-engine",
+    "design-room",
+    "concept-lab",
+    "asset-factory",
+    "production-planner",
+    "character-animation",
+    "render-ops",
+    "runtime-fixture",
+    "version-collaboration",
+    "build-release",
+    "world-composer",
+    "vfx-shader",
+    "ai-agent-runtime",
+    "ai-pipeline-compiler",
     "conversation-home",
     "forge-shell",
-    "runtime-fixture"
+    "ui-studio"
   ],
   "schema_version": 1
 }

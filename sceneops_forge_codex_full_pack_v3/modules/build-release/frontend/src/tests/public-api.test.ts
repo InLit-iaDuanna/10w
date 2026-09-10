@@ -5,17 +5,18 @@ import test from "node:test";
 import * as publicApi from "../index.ts";
 import { moduleContribution } from "../index.ts";
 
-test("public frontend entry exports only the module contribution", () => {
-  assert.deepEqual(Object.keys(publicApi), ["moduleContribution"]);
+test("public frontend entry exports the declared contribution and workbench entrypoints", () => {
+  assert.deepEqual(Object.keys(publicApi), ["ExportWorkbench", "UnityBuildWorkbench", "loadExportWorkbench", "loadIntegratedWorkbench", "moduleContribution"]);
 });
 
-test("module contribution is feature flagged and lazy registers five editors", () => {
+test("module contribution is feature flagged and lazy registers six editors", () => {
   assert.equal(moduleContribution.manifest.id, "build-release");
   assert.equal(moduleContribution.manifest.featureFlag, "build_release");
-  assert.equal(moduleContribution.editors.length, 5);
+  assert.equal(moduleContribution.editors.length, 6);
   assert.deepEqual(
     moduleContribution.editors.map((editor) => editor.id),
     [
+      "build.export",
       "build.matrix",
       "build.console",
       "release.gates",

@@ -13,3 +13,5 @@ export type {
 export { createProjectIntakeRuntime } from "./runtime.ts";
 export * from "./manifest.ts";
 export const loadIntakePanel = () => import('./IntakePanel.tsx').then(module => ({default:module.IntakePanel}));
+
+export {PRODUCTION_DOMAINS,type ProductionDomainId} from './generated/production-domains';

@@ -35,6 +35,8 @@ contributes:
   workflows:
     - hero-key-door-audio
 
+  policy_gates: []
+
 permissions:
   - audio:read
   - audio:write

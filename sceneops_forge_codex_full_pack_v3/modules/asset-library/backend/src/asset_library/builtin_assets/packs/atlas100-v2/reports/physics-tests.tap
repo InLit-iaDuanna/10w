@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: OBB separating axis: separated and touching boxes do not penetrate
+ok 1 - OBB separating axis: separated and touching boxes do not penetrate
+  ---
+  duration_ms: 1.112803
+  type: 'test'
+  ...
+# Subtest: OBB separating axis returns minimum penetration and correct direction
+ok 2 - OBB separating axis returns minimum penetration and correct direction
+  ---
+  duration_ms: 0.747164
+  type: 'test'
+  ...
+# Subtest: Rotated OBB broad phase includes full diagonal width
+ok 3 - Rotated OBB broad phase includes full diagonal width
+  ---
+  duration_ms: 0.255935
+  type: 'test'
+  ...
+# Subtest: Gravity produces a falling prop
+ok 4 - Gravity produces a falling prop
+  ---
+  duration_ms: 0.760904
+  type: 'test'
+  ...
+# Subtest: Prop lands on a floor without penetrating it
+ok 5 - Prop lands on a floor without penetrating it
+  ---
+  duration_ms: 4.697643
+  type: 'test'
+  ...
+# Subtest: Fixed bodies ignore gravity
+ok 6 - Fixed bodies ignore gravity
+  ---
+  duration_ms: 0.320672
+  type: 'test'
+  ...
+# Subtest: Initially sleeping props remain at their authored position
+ok 7 - Initially sleeping props remain at their authored position
+  ---
+  duration_ms: 0.400592
+  type: 'test'
+  ...
+# Subtest: Impulse wakes a sleeping prop and scales by mass
+ok 8 - Impulse wakes a sleeping prop and scales by mass
+  ---
+  duration_ms: 0.366351
+  type: 'test'
+  ...
+# Subtest: Sensors report passage without stopping the prop
+ok 9 - Sensors report passage without stopping the prop
+  ---
+  duration_ms: 4.679886
+  type: 'test'
+  ...
+# Subtest: Disabled held props are excluded from gravity and collision
+ok 10 - Disabled held props are excluded from gravity and collision
+  ---
+  duration_ms: 0.411709
+  type: 'test'
+  ...
+# Subtest: Equal-mass dynamic collision separates both bodies
+ok 11 - Equal-mass dynamic collision separates both bodies
+  ---
+  duration_ms: 0.572461
+  type: 'test'
+  ...
+# Subtest: Fixed stepping is consistent between 60 Hz and 120 Hz callers
+ok 12 - Fixed stepping is consistent between 60 Hz and 120 Hz callers
+  ---
+  duration_ms: 0.495965
+  type: 'test'
+  ...
+# Subtest: Excessively large frame dt is clamped to avoid runaway catch-up
+ok 13 - Excessively large frame dt is clamped to avoid runaway catch-up
+  ---
+  duration_ms: 0.078829
+  type: 'test'
+  ...
+# Subtest: Removing a body is idempotent
+ok 14 - Removing a body is idempotent
+  ---
+  duration_ms: 0.091548
+  type: 'test'
+  ...
+# Subtest: Reject duplicate identity, invalid mass, unsupported mode and bad bounds
+ok 15 - Reject duplicate identity, invalid mass, unsupported mode and bad bounds
+  ---
+  duration_ms: 0.313892
+  type: 'test'
+  ...
+# Subtest: Reject nonfinite values and invalid update/impulse inputs
+ok 16 - Reject nonfinite values and invalid update/impulse inputs
+  ---
+  duration_ms: 0.162254
+  type: 'test'
+  ...
+# Subtest: A moving kinematic mechanism wakes and pushes an overlapping sleeping prop
+ok 17 - A moving kinematic mechanism wakes and pushes an overlapping sleeping prop
+  ---
+  duration_ms: 0.295004
+  type: 'test'
+  ...
+# Subtest: Damping and per-body gravity scale are honored
+ok 18 - Damping and per-body gravity scale are honored
+  ---
+  duration_ms: 0.162434
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 80.834976

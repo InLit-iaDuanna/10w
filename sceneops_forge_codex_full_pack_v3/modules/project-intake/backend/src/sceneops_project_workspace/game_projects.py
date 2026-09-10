@@ -19,7 +19,7 @@ MINIPLEX_VERSION = "2.0.0"
 ARCHITECTURE_VERSION = 1
 
 
-def _shared_files(*, ecs: bool) -> dict[str, str]:
+def _shared_files(*, ecs: bool, include_demo: bool = True) -> dict[str, str]:
     dependencies = {"three": THREE_VERSION}
     if ecs:
         dependencies["miniplex"] = MINIPLEX_VERSION
@@ -39,9 +39,9 @@ def _shared_files(*, ecs: bool) -> dict[str, str]:
         "devDependencies": {"@types/three": "0.183.1", "typescript": "6.0.3", "vite": "8.0.0"},
     }
     return {
-        **demo_asset_files(),
+        **(demo_asset_files() if include_demo else {}),
         "src/game/sceneops-demo-content.ts": demo_content_source(EMPTY_DEMO_CONTENT),
-        **test_adapter_files(),
+        **(test_adapter_files() if include_demo else {}),
         "README.md": """# SceneOps game project
 
 This is the playable game project created from the technical plan selected in Design Room.
@@ -157,7 +157,7 @@ import { createDemoAsset, setDemoDoorOpen, keyDoorCanOpen, type DemoAsset, type 
 export class KeyDoor {
   readonly mesh: THREE.Object3D
   opened = false
-  static async create(source: DemoObject, asset: DemoAsset) { return new KeyDoor(source, await createDemoAsset(asset)) }
+  static async create(source: DemoObject, asset: DemoAsset) { return new KeyDoor(source, await createDemoAsset(asset, {instanceId:source.id})) }
   constructor(readonly source: DemoObject, mesh: THREE.Object3D) {
     this.mesh = mesh
     const {position_m,rotation_y_deg,scale} = source.transform
@@ -377,7 +377,7 @@ export async function createGameWorld(scene: THREE.Scene) {
   for (const source of demoContent.objects) {
     const asset = demoContent.assets.find(item => item.asset_id === source.asset_id && item.asset_version === source.asset_version)
     if (!asset) throw new Error(`资产版本缺失：${source.asset_id}`)
-    const mesh = await createDemoAsset(asset), {position_m,rotation_y_deg,scale} = source.transform
+    const mesh = await createDemoAsset(asset, {instanceId:source.id}), {position_m,rotation_y_deg,scale} = source.transform
     mesh.position.set(...position_m); mesh.scale.setScalar(scale); mesh.rotation.y=THREE.MathUtils.degToRad(rotation_y_deg)
     mesh.name=source.id; mesh.userData.sceneops_id=source.id; scene.add(mesh)
     world.add({sceneObjectId:source.id,position:mesh.position,mesh,
@@ -462,9 +462,204 @@ def template_files(architecture: str) -> dict[str, str]:
     raise GameProjectError("未知游戏代码架构。")
 
 
+
+def native_template_files(architecture: str) -> dict[str, str]:
+    """Neutral new-project seed; legacy templates remain migration inputs only."""
+    if architecture not in ('object-component', 'ecs'):
+        raise GameProjectError('未知游戏代码架构。')
+    files = {
+        **_shared_files(ecs=architecture == 'ecs', include_demo=False),
+        'AGENTS.md': '你正在制作游戏，不是在开发 SceneOps 平台。读取 ARCHITECTURE.md 和 .sceneops/creation-brief.md。保留已选架构、已有源码和真实资产来源；普通源码原生编辑，托管资产和实例使用 SceneOps 领域工具。用户已确认目标优先，不自动购买、提交或发布。\n',
+        'README.md': """# 游戏工程
+
+运行 `pnpm install`、`pnpm check`、`pnpm dev` 打开本地场景。
+这是空白制作起点，不预设人物、收集、战斗或关卡目标。先读取 `ARCHITECTURE.md`，再按已确认简报增量制作。
+工作台资产与实例由 `src/game/sceneops-demo-content.ts` 物化，运行入口实际读取其版本和变换。
+坐标使用米、Y 轴向上。现有文件归用户所有，重新初始化不会替换用户源码。
+""",
+        'index.html': """<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="icon" href="data:,"/><title>新场景</title></head>
+<body><div id="app"></div><p id="status" role="status"></p><script type="module" src="/src/main.ts"></script></body>
+</html>
+""",
+        'src/style.css': """html,body,#app{width:100%;height:100%;margin:0;overflow:hidden;background:#20242a}body{font-family:system-ui,sans-serif;color:#fff}canvas{display:block}#status{position:fixed;bottom:16px;left:16px;right:16px;margin:0}#status:empty{display:none}
+""",
+        'src/game/SceneView.ts': """import * as THREE from 'three'
+
+export class SceneView {
+  readonly scene = new THREE.Scene()
+  private readonly renderer = new THREE.WebGLRenderer({ antialias: true })
+  private readonly camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200)
+  constructor(private readonly host: HTMLElement) {
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+    host.append(this.renderer.domElement)
+    this.scene.background = new THREE.Color(0x20242a)
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x52565c, 2))
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: 0x63676c }))
+    floor.rotation.x = -Math.PI / 2
+    this.scene.add(floor)
+    this.camera.position.set(8, 8, 10)
+    this.camera.lookAt(0, 0, 0)
+    window.addEventListener('resize', () => this.resize())
+    this.resize()
+  }
+  private resize() {
+    const width = this.host.clientWidth, height = Math.max(this.host.clientHeight, 1)
+    this.renderer.setSize(width, height, false)
+    this.camera.aspect = width / height
+    this.camera.updateProjectionMatrix()
+  }
+  start(update: () => void) {
+    this.renderer.setAnimationLoop(() => { update(); this.renderer.render(this.scene, this.camera) })
+  }
+}
+""",
+    }
+    if architecture == 'object-component':
+        files.update({
+            'ARCHITECTURE.md': """# 对象／组件架构
+
+`Game` 组织对象和帧循环，`SceneView` 负责显示，`SceneObject` 持有单个已登记场景实例。
+新增行为放入所属对象，可复用能力提取为组件；保留该架构，不引入 ECS。
+当前场景没有预置玩法。依据制作简报建立对象与行为，并继续读取托管内容的稳定 ID、资产版本和变换。
+""",
+            'src/main.ts': """import './style.css'
+import { Game } from './game/Game'
+
+const host = document.querySelector<HTMLElement>('#app')!
+Game.create(host).then(game => game.start()).catch(error => {
+  document.querySelector<HTMLElement>('#status')!.textContent = `场景加载失败：${String(error)}`
+})
+""",
+            'src/game/objects/SceneObject.ts': """import * as THREE from 'three'
+import { createDemoAsset, type DemoAsset, type DemoObject } from '../sceneops-demo-content'
+
+export class SceneObject {
+  static async create(source: DemoObject, asset: DemoAsset) {
+    const mesh = await createDemoAsset(asset, {instanceId:source.id})
+    return new SceneObject(source, mesh)
+  }
+  constructor(readonly source: DemoObject, readonly mesh: THREE.Object3D) {
+    const transform = source.transform
+    mesh.position.set(...transform.position_m)
+    mesh.rotation.y = THREE.MathUtils.degToRad(transform.rotation_y_deg)
+    mesh.scale.setScalar(transform.scale)
+    mesh.name = source.id
+    mesh.userData.sceneops_id = source.id
+  }
+}
+""",
+            'src/game/Game.ts': """import { SceneView } from './SceneView'
+import { SceneObject } from './objects/SceneObject'
+import { demoContent } from './sceneops-demo-content'
+
+export class Game {
+  private constructor(private readonly view: SceneView, readonly objects: SceneObject[]) {
+    for (const object of objects) view.scene.add(object.mesh)
+  }
+  static async create(host: HTMLElement) {
+    const objects = await Promise.all(demoContent.objects.map(source => {
+      const asset = demoContent.assets.find(asset => asset.asset_id === source.asset_id && asset.asset_version === source.asset_version)
+      if (!asset) throw new Error(`资产版本缺失：${source.asset_id}`)
+      return SceneObject.create(source, asset)
+    }))
+    return new Game(new SceneView(host), objects)
+  }
+  start() { this.view.start(() => this.update()) }
+  private update() {
+    // Add object behavior here when the confirmed brief defines it.
+  }
+}
+""",
+        })
+    else:
+        files.update({
+            'ARCHITECTURE.md': """# ECS 架构
+
+Miniplex 是唯一 ECS 库。`world.ts` 定义实体组件数据，`systems` 中的系统查询实体，入口组织帧流水线。
+`SceneView` 只负责 Three.js 显示。新增玩法定义组件和系统，不在实体类中存放行为，不替换 Miniplex。
+当前世界没有预置玩法；托管场景的稳定 ID、资产版本、位置、旋转和缩放已接入实际渲染。
+""",
+            'src/main.ts': """import './style.css'
+import { SceneView } from './game/SceneView'
+import { createGameWorld } from './game/world'
+import { renderSystem } from './game/systems/renderSystem'
+
+async function start() {
+  const view = new SceneView(document.querySelector<HTMLElement>('#app')!)
+  const world = await createGameWorld(view.scene)
+  view.start(() => renderSystem(world))
+}
+start().catch(error => {
+  document.querySelector<HTMLElement>('#status')!.textContent = `场景加载失败：${String(error)}`
+})
+""",
+            'src/game/world.ts': """import { World } from 'miniplex'
+import * as THREE from 'three'
+import { createDemoAsset, demoContent } from './sceneops-demo-content'
+
+export type Entity = {
+  sceneObjectId?: string
+  position?: THREE.Vector3
+  mesh?: THREE.Object3D
+}
+export async function createGameWorld(scene: THREE.Scene) {
+  const world = new World<Entity>()
+  for (const source of demoContent.objects) {
+    const asset = demoContent.assets.find(asset => asset.asset_id === source.asset_id && asset.asset_version === source.asset_version)
+    if (!asset) throw new Error(`资产版本缺失：${source.asset_id}`)
+    const mesh = await createDemoAsset(asset, {instanceId:source.id})
+    mesh.position.set(...source.transform.position_m)
+    mesh.rotation.y = THREE.MathUtils.degToRad(source.transform.rotation_y_deg)
+    mesh.scale.setScalar(source.transform.scale)
+    mesh.name = source.id
+    mesh.userData.sceneops_id = source.id
+    scene.add(mesh)
+    world.add({ sceneObjectId: source.id, position: mesh.position.clone(), mesh })
+  }
+  return world
+}
+""",
+            'src/game/systems/renderSystem.ts': """import type { World } from 'miniplex'
+import type { Entity } from '../world'
+
+export function renderSystem(world: World<Entity>) {
+  for (const entity of world.with('position', 'mesh')) entity.mesh.position.copy(entity.position)
+}
+""",
+        })
+    return files
+
+
 class GameProjects:
     def __init__(self, repository):
         self.repository = repository
+
+    def install_demo_assets(self, project_id: str, card_id: str) -> dict:
+        """Install fixed pack files into an authorized, registered card worktree."""
+        worktree = GitProjects(self.repository).get_card(project_id, card_id)
+        root = self.repository._safe_existing_directory(Path(worktree['worktree_path']))
+        installed, preserved = [], []
+        for relative, content in demo_asset_files().items():
+            target = root / relative
+            parent = root
+            for component in Path(relative).parts[:-1]:
+                parent = self.repository._real_directory(parent / component, create=True)
+            if target.is_symlink() or (target.exists() and not target.is_file()):
+                raise GameProjectError(f'演示资产路径 {relative} 不是普通文件，未写入。')
+            if target.exists():
+                preserved.append(relative)
+                continue
+            self._write_text(target, content)
+            installed.append(relative)
+        return {'pack_id': 'sceneops-demo-pack', 'version': 1,
+                'workspace_root': str(root), 'installed_files': installed,
+                'preserved_files': preserved, 'module_path': 'src/game/sceneops-demo-assets.ts',
+                'exports': ['createCharacter', 'createHouse', 'createTree', 'createCrate',
+                            'createRock', 'createCollectible', 'createDemoScenery'],
+                'integration_note': '先读取模块；从当前入口相对导入所需工厂，将返回的 Group 加入场景。'
+                    'createCharacter 接受 player/enemy/npc/ally。安装不修改入口；已有文件保持原样。'}
 
     def materialize_demo_content(self, project_id: str, workspace_id: str, manifest: dict) -> dict:
         """Write derived runtime inputs only after validating the registered project workspace."""
@@ -472,8 +667,10 @@ class GameProjects:
         root = self.repository._safe_existing_directory(Path(workspace["workspace_root"]))
         if manifest.get("project_id") != project_id or manifest.get("workspace_id") != workspace_id:
             raise GameProjectError("Demo 内容版本不属于当前项目工作区。")
-        if any(asset.get("source_kind") in {"blender", "file"} for asset in manifest.get("assets", [])):
-            consumers = [root / "src/game/objects/KeyDoor.ts", root / "src/game/world.ts"]
+        scene_refs = {(item['asset_id'], item['asset_version']) for item in manifest.get('objects', [])}
+        if any(asset.get("source_kind") in {"blender", "file"} and (asset['asset_id'], asset['asset_version']) in scene_refs for asset in manifest.get("assets", [])):
+            consumers = [root / "src/game/objects/KeyDoor.ts", root / "src/game/objects/SceneObject.ts",
+                         root / "src/game/world.ts"]
             existing = [path for path in consumers if path.exists()]
             if not existing or any(path.is_symlink() or not path.is_file()
                     or "createDemoAsset" not in path.read_text(encoding="utf-8") for path in existing):
@@ -483,6 +680,8 @@ class GameProjects:
         record = metadata / "demo-content.json"
         if not source.parent.is_dir() or source.parent.is_symlink():
             raise GameProjectError("游戏工程缺少可写入的 src/game 目录。")
+        from .lookdev_content import write_lookdev_content
+        write_lookdev_content(root, manifest, self._replace_text)
         self._replace_text(source, demo_content_source(manifest))
         self._replace_text(record, json.dumps(manifest, ensure_ascii=False, allow_nan=False, indent=2) + "\n")
         return {
@@ -547,11 +746,17 @@ class GameProjects:
                 raise GameProjectError("游戏工程基线绑定了其他策划版本，请先建立明确迁移任务。")
             if not commit_baseline:
                 return scaffold
-            self._materialize_files(root, template_files(selection["code_architecture"]))
+            with self.repository.connect() as connection:
+                baseline_exists = connection.execute(
+                    'SELECT 1 FROM workspace_game_baselines WHERE project_id=?', (project_id,)).fetchone()
+            # Once committed, project sources belong to the user, including older templates.
+            if not baseline_exists:
+                self._materialize_files(root, (native_template_files if current.get("template_kind") == "native-light"
+                                              else template_files)(selection["code_architecture"]))
             baseline = self._commit_baseline(project_id, current, recorded_version)
             return {**scaffold, "baseline_commit": baseline}
 
-        files = template_files(selection["code_architecture"])
+        files = native_template_files(selection["code_architecture"])
         code_candidates = [root / "package.json", root / "index.html", root / "src"]
         existing_code = any(path.exists() or path.is_symlink() for path in code_candidates)
         if existing_code:
@@ -572,7 +777,7 @@ class GameProjects:
                 "generated_files": sorted(files), "check_command": "pnpm check",
                 "build_command": "pnpm build", "preview_command": "pnpm dev",
             }
-        record = {**selection, "project_kind": scaffold["project_kind"],
+        record = {**selection, "project_kind": scaffold["project_kind"], "template_kind": "native-light",
                   "architecture_version": ARCHITECTURE_VERSION, "design_version": design_version,
                   "selected_at": datetime.now(timezone.utc).isoformat(), "scaffold": scaffold}
         self.repository._write_json_exclusive(marker, record)

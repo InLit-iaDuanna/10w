@@ -1,5 +1,17 @@
 # SceneOps Forge V5 · AI 生产工作台
 
+浏览器验证环境：根依赖包含 Playwright 1.62.1，安装依赖后执行 `pnpm exec playwright install chromium`。生产任务不会自行下载浏览器。原生新制作和续改默认授权内置资产，Agent 可通过目录查询和选材安装工具接入真实素材；安装不等于游戏已加载或试玩通过。
+
+当前新制作主线（2026-09-09）：**SceneOps 对齐目标 → 确认可编辑制作简报与权限 → Codex／CodeBuddy 原生制作 → 工作台接回实际文件、资产和试玩候选 → 准确会话续改**。新工程使用轻量 Three.js / TypeScript / Vite / pnpm 起点。历史任务与编辑服务继续保留；本轮不接 App Server、SDK 或多 Agent 编排。接口、配置与故障处理见 [原生 CLI 制作](modules/ai-agent-runtime/docs/native-cli-production.md)，实际验收见 [验收报告](NATIVE_CLI_PRODUCTION_ACCEPTANCE.md)。
+
+专业制作现在会在主 Agent 开始前调用一次独立的“制作推荐模型”，按本轮任务从内置资产、当前项目资产、有效经验和已有技能中选择材料。游戏、建模、场景、策划和导出共用同一套准备记录；游戏只复制所选素材，并区分推荐、提供、复制、源码引用和运行验证。配置、接口、失败语义与 A/B 验收格式见 [按任务选择资产、经验与制作方式](docs/production-preparation.md)。
+
+工作台内置「暖陶与松影」场景套装：3 套场景、17 件建筑／物件、4 个同造型异色角色，可直接预览、加入项目，并供已授权 Demo 任务复用。见 [固定场景与资产说明](BUILTIN_SCENES.md)。
+
+制作卡片现会主动开始对齐；收束后自动展示执行确认，确认后使用当前项目的开发权限与内置基础资产制作 Demo，成功预览自动在右侧打开。见 [主动对齐与 Demo 执行](DEMO_EXECUTION_FLOW.md)。
+
+2026-09-07 审计问题修复及定向验证结果见 [审计修复记录](AUDIT_REPAIR_20260907.md)：模块一致性、完整 AI 结构纠错、项目错误边界和测试入口已修复；该记录明确区分代码回归与尚未重跑的真实外部全链路。
+
 最新：第一次生成游戏工程代码前，用户可手动选择对象／组件式或 ECS · Miniplex，也可让当前 AI 提供方推荐。确认后会创建真实、可构建和预览的 Three.js 工程，制作卡与卡片 Agent 持续读取同一技术方案。[实现、操作与真实 Agent 验证](GAME_CODE_ARCHITECTURE_MILESTONE.md)。新建项目现已写入可恢复身份，scaffold 形成选择性 Git 基线；新卡从进入时最新的集成提交创建，旧卡保持原 base，复制项目不会静默改绑。[身份与基线里程碑](GAME_PROJECT_IDENTITY_BASELINE_MILESTONE.md)。卡片 Agent 还能在明确授权后自行准备依赖、检查、构建、按日志修复并启动严格 localhost 预览，任务卡按钮复用相同能力。[运行闭环与验收记录](GAME_PROJECT_RUNTIME_MILESTONE.md)。
 
 制作卡片现在可选择“导入已有模型”或“新建模型”。导入 GLB/FBX 后由真实 Blender 检查并生成 `.blend`、预览 GLB、Unity 交换 FBX；新建在唯一主对话中逐块对齐，每条新回答都会追加一个真实 Blender/GLB 草稿版本。确认的版本可存入项目资产库，再进入 Three.js 环境场景人工摆放，或继续由同一个主对话让 AI 使用库内资产搭建。两条模型路径都写入卡片 Git 工作树且不自动提交/合并，归一化另存版本。验证范围见 [卡片模型烟测](CARD_ASSET_WORKFLOW_SMOKE.md)。
@@ -14,6 +26,24 @@ V5 增加目标理解、明确选中的项目上下文、可审阅生产计划�
 
 ## 安装与启动
 
+### macOS 一键启动
+
+在访达中双击根目录的 `启动 SceneOps.command`。首次运行会自动准备网页依赖、Python 3.12 本地环境和 API 运行依赖；完成后同时启动 Web/API 并打开工作台。后续再次双击会直接启动，检测到服务已运行时只打开现有工作台。
+
+启动后请保留打开的终端窗口；关闭窗口或按 Ctrl+C 会停止本地服务。网页右上角的「环境配置」继续负责 CodeBuddy CLI / Codex CLI 的一键安装、官方登录和连接检查，无需手动启动后端。
+
+终端中的等价一键命令：
+
+```sh
+pnpm start
+```
+
+Node.js 22.12 或更高版本仍需预先安装；一键入口会给出明确提示，不会修改系统权限。
+
+### 开发者手动安装
+
+首次打开后，可用「环境配置」向导选择 Codex CLI / CodeBuddy CLI，一键安装到用户目录，再按提示登录并检查连接。已有兼容安装会直接复用。macOS 支持打开终端登录，Linux 支持安装，Windows 提供手动指南；Node.js 仍需预先准备。[首次配置说明](modules/conversation-home/docs/environment-setup.md)。
+
 当前版本采用区域内层级拆分、中性灰配色和游戏生产流程树；不再在统一页面外围叠加全局抽屉。见 [最新交互与接入状态](NESTED_REGION_VERIFICATION.md)。
 
 最新交互：全部窗口关闭后回到中央聊天，四边可拉满并拖回收起；发送立即显示用户消息。右上角「诊断」可查看/导出本机最近 200 条界面记录。[验证和限制](INTERACTION_POLISH_VERIFICATION.md)。
@@ -22,7 +52,7 @@ V5 增加目标理解、明确选中的项目上下文、可审阅生产计划�
 
 最新界面已改为紧凑的石墨灰/蓝色工作台：顶部保留本地项目，区域标题选择功能，更多操作收进菜单。原四边拉出和原位承载逻辑保留。范围与验证见 [UI 更新烟测](UI_REFRESH_SMOKE.md)。
 
-应用根为 `sceneops_forge_codex_full_pack_v3`。需要 Node >= 22.12、pnpm 11.13、Python 3.12；CodeBuddy CLI 可稍后自行安装及登录，缺少 CLI 不影响打开工作台。
+应用根为 `sceneops_forge_codex_full_pack_v3`。需要 Node >= 22.12、pnpm 11.13、Python 3.12；CLI 可在工作台的首次配置向导中安装及登录，缺少 CLI 不影响打开工作台。
 
 首次手动安装（不会运行本项目测试）：
 
@@ -35,7 +65,7 @@ uv pip install --python .venv/bin/python -r services/api/requirements.txt
 
 没有 uv 时，可用 Python 3.12 的 `python3 -m venv .venv` 与 `.venv/bin/python -m pip install -r services/api/requirements.txt`。
 
-之后只需：
+开发模式之后只需：
 
 ```sh
 pnpm dev
@@ -107,3 +137,30 @@ V5 初始交付只做空态烟测。用户随后授权真实 AI 连通检查，G
 # 新旅程：单人协作策划
 
 从「本地项目」创建文件夹项目，进入 idea → grill-me 对齐 → 大纲 v1 → 游戏技术方案 → 制作卡片。操作、烟测和未接入范围见 [阶段一说明](PLANNING_JOURNEY_STAGE1.md)及[架构里程碑](GAME_CODE_ARCHITECTURE_MILESTONE.md)。旧项目和原有生产路径保留。
+
+## 对话直接制作（2026-09-08）
+
+新项目从讨论开始，AI 问清关键问题后直接进入制作。主输入框可选择“执行前询问”或“完全访问”；完全访问使用当前 CodeBuddy/Codex 原生会话，制作后自动检查、构建并提供试玩入口。无需填写方向表单或操作制作卡片。权限范围与执行记录仍可查看，模型不能自行授权。详情见 [对话制作验证](CHAT_FIRST_PRODUCTION.md)。
+
+游戏执行系统提示已补齐按玩法选择的相机策略、世界/屏幕尺寸链路、DPR、宿主缩放与真实视觉检查要求。GLM-5.3 重跑后，宽/窄窗口和 DPR 1/2 显示及移动、收集交付、重开实测通过。见 [验证记录](CHAT_FIRST_PRODUCTION.md)。
+
+## 经验记忆
+
+主对话工具栏新增“经验”，支持查看与纠正当前项目/共享经验。首次启动幂等导入 26 条历史经验，之后只自动整理启用后的新记录；读取和学习可独立关闭。详见 [功能与接口说明](modules/ai-run-distiller/README.md) 和 [实际验收范围](docs/experience-validation.md)。
+
+## Agent 多平台导出
+
+项目菜单或主对话的「导出」可创建安卓、Mac 和 Windows 本地试玩包任务，支持对话、重试与下载。入口、授权与精确验证范围见 [导出交付记录](PLAYABLE_EXPORTS_MILESTONE.md)。
+
+原生导出 Agent 已接通：可在导出页执行本机命令、补齐工具并继续打包，真实 CodeBuddy 命令验证通过。见 [原生导出接入](NATIVE_EXPORT_AGENT.md)。
+
+
+## 2026-09-09：原生 CLI 制作主线
+
+新游戏制作采用「方向对齐 → 确认可编辑制作简报 → Codex/CodeBuddy 原生会话 → 工作台回流 → 准确会话续改」。权限独立选择 scoped/full；完整权限也需要确认简报。旧任务和领域编辑服务保留，新制作入口不再使用逐动作 JSON 规划器。
+
+工作区级源码登记与任务级 MCP 桥连接真实源码、GLB 资产版本、场景实例和试玩候选；新工程采用所选架构的轻量起点。手动修改后的「更新作品」只执行物化和构建，不调用模型。详见 [原生制作说明](modules/ai-agent-runtime/docs/native-cli-production.md)。
+
+## 对话中的学习与记忆（2026-09-09）
+
+本次依据、记忆纠正和学习沉淀直接跟随消息与制作任务，支持来源、版本、编辑和撤销；集中入口保留项目记忆、通用经验和学习动态。详见 [功能及验证说明](docs/conversation-memory.md)。

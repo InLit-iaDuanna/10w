@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-event-type": "review.lock.recorded",
+  "x-event-version": 1,
+  "type": "object",
+  "$ref": "review-events.v1.schema.json",
+  "properties": {
+    "event_type": {
+      "const": "review.lock.recorded"
+    }
+  }
+}

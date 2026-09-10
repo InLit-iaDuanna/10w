@@ -82,6 +82,26 @@ export interface components {
             /** Base Commit */
             base_commit: string;
         };
+        /** CardConversation */
+        CardConversation: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Messages */
+            messages?: components["schemas"]["JourneyMessage"][];
+            /** Summary */
+            summary?: string | null;
+            /** Summary Id */
+            summary_id?: string | null;
+            /** Start Id */
+            start_id?: string | null;
+            /**
+             * Draft
+             * @default
+             */
+            draft: string;
+        };
         /**
          * CardModelingSession
          * @description A card-owned design conversation, never evidence of a produced model.
@@ -114,6 +134,22 @@ export interface components {
              * @constant
              */
             mode: "planned";
+        };
+        /** DemoDirectionDraft */
+        DemoDirectionDraft: {
+            /** Core Experience */
+            core_experience: string;
+            /** Perspective Style */
+            perspective_style: string;
+            /** Simplified Scope */
+            simplified_scope: string;
+            /**
+             * Code Architecture
+             * @enum {string}
+             */
+            code_architecture: "object-component" | "ecs";
+            /** Camera Mode */
+            camera_mode?: ("fit-scene" | "follow-player" | "first-person" | "side-scroll") | null;
         };
         /** GameProjectScaffold */
         GameProjectScaffold: {
@@ -199,6 +235,38 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * InitialDemoDirection
+         * @description A confirmed first-demo scope; it is not a full GDD or production result.
+         */
+        InitialDemoDirection: {
+            /** Direction Id */
+            direction_id: string;
+            /** Core Experience */
+            core_experience: string;
+            /** Perspective Style */
+            perspective_style: string;
+            /**
+             * Target Platform
+             * @default web
+             * @constant
+             */
+            target_platform: "web";
+            /**
+             * Code Architecture
+             * @enum {string}
+             */
+            code_architecture: "object-component" | "ecs";
+            /** Simplified Scope */
+            simplified_scope: string;
+            /**
+             * Confirmed
+             * @default true
+             */
+            confirmed: boolean;
+            /** Camera Mode */
+            camera_mode?: ("fit-scene" | "follow-player" | "first-person" | "side-scroll") | null;
+        };
         /** JourneyChange */
         JourneyChange: {
             /** Id */
@@ -230,12 +298,19 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "message" | "save_draft" | "start_grill" | "generate_outline" | "save_outline" | "confirm_version" | "confirm_stack" | "recommend_architecture" | "confirm_technical_plan" | "generate_cards" | "save_cards" | "accept_change" | "reject_change" | "select_card" | "clear_card" | "enable_git" | "choose_model_source" | "new_modeling" | "open_modeling" | "close_modeling" | "confirm_demo_direction";
+            operation: "message" | "save_draft" | "start_grill" | "start_card_alignment" | "finish_card_alignment" | "generate_outline" | "save_outline" | "confirm_demo_direction" | "discuss_game" | "set_execution_policy" | "organize_production" | "confirm_version" | "confirm_stack" | "recommend_architecture" | "confirm_technical_plan" | "generate_cards" | "save_cards" | "save_domain" | "assign_card_domains" | "accept_change" | "reject_change" | "select_card" | "clear_card" | "enable_git" | "choose_model_source" | "new_modeling" | "open_modeling" | "close_modeling" | "new_conversation" | "select_conversation" | "delete_conversation";
+            /** Domain Id */
+            domain_id?: ("planning" | "assets-animation" | "world" | "gameplay" | "lookdev" | "ui-audio" | "delivery") | null;
+            domain_work?: components["schemas"]["ProductionDomainWork"] | null;
+            /** Domain Ids */
+            domain_ids?: ("planning" | "assets-animation" | "world" | "gameplay" | "lookdev" | "ui-audio" | "delivery")[] | null;
             /**
              * Text
              * @default
              */
             text: string;
+            /** Main Scroll Top */
+            main_scroll_top?: number | null;
             outline?: components["schemas"]["Outline"] | null;
             /** Cards */
             cards?: components["schemas"]["ProductionCard"][] | null;
@@ -250,6 +325,8 @@ export interface components {
             option_index?: number | null;
             /** Card Id */
             card_id?: string | null;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /** Change Id */
             change_id?: string | null;
             /** Model Source */
@@ -258,16 +335,20 @@ export interface components {
             modeling_id?: string | null;
             /** Context Draft */
             context_draft?: string | null;
-            /** Code Architecture */
-            code_architecture?: ("object-component" | "ecs") | null;
-            /** Selection Method */
-            selection_method?: ("manual" | "ai") | null;
             /** Core Experience */
             core_experience?: string | null;
             /** Perspective Style */
             perspective_style?: string | null;
             /** Simplified Scope */
             simplified_scope?: string | null;
+            /** Code Architecture */
+            code_architecture?: ("object-component" | "ecs") | null;
+            /** Selection Method */
+            selection_method?: ("manual" | "ai") | null;
+            /** Execution Policy */
+            execution_policy?: ("ask" | "full-access") | null;
+            /** Camera Mode */
+            camera_mode?: ("fit-scene" | "follow-player" | "first-person" | "side-scroll") | null;
         };
         /** JourneyMessage */
         JourneyMessage: {
@@ -362,17 +443,54 @@ export interface components {
              * @enum {string}
              */
             stage: "idea" | "grill" | "outline" | "stack" | "cards";
+            production_basis?: components["schemas"]["ProductionBasis"] | null;
             /** Messages */
             messages?: components["schemas"]["JourneyMessage"][];
+            /** Card Conversations */
+            card_conversations?: {
+                [key: string]: components["schemas"]["CardConversation"][];
+            };
+            /** Active Conversation Ids */
+            active_conversation_ids?: {
+                [key: string]: string;
+            };
+            /** Card Messages */
+            card_messages?: {
+                [key: string]: components["schemas"]["JourneyMessage"][];
+            };
+            /** Card Alignment Summaries */
+            card_alignment_summaries?: {
+                [key: string]: string;
+            };
+            /** Card Alignment Summary Ids */
+            card_alignment_summary_ids?: {
+                [key: string]: string;
+            };
+            /** Card Alignment Start Ids */
+            card_alignment_start_ids?: {
+                [key: string]: string;
+            };
             outline?: components["schemas"]["Outline"] | null;
             /** Versions */
             versions?: components["schemas"]["JourneyVersion"][];
             /** Stack */
             stack?: "threejs" | null;
+            initial_demo_direction?: components["schemas"]["InitialDemoDirection"] | null;
+            demo_direction_draft?: components["schemas"]["DemoDirectionDraft"] | null;
+            /**
+             * Execution Policy
+             * @default ask
+             * @enum {string}
+             */
+            execution_policy: "ask" | "full-access";
             technical_plan?: components["schemas"]["GameTechnicalPlan"] | null;
             architecture_recommendation?: components["schemas"]["ArchitectureRecommendation"] | null;
             /** Cards */
             cards?: components["schemas"]["ProductionCard"][];
+            /** Domain Work */
+            domain_work?: {
+                [key: string]: components["schemas"]["ProductionDomainWork"];
+            };
             /**
              * Composer Draft
              * @default
@@ -383,12 +501,21 @@ export interface components {
              * @default 0
              */
             model_calls: number;
+            /** Production Preparation */
+            production_preparation?: {
+                [key: string]: unknown;
+            } | null;
             /** Git Versions */
             git_versions?: components["schemas"]["GitVersion"][];
             /** Card Branches */
             card_branches?: components["schemas"]["CardBranch"][];
             /** Active Card Id */
             active_card_id?: string | null;
+            /**
+             * Main Scroll Top
+             * @default 0
+             */
+            main_scroll_top: number;
             /** Changes */
             changes?: components["schemas"]["JourneyChange"][];
             /** Modeling Sessions */
@@ -400,7 +527,6 @@ export interface components {
              * @default 每次发送或生成通常调用一次所选模型；结构化结果校验失败时，系统会把错误原因告知同一模型并自动重试一次。费用未知，不自动切换提供方。
              */
             cost_notice: string;
-            initial_demo_direction?: components["schemas"]["InitialDemoDirection"] | null;
         };
         /** PlanningQuestion */
         PlanningQuestion: {
@@ -410,6 +536,13 @@ export interface components {
             options: components["schemas"]["QuestionOption"][];
             /** Recommended Index */
             recommended_index: number;
+        };
+        /** ProductionBasis */
+        ProductionBasis: {
+            /** Task Id */
+            task_id: string;
+            /** Workspace Id */
+            workspace_id: string;
         };
         /** ProductionCard */
         ProductionCard: {
@@ -429,6 +562,24 @@ export interface components {
              * @constant
              */
             status: "planned";
+            /** Source Ids */
+            source_ids?: string[];
+            /** Domain Ids */
+            domain_ids?: ("planning" | "assets-animation" | "world" | "gameplay" | "lookdev" | "ui-audio" | "delivery")[];
+        };
+        /** ProductionDomainWork */
+        ProductionDomainWork: {
+            /**
+             * Brief
+             * @default
+             */
+            brief: string;
+            /**
+             * Stage
+             * @default not-started
+             * @enum {string}
+             */
+            stage: "not-started" | "graybox" | "refinement" | "review";
         };
         /** QuestionOption */
         QuestionOption: {
@@ -449,36 +600,6 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
-        };
-        /**
-         * InitialDemoDirection
-         * @description A confirmed first-demo scope; it is not a full GDD or production result.
-         */
-        InitialDemoDirection: {
-            /** Direction Id */
-            direction_id: string;
-            /** Core Experience */
-            core_experience: string;
-            /** Perspective Style */
-            perspective_style: string;
-            /**
-             * Target Platform
-             * @default web
-             * @constant
-             */
-            target_platform: "web";
-            /**
-             * Code Architecture
-             * @enum {string}
-             */
-            code_architecture: "object-component" | "ecs";
-            /** Simplified Scope */
-            simplified_scope: string;
-            /**
-             * Confirmed
-             * @default true
-             */
-            confirmed: boolean;
         };
     };
     responses: never;

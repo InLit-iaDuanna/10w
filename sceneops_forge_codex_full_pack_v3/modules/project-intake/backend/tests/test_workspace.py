@@ -108,6 +108,34 @@ class FolderProjectSmokeTests(unittest.TestCase):
             })
             self.assertEqual(conflict.status_code, 409)
 
+    def test_forget_folder_project_preserves_source_and_can_be_restored(self):
+        fixture = self.fixture()
+        with TemporaryDirectory() as directory:
+            parent = Path(directory).resolve()
+            repository = SqliteWorkspaceRepository(parent / "data" / "sceneops.sqlite3")
+            app = FastAPI()
+            app.include_router(create_folder_router(repository))
+            client = TestClient(app)
+            project = repository.create_folder_project(parent, fixture["name"])
+            root = Path(project.root_path)
+            draft = repository.write_design_draft(project.project_id, fixture["draft"])
+
+            response = client.delete(f"/api/workspace/folder-projects/{project.project_id}")
+
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(repository.list_folder_projects(), [])
+            self.assertTrue(root.is_dir())
+            self.assertTrue((root / ".git").is_dir())
+            self.assertTrue((root / ".sceneops" / "project.json").is_file())
+            self.assertTrue(Path(draft.path).is_file())
+            inspection = repository.inspect_folder_project(root)
+            self.assertEqual(inspection.status, "recoverable")
+            restored = client.post("/api/workspace/folder-projects/recover", json={
+                "path": str(root), "resolution": "restore",
+            })
+            self.assertEqual(restored.status_code, 200)
+            self.assertEqual(restored.json()["project_id"], project.project_id)
+
     def test_symlink_directory_is_visible_but_never_selectable(self):
         with TemporaryDirectory() as directory:
             parent = Path(directory).resolve()
@@ -188,6 +216,33 @@ class FolderProjectSmokeTests(unittest.TestCase):
             self.assertEqual(copied.project_kind, "existing_unadopted")
             identity = json.loads((copied_root / ".sceneops" / "project.json").read_text())
             self.assertEqual(identity["copied_from_project_id"], original.project_id)
+
+    def test_moved_project_repairs_existing_card_worktree(self):
+        with TemporaryDirectory() as directory:
+            parent = Path(directory).resolve()
+            repository = SqliteWorkspaceRepository(parent / "data" / "sceneops.sqlite3")
+            project = repository.create_folder_project(parent, "original")
+            repository.commit_design_version(project.project_id, 1, {"version": 1})
+            repository.initialize_game_project(project.project_id, {
+                "target_platform": "web",
+                "engine": "threejs",
+                "code_architecture": "object-component",
+                "architecture_label": "对象／组件式",
+                "selection_method": "manual",
+                "rationale": "移动恢复夹具",
+                "tradeoffs": ["测试"],
+                "ecs_library": None,
+            }, 1)
+            before = repository.open_card_worktree(project.project_id, "world-3d", "3D 世界")
+            moved_root = parent / "moved"
+            shutil.move(project.root_path, moved_root)
+
+            recovered = repository.recover_folder_project(moved_root, "move")
+            after = repository.get_card_worktree(project.project_id, "world-3d")
+
+            self.assertEqual(recovered.root_path, str(moved_root))
+            self.assertEqual(after["worktree_path"], before["worktree_path"])
+            self.assertEqual(after["branch"], "codex/card-world-3d")
 
     def test_legacy_registered_project_without_identity_remains_readable(self):
         with TemporaryDirectory() as directory:

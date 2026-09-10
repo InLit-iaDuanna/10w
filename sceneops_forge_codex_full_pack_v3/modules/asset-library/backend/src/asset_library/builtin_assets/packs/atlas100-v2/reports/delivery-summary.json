@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "assets_upgraded": 675,
+  "scenes_upgraded": 100,
+  "rigged_animated_assets": 223,
+  "static_no_rig_required": 452,
+  "equipment_included": 80,
+  "unique_animation_clips": 521,
+  "animation_clip_lod_combinations_numerically_checked": 1563,
+  "glb_files": 2325,
+  "source_texture_sets": 50,
+  "source_texture_pngs": 400,
+  "source_resolution_px": [
+    512,
+    512
+  ],
+  "embedded_resolution_px": [
+    128,
+    128
+  ],
+  "asset_physics_bindings": 675,
+  "scene_physics_bindings": 100,
+  "schema_validated_json_files": 876,
+  "tests": {
+    "physics_core": 18,
+    "interaction_handlers_with_minimal_scene_graph_stubs": 8,
+    "javascript_gltf_parser_and_reference_poses": 4,
+    "local_audit_and_installer_temporary_fixtures": 8
+  },
+  "browser_acceptance": "blocked_by_environment_policy",
+  "actual_10w_host_test": "not_run",
+  "blender_unity": "not_run",
+  "original_user_models_processed": 0,
+  "github_writes": 0,
+  "original_library_status": "missing_original_model_files; tools supplied, not counted as completed",
+  "scope": "procedural stylized low-poly equipment/mechanical asset upgrade; not humanoid auto-rigging or a fully integrated game release"
+}

@@ -73,9 +73,14 @@ namespace SceneOps.Forge.Unity.Editor
                 if (File.Exists(file.Replace(".request.json", ".cancelled.json")))
                 {
                     SceneOpsPrototypeCommands.Abort(request.request_id);
+                    SceneOpsContentCommands.Abort(request.request_id);
                     throw new SceneOpsCommandException("UNITY_CANCELLED", "The request was cancelled before completion.");
                 }
-                if (request.command != null && request.command.StartsWith("unity.prototype.", StringComparison.Ordinal))
+                if (request.command != null && request.command.StartsWith("unity.content.", StringComparison.Ordinal))
+                {
+                    if (!SceneOpsContentCommands.TryProcess(request, Root, config, Errors.ToArray(), out reply)) return;
+                }
+                else if (request.command != null && request.command.StartsWith("unity.prototype.", StringComparison.Ordinal))
                 {
                     if (!SceneOpsPrototypeCommands.TryProcess(request, Root, config, Errors.ToArray(), out reply)) return;
                 }
@@ -130,11 +135,11 @@ namespace SceneOps.Forge.Unity.Editor
                 else throw new SceneOpsCommandException("UNITY_COMMAND_NOT_ALLOWED", "Agent session command is not allowlisted.");
             }
             catch (SceneOpsCommandException error)
-            { if (authenticated) SceneOpsPrototypeCommands.Abort(request.request_id);
+            { if (authenticated) { SceneOpsPrototypeCommands.Abort(request.request_id); SceneOpsContentCommands.Abort(request.request_id); }
               reply = new AgentReply { status = "failed", error_code = mutationStarted ? "UNITY_OUTCOME_UNCERTAIN" : error.Code,
                 message = error.Message, cause_code = error.Code }; }
             catch (Exception error)
-            { if (authenticated) SceneOpsPrototypeCommands.Abort(request.request_id);
+            { if (authenticated) { SceneOpsPrototypeCommands.Abort(request.request_id); SceneOpsContentCommands.Abort(request.request_id); }
               reply = new AgentReply { status = "failed", error_code = mutationStarted ? "UNITY_OUTCOME_UNCERTAIN" : "UNITY_COMMAND_FAILED", message = error.Message }; }
             WriteReply(Root, resultPath, reply);
         }
@@ -143,6 +148,7 @@ namespace SceneOps.Forge.Unity.Editor
         {
             var supported = new HashSet<string>(StringComparer.Ordinal) {
                 "unity.asset.import", "unity.scene.inspect", "unity.prototype.compose",
+                "unity.content.import", "unity.content.inspect", "unity.content.edit", "unity.content.focus", "unity.content.save", "unity.content.play",
                 "unity.prototype.inspect", "unity.prototype.play", "unity.prototype.capture"
             };
             return (granted ?? Array.Empty<string>()).Where(supported.Contains).ToArray();

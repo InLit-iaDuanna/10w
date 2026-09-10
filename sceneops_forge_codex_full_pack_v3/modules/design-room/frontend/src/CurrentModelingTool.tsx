@@ -21,7 +21,7 @@ export interface CurrentModelingAssetInput {
     replyTo?: string;
     modelingBlock?: string;
   }>;
-  observeConversation: false;
+  observeConversation: boolean;
   onCreateAnother(): void;
   onOpenEnvironment(): void;
 }
@@ -30,8 +30,10 @@ export function CurrentModelingTool({
   projectId,
   renderAssetWorkflow,
   onOpenEnvironment,
+  projectAssets,
 }: {
   projectId: string | null;
+  projectAssets?: ReactNode;
   renderAssetWorkflow(input: CurrentModelingAssetInput): ReactNode;
   onOpenEnvironment(): void;
 }) {
@@ -73,7 +75,7 @@ export function CurrentModelingTool({
   };
   return <section className="current-modeling-tool" aria-label="模型与资产">
     <header><div><strong>模型与资产</strong><small>主对话负责描述，这里负责选择、预览、归一化和入库</small></div><span>Three.js / Blender</span></header>
-    <div className="current-modeling-scroll">
+    <div className="current-modeling-scroll">{projectAssets}
       {!state.cards?.length && <ToolState title="还没有制作卡片">先在主对话完成 idea、细节对齐和制作卡片，再进入建模。</ToolState>}
       {!!state.cards?.length && !activeCard && <section className="current-modeling-card-list">
         <strong>选择要制作的卡片</strong><small>选择后会进入该卡片已经准备好的 Git 分支。</small>

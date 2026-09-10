@@ -237,7 +237,19 @@ class GameProjectRuntime:
 
     def dependencies_ready(self, root):
         root = Path(root)
-        return all((root / relative).exists() for relative in ('node_modules/.bin/tsc', 'node_modules/.bin/vite'))
+        if not all((root / relative).exists() for relative in ('node_modules/.bin/tsc', 'node_modules/.bin/vite')):
+            return False
+        package = root / 'package.json'
+        if not package.is_file():
+            return False
+        manifest = json.loads(package.read_text())
+        for name in ('three', '@types/three'):
+            expected = manifest.get('dependencies', {}).get(name) or manifest.get('devDependencies', {}).get(name)
+            if expected and all(character.isdigit() or character == '.' for character in expected):
+                installed = root / 'node_modules' / name / 'package.json'
+                if not installed.is_file() or json.loads(installed.read_text()).get('version') != expected:
+                    return False
+        return True
 
     @staticmethod
     def _validate_output(root, *, required):
@@ -536,7 +548,8 @@ class GameProjectRuntime:
         active = self.previews.get(key)
         if active and active['process'].returncode is not None:
             run = active['run']
-            run.status, run.passed, run.finished_at = 'interrupted', False, now()
+            run.status = 'stopped' if active.get('stop_requested') else 'interrupted'
+            run.passed, run.finished_at = False, now()
             run.exit_code = active['process'].returncode
             self._save(run)
             self.previews.pop(key, None)
@@ -567,6 +580,12 @@ class GameProjectRuntime:
         return {'tool': 'game_project', 'mode': 'live', 'effect_state': 'COMMITTED',
             'operation': run.operation, 'run': run.model_dump(mode='json'),
             'project': snapshot.model_dump(mode='json')}
+
+    def invalidate_project_workspace(self, project_id, workspace_id):
+        with self.records.connect() as connection:
+            roots = connection.execute('SELECT DISTINCT workspace_root FROM game_project_runs WHERE project_id=? AND workspace_id=?', (project_id, workspace_id)).fetchall()
+        for (root,) in roots:
+            self.invalidate_workspace(root)
 
     def invalidate_workspace(self, workspace_root):
         with self.records.connect() as connection:

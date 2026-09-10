@@ -14,6 +14,7 @@ from .card_asset_models import (CardAssetList, CardAssetProposal, CardAssetRecor
                                 LiveModelUpdateResult, ModelPlanRequest, NormalizeRequest,
                                 SaveToLibraryRequest)
 from asset_library import SaveProjectAssetResult
+from .tripo_service import TripoSettings, TripoSettingsInput, TripoRequest, TripoJob
 
 
 IMPORT_EXTENSIONS = {".glb": 100 * 1024 * 1024, ".fbx": 100 * 1024 * 1024}
@@ -53,6 +54,40 @@ async def _receive(request: Request, directory: Path, maximum: int) -> Path:
 
 def create_card_asset_router(service) -> APIRouter:
     router = APIRouter(prefix="/api/card-assets", tags=["card-assets"])
+
+
+    @router.get('/tripo/settings', response_model=TripoSettings, operation_id='getTripoSettings')
+    def tripo_settings():
+        return service.tripo.settings()
+
+    @router.post('/tripo/settings', response_model=TripoSettings, operation_id='configureTripo')
+    def configure_tripo(body:TripoSettingsInput):
+        return service.tripo.configure(body)
+
+    @router.get('/tripo/jobs', response_model=list[TripoJob], operation_id='listTripoJobs')
+    def tripo_jobs(project_id:str,card_id:str,session_id:str):
+        return service.tripo.list(project_id,card_id,session_id)
+
+    @router.post('/{project_id}/{card_id}/tripo/jobs', response_model=TripoJob, operation_id='submitTripoJob')
+    async def submit_tripo(project_id:str,card_id:str,body:TripoRequest):
+        return await service.tripo.submit(project_id,card_id,body)
+
+    @router.get('/tripo/jobs/{job_id}', response_model=TripoJob, operation_id='pollTripoJob')
+    async def poll_tripo(job_id:str):
+        return await service.tripo.poll(job_id)
+
+    @router.post('/tripo/jobs/{job_id}/collect', response_model=TripoJob, operation_id='collectTripoModel')
+    async def collect_tripo(job_id:str):
+        return await service.tripo.collect(job_id)
+
+    @router.get('/tripo/jobs/{job_id}/model', operation_id='downloadTripoModel')
+    def tripo_model(job_id:str):
+        return FileResponse(service.tripo.file(job_id), media_type='model/gltf-binary',filename='tripo-model.glb')
+
+    @router.post('/tripo/jobs/{job_id}/import', response_model=CardAssetRecord, operation_id='importTripoModel')
+    async def import_tripo(job_id:str):
+        from asyncio import to_thread
+        return await to_thread(service.tripo.import_model,job_id)
 
     @router.get("", response_model=CardAssetList, operation_id="listCardAssets")
     def list_assets(project_id: str = Query(...), card_id: str = Query(...)):

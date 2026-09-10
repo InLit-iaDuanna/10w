@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.mjs"
+    "test": "node ../../../scripts/frontend-test.mjs tests"
   },
   "engines": {
     "node": ">=22.18.0"
@@ -16,5 +16,20 @@
   },
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@sceneops/api-client": "workspace:*",
+    "@sceneops/core-ui": "workspace:*",
+    "@sceneops/scene-viewer": "workspace:*",
+    "jszip": "3.10.1",
+    "three": "0.185.1",
+    "zod": "4.5.4",
+    "@sceneops/world-composer-frontend": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/three": "0.185.4",
+    "@webgpu/types": "0.1.72",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "tsx": "4.23.13"
   }
 }

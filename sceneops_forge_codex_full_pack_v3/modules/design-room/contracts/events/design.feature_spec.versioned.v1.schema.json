@@ -1,4 +1,6 @@
 {
+  "x-event-type": "design.feature_spec.versioned",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://design-room/events/design.feature_spec.versioned/v1",
   "title": "design.feature_spec.versioned@1 payload",

@@ -2,6 +2,15 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { uiCommands } from '../src/commands/uiCommands.ts';
+import { labSessionForProject } from '../src/lab-session.ts';
+
+test('integrated lab session uses the UUID carried by the project identity', () => {
+  assert.equal(
+    labSessionForProject('prj_1234567890abcdef1234567890abcdef'),
+    '12345678-90ab-cdef-1234-567890abcdef',
+  );
+  assert.throws(() => labSessionForProject('prj_not-a-uuid'), /项目身份/);
+});
 
 const inputs = [
   { flowId: 'flow.key-door' },

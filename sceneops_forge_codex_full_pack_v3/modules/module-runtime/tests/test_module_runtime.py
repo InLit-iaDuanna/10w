@@ -16,6 +16,8 @@ from module_runtime import (
     validate_repository,
 )
 from module_runtime.catalog import generated_files
+from module_runtime.import_boundaries import _typescript_imports
+from pydantic import ValidationError
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -134,6 +136,25 @@ class ManifestSchemaTests(unittest.TestCase):
         self.assertTrue(module_items["uniqueItems"])
         self.assertIn("pattern", module_items["items"])
         self.assertEqual(len(schema["$defs"]["ModuleEntrypoints"]["anyOf"]), 2)
+
+
+class ImportSyntaxRegressionTests(unittest.TestCase):
+    def test_member_import_and_literal_import_are_static(self):
+        for source in ('client.import(projectId, file)', 'import( "./editor.ts")'):
+            with self.subTest(source=source):
+                self.assertFalse(_typescript_imports(source)[1])
+
+    def test_computed_import_remains_forbidden(self):
+        self.assertTrue(_typescript_imports('import( modulePath)')[1])
+
+    def test_hierarchical_permissions_preserve_exact_security_names(self):
+        data = manifest_data("permission-example")
+        data["permissions"] = ["logic:code:review", "logic:code:approve"]
+        self.assertEqual(ModuleManifest.model_validate(data).permissions, data["permissions"])
+        for invalid in ("logic::approve", "logic:code:*", "logic:code:"):
+            data["permissions"] = [invalid]
+            with self.subTest(permission=invalid), self.assertRaises(ValidationError):
+                ModuleManifest.model_validate(data)
 
 
 class RepositoryValidationTests(unittest.TestCase):
@@ -325,7 +346,9 @@ class GenerationAndScaffoldTests(unittest.TestCase):
             self.assertEqual(path.read_text(encoding="utf-8"), expected, path)
 
     def test_backend_composition_root_consumes_generated_catalog(self):
-        from services.api.generated_module_catalog import GENERATED_BACKEND_MODULE_IDS
+        from services.api.generated_module_catalog import (
+            GENERATED_BACKEND_MODULE_IDS, GENERATED_BACKEND_MODULE_CATALOG,
+        )
 
         catalog = json.loads(
             (REPOSITORY_ROOT / "generated" / "module-catalog.json").read_text()
@@ -336,6 +359,8 @@ class GenerationAndScaffoldTests(unittest.TestCase):
             if module["entrypoints"].get("backend")
         )
         self.assertEqual(GENERATED_BACKEND_MODULE_IDS, expected)
+        for entry in GENERATED_BACKEND_MODULE_CATALOG:
+            self.assertEqual(entry["module"].__name__, entry["manifest"]["entrypoints"]["backend"])
 
     def test_scaffold_smoke_creates_only_selected_surfaces(self):
         with tempfile.TemporaryDirectory() as temporary:

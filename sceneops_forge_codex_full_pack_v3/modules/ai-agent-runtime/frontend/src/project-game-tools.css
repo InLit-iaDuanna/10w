@@ -1,0 +1,43 @@
+.project-game-tool{height:100%;min-height:0;display:flex;flex-direction:column;color:var(--text-primary,#e3e6ed);background:var(--canvas,#1c1e21);font-size:12px}.project-game-tool>header{display:flex;align-items:center;gap:12px;padding:20px;border-bottom:1px solid #343840}.project-game-tool>header>.source-icon{color:#9aaac5}.project-game-tool h2{font-size:16px;margin:0;font-weight:550}.project-game-tool header p{margin:4px 0 0;color:#909bab;font-size:11px}.project-progress-scroll{min-height:0;overflow:auto;padding:16px}.project-game-select{display:flex;gap:10px;padding:12px 16px;align-items:center;border-bottom:1px solid #343840}.project-game-select select{min-width:0;flex:1;color:#cdd7e6;background:#282d34;border:1px solid #414955;border-radius:6px;padding:7px;font:inherit}.project-game-content{flex:1;min-height:0;display:flex;flex-direction:column}.project-game-canvas{flex:1;min-height:180px;position:relative}.project-game-canvas iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.project-game-empty{flex:1;min-height:160px;padding:26px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;color:#99a5b7;text-align:center}.project-game-empty p{max-width:290px;margin:0;font-size:11px;line-height:1.65}.project-game-empty>.source-icon{width:28px;height:28px;opacity:.5}.project-game-runtime{flex:none;max-height:50%;overflow:auto;border-top:1px solid #343840;padding:12px 16px}.project-game-runtime>summary{cursor:pointer;font-size:11px;color:#adb8c9}.project-game-runtime .agent-game-runtime{border:0;padding:10px 0;background:transparent}.project-game-runtime code{overflow-wrap:anywhere}
+
+.project-progress-scroll>h3 { display:flex; align-items:center; gap:8px; margin:24px 0 12px; font-size:12px; font-weight:500; }.project-progress-scroll>h3 small { color:#8190a5; }.project-progress-entry { border-bottom:1px solid #353c46; padding:14px 0; }.project-progress-entry>summary { display:flex; align-items:center; gap:14px; cursor:pointer; list-style:none; }.project-progress-entry>summary::-webkit-details-marker { display:none; }.project-progress-entry>summary>span { flex:1; min-width:0; }.project-progress-entry>summary strong { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:12px; font-weight:500; line-height:1.65; color:#c2cddd; }.project-progress-entry>summary small { display:block; color:#7f8da0; font-size:10px; margin-top:5px; }.project-progress-entry>summary em { font-size:10px; font-style:normal; padding:3px 6px; border-radius:4px; color:#aab8cd; background:#ffffff06; flex:none; }.project-progress-entry>summary em[data-state=failed] { color:#d9a89b; }.project-progress-entry .agent-task-card { margin-top:12px; }.project-progress-entry .agent-task-card>header strong { overflow-wrap:anywhere; }
+
+.project-game-preview-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border,#393939);color:var(--text-muted,#aaa)}.project-game-preview-toolbar a{color:inherit;text-decoration:none;white-space:nowrap}.project-game-tool>header{padding:10px 14px}.project-game-select{padding:8px 14px}
+
+.project-progress-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:24px 0 10px; }
+.project-progress-heading h3 { margin:0; font-size:12px; font-weight:550; }
+.project-progress-heading small { margin-left:6px; color:var(--text-muted); }
+.project-progress-heading button,.project-progress-actions button { color:var(--text-secondary); background:transparent; border:1px solid var(--border-subtle); border-radius:6px; padding:5px 9px; font:inherit; cursor:pointer; }
+.project-progress-heading button:hover,.project-progress-actions button:hover { background:var(--surface-2); color:var(--text-primary); }
+.project-progress-actions button:disabled { opacity:.45; cursor:default; }
+.project-progress-record { border-bottom:1px solid var(--border-subtle); padding-bottom:10px; }
+.project-progress-record .project-progress-entry { border-bottom:0; padding-bottom:8px; }
+.project-progress-actions { display:flex; justify-content:flex-end; gap:8px; align-items:center; }
+.project-progress-actions [role=alert] { color:var(--critical); font-size:11px; }
+
+/* Browser-style game preview; production records retain their own layout. */
+.project-game-browser {background:var(--canvas,#1b1b1b);color:var(--text-primary,#eee);overflow:hidden;}
+.game-browser-toolbar {height:40px;min-height:40px;display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1px solid var(--border-subtle,#333);background:var(--surface-1,#222);}
+.game-browser-state {width:6px;height:6px;border-radius:50%;background:var(--text-muted,#888);flex:none;margin:0 3px;}
+.game-browser-state[data-running=true] {background:#70af8b;}
+.game-browser-version {flex:1;min-width:0;}
+.game-browser-version select {width:100%;height:28px;border:0;border-radius:5px;background:transparent;color:var(--text-secondary,#bdbdbd);font:inherit;padding:0 6px;text-overflow:ellipsis;cursor:pointer;}
+.game-browser-version select:hover {background:var(--surface-2,#292929);}
+.game-browser-version option {background:var(--surface-1,#222);color:var(--text-primary,#eee);}
+.game-browser-toolbar button,.game-browser-toolbar a {width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border:0;border-radius:5px;background:transparent;color:var(--text-secondary,#bbb);cursor:pointer;text-decoration:none;padding:5px;}
+.game-browser-toolbar button:hover,.game-browser-toolbar a:hover {background:var(--surface-2,#333);color:var(--text-primary,#fff);}
+.game-browser-toolbar button:disabled {opacity:.35;cursor:default;}
+.game-browser-toolbar svg {width:17px;height:17px;}
+.project-game-browser .project-game-canvas {min-height:0;display:flex;}
+.project-game-browser .project-game-empty {min-height:0;gap:12px;color:var(--text-muted,#999);padding:24px;}
+.project-game-browser .project-game-empty>svg {width:32px;height:32px;opacity:.5;margin-bottom:2px;}
+.project-game-browser .project-game-empty strong {font-size:13px;font-weight:500;color:var(--text-secondary,#bbb);}
+.project-game-browser .project-game-empty p {font-size:12px;}
+.game-browser-start {padding:7px 14px;margin-top:4px;font:inherit;background:var(--surface-2,#303030);color:var(--text-primary,#eee);border:1px solid var(--border-subtle,#444);border-radius:7px;cursor:pointer;}
+.game-browser-start:disabled {opacity:.45;cursor:default;}
+.project-game-browser .project-game-runtime {padding:0;max-height:45%;border-color:var(--border-subtle,#333);background:var(--canvas,#1b1b1b);}
+.project-game-browser .project-game-runtime>summary {height:30px;box-sizing:border-box;padding:7px 12px;font-size:11px;color:var(--text-muted,#999);user-select:none;}
+.project-game-browser .project-game-runtime>summary span {float:right;font-size:10px;}
+.project-game-browser .project-game-runtime .agent-game-runtime {padding:10px 14px;}
+.game-browser-error {padding:8px 12px;color:var(--critical,#ed9999);background:var(--surface-1,#222);font-size:12px;line-height:1.5;}
+.game-browser-toolbar :focus-visible,.game-browser-start:focus-visible {outline:2px solid var(--focus,#aaa);outline-offset:1px;}

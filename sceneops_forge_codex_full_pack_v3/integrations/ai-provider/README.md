@@ -1,5 +1,7 @@
 # SceneOps AI Provider
 
+新增公开 `CLISetup` / `SetupFailure` 用于首次环境配置：固定版本安装到用户目录、复用兼容工具、macOS 官方 CLI 终端登录，所有参数均为固定枚举。共享可执行路径解析供两个 CLI 适配器复用，优先独立安装；不修改全局 PATH 或凭据。端点由 Conversation Home 组合，安装与登录必须用户主动触发。[接口、平台和验证范围](../../modules/conversation-home/docs/environment-setup.md)。
+
 `sceneops_ai_provider.ProviderService` 是统一应用唯一的文本模型边界。默认服务是本机
 CodeBuddy Code CLI；也可由用户明确切换到官方 Codex CLI，或支持 Chat Completions / Responses API
 的 OpenAI-compatible 服务。除非用户主动点击获取模型、检查连接或发送消息，否则服务不探测网络；
@@ -14,6 +16,8 @@ result = await service.generate(prompt, model=None, schema=None, purpose='chat',
 text = await service.complete(prompt, model=None, schema=None, purpose='chat')
 value = await service.structured(prompt, schema, model=None, purpose='planning')
 settings = service.settings()
+selector = service.selector_settings()
+selection = await service.generate_for_selector(prompt, schema=schema, snapshot=selector)
 models = service.models()
 discovered = await service.discover_models(provider, base_url=None, api_key=None)
 probe = await service.check_connection(provider, model, base_url=None, api_key=None,
@@ -33,10 +37,12 @@ CodeBuddy 使用本机帮助确认的 `stream-json` / `--include-partial-message
 Codex 0.144.1 JSONL 只有已完成的文字/推理条目，因此按条目显示，不能宣称逐 token 到达。
 兼容服务按保存设置使用标准 Chat Completions SSE `delta.content`，或 Responses API
 `response.output_text.delta` / `response.completed`，不读取非标准隐藏推理字段。
+完成事件中的 `response.output` 是权威结果；兼容服务的临时或重复文字增量不会覆盖已完成回复。
+空字符串文字增量忽略；流关闭或 `[DONE]` 不能代替 `response.completed`，缺少完成事件时明确报告流未完成，保留失败状态。
 没有提供方推理事件时不生成、不补写思考内容，也不在提示中索取思维链。
 流读取有 4 MiB 上限，不转发 CLI stderr、工具输出、签名、凭据或原始事件对象。
-新增确定性分片/错误/字段筛选 fixtures 已维护；本轮运行一个 Responses SSE 增量与完成事件用例，
-以及一个模型目录获取/持久缓存用例；未调用真实模型或外部 compatible 服务。
+确定性分片/错误/字段筛选 fixtures 已维护；本轮运行一个 Responses 完成结果优先用例，
+并用当前已配置 compatible 服务完成一次最小流式烟测；未运行完整测试套件。
 
 ## 设置与密钥
 
@@ -65,6 +71,19 @@ API Key，且不会把该服务设为当前提供方。`check_connection()` 按�
 额度；成功意味着本次真实请求完成，启用流式时还必须实际收到文字增量。草稿密钥只参与该次请求，不会
 因为检查成功而保存。
 
+### 独立制作推荐模型
+
+公开设置额外包含可空的 `selector_provider` 和 `selector_model`。两者必须同时保存；
+`update_settings(..., update_selector=True)` 且两者均为空时清除配置。旧数据库迁移后两项默认为空，
+不会把主对话模型暗中当作推荐模型。三类现有提供方均可用于推荐；CodeBuddy 仍只接受其公开模型目录。
+
+`selector_settings()` 返回不含密钥的 `SelectorProviderSettings` 调用快照。快照固定推荐调用的
+provider、model、compatible 地址与接口类型、思考强度和密钥是否已配置；compatible 密钥仍从对应
+精确地址的受保护本地存储中读取。`generate_for_selector()` 默认超时 30 秒、非流式且只调用一次，
+不会改写主 provider/model，不自动重试、换模型或回退主模型。调用完成后还会核对适配器实际返回的
+provider/model；与快照不一致时以 `SELECTOR_ROUTE_MISMATCH` 失败。调用开始前没有配置时以
+`SELECTOR_MODEL_NOT_CONFIGURED` 失败，交由上层明确展示跳过原因。
+
 ## CodeBuddy 约束
 
 CLI 调用仍使用 `--tools ''`、严格空 MCP、`--no-session-persistence`、默认权限模式和临时空目录，
@@ -73,7 +92,9 @@ CLI 调用仍使用 `--tools ''`、严格空 MCP、`--no-session-persistence`、
 
 ## Codex 约束
 
-提供方 ID `codexcli`，执行本机官方 `codex exec --json`，支持 `cli-default` 或显式 `--model`，以 stdin 传入应用保存的上下文。CLI 自行复用终端登录，应用不读取或复制认证文件。CodeBuddy 的模型目录不会传入 Codex；自定义模型可在设置输入，不代表账户已有权限。
+提供方 ID `codexcli`，执行本机官方 `codex exec --json`，支持 `cli-default` 或显式 `--model`，以 stdin 传入应用保存的上下文。用户主动点击“获取模型”时，应用通过 Codex app-server 的 `model/list` 读取当前 CLI 返回的可见模型并缓存，隐藏模型不会进入选择器；`cli-default` 始终保留。CLI 自行复用终端登录，应用不读取或复制认证文件。CodeBuddy 的模型目录不会传入 Codex；模型目录成功不代表每个模型调用都一定有权限。
+
+OpenAI 兼容提供方会把所选思考强度映射到标准协议字段：Chat Completions 使用 `reasoning_effort`，Responses 使用 `reasoning.effort`。目标服务或模型不支持该字段时会返回明确错误，不自动删参或切换协议。
 
 本轮核实版本为 `codex-cli 0.144.1`。用 `--ignore-user-config`、`--ignore-rules` 和 `CODEX_EXEC_SERVER_URL=none` 创建无执行/文件环境，另禁用 Shell、MCP、技能、插件、应用、浏览器及子代理能力。保留只读 sandbox；不使用 bypass 或第三方 Bridge、不修改全局配置。确切版本的源码证据在 `codex_cli.py` 文件头；不同版本会明确拒绝，需复核隔离合同后再支持。内部 `update_plan` 仍可能存在，但不能操作工程，不能宣称工具列表完全为空。
 
@@ -101,3 +122,25 @@ JSONL 仅取完成的 assistant 文字与 usage；结构化动作继续经应用
 
 模型目录只是建议项，不能证明 CLI 登录或 compatible 服务的模型权限。真实能力在用户发送时验证。
 初始 V5 组合应用只做启动与只读空态烟测；用户随后明确授权 CLI 模型验证，见根 `AI_LIVE_VERIFICATION.md`。CLI 结构化回复由共享适配器严格 JSON Schema 校验，保持无工具权限；OAI-compatible 的 schema 参数保持原实现。本轮未配置或请求真实 compatible 服务，不能据 CLI 或确定性协议 fixture 通过推断外部服务已验证。
+
+原生 `execute_task(..., execution_instructions=None)` 可接收产品运行时构造的可信制作规范。该参数单独转交 CLI `system_prompt`：CodeBuddy 追加到既有 `--append-system-prompt` 基础规范，Codex 追加到保留基础规范与服务端授权范围的 `developer_instructions`。用户目标仍只走 stdin；调用方不得把用户原文或项目数据放入此参数。未提供时维持原行为，不扩大工具、浏览器、MCP 或授权范围。
+
+聚焦替身测试：`node scripts/python.mjs -m pytest -q integrations/ai-provider/tests/test_native_execution_instructions.py`，验证两种原生 CLI 的可信参数、用户输入分离和提供方范围检查，不调用真实模型。
+
+## 导出环境权限
+
+execute_task 的 allow_environment_setup 默认 false，仅由已校验 project-export-agent 范围传入 true。Codex 专用系统指令允许所需工具/SDK补齐；普通原生任务保留禁止系统安装的原限制，read-only 不能开启此权限，用户全局 MCP/hooks 仍不自动加载。
+
+## 持久原生制作
+
+`execute_task(..., native_production=True, session_id=None, permission_mode='scoped', mcp_config=None)`
+启用原生制作。首次不传 `session_id`，续改必须传此前保存的准确 ID；从 CLI 实际事件收到 ID 后立即等待
+`on_event({'type':'session_started','session_id': ...})` 持久化，再继续读取事件。结果返回 `session_id`
+和 `cli_version`。缺失 ID 或与指定 ID 不一致时明确失败，保留文件和已发事件，不自动重放或使用最近会话。
+`mcp_config` 为服务端绑定的 `{'mcpServers': {...}}` stdio 配置；不得来源于用户消息。
+
+制作恢复项目规则、技能和会话持久化，保留原生系统提示词；额外制作规范仍只追加。
+`scoped` 对 Codex 使用 `workspace-write` / `never`，对 CodeBuddy 使用 `acceptEdits`。
+CodeBuddy 的权限模式不是文件系统沙箱，未获准的命令可能被 CLI 拒绝；不会自动升级。
+`full` 保留已明确授权的完整权限模式。旧调用默认不启用制作，聊天和导出参数不变。
+此变更仅有本地确定性适配验证；没有执行真实 Codex 制作。

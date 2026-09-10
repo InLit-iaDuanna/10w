@@ -7,7 +7,7 @@ export const moduleManifest = {
   status: "active",
   feature_flag: "design_room",
   requires: {
-    modules: ["core-kernel", "module-runtime", "project-intake"],
+    modules: ["core-kernel", "module-runtime", "project-intake", "ai-run-distiller"],
     integrations: [],
     optional_integrations: ["codebuddycli"],
   },

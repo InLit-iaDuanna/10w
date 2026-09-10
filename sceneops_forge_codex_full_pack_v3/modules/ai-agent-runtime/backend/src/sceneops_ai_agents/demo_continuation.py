@@ -69,7 +69,11 @@ def prepare_demo_continuation(service, task_id, request_id, *, allow_blender_edi
             'cost_notice': '本次继续新增最多 28 次模型请求、32 个动作、30 分钟；历史用量保留，费用和 token 可能未知。',
         })
         from .task_models import project_demo_agent_capabilities
-        task.authorization_card.capability_ids = project_demo_agent_capabilities(task.authorization_card)
+        if task.observations.get('native_production'):
+            from .native_bridge import native_tool_capabilities
+            task.authorization_card.capability_ids = ['agent.task.execute', *native_tool_capabilities(task.authorization_card)]
+        else:
+            task.authorization_card.capability_ids = project_demo_agent_capabilities(task.authorization_card)
         task.observations['demo_pending_authorization'] = {
             'request_id': request_id, 'authorization_card_id': task.authorization_card.id,
             'model_calls_start': task.model_calls_used, 'actions_start': len(task.actions),

@@ -140,5 +140,7 @@
     "payload"
   ],
   "title": "CharacterInspectedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "character.inspected",
+  "x-event-version": 1
 }

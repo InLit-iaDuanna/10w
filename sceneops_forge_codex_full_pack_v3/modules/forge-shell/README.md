@@ -18,7 +18,9 @@ Forge Shell provides the chat-first SceneOps workbench contract: four edge drawe
 
 四边空区域拉出后均原位显示功能选择器。选择器默认「当前区域」，选中功能后替换选择器，继续由该区域承载；其他拆分/标签/浮动位置仅在用户主动选择时使用。区域标题栏「选择功能」可原位切换，未保存内容仍需确认。显式原位选择已打开的单例功能会移动既有实例，保留其草稿/上下文，不复制也不跳回另一块区域。
 
-工具库以节点树表达制作路径：主分支固定按「需求规划 → 概念与资产 → 角色与动画 → 世界与逻辑 → 界面、音频与特效 → 渲染 → Unity 构建 → AI 游测 → 版本评审」排列，对话、本地项目和 AI 生产计划放在「项目起点」，工具库、命令搜索和集成状态放在「命令与运维」。窄面板为纵向连线，宽面板利用多列空间但保留 DOM 流程顺序。搜索结果保留所属分支和阶段名，未分类的注册工具收入「扩展工具」，不会从入口丢失。
+工具库改为紧凑的分组列表：不展示流程编号与连线；工具名称、说明和已有状态在同一内容列内，进入箭头保持独立。搜索独占一行，打开位置默认折叠，默认仍原位替换。窄区域单列，宽区域自动分列，低高度区域简化说明并仅滚动列表。统一宿主只保留 Dockview 标签作为工具库标题和关闭入口；业务工具自己的区域栏不变。
+
+2026-09-08 本地浏览器最小 UI 检查：4301 热更新成功；上、下、左、右拉出选择器可用；325px 窄面板的内容、列表和按钮 scrollWidth 均等于 clientWidth；171px 高的上方区域列表独立滚动；搜索过滤、版本管理原位打开并返回工具库通过。未运行完整测试或生产构建。
 
 ## Public frontend API
 
@@ -76,3 +78,31 @@ Standalone startup and current limitations are documented in `../../apps/labs/sh
 ## Shared contracts
 
 UI types moved to `@sceneops/core-ui`; `frontend/src/index.ts` continues re-exporting them. Manifest uses generated module-runtime snake_case fields. The old shell manifest schema delegates to the canonical module-runtime schema; workspace presets remain a typed frontend contribution. `ShellToolRuntimeContext` supplies existing command handlers to the real Tool Library and Command Search editors.
+
+
+## 2026-09-08：内部抓手与工具图标
+
+区域抓手距离边界 10px，命中区域为 24×64px（横向为 64×24px），编辑器内容预留抓手边距。拖动使用 pointer capture，阻止默认选择和事件冒泡，触摸手势使用 touch-action:none；抓手显示 grab/grabbing 光标。双击、键盘、反向收起沿用现有命令。工具目录支持可选 icon，当前四项使用素材架、Git 分支、立方体和山形场景的 24px SVG 线图标；极窄区域简化说明和图标以保留名称。
+
+本轮浏览器已验证底部与右侧真实拖动：区域数由 2 变为 3，页面视口保持 903×775；工具图标在真实页面显示。网页内部验证不能代替所有原生窗口边缘的系统级命中测试。未运行完整测试或生产构建。
+
+
+## 2026-09-08：悬停放置（替代按住抓手拖动）
+
+按最新交互要求撤回内移抓手和 34px 编辑器留白，四边改为无常驻短条、无文字提示的轻量悬停区域。鼠标进入边缘显示小卡片，持续停留 650ms 后展开为跟随指针的放置卡片和半透明分区预览；单击才调用原 split 命令确认位置。未激活前移开、激活后离开原区域、窗口失焦、右键或 Esc 均取消。放置层拦截点击，不触发底下的业务按钮。键盘聚焦边缘后 Enter/空格可进入预览。此前按住拖动及反向拖动收起由本交互取代；已有标签关闭入口保留。
+
+验证：`node scripts/frontend-test.mjs apps/web/src/shell/tests/RegionHoverPlacement.test.tsx` 一项通过，覆盖延迟激活、提前离开、指针跟随、确认一次和 Esc 取消。真实 4301 页面检查展开卡片、分区预览与 Esc 取消，编辑器 padding 为 0。完整构建和全量测试未运行。工具目录新图标继续保留。
+
+### 悬停入口范围修订
+
+悬停放置只由 ForgeShell 根工作区承载一个实例，只有左、右、下三个入口；顶部和内部每个编辑器都不再注册入口。预览以完整工作区为范围，新工具区域使用 Dockview 原生根级 group.moveTo 放置到工作区外侧，原生分隔线仍可调整已有面板。定向测试再次通过，并断言入口恰为三个且不存在顶部入口；开发服务器成功编译 Shell。此次浏览器连接超时，未完成根级布局的浏览器复验。
+
+## 首次上手动画
+
+首次进入显示 HTML/CSS 动画：靠近右边缘、停留展开、移动卡片、单击形成分区。点击「我来试一试」关闭遮罩并进入真实操作，工作区左/右/下边缘短暂高亮，提示随 idle/hover/ready 状态变化。只有 split 命令成功才显示完成；失败保留重试。完成或明确跳过保存浏览器本地标记 `sceneops.workspace-edge-intro`，后续访问不自动弹出。未完成试用不会保存完成标记；减少动态效果设置下显示静态示意。
+
+验证：RegionHoverPlacement 与 WorkspaceEdgeIntro 两项定向组件测试通过，覆盖延迟、取消、真实回调确认、失败重试和完成后重新挂载不弹出；真实 4301 浏览器检查引导动画排版及点击试用后的三侧高亮。未在用户项目里自动完成分区练习，预览保留首次引导供用户体验；未运行全量测试或生产构建。
+
+## 项目工具更新
+
+`ToolLibraryCatalogEntry.group` 可选；按首次出现顺序建立分组，保留无分组旧目录行为。当前目录中不为普通工具显示“未执行”任务状态。

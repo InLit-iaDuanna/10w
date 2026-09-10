@@ -1,5 +1,7 @@
 # Third-Party Notices
 
+Playwright 1.62.1 (Apache-2.0) supplies the optional local browser observation runtime. Its Chromium download retains the upstream browser's bundled notices and licenses.
+
 This repository declares the following third-party Python dependencies for the core-contract and module-runtime implementation. Full license texts are distributed by their respective packages.
 
 | Package | Use | License |
@@ -42,3 +44,23 @@ Dockview Core 8.2.0（MIT）的受控本地修改见 `patches/dockview-core@8.2.
 
 - [react-markdown](https://github.com/remarkjs/react-markdown), 10.1.0, MIT: CommonMark rendering as React nodes, without raw HTML execution.
 - [remark-gfm](https://github.com/remarkjs/remark-gfm), 4.0.1, MIT: tables, task lists and other GFM syntax. Remote images are not automatically loaded by the shared renderer.
+
+## 本地导出工具（2026-09-08）
+
+导出隔离目录按用户授权下载固定版本的 Vite 8.2.2、Electron 44.2.0、electron-builder 26.15.3、Capacitor 8.5.1，用于 Web、桌面及安卓包装。各工具项目采用 MIT 许可证；Electron 分发另包含 Chromium 等第三方许可，打包工具提供的许可文件须随发行产物保留。工具版本集中在 `modules/build-release/backend/src/build_release/export_templates.py`。
+
+## 导出发布技能参考来源
+
+2026-09-08 核对 capawesome-team/skills（MIT）、electron-userland/electron-builder（MIT）、fastlane/fastlane（MIT）。SceneOps 发布技能为重新编写的工作指导，未复制整份源码或手册；来源 commit、许可与采用边界见 `EXPORT_AGENT_SKILLS.md` 及各技能 references/sources.md。
+
+## 原生材质与灯光（2026-09-09）
+
+- Three.js 0.185.1、@types/three 0.185.4：MIT；原生模型预览、WebGPU、TSL 与 glTF 读写，工作台相关包统一版本。
+- Zod 4.5.4：MIT；结构化材质、Shader 操作与固定内部 JSON 入口校验。使用 `zod/v4`，与宿主既有 Zod 3 并存。
+- JSZip 3.10.1：采用 MIT 许可；工程包及 Shader 包编码。
+- tsx 4.23.13：MIT；固定内部 TypeScript 校验入口。
+- @webgpu/types 0.1.72：BSD-3-Clause；WebGPU 类型定义。
+- gltf-validator 2.0.0-dev.3.10：Apache-2.0；导出 GLB 的 Khronos 校验测试。
+- Draco 浏览器解码文件取自已锁定 Three.js 分发，Apache-2.0 许可随 `apps/web/public/draco/LICENSE` 保留，用于压缩模型读取。
+
+Lumaform 领域实现迁入自用户提供的本地 shader-ai 项目，不包含其独立应用导航或全局样式。

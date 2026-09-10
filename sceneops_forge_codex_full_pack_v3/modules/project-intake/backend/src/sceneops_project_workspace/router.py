@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 from .models import (DocumentSave, ModuleDocument, ModuleId, ModuleList, Project,
     ProjectCreate, ProjectList, SampleImport, WorkbenchRegistration, WorkspaceError)
 from .repository import RevisionConflict, WorkspaceRepository
+from .errors import ProjectNotFound
 
 WORKBENCHES = (
     ("shell", "对话与工作区"), ("project-planning", "项目与制作规划"),
@@ -23,7 +24,7 @@ def create_workspace_router(repository: WorkspaceRepository, import_sample=None)
     def document(project_id, module_id):
         try:
             return repository.get_document(project_id, module_id)
-        except KeyError as error:
+        except ProjectNotFound as error:
             raise HTTPException(404, "项目不存在，请明确创建或选择项目。") from error
 
     def save(value, revision):

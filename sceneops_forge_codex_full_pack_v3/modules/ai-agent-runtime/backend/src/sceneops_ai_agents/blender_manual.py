@@ -8,7 +8,22 @@ from .demo_workbench import project_task, resolve_target
 
 async def execute_manual(service, task_id, body):
     task = project_task(service, task_id)
-    cap = 'blender.asset.begin' if body.operation == 'begin' else 'blender.asset.publish'
+    if body.operation == 'reconcile':
+        from .blender_reconciliation import reconcile_edits
+        return await reconcile_edits(service, task)
+    if body.operation == 'close_candidate':
+        from .blender_content import candidate
+        def close(current):
+            if current.owner_pid is not None or any(a.state in ('running','uncertain') for a in current.actions):
+                raise HarnessError('TASK_BUSY', '先核查并结束当前操作。')
+            value = candidate(current, body.candidate_id, body.target.id)
+            if value['status'] != 'exported':
+                raise HarnessError('BLENDER_SOURCE_BUSY', '只能结束已保存导出的候选，未保存源须先保存。')
+            value['status'] = 'closed'
+        return service.records.update(task_id, close, 'agent.task.worker_released')
+    cap = {'begin':'blender.asset.begin','edit':'blender.asset.edit','publish':'blender.asset.publish'}[body.operation]
+    if task.observations.get('native_production') and body.operation == 'begin':
+        task = enable_native_blender(service, task)
     if (task.grant is None or task.grant.revoked or task.cancel_requested
             or (task.grant.expires_at is not None and task.grant.expires_at <= now())):
         raise HarnessError('TASK_GRANT_INVALID', '本次 Blender 授权不存在或已到期。')
@@ -30,7 +45,10 @@ async def execute_manual(service, task_id, body):
     inputs = {'asset_id': asset.id, 'expected_version': body.target.source_version, 'owner': 'manual'}
     if body.operation == 'publish':
         inputs = {'asset_id': asset.id, 'candidate_id': body.candidate_id,
-                  'expected_scene_version': body.target.expected_scene_version}
+                  'expected_scene_version': body.target.expected_scene_version, 'apply_to_scene':body.apply_to_scene}
+    elif body.operation == 'edit':
+        inputs = {'asset_id':asset.id, 'candidate_id':body.candidate_id,
+                  'edits':[e.model_dump(mode='json',exclude_none=True) for e in body.edits]}
     def claim(current):
         if any(a.state in ('running', 'uncertain') or a.effect_state == 'UNKNOWN' for a in current.actions):
             raise HarnessError('ACTION_UNCERTAIN', '已有动作结果未知；先核查原操作，不能另起写入。')
@@ -44,6 +62,7 @@ async def execute_manual(service, task_id, body):
                            'agent.task.started')
     if task_id not in service.tools:
         service.tools[task_id] = TaskTools(service, task_id)
+    if task_id not in service.runtimes:
         service.runtimes[task_id] = HarnessRuntime(service.database_path, service.tools[task_id].registry())
     try:
         record_action(service, task_id, AgentAction(action_id=action_id, capability_id=cap,
@@ -60,3 +79,23 @@ async def execute_manual(service, task_id, body):
                 current.status = 'review_required'
         service.records.update(task_id, release, 'agent.task.worker_released')
     return service.get(task_id)
+
+
+def enable_native_blender(service, task):
+    """An explicit editor click renews the existing authorization, not the CLI session."""
+    from datetime import timedelta
+    from uuid import uuid4
+    from .demo_continuation import prepare_demo_continuation
+    from .task_models import AuthorizeAgentTask
+    expires = task.observations.get('native_blender_expires_at')
+    if task.grant and not task.grant.revoked and task.authorization_card.allow_blender_edit and expires:
+        from datetime import datetime
+        if datetime.fromisoformat(expires) > now():
+            return task
+    prepare_demo_continuation(service, task.id, 'blender_editor_'+uuid4().hex, allow_blender_edit=True)
+    pending=service.get(task.id)
+    task=service.authorize(task.id, AuthorizeAgentTask(authorization_card_id=pending.authorization_card.id,
+        accept_unknown_cost=True,accept_full_access=pending.authorization_card.permission_mode=='full'))
+    return service.records.update(task.id, lambda current: current.observations.update(
+        native_blender_expires_at=(now()+timedelta(minutes=30)).isoformat()),
+        'agent.blender.editor_authorized', {'duration_minutes':30})

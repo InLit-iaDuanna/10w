@@ -1,4 +1,6 @@
 {
+  "x-event-type": "render.validation.completed",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://render-ops/events/render.validation.completed@1",
   "title": "render.validation.completed@1 payload",

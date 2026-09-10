@@ -36,3 +36,4 @@ __all__ = [
     "create_environment_scene_router", "key_door_behavior_definition",
     "workbench_router",
 ]
+from .scene_lighting import SceneLighting,SaveSceneLighting,scene_lighting_game_source

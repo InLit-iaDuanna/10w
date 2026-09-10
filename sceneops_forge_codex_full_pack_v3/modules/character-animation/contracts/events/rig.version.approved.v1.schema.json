@@ -142,5 +142,7 @@
     "payload"
   ],
   "title": "RigVersionApprovedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "rig.version.approved",
+  "x-event-version": 1
 }

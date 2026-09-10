@@ -20,7 +20,8 @@ export function BrowserObservationPanel({task}: {task: AgentTask}) {
     && typeof artifact.id === 'string' && typeof artifact.version === 'number'
     ? `/api/agent/projects/${encodeURIComponent(task.project_id)}/artifacts/${encodeURIComponent(artifact.id)}/content?version=${artifact.version}` : null;
   const authorized = task.authorization_card.allow_browser_observation && !!task.browser_authorization
-    && !task.browser_authorization.revoked && Date.parse(task.browser_authorization.expires_at) > Date.now();
+    && !task.browser_authorization.revoked
+    && (task.browser_authorization.expires_at == null || Date.parse(task.browser_authorization.expires_at) > Date.now());
   return <section className="agent-game-runtime" aria-label="当前构建观察">
     <header><strong>当前构建观察</strong>
       <button disabled={!authorized || observe.isPending || ['running','queued'].includes(task.status)}

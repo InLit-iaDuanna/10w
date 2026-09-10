@@ -30,11 +30,15 @@ ENVIRONMENT_TOOL_GUIDANCE = """项目环境任务先读取当前项目资产与�
 PROJECT_DEMO_TOOL_GUIDANCE = """项目 Demo 制作先读取登记工作区、项目资产和当前场景。共享门配方、实例和 KeyDoor 参数使用对应公开内容工具并提交刚读取的版本；新玩法使用普通项目源码模块。禁止编辑 `.sceneops/demo-content.json`、`src/game/sceneops-demo-content.ts`、测试适配器和构建输出。内容源改变后执行物化，再根据真实检查、构建和浏览器结果修复同一工程；旧候选仍可玩不代表当前更新通过。"""
 
 
-def next_action_instructions(skill_context) -> str:
+def next_action_instructions(skill_context, context_summary=None) -> str:
     blocks = [CORE_SYSTEM_INSTRUCTION, DIRECTOR_ROLE_INSTRUCTION]
     if skill_context.phase == "consultation":
         blocks.append("当前是咨询范围：解释已有事实，不将讨论扩为执行任务。")
     blocks.extend(skill_context.blocks)
+    if context_summary and context_summary.get('task_profile') in ('project-demo-agent', 'card-development'):
+        from .game_execution_prompt import game_execution_instructions
+        context = context_summary.get('confirmed_direction', {})
+        blocks.append(game_execution_instructions(context.get('direction', {}).get('camera_mode')))
     blocks.append(STRUCTURED_ACTION_PROTOCOL)
     return "\n\n".join(blocks)
 
@@ -48,7 +52,7 @@ def next_action_prompt(data) -> str:
             guidance.append(DIAGNOSTIC_REPAIR_GUIDANCE)
         if "agent.history.read" in capability_ids:
             guidance.append(HISTORY_TOOL_GUIDANCE)
-    if any(capability.startswith(("blender.", "unity.asset")) for capability in capability_ids):
+    if data.context_summary.get("task_profile") != "unity-asset-edit" and any(capability.startswith(("blender.", "unity.asset")) for capability in capability_ids):
         guidance.append(ASSET_TOOL_GUIDANCE)
     if any(capability.startswith("unity.prototype.") for capability in capability_ids):
         guidance.append(PROTOTYPE_TOOL_GUIDANCE)

@@ -1,3 +1,4 @@
+import { lookdevEditorDefinition } from './lookdev-contract';
 import type { EditorDefinition, VfxPreviewEditorProps, VfxShaderEditorProps } from './types';
 import { commands } from './commands';
 import { manifest } from './manifest';
@@ -21,13 +22,14 @@ const previewEditor: EditorDefinition<VfxPreviewEditorProps> = {
     load: () => import('./editors/VfxPreviewEditor'),
 };
 
-export const editors = [recipeEditor, parameterEditor, previewEditor] as const;
+export const editors = [recipeEditor, parameterEditor, previewEditor, lookdevEditorDefinition] as const;
 
 export const moduleContribution = {
   manifest,
   editors,
   commands,
   navigation: [
+    { editorId: 'lookdev.material', group: '内容制作', keywords: ['材质', '灯光', 'Lookdev', 'Shader'], recommendedEdges: ['right'] },
     { editorId: 'vfx.recipe', group: '内容制作', keywords: ['VFX', '特效', 'Shader'], recommendedEdges: ['right'] },
     { editorId: 'vfx.preview', group: '内容制作', keywords: ['预览', 'overdraw'], recommendedEdges: ['right'] },
   ],
@@ -37,3 +39,13 @@ export { commands, manifest };
 export type * from './types';
 export { VfxLabPanel } from './editors/VfxLabPanel';
 export type { paths as VfxLabPaths, components as VfxLabComponents } from './lab-api';
+
+export { lookdevEditorDefinition } from './lookdev-contract';
+export type { LookdevEditorState, LookdevMaterialEditorProps, LookdevConversationSession } from './lookdev-contract';
+export const loadLookdevMaterialEditor = () => import('./editors/LookdevMaterialEditor');
+
+export { createLookdevClient } from './lookdev-client';
+
+export { createOpenLookdevCommand } from './lookdev-open-command';
+
+export {loadProjectSceneAppearance} from './project-scene-appearance';

@@ -139,5 +139,7 @@
     "payload"
   ],
   "title": "AnimationPreviewCapturedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "animation.preview.captured",
+  "x-event-version": 1
 }

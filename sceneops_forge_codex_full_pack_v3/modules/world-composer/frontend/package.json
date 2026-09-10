@@ -11,7 +11,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test src/tests/*.test.ts",
+    "test": "node ../../../scripts/frontend-test.mjs src/tests",
     "typecheck": "tsc --project tsconfig.json"
   },
   "dependencies": {
@@ -21,13 +21,13 @@
     "@sceneops/api-client": "workspace:*"
   },
   "devDependencies": {
-    "@types/three": "0.183.1",
+    "@types/three": "0.185.4",
     "typescript": "5.9.3"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.90.21",
     "react": "^19.2.8",
-    "three": "^0.183.2"
+    "three": "0.185.1"
   },
   "peerDependenciesMeta": {
     "react": {

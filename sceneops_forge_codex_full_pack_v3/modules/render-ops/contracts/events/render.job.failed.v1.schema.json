@@ -1,4 +1,6 @@
 {
+  "x-event-type": "render.job.failed",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://render-ops/events/render.job.failed@1",
   "title": "render.job.failed@1 payload",

@@ -19,3 +19,5 @@ export type { JourneySurfaceRequest } from './PlanningJourney.tsx';
 export { CurrentModelingTool } from './CurrentModelingTool.tsx';
 export type { CurrentModelingAssetInput } from './CurrentModelingTool.tsx';
 export { CurrentWorldTool } from './CurrentWorldTool.tsx';
+
+export { ProjectPlanningTools } from './ProjectPlanningTools';

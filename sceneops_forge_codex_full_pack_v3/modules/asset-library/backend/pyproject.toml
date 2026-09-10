@@ -13,3 +13,31 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+asset_library = [
+  "builtin_assets/*.json",
+  "builtin_assets/*.md",
+  "builtin_assets/*.txt",
+  "builtin_assets/glb/*.glb",
+  "builtin_assets/previews/*.png",
+  "builtin_assets/packs/atlas100-v2/*.json",
+  "builtin_assets/packs/atlas100-v2/*.md",
+  "builtin_assets/packs/atlas100-v2/*.txt",
+  "builtin_assets/packs/atlas100-v2/*.png",
+  "builtin_assets/packs/atlas100-v2/assets/*.glb",
+  "builtin_assets/packs/atlas100-v2/scenes/*.glb",
+  "builtin_assets/packs/atlas100-v2/scenes/*.json",
+  "builtin_assets/packs/atlas100-v2/lods/*.glb",
+  "builtin_assets/packs/atlas100-v2/physics/*.json",
+  "builtin_assets/packs/atlas100-v2/previews/*.png",
+  "builtin_assets/packs/atlas100-v2/textures/*.json",
+  "builtin_assets/packs/atlas100-v2/textures/*/*/*.png",
+  "builtin_assets/packs/atlas100-v2/runtime/*.mjs",
+  "builtin_assets/packs/atlas100-v2/schemas/*.json",
+  "builtin_assets/packs/atlas100-v2/proofs/*.png",
+  "builtin_assets/packs/atlas100-v2/proofs/*.gif",
+  "builtin_assets/packs/atlas100-v2/reports/*.json",
+  "builtin_assets/packs/atlas100-v2/reports/*.tap",
+  "builtin_assets/packs/atlas100-v2/reports/*.txt",
+]

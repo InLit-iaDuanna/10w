@@ -50,5 +50,13 @@ runtime.setDemoDoorOpen(root,0)
 assert.ok(leaf.getWorldPosition(new THREE.Vector3()).distanceTo(leafBefore)<1e-6)
 await assert.rejects(runtime.createDemoAsset({...asset,runtime_artifacts:[]}),/GLB/)
 assert.throws(()=>runtime.prepareDemoAsset(new THREE.Group()),/语义/)
+// A native Blender asset without door semantics remains a general scene model.
+for(const node of document.nodes) if(node.extras) delete node.extras.sceneops_role
+let plainJson=Buffer.from(JSON.stringify(document));plainJson=Buffer.concat([plainJson,Buffer.alloc((4-plainJson.length%4)%4,32)])
+const plainHeader=Buffer.from(header);plainHeader.writeUInt32LE(28+plainJson.length+binary.length,8);plainHeader.writeUInt32LE(plainJson.length,12)
+globalThis.fetch=async()=>new Response(Buffer.concat([plainHeader,plainJson,chunk,binary]))
+const general=await runtime.createDemoAsset(asset)
+assert.equal(general.userData.doorHinge,undefined)
+assert.ok(new THREE.Box3().setFromObject(general).getSize(new THREE.Vector3()).length()>0)
 globalThis.fetch=originalFetch;globalThis.Request=OriginalRequest
 console.log('GLB runtime smoke passed: binary loader, semantic identities, offset hinge, fixed frame, collision, bad model.')

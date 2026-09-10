@@ -1,4 +1,6 @@
 {
+  "x-event-type": "vfx.preview.planned",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://vfx-shader/events/vfx.preview.planned@1",
   "title": "VFX preview planned event intent",

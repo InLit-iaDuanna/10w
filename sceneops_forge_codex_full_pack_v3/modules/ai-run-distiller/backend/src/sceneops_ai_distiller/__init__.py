@@ -23,4 +23,11 @@ def distill_run(run, title: str):
         execution_mode=run.execution_mode)
 
 
-__all__ = ["distill_run"]
+from .experience import ExperienceService
+from .experience_router import create_experience_router
+from .experience_repository import ExperienceError
+
+__all__ = ["distill_run", "ExperienceService", "ExperienceError", "create_experience_router"]
+
+from .experience_models import (ExperienceSettingsUpdate, ExperienceSource, MemoryProposal, MemoryWrite, MemoryEvent, MemoryUndo, ProjectMemoryReference, ProjectMemoryCollection)
+__all__ += ["ExperienceSettingsUpdate", "ExperienceSource", "MemoryProposal", "MemoryWrite", "MemoryEvent", "MemoryUndo", "ProjectMemoryReference", "ProjectMemoryCollection"]

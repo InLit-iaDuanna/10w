@@ -18,6 +18,12 @@ class CardGitWriteSmoke(unittest.IsolatedAsyncioTestCase):
             repository = SqliteWorkspaceRepository(data/'state.sqlite3')
             project = repository.create_folder_project(root, 'game')
             version = repository.commit_design_version(project.project_id, 1, {'title':'fixture'})
+            scaffold = repository.initialize_game_project(project.project_id, {
+                'target_platform': 'web', 'engine': 'threejs',
+                'code_architecture': 'object-component', 'architecture_label': '对象／组件式',
+                'selection_method': 'manual', 'rationale': 'Deterministic worktree fixture',
+                'tradeoffs': ['Explicit baseline before card development'], 'ecs_library': None,
+            }, 1)
             branch = repository.open_card_worktree(project.project_id, 'map', '地图', card={'title':'地图'})
             provider = SimpleNamespace(database_path=data/'state.sqlite3',
                 settings=lambda: SimpleNamespace(provider='codebuddycli', model='fixture'),
@@ -45,7 +51,8 @@ class CardGitWriteSmoke(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(result.status, 'review_required', result.reason)
                 self.assertEqual(source.read_text(), 'export const speed = 2;\n')
                 head = subprocess.check_output(['git','-C',branch['worktree_path'],'rev-parse','HEAD'], text=True).strip()
-                self.assertEqual(head, version['commit'])
+                self.assertEqual(head, scaffold['baseline_commit'])
+                self.assertEqual(head, branch['base_commit'])
                 self.assertFalse((Path(project.root_path)/'main.ts').exists())
                 self.assertFalse(result.observations['code']['compilation_verified'])
                 provider.generate.assert_not_awaited()

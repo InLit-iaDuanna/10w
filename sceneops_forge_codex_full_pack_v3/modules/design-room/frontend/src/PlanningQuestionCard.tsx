@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { MarkdownMessage } from '../../../../packages/core-ui/frontend/src/index.ts';
 import type { JourneyQuestion } from './journey-client';
 
-export function PlanningQuestionCard({ question, disabled, answered, onAnswer, onCustom }: {
-  question: JourneyQuestion; disabled: boolean; answered: boolean;
+export function PlanningQuestionCard({ question, disabled, answered, locked = false, onAnswer, onCustom }: {
+  question: JourneyQuestion; disabled: boolean; answered: boolean; locked?: boolean;
   onAnswer: (index: number) => void; onCustom: () => void;
 }) {
   const [selected, setSelected] = useState(question.recommended_index);
-  if (answered) return <details className="journey-question-answered"><summary>已回答 · {question.prompt}</summary>
+  if (answered || locked) return <details className="journey-question-answered"><summary>{answered ? '已回答' : '此步骤已结束'} · {question.prompt}</summary>
     {question.options.map((option, index) => <p key={index}>{option.label} — {option.description}</p>)}</details>;
   return <section className="journey-question" aria-label="当前对齐问题">
     <MarkdownMessage text={question.prompt} />

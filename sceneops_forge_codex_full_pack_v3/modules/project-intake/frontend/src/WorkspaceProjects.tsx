@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { workspaceClient, type FolderEntry, type FolderProject, type FolderProjectIdentityInspection, type Project } from '@sceneops/workspace-client';
 import './workspace-projects.css';
@@ -21,7 +21,8 @@ function inspectionTitle(inspection: FolderProjectIdentityInspection) {
   return '这个文件夹尚未采用';
 }
 
-export function WorkspaceProjects({ projectId, onSelect }: { projectId: string | null; onSelect(id: string | null): void }) {
+export function WorkspaceProjects({ projectId, onSelect, onClose }: { projectId: string | null; onSelect(id: string | null): void; onClose?(): void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
   const cache = useQueryClient();
   const projects = useQuery({ queryKey: ['workspace-projects'], queryFn: workspaceClient.projects });
   const folderProjects = useQuery({ queryKey: ['workspace-folder-projects'], queryFn: workspaceClient.folderProjects });
@@ -31,12 +32,34 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
   const folders = useQuery({ queryKey: ['workspace-folders', browsePath ?? 'home'], queryFn: () => workspaceClient.folders(browsePath) });
   const [name, setName] = useState('');
   const [folderName, setFolderName] = useState('');
+  const [savePath, setSavePath] = useState<string>();
   const [createOpen, setCreateOpen] = useState(false);
   const [folderBrowserMode, setFolderBrowserMode] = useState<FolderBrowserMode | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+  const [deleteProject, setDeleteProject] = useState<FolderProject | null>(null);
+  const [deleteFiles, setDeleteFiles] = useState(false);
+  const [confirmedPath, setConfirmedPath] = useState('');
   const [identityBusy, setIdentityBusy] = useState(false);
   const [inspection, setInspection] = useState<FolderProjectIdentityInspection | null>(null);
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    dialog.current?.showModal();
+    return () => { dialog.current?.close(); previous?.focus(); };
+  }, []);
+  useEffect(() => {
+    const view = dialog.current?.querySelector('[data-project-view]');
+    (view?.querySelector<HTMLElement>('input') ?? view?.querySelector<HTMLElement>('button'))?.focus();
+  }, [createOpen, folderBrowserMode, deleteProject]);
+  const dismiss = () => {
+    if (busy || identityBusy || deletingProjectId) return;
+    if (deleteProject) { setDeleteProject(null); setError(''); }
+    else if (folderBrowserMode) { setFolderBrowserMode(null); setInspection(null); setError(''); }
+    else if (createOpen) closeCreate();
+    else onClose?.();
+  };
 
   const refreshProjects = async () => {
     await Promise.all([
@@ -49,7 +72,10 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
   const showFolderBrowser = (mode: FolderBrowserMode) => {
     setError('');
     setInspection(null);
-    setPathInput(folders.data?.path ?? browsePath ?? '');
+    if (mode === 'create') setSavePath(savePath ?? folders.data?.path);
+    const path = mode === 'create' ? savePath ?? folders.data?.path : folders.data?.path;
+    setBrowsePath(path);
+    setPathInput(path ?? '');
     setFolderBrowserMode(mode);
   };
 
@@ -93,12 +119,34 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
     setError('');
   };
 
-  return <section className="shell-tool-content workspace-folder-intake" aria-label="本地项目">
+  const forgetFolderProject = async (project: FolderProject) => {
+    setDeletingProjectId(project.project_id);
+    setError('');
+    try {
+      if (deleteFiles) {
+        await workspaceClient.deleteFolderProjectFiles(project.project_id, {confirmed_root_path: confirmedPath, confirm_permanent_delete: true});
+      } else {
+        await workspaceClient.forgetFolderProject(project.project_id);
+      }
+      await refreshProjects();
+      setDeleteProject(null);
+      if (projectId === project.project_id) onSelect(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeletingProjectId(null);
+    }
+  };
+
+  return <dialog ref={dialog} className="workspace-project-modal" aria-label={folderBrowserMode ? (folderBrowserMode === 'create' ? '选择保存位置' : '打开项目') : createOpen ? '新建项目' : '项目'} onCancel={event => { event.preventDefault(); dismiss(); }} onClick={event => { if (event.target === event.currentTarget) { const bounds = event.currentTarget.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dismiss(); } }}>
+    <section className="workspace-folder-intake" aria-busy={busy || identityBusy}>
+    {!createOpen && !folderBrowserMode && !deleteProject && <div data-project-view>
+    <button className="workspace-modal-close workspace-icon-button" aria-label="关闭项目窗口" onClick={dismiss}><CloseIcon /></button>
     <header className="workspace-projects-header workspace-projects-toolbar">
-      <div><h2>项目</h2><p>每个游戏使用独立文件夹和 Git 历史。</p></div>
+      <div><span className="workspace-heading-icon"><FolderIcon /></span><h2>你的项目</h2><p>从一个想法开始，或继续上次的创作。</p></div>
       <div className="workspace-projects-toolbar-actions">
         <button className="workspace-secondary-action" onClick={() => showFolderBrowser('existing')}><FolderIcon />打开项目</button>
-        <button className="workspace-primary-action" onClick={() => { setError(''); setCreateOpen(true); }}>＋ 新建项目</button>
+        <button className="workspace-primary-action" onClick={() => { setError(''); setCreateOpen(true); }}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>新建项目</button>
       </div>
     </header>
 
@@ -112,7 +160,7 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
       <h3>开始一个新游戏项目</h3>
       <p>创建项目后，先和 AI 讨论需求并生成制作步骤；确认步骤后再授权执行。</p>
       <div>
-        <button className="workspace-primary-action" onClick={() => { setError(''); setCreateOpen(true); }}>＋ 新建项目</button>
+        <button className="workspace-primary-action" onClick={() => { setError(''); setCreateOpen(true); }}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>新建项目</button>
         <button className="workspace-secondary-action" onClick={() => showFolderBrowser('existing')}><FolderIcon />打开已有项目</button>
       </div>
     </div>}
@@ -120,10 +168,13 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
     {!!folderProjects.data?.projects.length && <section className="workspace-recent-projects">
       <h3>最近项目</h3>
       <div className="workspace-project-list">
-        {folderProjects.data.projects.map((project: FolderProject) => <button className={`workspace-project-card ${projectId === project.project_id ? 'is-selected' : ''}`} key={project.project_id} aria-pressed={projectId === project.project_id} disabled={project.root_available === false} onClick={() => onSelect(project.project_id)}>
-          <span><strong>{project.name}</strong><small>{project.root_path}</small>{project.root_available === false && <small>原登记目录不可用 · 请重新打开移动后的文件夹</small>}{project.project_kind === 'existing_unadopted' && <small>副本已登记 · 等待已有工程采用流程</small>}</span>
-          <b>{project.root_available === false ? '重新定位' : projectId === project.project_id ? '当前' : '打开'}</b>
-        </button>)}
+        {folderProjects.data.projects.map((project: FolderProject) => <div className={`workspace-project-card workspace-recent-project-card ${projectId === project.project_id ? 'is-selected' : ''}`} key={project.project_id}>
+          <button className="workspace-project-open" aria-pressed={projectId === project.project_id} disabled={project.root_available === false || deletingProjectId === project.project_id} onClick={() => onSelect(project.project_id)}>
+            <span className="workspace-recent-icon"><FolderIcon /></span><span className="workspace-project-label"><strong>{project.name}</strong><small title={project.root_path}>{project.root_path}</small>{project.root_available === false && <small>原登记目录不可用 · 请重新打开移动后的文件夹</small>}{project.project_kind === 'existing_unadopted' && <small>副本已登记 · 等待已有工程采用流程</small>}</span>
+            <b>{project.root_available === false ? '重新定位' : projectId === project.project_id ? '当前' : '打开'}</b>
+          </button>
+          <button className="workspace-project-delete" type="button" aria-label={`删除或移除 ${project.name}`} title="删除或移除项目" disabled={deletingProjectId !== null} onClick={() => { setDeleteProject(project); setDeleteFiles(false); setConfirmedPath(''); setError(''); }}><CloseIcon /></button>
+        </div>)}
       </div>
     </section>}
 
@@ -132,14 +183,31 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
       {projects.data?.projects.filter((project: Project) => !folderProjects.data?.projects.some((folder: FolderProject) => folder.project_id === project.project_id)).map((project: Project) => <button className={`workspace-project-card ${projectId === project.project_id ? 'is-selected' : ''}`} key={project.project_id} aria-pressed={projectId === project.project_id} onClick={() => onSelect(project.project_id)}><span><strong>{project.name}</strong><small>原有本地项目</small></span><b>{projectId === project.project_id ? '当前' : '选择'}</b></button>)}
     </div></details>
 
-    {createOpen && <div className="workspace-project-dialog-layer">
-      <form className="workspace-project-dialog" role="dialog" aria-modal="true" aria-label="新建项目" onSubmit={async event => {
+    </div>}
+
+    {deleteProject && <form className="workspace-project-dialog workspace-delete-project" data-project-view onSubmit={event => {
+      event.preventDefault();
+      if (!deletingProjectId && (!deleteFiles || confirmedPath === deleteProject.root_path)) void forgetFolderProject(deleteProject);
+    }}>
+      <header><div><h3>删除或移除项目</h3><p>{deleteProject.name}</p></div><button type="button" className="workspace-icon-button" aria-label="取消删除" disabled={deletingProjectId !== null} onClick={dismiss}><CloseIcon /></button></header>
+      <label><input type="radio" name="delete-mode" checked={!deleteFiles} disabled={deletingProjectId !== null} onChange={() => {setDeleteFiles(false); setError('');}} />从最近项目移除</label>
+      <p>保留本地文件夹和 Git 历史，以后可通过“打开项目”重新登记。</p>
+      <label><input type="radio" name="delete-mode" checked={deleteFiles} disabled={deletingProjectId !== null || deleteProject.root_available === false} onChange={() => {setDeleteFiles(true); setError('');}} />删除本地项目文件</label>
+      <p>{deleteProject.root_available === false ? '原目录不可用，当前只能移除最近项目记录。' : '永久删除整个项目文件夹（包括源码、资产和 Git 历史），并移除最近项目记录。不会进入废纸篓。'}</p>
+      <p className="workspace-delete-path">{deleteProject.root_path}</p>
+      {deleteFiles && <label className="workspace-project-name">输入上方完整路径以确认永久删除<input value={confirmedPath} disabled={deletingProjectId !== null} onChange={event => setConfirmedPath(event.target.value)} autoComplete="off" spellCheck={false} /></label>}
+      {error && <p className="workspace-project-error" role="alert">{error}</p>}
+      <footer><button type="button" disabled={deletingProjectId !== null} onClick={dismiss}>取消</button><button className="workspace-primary-action" disabled={deletingProjectId !== null || (deleteFiles && confirmedPath !== deleteProject.root_path)}>{deletingProjectId ? '正在处理…' : deleteFiles ? '永久删除本地文件' : '确认移除'}</button></footer>
+    </form>}
+
+    {createOpen && !folderBrowserMode && <div className="workspace-project-dialog-layer">
+      <form className="workspace-project-dialog" data-project-view onSubmit={async event => {
         event.preventDefault();
         if (!folders.data) return;
         setBusy(true);
         setError('');
         try {
-          const project = await workspaceClient.createFolderProject({ parent_path: folders.data.path, name: folderName.trim() });
+          const project = await workspaceClient.createFolderProject({ parent_path: savePath ?? folders.data.path, name: folderName.trim() });
           await refreshProjects();
           setFolderName('');
           setCreateOpen(false);
@@ -150,21 +218,22 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
           setBusy(false);
         }
       }}>
-        <header><div><h3>新建项目</h3><p>SceneOps 将创建一个新的游戏工程文件夹。</p></div><button type="button" className="workspace-icon-button" aria-label="关闭新建项目" onClick={closeCreate}><CloseIcon /></button></header>
-        <label className="workspace-project-name">项目名称<input autoFocus required maxLength={160} value={folderName} placeholder="例如：归途" onChange={event => setFolderName(event.target.value)} /></label>
-        <button type="button" className="workspace-location-row" onClick={() => showFolderBrowser('create')}>
+        <header><div><h3>新建项目</h3><p>SceneOps 将创建一个新的游戏工程文件夹。</p></div><button type="button" className="workspace-icon-button" aria-label="关闭新建项目" disabled={busy} onClick={closeCreate}><CloseIcon /></button></header>
+        <label className="workspace-project-name">项目名称<input autoFocus required maxLength={160} disabled={busy} value={folderName} placeholder="例如：归途" onChange={event => setFolderName(event.target.value)} /></label>
+        <button type="button" className="workspace-location-row" disabled={busy} onClick={() => showFolderBrowser('create')}>
           <span className="workspace-location-icon"><FolderIcon /></span>
-          <span><small>保存位置</small><strong>{folders.data?.path ?? '正在读取默认位置…'}</strong></span>
+          <span><small>保存位置</small><strong>{savePath ?? folders.data?.path ?? '正在读取默认位置…'}</strong></span>
           <b>更改</b>
         </button>
-        <p className="workspace-project-path-preview">将创建：{folders.data?.path ?? '…'}/{folderName.trim() || '项目名称'}</p>
+        <p className="workspace-project-path-preview">将创建：{savePath ?? folders.data?.path ?? '…'}/{folderName.trim() || '项目名称'}</p>
+        {folders.error && <p className="workspace-project-error" role="alert">{folders.error.message} <button type="button" onClick={() => void folders.refetch()}>重试</button></p>}
         {error && <p className="workspace-project-error" role="alert">{error}</p>}
-        <footer><button type="button" onClick={closeCreate}>取消</button><button className="workspace-primary-action" disabled={busy || !folderName.trim() || !folders.data || folders.isFetching}>{busy ? '创建中…' : '创建项目'}</button></footer>
+        <footer><button type="button" disabled={busy} onClick={closeCreate}>取消</button><button className="workspace-primary-action" disabled={busy || !folderName.trim() || !folders.data || folders.isFetching}>{busy ? '创建中…' : '创建项目'}</button></footer>
       </form>
     </div>}
 
     {folderBrowserMode && <div className="workspace-project-dialog-layer workspace-folder-browser-layer">
-      <section className="workspace-project-dialog workspace-folder-browser" role="dialog" aria-modal="true" aria-label={folderBrowserMode === 'create' ? '选择保存位置' : '打开项目'}>
+      <section className="workspace-project-dialog workspace-folder-browser" data-project-view>
         <header><div><h3>{folderBrowserMode === 'create' ? '选择保存位置' : '打开项目'}</h3><p>{folderBrowserMode === 'create' ? '选择新项目所在的父文件夹。' : '选择一个已经由 SceneOps 创建或登记的文件夹。'}</p></div><button type="button" className="workspace-icon-button" aria-label="关闭文件夹选择" onClick={() => { setFolderBrowserMode(null); setInspection(null); setError(''); }}><CloseIcon /></button></header>
         <div className="workspace-path-entry">
           <label>文件夹路径<input value={pathInput} placeholder="输入绝对路径" onChange={event => setPathInput(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && pathInput.trim()) { event.preventDefault(); setBrowsePath(pathInput.trim()); setInspection(null); } }} /></label>
@@ -192,15 +261,15 @@ export function WorkspaceProjects({ projectId, onSelect }: { projectId: string |
           </div>
         </div>}
         {error && <p className="workspace-project-error" role="alert">{error}</p>}
-        <footer><button type="button" onClick={() => { setFolderBrowserMode(null); setInspection(null); setError(''); }}>取消</button>{folderBrowserMode === 'create' ? <button type="button" className="workspace-primary-action" disabled={!folders.data} onClick={() => { setFolderBrowserMode(null); setInspection(null); }}>使用此位置</button> : <button type="button" className="workspace-primary-action" disabled={!folders.data || identityBusy} onClick={() => void inspectAndOpenCurrentFolder()}>{identityBusy ? '正在检查…' : '打开此文件夹'}</button>}</footer>
+        <footer><button type="button" onClick={() => { setFolderBrowserMode(null); setInspection(null); setError(''); }}>取消</button>{folderBrowserMode === 'create' ? <button type="button" className="workspace-primary-action" disabled={!folders.data || folders.isFetching} onClick={() => { setSavePath(folders.data!.path); setFolderBrowserMode(null); setInspection(null); }}>使用此位置</button> : <button type="button" className="workspace-primary-action" disabled={!folders.data || folders.isFetching || identityBusy} onClick={() => void inspectAndOpenCurrentFolder()}>{identityBusy ? '正在检查…' : '打开此文件夹'}</button>}</footer>
       </section>
     </div>}
 
-    <details className="workspace-projects-legacy"><summary>高级：创建不绑定文件夹的旧版项目</summary><form onSubmit={async event => {
+    {!createOpen && !folderBrowserMode && !deleteProject && <details className="workspace-projects-legacy"><summary>高级：创建不绑定文件夹的旧版项目</summary><form onSubmit={async event => {
       event.preventDefault(); setBusy(true); setError('');
       try { const project = await workspaceClient.create({ name: name.trim() }); await cache.invalidateQueries({ queryKey: ['workspace-projects'] }); setName(''); onSelect(project.project_id); }
       catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
-    }} className="workspace-project-create"><div><span className="tool-kicker">NEW LOCAL PROJECT</span><h3>新建项目</h3><p>此入口保留旧版流程，不进入新策划旅程。</p></div><label>项目名称 <input required maxLength={160} value={name} placeholder="例如：归途" onChange={e => setName(e.target.value)} /></label><button disabled={busy || !name.trim()}>{busy ? '创建中…' : '创建空项目'}</button></form></details>
-    {error && !createOpen && !folderBrowserMode && <p className="workspace-project-error" role="alert">{error}</p>}
-  </section>;
+    }} className="workspace-project-create"><div><span className="tool-kicker">NEW LOCAL PROJECT</span><h3>新建项目</h3><p>此入口保留旧版流程，不进入新策划旅程。</p></div><label>项目名称 <input required maxLength={160} value={name} placeholder="例如：归途" onChange={e => setName(e.target.value)} /></label><button disabled={busy || !name.trim()}>{busy ? '创建中…' : '创建空项目'}</button></form></details>}
+    {error && !createOpen && !folderBrowserMode && !deleteProject && <p className="workspace-project-error" role="alert">{error}</p>}
+  </section></dialog>;
 }

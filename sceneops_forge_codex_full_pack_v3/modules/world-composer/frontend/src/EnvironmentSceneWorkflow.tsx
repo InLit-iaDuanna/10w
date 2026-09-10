@@ -1,6 +1,9 @@
+import type * as React from 'react';
+import { EnvironmentToolIcon } from './EnvironmentToolIcon';
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EnvironmentScenePreview } from './EnvironmentScenePreview.tsx';
+import {EnvironmentLightingEditor} from './EnvironmentLightingEditor';
 import {
   environmentAssetFileUrl,
   environmentAssetsKey,
@@ -32,11 +35,13 @@ function currentVersion(asset: ProjectAssetEntry, selected: number | undefined) 
     ?? asset.versions.at(-1)!;
 }
 
-export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset, onAgentEdit, onOpenBuiltinAssets}: {
+export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAsset, onImportAsset, onAgentEdit, onOpenBuiltinAssets, onEditMaterial, loadAppearance}: {
   projectId: string; aiBusy?: boolean; onCreateAsset?: (source: AssetSource) => void;
   onImportAsset?: (file: File) => Promise<ProjectAssetEntry>;
   onAgentEdit?: (goal: string, selectedSceneObjectId: string) => Promise<void>;
   onOpenBuiltinAssets?: () => void;
+  loadAppearance?: React.ComponentProps<typeof EnvironmentScenePreview>['loadAppearance'];
+  onEditMaterial?: (target:{assetId:string;assetVersion:number;sceneInstanceId?:string})=>void;
 }) {
   const cache = useQueryClient();
   const splitRoot = useRef<HTMLElement>(null);
@@ -209,13 +214,14 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
 
   return <section ref={splitRoot} className="environment-workflow" aria-label="环境场景搭建" style={splitStyle}>
     <section className="environment-scene-card" aria-label="世界场景预览">
-      <div className="environment-status"><span>场景 v{scene.version}</span><strong>{objects.length} 个对象</strong><small>{aiBusy ? 'AI 搭建中 · ' : ''}米 · Y↑ · {profile.grid_step_m}m 网格</small></div>
+      <div className="environment-status"><EnvironmentToolIcon kind="cube"/><strong>环境场景</strong><span>v{scene.version}</span><span>{objects.length} 个对象</span><small>{aiBusy ? 'AI 搭建中 · ' : ''}米 · Y↑ · {profile.grid_step_m}m 网格</small></div>
       <div className={`environment-scene-dropzone${dropActive ? ' is-dragging' : ''}${dropped.isPending ? ' is-importing' : ''}`}
         onDragEnter={event => {if (!onImportAsset || !Array.from(event.dataTransfer.types).includes('Files')) return;event.preventDefault();if (!busy) {dragDepth.current += 1;setDropActive(true);}}}
         onDragOver={event => {if (!onImportAsset || !Array.from(event.dataTransfer.types).includes('Files')) return;event.preventDefault();event.dataTransfer.dropEffect = busy ? 'none' : 'copy';}}
         onDragLeave={() => {dragDepth.current = Math.max(0, dragDepth.current - 1);if (!dragDepth.current) setDropActive(false);}}
         onDrop={event => {if (!onImportAsset) return;event.preventDefault();dragDepth.current = 0;setDropActive(false);setDropNotice('');if (busy) {setError('当前场景正在处理，请完成后再导入。');return;}const files=Array.from(event.dataTransfer.files);if (files.length) dropped.mutate(files);}}>
-        <EnvironmentScenePreview objects={objects} assets={assets} selectedId={selectedSceneId} onSelect={onSceneSelect}/>
+        <EnvironmentScenePreview lighting={scene?.lighting} {...(loadAppearance?{loadAppearance}:{})} objects={objects} assets={assets} selectedId={selectedSceneId} onSelect={onSceneSelect}/>
+        {!objects.length && !dropActive && <div className="environment-canvas-empty"><span className="environment-empty-icon"><EnvironmentToolIcon kind="cube"/></span><strong>从第一个模型开始</strong><p>将资产放入场景，搭建你的游戏世界</p><div>{onOpenBuiltinAssets && <button className="primary" type="button" onClick={onOpenBuiltinAssets}><EnvironmentToolIcon kind="library"/>选择内置资产</button>}{onCreateAsset && <button type="button" disabled={busy} onClick={()=>beginAsset('import')}><EnvironmentToolIcon kind="upload"/>导入模型</button>}</div></div>}
         {onImportAsset && <div className="environment-drop-hint" aria-live="polite">{dropped.isPending ? '正在导入、检查并加入场景…' : dropActive ? '松开以导入并加入场景' : '拖入 GLB / FBX 直接导入'}</div>}
       </div>
       {dropNotice && <p role="status" className="environment-import-notice">{dropNotice}</p>}
@@ -230,12 +236,14 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
     <section ref={assetPane} className="environment-assets-card" aria-label={selectedSceneObject ? '已选模型信息' : '项目资产'}>
       {error && <p role="alert" className="environment-error">{error}</p>}
       {sourceNotice && <p role="status" className="environment-import-notice">{sourceNotice}</p>}
+      {scene&&<EnvironmentLightingEditor key={scene.version} scene={scene}/>}
       {addingAsset && onCreateAsset && <section className="environment-new-asset" aria-label="添加资产方式"><div><strong>添加一个资产</strong><small>只带入项目背景和世界尺度，不带入上一个资产的对话。</small></div><div><button onClick={() => beginAsset('import')}>导入 GLB / FBX</button><button className="primary" onClick={() => beginAsset('create')}>新建模型</button><button aria-label="取消添加资产" onClick={() => setAddingAsset(false)}>取消</button></div></section>}
       {selectedSceneObject ? <section className="environment-inspector" aria-label={`${selectedSceneAsset?.title ?? selectedSceneObject.title} 场景模型信息`}>
         <header><div><button type="button" className="scene-back" onClick={() => setSelectedSceneId(null)}>← 项目资产</button><strong>{selectedSceneAsset?.title ?? selectedSceneObject.title}</strong><small>已选模型 · 场景实例 · {selectedSceneObject.id}</small></div><button disabled={busy} onClick={() => removed.mutate(selectedSceneObject)}>移出场景</button></header>
         <div className="environment-transform-grid">
           {([['x','X'],['y','Y'],['z','Z'],['rotation','旋转 Y°'],['scale','缩放']] as const).map(([key,label]) => <label key={key}>{label}<input type="number" step={key === 'rotation' ? 5 : .1} value={draft[key]} disabled={busy} onChange={event => setDraft(current => ({...current,[key]:event.target.value}))}/></label>)}
         </div><button className="primary" disabled={busy} onClick={() => transformed.mutate()}>应用变换</button>
+        {onEditMaterial && <button type="button" disabled={busy} onClick={()=>onEditMaterial({assetId:selectedSceneObject.asset_id,assetVersion:selectedSceneObject.asset_version,sceneInstanceId:selectedSceneObject.id})}>编辑材质</button>}
         {selectedSceneObject.behavior && <form className="asset-name-editor" onSubmit={event=>{event.preventDefault();behaviorSaved.mutate();}}>
           <label>所需钥匙<select value={behaviorDraft.requiredKey} disabled={busy} onChange={event=>setBehaviorDraft(value=>({...value,requiredKey:event.target.value}))}>{assets.map(asset=><option key={asset.id} value={asset.id}>{asset.title}</option>)}</select></label>
           <label>交互距离（米）<input type="number" min="0.01" max="20" step="0.1" value={behaviorDraft.distance} disabled={busy} onChange={event=>setBehaviorDraft(value=>({...value,distance:event.target.value}))}/></label>
@@ -270,17 +278,17 @@ export function EnvironmentSceneWorkflow({projectId, aiBusy = false, onCreateAss
             <label>粗糙度<input type="number" min="0" max="1" step="0.05" value={recipeDraft.roughness} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,roughness:event.target.value}))}/></label>
             <label>金属度<input type="number" min="0" max="1" step="0.05" value={recipeDraft.metalness} disabled={busy} onChange={event=>setRecipeDraft(value=>({...value,metalness:event.target.value}))}/></label>
             <button className="primary" type="submit" disabled={busy || assetVersion.source_version!==selectedAsset.current_version}>保存共享门配方</button>
-          </form> : <div className="asset-file-links"><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'blend',assetVersion.source_version)}>.blend</a><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'preview',assetVersion.source_version)}>GLB</a><a href={environmentAssetFileUrl(selectedAsset.source_asset_id,'fbx',assetVersion.source_version)}>FBX</a></div>}
+          </form> : <div className="asset-file-links">{(['blend','preview','fbx'] as const).filter(kind=>assetVersion[`${kind}_path`]).map(kind=><a key={kind} href={environmentAssetFileUrl(projectId,selectedAsset.id,kind,assetVersion.source_version)}>{kind==='preview'?'GLB':kind==='blend'?'.blend':'FBX'}</a>)}</div>}
           {selectedAsset.source_title && selectedAsset.source_title !== selectedAsset.title && <details className="asset-source-title"><summary>原始生成说明</summary><p>{selectedAsset.source_title}</p></details>}
-          <div className="asset-editor-actions"><button type="button" className="primary" disabled={busy} onClick={() => placed.mutate({assetId:selectedAsset.id,version:assetVersion.source_version})}>加入场景</button><button type="button" onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button></div>
+          <div className="asset-editor-actions">{onEditMaterial && <button type="button" disabled={busy} onClick={()=>onEditMaterial({assetId:selectedAsset.id,assetVersion:assetVersion.source_version})}>编辑材质</button>}<button type="button" className="primary" disabled={busy} onClick={() => placed.mutate({assetId:selectedAsset.id,version:assetVersion.source_version})}>加入场景</button><button type="button" onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button></div>
         </div>
       </section> : <>
-        <div className="environment-library-heading"><div><strong>项目资产</strong><small>{assets.length ? `${assets.length} 个资产 · 点击进入编辑` : '资产库为空'}</small></div>{onOpenBuiltinAssets && <button onClick={onOpenBuiltinAssets}>内置资产</button>}{onCreateAsset && <button onClick={() => setAddingAsset(value => !value)}>＋ 添加资产</button>}</div>
+        <div className="environment-library-heading"><div><strong>项目资产 <span className="environment-asset-count">{assets.length}</span></strong><small>选择资产查看详情，或放入场景</small></div><div className="environment-library-actions">{onOpenBuiltinAssets && <button type="button" title="浏览内置资产" onClick={onOpenBuiltinAssets}><EnvironmentToolIcon kind="library"/>内置资产</button>}{onCreateAsset && <button type="button" className="primary" aria-expanded={addingAsset} onClick={() => setAddingAsset(value => !value)}><EnvironmentToolIcon kind="plus"/>添加</button>}</div></div>
         <div className="environment-library" role="list" aria-label="项目资产库">
           {assets.map(asset => { const version = currentVersion(asset, undefined); return <button type="button" role="listitem" className="environment-asset-card" key={asset.id} onClick={() => {setSelectedSceneId(null);setSelectedAssetId(asset.id);setAddingAsset(false);}}>
             <span className="asset-card-icon"><AssetGlyph/></span><strong>{asset.title}</strong><small>v{asset.current_version} · {Math.max(...version.dimensions_m).toFixed(1)}m</small>
           </button>;})}
-          {!assets.length && <p>先添加一个资产，导入或新建都会开启独立流程。</p>}
+          {!assets.length && <div className="environment-library-empty"><EnvironmentToolIcon kind="library"/><div><strong>这里收纳你的游戏资产</strong><p>从内置库挑选，或导入自己的 GLB / FBX 模型。</p></div></div>}
         </div>
       </>}
     </section>

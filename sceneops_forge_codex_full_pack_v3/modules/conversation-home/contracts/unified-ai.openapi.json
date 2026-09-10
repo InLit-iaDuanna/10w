@@ -5,6 +5,112 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/ai/setup": {
+      "get": {
+        "tags": [
+          "unified-ai",
+          "ai-setup"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_ai_setup_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CLISetupStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/setup/install": {
+      "post": {
+        "tags": [
+          "unified-ai",
+          "ai-setup"
+        ],
+        "summary": "Install",
+        "operationId": "install_api_ai_setup_install_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CLISetupStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/setup/login": {
+      "post": {
+        "tags": [
+          "unified-ai",
+          "ai-setup"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_ai_setup_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/ai/models": {
       "get": {
         "tags": [
@@ -641,6 +747,19 @@
             "type": "boolean",
             "title": "Streaming",
             "default": true
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "title": "Reasoning Effort",
+            "default": "low"
           }
         },
         "additionalProperties": false,
@@ -1018,6 +1137,59 @@
             ],
             "title": "Alignment Detail",
             "default": "standard"
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "title": "Reasoning Effort",
+            "default": "low"
+          },
+          "agent_timeout_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 525600.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Timeout Minutes"
+          },
+          "selector_provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "codebuddycli",
+                  "codexcli",
+                  "openai-compatible"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selector Provider"
+          },
+          "selector_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selector Model"
           }
         },
         "additionalProperties": false,
@@ -1125,6 +1297,67 @@
               }
             ],
             "title": "Alignment Detail"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Effort"
+          },
+          "agent_timeout_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 525600.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Timeout Minutes"
+          },
+          "selector_provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "codebuddycli",
+                  "codexcli",
+                  "openai-compatible"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selector Provider"
+          },
+          "selector_model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selector Model"
           }
         },
         "additionalProperties": false,
@@ -1160,6 +1393,105 @@
         ],
         "title": "AdapterError"
       },
+      "CLISetupStatus": {
+        "properties": {
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "install_supported": {
+            "type": "boolean",
+            "title": "Install Supported"
+          },
+          "terminal_supported": {
+            "type": "boolean",
+            "title": "Terminal Supported"
+          },
+          "npm_available": {
+            "type": "boolean",
+            "title": "Npm Available"
+          },
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/CLIToolStatus"
+            },
+            "type": "array",
+            "title": "Tools"
+          },
+          "operation": {
+            "$ref": "#/components/schemas/SetupOperation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform",
+          "install_supported",
+          "terminal_supported",
+          "npm_available",
+          "tools",
+          "operation"
+        ],
+        "title": "CLISetupStatus"
+      },
+      "CLIToolStatus": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codexcli",
+              "codebuddycli"
+            ],
+            "title": "Provider"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "installed": {
+            "type": "boolean",
+            "title": "Installed"
+          },
+          "compatible": {
+            "type": "boolean",
+            "title": "Compatible"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "install_package": {
+            "type": "string",
+            "title": "Install Package"
+          },
+          "login_command": {
+            "type": "string",
+            "title": "Login Command"
+          },
+          "docs_url": {
+            "type": "string",
+            "title": "Docs Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "label",
+          "installed",
+          "compatible",
+          "version",
+          "install_package",
+          "login_command",
+          "docs_url"
+        ],
+        "title": "CLIToolStatus"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1173,7 +1505,101 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "InstallRequest": {
+        "properties": {
+          "providers": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "codexcli",
+                "codebuddycli"
+              ]
+            },
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Providers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "providers"
+        ],
+        "title": "InstallRequest"
+      },
       "JsonValue": {},
+      "LoginRequest": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "codexcli",
+              "codebuddycli"
+            ],
+            "title": "Provider"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider"
+        ],
+        "title": "LoginRequest"
+      },
+      "LoginResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "LoginResponse"
+      },
+      "SetupOperation": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "installing",
+              "succeeded",
+              "failed"
+            ],
+            "title": "State"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "codexcli",
+                  "codebuddycli"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "message",
+          "provider"
+        ],
+        "title": "SetupOperation"
+      },
       "ValidationError": {
         "properties": {
           "loc": {

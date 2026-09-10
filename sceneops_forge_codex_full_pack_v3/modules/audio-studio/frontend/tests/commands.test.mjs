@@ -21,7 +21,7 @@ test('audio commands validate inputs and delegate through one gateway', async ()
 });
 
 test('audio commands reject missing fields and offline Unity mapping', async () => {
-  assert.throws(() => audioCommands[0].inputSchema.parse({ specId: 'spec_key' }), /projectId/);
+  assert.throws(() => audioCommands[0].inputSchema.parse({ ...inputs[0], projectId: undefined }), /projectId/);
   assert.throws(() => audioCommands[2].inputSchema.parse({ gameplayEvent: 'gameplay.key.picked_up' }), /audioAssetId/);
   assert.throws(() => audioCommands[2].inputSchema.parse({ gameplayEvent: 'gameplay.key.picked_up', audioAssetId: 'aud_key', actorId: 'spoofed' }), /未知字段/);
   const gateway = { execute: async () => null };

@@ -58,6 +58,14 @@ def synchronize_source(host, command):
     remember_source(host, target)
 
 
+def content_objects():
+    """Bone custom shapes are editor helpers, not authored glTF scene members."""
+    objects = list(bpy.context.scene.objects)
+    shapes = {bone.custom_shape for obj in objects if obj.type == 'ARMATURE'
+              for bone in obj.pose.bones if bone.custom_shape and not bone.custom_shape.get('sceneops_id')}
+    return [obj for obj in objects if obj not in shapes]
+
+
 def members(asset_id):
     return [obj for obj in bpy.context.scene.objects if obj.get("asset_id") == asset_id]
 
@@ -144,7 +152,11 @@ def set_material(obj, color, roughness=None, metalness=None):
 def dispatch_source(host, command):
     operation = command["operation"]
     target = source_path(host, command["candidate_id"])
-    if operation == "bootstrap_door":
+    if operation == "derive_unity":
+        return derive_unity(host, command)
+    if operation == "import_source":
+        import_source(host, command)
+    elif operation == "bootstrap_door":
         bootstrap(host, command)
     elif operation == "open_source":
         if not target.is_file():
@@ -225,7 +237,7 @@ def mesh_descendants(obj):
 
 def identify_scene(asset_id):
     """Explicit candidate save adopts manually added nodes, preserving native geometry."""
-    objects = list(bpy.context.scene.objects)
+    objects = content_objects()
     if any(obj.get("asset_id") not in (None, asset_id) for obj in objects):
         raise ValueError("BLENDER_SOURCE_CONFLICT: scene contains another asset identity")
     ids = [obj.get("sceneops_id") for obj in objects if obj.get("sceneops_id")]
@@ -236,3 +248,86 @@ def identify_scene(asset_id):
         if not obj.get("sceneops_id"):
             obj["sceneops_id"] = "node_" + uuid4().hex
         obj["sceneops_asset_member"] = True
+
+
+def derive_unity(host, command):
+    """Export the staged immutable source; identity is read, never repaired."""
+    from agent_host import contained
+    from agent_protocol import identifier
+    target = source_path(host, command["candidate_id"])
+    if not target.is_file():
+        raise ValueError("BLENDER_SOURCE_MISSING: registered source does not exist")
+    revision = file_revision(target)
+    bpy.ops.wm.open_mainfile(filepath=str(target))
+    objects = members(command["asset_id"])
+    if not objects or len(objects) != len(bpy.context.scene.objects):
+        raise ValueError("Unity source must contain only the registered asset members")
+    ids = [identifier(obj.get("sceneops_id")) for obj in objects]
+    if len(ids) != len(set(ids)):
+        raise ValueError("Unity source requires unique stable node identities")
+    if any(obj.type not in {"MESH", "EMPTY"} for obj in objects):
+        raise ValueError("Unity source supports mesh and empty nodes only")
+    if any(obj.parent is not None and obj.parent not in objects for obj in objects):
+        raise ValueError("Unity source hierarchy escapes registered asset members")
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.select_set(True)
+    bpy.context.view_layer.update()
+    output = contained(host.root, command["candidate_id"] + ".fbx")
+    bpy.ops.export_scene.fbx(filepath=str(output), use_selection=True,
+                             object_types={"MESH", "EMPTY"}, use_custom_props=True,
+                             bake_anim=False, axis_forward="-Z", axis_up="Y")
+    if file_revision(target) != revision:
+        raise ValueError("BLENDER_SOURCE_CONFLICT: registered source changed during derivation")
+    remember_source(host, target)
+    return {"candidate_id": command["candidate_id"], "blend_path": str(target),
+            "fbx_path": str(output), "fbx_relative_path": output.name}
+
+
+class glTF2ImportUserExtension:
+    """Bind animation extras to the actual Actions created by the glTF importer."""
+
+    def gather_import_animation_after_hook(self, animation_index, track_name, gltf):
+        extras = gltf.data.animations[animation_index].extras or {}
+        identity = extras.get('sceneops_id')
+        if identity:
+            for _owner, action, _slot in gltf.needs_stash:
+                action['sceneops_id'] = identity
+
+
+def import_registered_gltf(source):
+    # Register the bundled extension only for this controlled import. The hook
+    # receives source-to-Action references; display names never resolve identity.
+    addon = bpy.context.preferences.addons.new()
+    addon.module = __name__
+    try:
+        bpy.ops.import_scene.gltf(filepath=str(source))
+    finally:
+        bpy.context.preferences.addons.remove(addon)
+
+
+def import_source(host, command):
+    """Import only a service-staged GLB; preserve authored node IDs and coordinates."""
+    target = source_path(host, command['candidate_id'])
+    source = target.with_suffix('.glb')
+    if target.exists() or not source.is_file() or source.resolve() != source:
+        raise ValueError('registered GLB candidate is missing or already imported')
+    # This process owns an isolated candidate scene. Selection-based deletion
+    # leaves hidden editor helpers from the previous candidate behind.
+    for obj in list(bpy.context.scene.objects):
+        bpy.data.objects.remove(obj, do_unlink=True)
+    # Actions retain fake users after their owning rig is removed. Keeping them
+    # would export the previous candidate's clips into the next asset.
+    for action in list(bpy.data.actions):
+        bpy.data.actions.remove(action, do_unlink=True)
+    import_registered_gltf(source)
+    objects = content_objects()
+    ids = [obj.get('sceneops_id') for obj in objects]
+    if not objects or any(not value for value in ids) or len(ids) != len(set(ids)):
+        raise ValueError('registered GLB requires unique stable node identities')
+    for obj in objects:
+        obj['asset_id'] = command['asset_id']
+        obj['sceneops_asset_member'] = True
+    bpy.context.scene['sceneops_candidate_id'] = command['candidate_id']
+    bpy.context.scene['sceneops_exported'] = False
+    save(host, command)

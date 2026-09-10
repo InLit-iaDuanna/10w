@@ -13,11 +13,13 @@ class CompletionTests(unittest.IsolatedAsyncioTestCase):
     async def test_plain_chat_uses_text_not_unsolicited_structured_output(self):
         with tempfile.TemporaryDirectory() as directory:
             service = ProviderService(Path(directory) / 'workspace.sqlite3')
+            service.update_settings(reasoning_effort='high')
             with patch('sceneops_ai_provider.service.cli_invoke_json', new=AsyncMock(return_value={
-                'result': 'plain reply', 'structured_output': {'unexpected': True}})):
+                'result': 'plain reply', 'structured_output': {'unexpected': True}})) as invoke:
                 result = await service.generate('hello')
             self.assertEqual(result.text, 'plain reply')
             self.assertIsNone(result.structured)
+            self.assertEqual(invoke.await_args.kwargs['effort'], 'high')
 
     async def test_transcript_through_cli_validation_to_provider(self):
         schema = {'type': 'object', 'properties': {'status': {'type': 'string'}},
@@ -34,11 +36,21 @@ class CompletionTests(unittest.IsolatedAsyncioTestCase):
         process.stderr.feed_eof()
         with tempfile.TemporaryDirectory() as directory:
             service = ProviderService(Path(directory) / 'workspace.sqlite3')
-            with patch('sceneops_codebuddy.provider.shutil.which', return_value='/fixture/codebuddy'), \
+            with patch('sceneops_codebuddy.provider.resolve_cli_executable', return_value='/fixture/codebuddy'), \
                  patch('sceneops_codebuddy.provider.asyncio.create_subprocess_exec', return_value=process):
                 value = await service.structured('reply with status', schema, model='glm-5.3-flash')
             self.assertEqual(value, {'status': 'ok'})
             self.assertIn(json.dumps(schema, ensure_ascii=False).encode(), process.stdin.write.call_args.args[0])
+
+    async def test_structured_request_can_extend_cli_timeout(self):
+        schema = {'type': 'object', 'properties': {}, 'additionalProperties': False}
+        with tempfile.TemporaryDirectory() as directory:
+            service = ProviderService(Path(directory) / 'workspace.sqlite3')
+            with patch('sceneops_ai_provider.service.cli_invoke_json', new=AsyncMock(return_value={
+                'result': '{}', 'structured_output': {}})) as invoke:
+                value = await service.structured('build a model', schema, timeout=600)
+            self.assertEqual(value, {})
+            self.assertEqual(invoke.await_args.kwargs['timeout'], 600)
 
 
 if __name__ == '__main__':

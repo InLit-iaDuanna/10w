@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/environment-scenes/{project_id}/lighting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Lighting */
+        put: operations["saveEnvironmentLighting"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/environment-scenes/{project_id}/objects": {
         parameters: {
             query?: never;
@@ -175,6 +192,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/project-assets/{entry_id}/versions/{version}/files/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read File */
+        get: operations["readProjectAssetFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/project-assets/{entry_id}": {
         parameters: {
             query?: never;
@@ -226,6 +260,10 @@ export interface components {
              * @default false
              */
             reused: boolean;
+            /** Production Preparation */
+            production_preparation?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** AssetVersionRebindResult */
         AssetVersionRebindResult: {
@@ -367,6 +405,7 @@ export interface components {
             /** History */
             history?: components["schemas"]["EnvironmentMessage"][];
             scale_profile?: components["schemas"]["WorldScaleProfile"];
+            lighting?: components["schemas"]["SceneLighting"] | null;
             /**
              * Mode
              * @default live
@@ -505,7 +544,7 @@ export interface components {
              * @default file
              * @enum {string}
              */
-            source_kind: "file" | "procedural" | "blender";
+            source_kind: "file" | "procedural" | "blender" | "glb";
             /** Dimensions M */
             dimensions_m: [
                 number,
@@ -525,6 +564,12 @@ export interface components {
             recipe?: components["schemas"]["DoorRecipe"] | null;
             /** Parent Source Version */
             parent_source_version?: number | null;
+            /** Geometry Source Version */
+            geometry_source_version?: number | null;
+            /** Lookdev Document Id */
+            lookdev_document_id?: string | null;
+            /** Lookdev Document Version */
+            lookdev_document_version?: number | null;
             /** Node Ids */
             node_ids?: {
                 [key: string]: string;
@@ -619,6 +664,146 @@ export interface components {
             entry: components["schemas"]["ProjectAssetEntry"];
             /** Version Created */
             version_created: boolean;
+        };
+        /** SaveSceneLighting */
+        SaveSceneLighting: {
+            /** Expected Version */
+            expected_version: number;
+            lighting: components["schemas"]["SceneLighting"];
+        };
+        /** SceneLight */
+        SceneLight: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "ambient" | "hemisphere" | "directional" | "point" | "spot";
+            /** Color */
+            color: string;
+            /**
+             * Ground Color
+             * @default #242424
+             */
+            ground_color: string;
+            /**
+             * Sky Direction
+             * @default [
+             *       0,
+             *       1,
+             *       0
+             *     ]
+             */
+            sky_direction: [
+                number,
+                number,
+                number
+            ];
+            /**
+             * Intensity
+             * @default 1
+             */
+            intensity: number;
+            /**
+             * Position
+             * @default [
+             *       0,
+             *       0,
+             *       0
+             *     ]
+             */
+            position: [
+                number,
+                number,
+                number
+            ];
+            /**
+             * Target
+             * @default [
+             *       0,
+             *       0,
+             *       0
+             *     ]
+             */
+            target: [
+                number,
+                number,
+                number
+            ];
+            /**
+             * Distance
+             * @default 0
+             */
+            distance: number;
+            /**
+             * Angle
+             * @default 0.7
+             */
+            angle: number;
+            /**
+             * Penumbra
+             * @default 0.4
+             */
+            penumbra: number;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            shadow?: components["schemas"]["SceneShadow"] | null;
+        };
+        /** SceneLighting */
+        SceneLighting: {
+            /**
+             * Background
+             * @default #1b1b1b
+             */
+            background: string;
+            /**
+             * Exposure
+             * @default 1
+             */
+            exposure: number;
+            /** Lights */
+            lights?: components["schemas"]["SceneLight"][];
+            /** Source Refs */
+            source_refs?: string[];
+        };
+        /** SceneShadow */
+        SceneShadow: {
+            /**
+             * Map Size
+             * @default 1024
+             */
+            map_size: number;
+            /**
+             * Extent
+             * @default 14
+             */
+            extent: number;
+            /**
+             * Near
+             * @default 1
+             */
+            near: number;
+            /**
+             * Far
+             * @default 60
+             */
+            far: number;
+            /**
+             * Bias
+             * @default 0
+             */
+            bias: number;
+            /**
+             * Normal Bias
+             * @default 0
+             */
+            normal_bias: number;
         };
         /**
          * SharedProjectMemory
@@ -780,6 +965,41 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentScene"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    saveEnvironmentLighting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSceneLighting"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -1090,6 +1310,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveProjectAssetResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    readProjectAssetFile: {
+        parameters: {
+            query: {
+                project_id: string;
+            };
+            header?: never;
+            path: {
+                entry_id: string;
+                version: number;
+                kind: "preview" | "blend" | "fbx";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

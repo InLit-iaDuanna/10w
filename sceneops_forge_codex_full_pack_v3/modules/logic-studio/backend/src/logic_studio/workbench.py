@@ -1,7 +1,7 @@
 """Local graph editing and deterministic preview; no engine execution endpoints."""
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 from uuid import uuid4
 import json
 
@@ -67,7 +67,7 @@ def _validate_scene_binding(graph: GameplayGraph) -> None:
 
 
 @workbench_router.get("/demo", response_model=GameplayGraph)
-def demo_graph(project_id: Optional[str] = Header(default=None, alias="X-SceneOps-Project")):
+def demo_graph(project_id: Annotated[Optional[str], Header(alias="X-SceneOps-Project")] = None):
     return _demo_for(project_id)
 
 

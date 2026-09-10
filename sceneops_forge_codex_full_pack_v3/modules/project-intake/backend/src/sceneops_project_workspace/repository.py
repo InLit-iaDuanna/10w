@@ -9,6 +9,7 @@ from uuid import uuid4
 from pydantic import JsonValue
 from .git_projects import GitProjects
 from .game_projects import GameProjectError, GameProjects
+from .errors import FolderProjectRequired, ProjectNotFound
 
 from .models import (FolderEntry, FolderListing, FolderProject, FolderProjectIdentityInspection,
     ModuleDocument, ModuleId, Project, ProjectIdentity, SampleId, StructuredDesignArtifact)
@@ -42,6 +43,8 @@ class WorkspaceRepository(Protocol):
     def recover_folder_project(self, path: str | Path, resolution: str) -> FolderProject: ...
     def list_folder_projects(self) -> list[FolderProject]: ...
     def get_folder_project(self, project_id: str) -> FolderProject: ...
+    def forget_folder_project(self, project_id: str) -> None: ...
+    def delete_folder_project_files(self, project_id: str, confirmed_root_path: str) -> None: ...
     def read_design_draft(self, project_id: str) -> dict[str, JsonValue] | None: ...
     def write_design_draft(self, project_id: str,
         payload: dict[str, JsonValue]) -> StructuredDesignArtifact: ...
@@ -57,6 +60,7 @@ class WorkspaceRepository(Protocol):
     def get_project_demo_workspace(self, project_id: str, workspace_id: str | None = None) -> dict: ...
     def initialize_game_project(self, project_id: str, selection: dict, design_version: int,
                                 *, commit_baseline: bool = True) -> dict: ...
+    def install_demo_assets(self, project_id: str, card_id: str) -> dict: ...
     def preview_demo_runtime_upgrade(self, project_id: str, workspace_id: str) -> dict: ...
     def apply_demo_runtime_upgrade(self, project_id: str, workspace_id: str, preview: dict) -> dict: ...
     def materialize_demo_content(self, project_id: str, workspace_id: str, manifest: dict) -> dict: ...
@@ -131,7 +135,7 @@ class SqliteWorkspaceRepository:
             row = connection.execute("SELECT * FROM workspace_projects WHERE project_id=?",
                 (project_id,)).fetchone()
         if row is None:
-            raise KeyError(project_id)
+            raise ProjectNotFound(project_id)
         return Project.model_validate(dict(row))
 
     def create_project(self, name: str):
@@ -286,6 +290,7 @@ class SqliteWorkspaceRepository:
         GitProjects.initialize_root(root)
         now = datetime.now(timezone.utc)
         if resolution == "move":
+            GitProjects(self).repair_moved_worktrees(identity.project_id, root)
             with self.connect() as connection:
                 connection.execute("BEGIN IMMEDIATE")
                 row = connection.execute("SELECT root_path FROM workspace_folder_projects WHERE project_id=?",
@@ -398,6 +403,9 @@ class SqliteWorkspaceRepository:
         return GameProjects(self).initialize(project_id, selection, design_version,
                                              commit_baseline=commit_baseline)
 
+    def install_demo_assets(self, project_id, card_id):
+        return GameProjects(self).install_demo_assets(project_id, card_id)
+
     def preview_demo_runtime_upgrade(self, project_id, workspace_id):
         from .runtime_upgrade import DemoRuntimeUpgrade
         return DemoRuntimeUpgrade(self).preview(project_id, workspace_id)
@@ -436,10 +444,43 @@ class SqliteWorkspaceRepository:
                 FROM workspace_folder_projects f JOIN workspace_projects p USING (project_id)
                 WHERE p.project_id=?""", (project_id,)).fetchone()
         if row is None:
-            raise KeyError(project_id)
+            self.get_project(project_id)
+            raise FolderProjectRequired(project_id)
         project = FolderProject.model_validate(dict(row))
         self._safe_existing_directory(Path(project.root_path))
         return project
+
+    def delete_folder_project_files(self, project_id, confirmed_root_path):
+        from .project_deletion import delete_project_files
+        delete_project_files(self, project_id, confirmed_root_path)
+
+    def forget_folder_project(self, project_id):
+        """Remove a local registration while leaving the project folder untouched."""
+        with self.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT 1 FROM workspace_folder_projects WHERE project_id=?", (project_id,)
+            ).fetchone()
+            if row is None:
+                project = connection.execute(
+                    "SELECT 1 FROM workspace_projects WHERE project_id=?", (project_id,)
+                ).fetchone()
+                if project is None:
+                    raise ProjectNotFound(project_id)
+                raise FolderProjectRequired(project_id)
+            connection.execute(
+                "DELETE FROM workspace_project_demo_workspaces WHERE project_id=?", (project_id,)
+            )
+            connection.execute(
+                "DELETE FROM workspace_game_baselines WHERE project_id=?", (project_id,)
+            )
+            connection.execute(
+                "DELETE FROM workspace_module_drafts WHERE project_id=?", (project_id,)
+            )
+            connection.execute(
+                "DELETE FROM workspace_folder_projects WHERE project_id=?", (project_id,)
+            )
+            connection.execute("DELETE FROM workspace_projects WHERE project_id=?", (project_id,))
 
     def write_design_draft(self, project_id, payload):
         design = self._design_directory(project_id)

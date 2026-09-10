@@ -20,7 +20,7 @@ export function CardModelingEntry({ state, busy, onCommand, onOpenEnvironment }:
     return <section className="journey-modeling-entry" aria-label={copy[0]}>
       <div className="journey-modeling-heading"><strong>{copy[0]}</strong></div>
       <p>{copy[1]}</p>
-      <small>继续使用下方唯一主对话；不会再展开一排内部实现卡片。</small>
+      <small>先用下方唯一对话完成对齐；确认后准备 Coding 授权，不会再展开一排内部实现卡片。</small>
     </section>;
   }
   return <section className="journey-modeling-entry" aria-label="卡片模型工作流">

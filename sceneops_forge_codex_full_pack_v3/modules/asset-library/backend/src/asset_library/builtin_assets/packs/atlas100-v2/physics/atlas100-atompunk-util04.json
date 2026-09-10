@@ -1,0 +1,295 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-atompunk-util04",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util04:p0",
+      "center_m": [
+        -0.90865,
+        0.58795,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07483,
+        0.58795,
+        0.07483
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util04:p1",
+      "center_m": [
+        -0.90865,
+        1.19728,
+        0.0
+      ],
+      "half_extents_m": [
+        0.1069,
+        0.1069,
+        0.1069
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util04:p2",
+      "center_m": [
+        0.90865,
+        0.58795,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07483,
+        0.58795,
+        0.07483
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util04:p3",
+      "center_m": [
+        0.90865,
+        1.19728,
+        0.0
+      ],
+      "half_extents_m": [
+        0.1069,
+        0.1069,
+        0.1069
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util04:p4",
+      "center_m": [
+        0.0,
+        0.37415,
+        0.0
+      ],
+      "half_extents_m": [
+        0.037415,
+        0.90865,
+        0.037415
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          -0.9999999999999466,
+          0.0
+        ],
+        [
+          0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util04:p5",
+      "center_m": [
+        0.0,
+        0.8552,
+        0.0
+      ],
+      "half_extents_m": [
+        0.037415,
+        0.90865,
+        0.037415
+      ],
+      "axes": [
+        [
+          3.2679489653813835e-07,
+          -0.9999999999999466,
+          0.0
+        ],
+        [
+          0.9999999999999466,
+          3.2679489653813835e-07,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-atompunk-util04.glb",
+      "triangle_count": 600,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "61a7a7425ac11b07d05ab93e10b009fea4399eeb975fc10fdcd50b6a9d2649cc",
+      "byte_size": 105288
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-atompunk-util04.lod1.glb",
+      "triangle_count": 184,
+      "part_count": 5,
+      "distance_m": 10.16,
+      "sha256": "45ba7d1191249f764dcc5e3e56a1b1a46298680d9f7e7d98e451a7fb6c758f49",
+      "byte_size": 49412
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-atompunk-util04.lod2.glb",
+      "triangle_count": 72,
+      "part_count": 4,
+      "distance_m": 24.37,
+      "sha256": "012feb89ba15d1f6cca313638b61736db9603c539a102c8bfda98e5f9473faca",
+      "byte_size": 30420
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -1.01555,
+      0.0,
+      -0.1069
+    ],
+    "max": [
+      1.01555,
+      1.30418,
+      0.1069
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

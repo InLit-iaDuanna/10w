@@ -83,11 +83,11 @@ export function DebugPanel({ visible, onClose }: DebugPanelProps) {
 
   return <aside className="debug-panel" role="dialog" aria-modal="false" aria-label="界面诊断">
     <header className="debug-panel__header">
-      <div><strong>界面诊断</strong><small>本机保存 · 最多 200 条 · {entries.length} 条 · {errorCount} 个错误</small></div>
+      <div><strong>界面诊断</strong><small>本机保留 · 后台审计同步受限事件 · 最多 200 条 · {entries.length} 条 · {errorCount} 个错误</small></div>
       <button type="button" onClick={onClose} aria-label="关闭界面诊断">×</button>
     </header>
     <section className="debug-panel__runtime" aria-label="渲染环境">
-      <span>{uiDiagnosticBuffer.storageStatus() === 'saved-locally' ? '诊断记录保存在本机，不会上传。' : '本机存储不可用；本次仅保存在内存，不影响工作台。'}</span>
+      <span>{uiDiagnosticBuffer.storageStatus() === 'saved-locally' ? '诊断记录保存在本机；启用后台审计时会同步记录受限界面事件。' : '本机存储不可用；本次仅保存在内存，不影响工作台。'}</span>
       <span>视口 {runtime.viewport.width}×{runtime.viewport.height} · DPR {runtime.viewport.devicePixelRatio}</span>
       <span>{runtime.browser.platform} · {runtime.browser.userAgent}</span>
       <span>GPU renderer：未主动探测（避免创建新的 WebGL 上下文）</span>

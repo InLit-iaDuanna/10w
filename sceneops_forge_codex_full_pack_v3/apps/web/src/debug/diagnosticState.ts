@@ -208,10 +208,24 @@ function browserStorage(): DiagnosticStorage | undefined {
 
 export const uiDiagnosticBuffer = new UiDiagnosticBuffer(UI_DIAGNOSTIC_CAPACITY, browserStorage());
 
+function forwardUiDiagnostic(entry: UiDiagnosticEntry): void {
+  if (typeof window === 'undefined' || typeof fetch !== 'function') return;
+  void fetch('/api/audit/ui-events', {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry),
+    keepalive: true,
+  }).catch(() => undefined);
+}
+
 export function recordUiEvent(type: UiDiagnosticEventType, fields: UiDiagnosticFields = {}): void {
   uiDiagnosticBuffer.record(type, fields);
+  const entry: UiDiagnosticEvent = { timestamp: new Date().toISOString(), type, fields: selectUiDiagnosticFields(fields) };
+  forwardUiDiagnostic(entry);
 }
 
 export function recordUiError(value: unknown, fields: UiDiagnosticFields = {}): void {
   uiDiagnosticBuffer.recordError(value, fields);
+  const entry: UiDiagnosticError = { timestamp: new Date().toISOString(), type: 'error', ...summarizeUiError(value), fields: selectUiDiagnosticFields(fields) };
+  forwardUiDiagnostic(entry);
 }

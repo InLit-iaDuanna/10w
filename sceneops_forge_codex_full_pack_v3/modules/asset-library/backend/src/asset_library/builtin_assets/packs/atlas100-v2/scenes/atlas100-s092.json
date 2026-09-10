@@ -1,0 +1,1079 @@
+{
+  "schema_version": "2.0.0",
+  "pack_id": "atlas100",
+  "id": "atlas100-s092",
+  "number": 92,
+  "title": "绿金太阳镜阵庭",
+  "style": "desertdeco",
+  "style_title": "沙漠琉璃装饰",
+  "scene_specific_titles": [
+    "绿金太阳镜阵",
+    "塔式聚光反射镜",
+    "镜阵调角轮",
+    "聚光棱晶",
+    "太阳校准镜",
+    "镜瓦维修台"
+  ],
+  "layout": "梯田并列区",
+  "layout_index": 1,
+  "quality_tier": "procedural stylized vignette with runtime-ready prop bindings",
+  "units": "meter",
+  "coordinate_system": "RH_Y_UP_Z_FORWARD",
+  "asset_ids": [
+    "atlas100-s092-a01",
+    "atlas100-s092-a02",
+    "atlas100-s092-a03",
+    "atlas100-s092-a04",
+    "atlas100-s092-a05",
+    "atlas100-s092-a06",
+    "atlas100-s092-a07",
+    "atlas100-s091-a08",
+    "atlas100-s091-a09",
+    "atlas100-s091-a10",
+    "atlas100-s092-a11",
+    "atlas100-s091-a12",
+    "atlas100-desertdeco-eq01",
+    "atlas100-desertdeco-eq02",
+    "atlas100-desertdeco-eq03",
+    "atlas100-desertdeco-eq04",
+    "atlas100-desertdeco-eq05",
+    "atlas100-desertdeco-eq06",
+    "atlas100-desertdeco-eq07",
+    "atlas100-desertdeco-eq08",
+    "atlas100-desertdeco-util01",
+    "atlas100-desertdeco-util02",
+    "atlas100-desertdeco-util03",
+    "atlas100-desertdeco-util04"
+  ],
+  "asset_count": 24,
+  "instance_count": 38,
+  "objects": [
+    {
+      "sceneops_id": "atlas100-s092-i001",
+      "asset_id": "atlas100-s092-a01",
+      "position_m": [
+        0,
+        0.07,
+        -1.9
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "hero",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a01.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i002",
+      "asset_id": "atlas100-s092-a02",
+      "position_m": [
+        -3.1,
+        0.07,
+        -0.5
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.15,
+        0
+      ],
+      "scale": [
+        0.74,
+        0.74,
+        0.74
+      ],
+      "role": "secondary",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a02.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i003",
+      "asset_id": "atlas100-s092-a03",
+      "position_m": [
+        -2.1,
+        0.76685,
+        1.3
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.18,
+        0
+      ],
+      "scale": [
+        0.354031,
+        0.354031,
+        0.354031
+      ],
+      "role": "worktop",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i004",
+      "asset_id": "atlas100-s092-a04",
+      "position_m": [
+        2.4541837294037236,
+        0.76685,
+        1.3644506464332968
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.18,
+        0
+      ],
+      "scale": [
+        0.608045,
+        0.608045,
+        0.608045
+      ],
+      "role": "sample",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a04.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i005",
+      "asset_id": "atlas100-s092-a05",
+      "position_m": [
+        1.676947212101108,
+        0.76685,
+        1.2230172834268958
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.18,
+        0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ],
+      "role": "worktop_tool",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a05.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i006",
+      "asset_id": "atlas100-s092-a06",
+      "position_m": [
+        3.1,
+        0.07,
+        -0.5
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.15,
+        0
+      ],
+      "scale": [
+        0.76,
+        0.76,
+        0.76
+      ],
+      "role": "storage",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a06.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i007",
+      "asset_id": "atlas100-s092-a07",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "foundation",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a07.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i008",
+      "asset_id": "atlas100-s091-a08",
+      "position_m": [
+        0,
+        0.07,
+        -2.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.91,
+        0.91,
+        0.91
+      ],
+      "role": "architecture",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a08.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i009",
+      "asset_id": "atlas100-s091-a09",
+      "position_m": [
+        -4.45,
+        0.07,
+        1.5
+      ],
+      "rotation_euler_rad": [
+        0,
+        1.570796,
+        0
+      ],
+      "scale": [
+        0.77,
+        0.77,
+        0.77
+      ],
+      "role": "entrance",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a09.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i010",
+      "asset_id": "atlas100-s091-a10",
+      "position_m": [
+        0,
+        -0.664597,
+        5.0
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "entry_steps",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a10.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i011",
+      "asset_id": "atlas100-s092-a11",
+      "position_m": [
+        4.25,
+        0.07,
+        2.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.24,
+        0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "role": "wayfinding",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s092-a11.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i012",
+      "asset_id": "atlas100-s091-a12",
+      "position_m": [
+        -4.45,
+        0.07,
+        -2.75
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.86,
+        0.86,
+        0.86
+      ],
+      "role": "theme_accent",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a12.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i013",
+      "asset_id": "atlas100-desertdeco-eq01",
+      "position_m": [
+        -3.013038068320346,
+        0.76685,
+        3.292651642133632
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.15,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq01.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i014",
+      "asset_id": "atlas100-desertdeco-eq02",
+      "position_m": [
+        -2.4,
+        0.76685,
+        3.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.15,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq02.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i015",
+      "asset_id": "atlas100-desertdeco-eq03",
+      "position_m": [
+        -1.7869619316796537,
+        0.76685,
+        3.1073483578663685
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.15,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i016",
+      "asset_id": "atlas100-desertdeco-eq04",
+      "position_m": [
+        -0.4,
+        0.76685,
+        3.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq04.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i017",
+      "asset_id": "atlas100-desertdeco-eq05",
+      "position_m": [
+        0.4,
+        0.76685,
+        3.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq05.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i018",
+      "asset_id": "atlas100-desertdeco-eq06",
+      "position_m": [
+        1.7869619316796537,
+        0.76685,
+        3.1073483578663685
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.15,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq06.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i019",
+      "asset_id": "atlas100-desertdeco-eq07",
+      "position_m": [
+        2.4,
+        0.76685,
+        3.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.15,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq07.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i020",
+      "asset_id": "atlas100-desertdeco-eq08",
+      "position_m": [
+        3.013038068320346,
+        0.76685,
+        3.292651642133632
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.15,
+        0
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "role": "equipment_display",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-eq08.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i021",
+      "asset_id": "atlas100-desertdeco-util01",
+      "position_m": [
+        -4.6,
+        0.07,
+        -3.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "role": "lighting_prop",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util01.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i022",
+      "asset_id": "atlas100-desertdeco-util01",
+      "position_m": [
+        4.6,
+        0.07,
+        -3.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "role": "lighting_prop",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util01.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i023",
+      "asset_id": "atlas100-desertdeco-util01",
+      "position_m": [
+        -4.6,
+        0.07,
+        3.0
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "role": "lighting_prop",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util01.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i024",
+      "asset_id": "atlas100-desertdeco-util01",
+      "position_m": [
+        4.6,
+        0.07,
+        3.25
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "role": "lighting_prop",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util01.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i025",
+      "asset_id": "atlas100-desertdeco-util02",
+      "position_m": [
+        3.8,
+        0.07,
+        2.35
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "role": "set_dressing",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util02.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i026",
+      "asset_id": "atlas100-desertdeco-util02",
+      "position_m": [
+        4.1,
+        0.07,
+        -3.3
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "role": "set_dressing",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util02.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i027",
+      "asset_id": "atlas100-desertdeco-util03",
+      "position_m": [
+        -2.1,
+        0.07,
+        1.3
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.18,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "worktop_support",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i028",
+      "asset_id": "atlas100-desertdeco-util03",
+      "position_m": [
+        2.1,
+        0.07,
+        1.3
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.18,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "worktop_support",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i029",
+      "asset_id": "atlas100-desertdeco-util03",
+      "position_m": [
+        -2.4,
+        0.07,
+        3.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        0.15,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "worktop_support",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i030",
+      "asset_id": "atlas100-desertdeco-util03",
+      "position_m": [
+        0,
+        0.07,
+        3.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "worktop_support",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i031",
+      "asset_id": "atlas100-desertdeco-util03",
+      "position_m": [
+        2.4,
+        0.07,
+        3.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        -0.15,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "role": "worktop_support",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util03.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i032",
+      "asset_id": "atlas100-desertdeco-util04",
+      "position_m": [
+        -2.8,
+        0.07,
+        -4.35
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "role": "boundary",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util04.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i033",
+      "asset_id": "atlas100-desertdeco-util04",
+      "position_m": [
+        0,
+        0.07,
+        -4.35
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "role": "boundary",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util04.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i034",
+      "asset_id": "atlas100-desertdeco-util04",
+      "position_m": [
+        2.8,
+        0.07,
+        -4.35
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "role": "boundary",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-desertdeco-util04.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i035",
+      "asset_id": "atlas100-s091-a12",
+      "position_m": [
+        -4.6,
+        0.07,
+        -1.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ],
+      "role": "natural_border",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a12.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i036",
+      "asset_id": "atlas100-s091-a12",
+      "position_m": [
+        4.5,
+        0.07,
+        -1.8
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "role": "natural_border",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a12.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i037",
+      "asset_id": "atlas100-s091-a12",
+      "position_m": [
+        -1.35,
+        0.07,
+        -4.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "role": "natural_border",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a12.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    },
+    {
+      "sceneops_id": "atlas100-s092-i038",
+      "asset_id": "atlas100-s091-a12",
+      "position_m": [
+        1.35,
+        0.07,
+        -4.2
+      ],
+      "rotation_euler_rad": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "role": "natural_border",
+      "asset_version": "2.0.0",
+      "physics_binding": "physics/atlas100-s091-a12.json",
+      "interaction_binding_available": true,
+      "interaction_default_enabled": true,
+      "runtime_instantiated": false
+    }
+  ],
+  "path": "scenes/atlas100-s092.glb",
+  "manifest_path": "scenes/atlas100-s092.json",
+  "preview_path": "previews/atlas100-s092.png",
+  "triangle_count": 8364,
+  "bounds_m": {
+    "min": [
+      -6.975,
+      -0.6646,
+      -5.67
+    ],
+    "max": [
+      6.975,
+      4.4835,
+      5.69365
+    ]
+  },
+  "camera": {
+    "position_m": [
+      14.0,
+      12.0,
+      17.0
+    ],
+    "target_m": [
+      0,
+      1.0,
+      0
+    ],
+    "projection": "perspective",
+    "fov_degrees": 45
+  },
+  "suggested_lighting": {
+    "key_position_m": [
+      -6,
+      12,
+      8
+    ],
+    "key_intensity": 2.2,
+    "ambient_intensity": 1.0
+  },
+  "gameplay_implemented": false,
+  "navmesh": false,
+  "physics_colliders_instantiated": false,
+  "notes": [
+    "GLB contains real skins/clips/UVs/embedded PBR maps; physics requires runtime initialization.",
+    "Static architecture intentionally has no skeleton.",
+    "Equipment rigs are not humanoid character rigs.",
+    "Original gameplay rules are not replaced or inferred."
+  ],
+  "sha256": "ea72847a16792b53286b7e88887fcdeedbaa5f816e6f495d9f9d747feac43e38",
+  "byte_size": 1064888,
+  "lods": [
+    {
+      "level": 0,
+      "path": "scenes/atlas100-s092.glb",
+      "triangle_count": 8364,
+      "sha256": "ea72847a16792b53286b7e88887fcdeedbaa5f816e6f495d9f9d747feac43e38",
+      "byte_size": 1064888
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-s092.lod1.glb",
+      "triangle_count": 5254,
+      "sha256": "a59e927fb45b43b3a196472f80183d2cb33528cf68311aea7e41e6fe48d2ddd2",
+      "byte_size": 743428
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-s092.lod2.glb",
+      "triangle_count": 3240,
+      "sha256": "6626fd7403a37806b7085a6c6a6c9752a1c49de3556c7b0678d0e7b13c10fbb0",
+      "byte_size": 514800
+    }
+  ],
+  "version": "2.0.0",
+  "physics_binding": "physics/atlas100-s092.scene.json",
+  "physics_runtime_available": true,
+  "preview_revision": "1.0.0 geometry preview"
+}

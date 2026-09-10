@@ -1,0 +1,295 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-polar-util03",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-util03:p0",
+      "center_m": [
+        -0.9207,
+        0.28644,
+        0.0
+      ],
+      "half_extents_m": [
+        0.066495,
+        0.28644,
+        0.332475
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-util03:p1",
+      "center_m": [
+        0.9207,
+        0.28644,
+        0.0
+      ],
+      "half_extents_m": [
+        0.066495,
+        0.28644,
+        0.332475
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-util03:p2",
+      "center_m": [
+        0.0,
+        0.6138,
+        -0.3069
+      ],
+      "half_extents_m": [
+        1.1253,
+        0.05115,
+        0.086955
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-util03:p3",
+      "center_m": [
+        0.0,
+        0.6138,
+        -0.1023
+      ],
+      "half_extents_m": [
+        1.1253,
+        0.05115,
+        0.086955
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-util03:p4",
+      "center_m": [
+        0.0,
+        0.6138,
+        0.1023
+      ],
+      "half_extents_m": [
+        1.1253,
+        0.05115,
+        0.086955
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-polar-util03:p5",
+      "center_m": [
+        0.0,
+        0.6138,
+        0.3069
+      ],
+      "half_extents_m": [
+        1.1253,
+        0.05115,
+        0.086955
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-polar-util03.glb",
+      "triangle_count": 72,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "7e4c325366a15a575c6b6408f0a1cf6635196ccdf0fa481cbef271a6825a09ca",
+      "byte_size": 30372
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-polar-util03.lod1.glb",
+      "triangle_count": 48,
+      "part_count": 4,
+      "distance_m": 11.25,
+      "sha256": "9b1735b49aa8fcc650023dded2c5c016ee9640e4e3bb104e4668e299d4b9de71",
+      "byte_size": 27504
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-polar-util03.lod2.glb",
+      "triangle_count": 36,
+      "part_count": 3,
+      "distance_m": 27.01,
+      "sha256": "9a0941d9c7d528c11455bea10f3747280a333d6d946682efd84af0e124f85799",
+      "byte_size": 26068
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -1.1253,
+      0.0,
+      -0.393855
+    ],
+    "max": [
+      1.1253,
+      0.66495,
+      0.393855
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

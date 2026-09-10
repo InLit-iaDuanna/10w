@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-event-type": "playtest.regression.compared",
+  "x-event-version": 1,
+  "type": "object",
+  "$ref": "playtest-regression-compared.v1.schema.json"
+}

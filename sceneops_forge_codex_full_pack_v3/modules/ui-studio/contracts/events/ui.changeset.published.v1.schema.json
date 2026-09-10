@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-event-type": "ui.changeset.published",
+  "x-event-version": 1,
+  "type": "object",
+  "$ref": "ui.changeset.published.v1.json"
+}

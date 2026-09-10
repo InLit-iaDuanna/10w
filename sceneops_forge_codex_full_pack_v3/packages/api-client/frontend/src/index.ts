@@ -4,6 +4,7 @@ export interface JsonRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   headers?: HeadersInit;
   projectId?: string;
+  timeoutMs?: number;
 }
 
 export interface BinaryJsonRequestOptions {
@@ -22,13 +23,15 @@ export class ApiError extends Error {
 export async function requestJson<T>(path: string, options: JsonRequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
-  if (options.body !== undefined) headers.set('Content-Type', 'application/json');
+  const method = options.method ?? (options.body === undefined ? 'GET' : 'POST');
+  if (options.body !== undefined || method !== 'GET') headers.set('Content-Type', 'application/json');
   if (options.projectId) headers.set('X-SceneOps-Project', options.projectId);
+  const timeout = AbortSignal.timeout(options.timeoutMs ?? 125000);
   const response = await fetch(path, {
-    method: options.method ?? (options.body === undefined ? 'GET' : 'POST'),
+    method,
     headers,
     ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
-    signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(125000)]) : AbortSignal.timeout(125000),
+    signal: options.signal ? AbortSignal.any([options.signal, timeout]) : timeout,
   });
   if (!response.ok) {
     const body = await response.json().catch(() => null);
@@ -97,4 +100,18 @@ export async function requestEventStream<T>(path: string, body: unknown, onEvent
       if (done) break;
     }
   } finally { await reader.cancel().catch(() => undefined); reader.releaseLock(); }
+}
+
+/** Read project binary assets through the same timeout and error boundary as JSON. */
+export async function requestArrayBuffer(path: string, options: JsonRequestOptions = {}): Promise<ArrayBuffer> {
+  const headers = new Headers(options.headers);
+  headers.set('Accept', 'model/gltf-binary, application/octet-stream');
+  if (options.projectId) headers.set('X-SceneOps-Project', options.projectId);
+  const timeout = AbortSignal.timeout(options.timeoutMs ?? 125000);
+  const response = await fetch(path, {headers, signal:options.signal ? AbortSignal.any([options.signal,timeout]) : timeout});
+  if (!response.ok) {
+    const body = await response.json().catch(()=>null);
+    throw new ApiError(response.status, body?.message ?? `本地资产读取失败（${response.status}）。`);
+  }
+  return response.arrayBuffer();
 }

@@ -3,8 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@sceneops/api-client": "workspace:*",
+    "@sceneops/scene-viewer": "workspace:*",
+    "@tanstack/react-query": "5.90.21"
+  },
   "scripts": {
-    "test": "node --test src/tests/*.test.ts"
+    "test": "node ../../../scripts/frontend-test.mjs src/tests"
   },
   "peerDependencies": {
     "react": ">=18"

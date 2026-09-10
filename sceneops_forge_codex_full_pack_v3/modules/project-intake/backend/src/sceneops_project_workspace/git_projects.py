@@ -48,6 +48,22 @@ class GitProjects:
         return {"root_path": str(root), "branch": self._branch(root),
                 "head_commit": self._git(root, "rev-parse", "--verify", "HEAD", optional=True)}
 
+    def repair_moved_worktrees(self, project_id, moved_root):
+        """Repair Git's absolute linked-worktree pointers before publishing a moved root."""
+        with self.repository.connect() as connection:
+            rows = connection.execute(
+                "SELECT card_id,branch,worktree_path FROM workspace_card_worktrees WHERE project_id=?",
+                (project_id,),
+            ).fetchall()
+        if not rows:
+            return
+        targets = [Path(row["worktree_path"]) for row in rows]
+        if any(not target.is_dir() or target.is_symlink() for target in targets):
+            raise GitProjectError("已有卡片工作区不可读取，不能完成项目移动。")
+        self._git(moved_root, "worktree", "repair", *(str(target) for target in targets))
+        for row, target in zip(rows, targets):
+            self._verify_worktree(moved_root, target, row["branch"])
+
     @classmethod
     def initialize_root(cls, root):
         metadata = root / ".git"

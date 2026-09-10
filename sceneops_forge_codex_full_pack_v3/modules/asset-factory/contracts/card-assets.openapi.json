@@ -5,6 +5,357 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/card-assets/tripo/settings": {
+      "get": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Tripo Settings",
+        "operationId": "getTripoSettings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripoSettings"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Configure Tripo",
+        "operationId": "configureTripo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripoSettingsInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripoSettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/tripo/jobs": {
+      "get": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Tripo Jobs",
+        "operationId": "listTripoJobs",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          },
+          {
+            "name": "session_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TripoJob"
+                  },
+                  "title": "Response Listtripojobs"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/{project_id}/{card_id}/tripo/jobs": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Submit Tripo",
+        "operationId": "submitTripoJob",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripoJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/tripo/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Poll Tripo",
+        "operationId": "pollTripoJob",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripoJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/tripo/jobs/{job_id}/collect": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Collect Tripo",
+        "operationId": "collectTripoModel",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripoJob"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/tripo/jobs/{job_id}/model": {
+      "get": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Tripo Model",
+        "operationId": "downloadTripoModel",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/card-assets/tripo/jobs/{job_id}/import": {
+      "post": {
+        "tags": [
+          "card-assets"
+        ],
+        "summary": "Import Tripo",
+        "operationId": "importTripoModel",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAssetRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/card-assets": {
       "get": {
         "tags": [
@@ -683,6 +1034,18 @@
               }
             ],
             "title": "Error"
+          },
+          "production_preparation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Production Preparation"
           }
         },
         "additionalProperties": false,
@@ -1025,6 +1388,77 @@
         ],
         "title": "CardAssetVersion"
       },
+      "DoorMaterial": {
+        "properties": {
+          "color_hex": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "title": "Color Hex",
+            "default": "#6B4F3A"
+          },
+          "roughness": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Roughness",
+            "default": 0.75
+          },
+          "metalness": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Metalness",
+            "default": 0.05
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DoorMaterial"
+      },
+      "DoorRecipe": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "door-v1",
+            "title": "Kind",
+            "default": "door-v1"
+          },
+          "seed": {
+            "type": "integer",
+            "const": 0,
+            "title": "Seed",
+            "default": 0
+          },
+          "width_m": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.2,
+            "title": "Width M",
+            "default": 1.2
+          },
+          "height_m": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.5,
+            "title": "Height M",
+            "default": 2.2
+          },
+          "thickness_m": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.02,
+            "title": "Thickness M",
+            "default": 0.15
+          },
+          "material": {
+            "$ref": "#/components/schemas/DoorMaterial"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DoorRecipe",
+        "description": "Editable source for the first supported procedural asset."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1335,8 +1769,26 @@
             "title": "Project Id"
           },
           "card_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Card Id"
+          },
+          "workspace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workspace Id"
           },
           "source_asset_id": {
             "type": "string",
@@ -1409,7 +1861,6 @@
         "required": [
           "id",
           "project_id",
-          "card_id",
           "source_asset_id",
           "title",
           "source_type",
@@ -1424,6 +1875,29 @@
             "type": "integer",
             "minimum": 1.0,
             "title": "Source Version"
+          },
+          "asset_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Version Id"
+          },
+          "source_kind": {
+            "type": "string",
+            "enum": [
+              "file",
+              "procedural",
+              "blender",
+              "glb"
+            ],
+            "title": "Source Kind",
+            "default": "file"
           },
           "dimensions_m": {
             "prefixItems": [
@@ -1453,19 +1927,111 @@
             "title": "Triangle Count"
           },
           "blend_path": {
-            "type": "string",
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Blend Path"
           },
           "preview_path": {
-            "type": "string",
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Preview Path"
           },
           "fbx_path": {
-            "type": "string",
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Fbx Path"
+          },
+          "recipe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DoorRecipe"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parent_source_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Source Version"
+          },
+          "geometry_source_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geometry Source Version"
+          },
+          "lookdev_document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookdev Document Id"
+          },
+          "lookdev_document_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookdev Document Version"
+          },
+          "node_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Node Ids"
+          },
+          "runtime_artifacts": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeArtifactReference"
+            },
+            "type": "array",
+            "title": "Runtime Artifacts"
           },
           "operation": {
             "type": "string",
@@ -1473,7 +2039,10 @@
               "import",
               "generate",
               "normalize",
-              "calibrate"
+              "calibrate",
+              "recipe-create",
+              "recipe-edit",
+              "blender-edit"
             ],
             "title": "Operation"
           },
@@ -1515,12 +2084,52 @@
           "dimensions_m",
           "vertex_count",
           "triangle_count",
-          "blend_path",
-          "preview_path",
-          "fbx_path",
           "operation"
         ],
         "title": "ProjectAssetVersion"
+      },
+      "RuntimeArtifactReference": {
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Artifact Id"
+          },
+          "artifact_type": {
+            "type": "string",
+            "enum": [
+              "render",
+              "collision",
+              "module"
+            ],
+            "title": "Artifact Type"
+          },
+          "project_relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Relative Path"
+          },
+          "export_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "project_relative_path"
+        ],
+        "title": "RuntimeArtifactReference"
       },
       "SaveProjectAssetResult": {
         "properties": {
@@ -1581,6 +2190,201 @@
           "version"
         ],
         "title": "SaveToLibraryRequest"
+      },
+      "TripoJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "credential_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "progress": {
+            "type": "integer",
+            "title": "Progress",
+            "default": 0
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "local_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Url"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "live"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "card_id",
+          "session_id",
+          "status",
+          "model_version"
+        ],
+        "title": "TripoJob"
+      },
+      "TripoRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{8,100}$",
+            "title": "Request Id"
+          },
+          "session_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Session Id"
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 1024,
+            "title": "Prompt",
+            "default": ""
+          },
+          "reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "session_id"
+        ],
+        "title": "TripoRequest"
+      },
+      "TripoSettings": {
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version",
+            "default": "v3.1-20260211"
+          },
+          "available_models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available Models"
+          }
+        },
+        "type": "object",
+        "required": [
+          "configured"
+        ],
+        "title": "TripoSettings"
+      },
+      "TripoSettingsInput": {
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "clear_key": {
+            "type": "boolean",
+            "title": "Clear Key",
+            "default": false
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version",
+            "default": "v3.1-20260211"
+          }
+        },
+        "type": "object",
+        "title": "TripoSettingsInput"
       },
       "ValidationError": {
         "properties": {

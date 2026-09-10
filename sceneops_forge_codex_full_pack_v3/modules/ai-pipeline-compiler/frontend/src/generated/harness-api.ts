@@ -442,7 +442,7 @@ export interface components {
              * Timeout Seconds
              * @default 60
              */
-            timeout_seconds: number;
+            timeout_seconds: number | null;
             retry_policy?: components["schemas"]["RetryPolicy"];
             /** Estimated Duration Seconds */
             estimated_duration_seconds?: number | null;
@@ -1266,7 +1266,7 @@ export interface components {
              * Max Duration Seconds
              * @default 300
              */
-            max_duration_seconds: number;
+            max_duration_seconds: number | null;
             /**
              * Max Tokens
              * @default 32000

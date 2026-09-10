@@ -52,7 +52,8 @@ export const assetInspectorEditor: LocalEditorDefinition = {
 
 export const moduleContribution = {
   manifest,
-  editors: [assetBrowserEditor, assetInspectorEditor],
+  editors: [assetBrowserEditor, assetInspectorEditor,
+    {id:'asset.builtin-library',title:'内置场景与资产',category:'asset',requiredPermissions:['asset:read']}],
   commands: [
     {
       id: "asset.search",

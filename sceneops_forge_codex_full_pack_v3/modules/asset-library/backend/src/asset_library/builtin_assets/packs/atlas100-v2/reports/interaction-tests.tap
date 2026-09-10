@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: Reject unknown objects and actions instead of pretending success
+ok 1 - Reject unknown objects and actions instead of pretending success
+  ---
+  duration_ms: 45.815596
+  type: 'test'
+  ...
+# Subtest: Reach validation uses explicit finite actor coordinates
+ok 2 - Reach validation uses explicit finite actor coordinates
+  ---
+  duration_ms: 42.777598
+  type: 'test'
+  ...
+# Subtest: Equip requires a mount and disables the bound physics body
+ok 3 - Equip requires a mount and disables the bound physics body
+  ---
+  duration_ms: 37.390337
+  type: 'test'
+  ...
+# Subtest: Drop detaches, re-enables gravity and preserves explicit velocity
+ok 4 - Drop detaches, re-enables gravity and preserves explicit velocity
+  ---
+  duration_ms: 50.317605
+  type: 'test'
+  ...
+# Subtest: Cannot use or drop an item that is not held
+ok 5 - Cannot use or drop an item that is not held
+  ---
+  duration_ms: 32.235774
+  type: 'test'
+  ...
+# Subtest: Interaction events retain asset identity separately from instance identity
+ok 6 - Interaction events retain asset identity separately from instance identity
+  ---
+  duration_ms: 38.064259
+  type: 'test'
+  ...
+# Subtest: Runtime pack paths cannot escape the selected root
+ok 7 - Runtime pack paths cannot escape the selected root
+  ---
+  duration_ms: 32.009194
+  type: 'test'
+  ...
+# Subtest: Pause and disposed states do not step the physics world
+ok 8 - Pause and disposed states do not step the physics world
+  ---
+  duration_ms: 31.623444
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 369.737607

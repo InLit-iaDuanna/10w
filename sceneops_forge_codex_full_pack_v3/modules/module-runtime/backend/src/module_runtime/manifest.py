@@ -14,7 +14,7 @@ CONTRIBUTION_ID_PATTERN = r"^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"
 EVENT_REFERENCE_PATTERN = (
     r"^[a-z][a-z0-9]*(?:\.[a-z][a-z0-9_]*)+@[1-9][0-9]*$"
 )
-PERMISSION_PATTERN = r"^[a-z][a-z0-9-]*:[a-z][a-z0-9_-]*$"
+PERMISSION_PATTERN = r"^[a-z][a-z0-9-]*(?::[a-z][a-z0-9_-]*)+$"
 FRONTEND_ENTRYPOINT_PATTERN = (
     r"^\./(?!(?:.*?/)?\.\.(?:/|$))(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\.tsx?$"
 )

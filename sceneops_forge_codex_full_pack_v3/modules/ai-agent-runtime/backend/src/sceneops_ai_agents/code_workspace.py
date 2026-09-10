@@ -104,29 +104,9 @@ class CodeWorkspace:
 
     def inspect(self, task):
         root = Path(task.grant.workspace_root)
-        files, visited, truncated = [], 0, False
-        for parent, directories, names in os.walk(root, followlinks=False):
-            directories[:] = sorted(name for name in directories if not name.startswith('.')
-                and name not in DENIED_DIRECTORIES and not (Path(parent) / name).is_symlink())
-            visited += 1
-            if visited > 256:
-                truncated = True
-                break
-            for name in sorted(names):
-                relative = (Path(parent) / name).relative_to(root).as_posix()
-                try:
-                    task_source_path(task, relative)
-                    with source_parent(root, PurePosixPath(relative)) as descriptor:
-                        info = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-                    if stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= MAX_FILE_BYTES:
-                        files.append({'path': relative, 'size_bytes': info.st_size})
-                except (HarnessError, OSError):
-                    continue
-                if len(files) >= 256:
-                    truncated = True
-                    break
-            if truncated:
-                break
+        files, truncated = source_inventory(root)
+        if task.authorization_card.task_profile == 'project-demo-agent':
+            files = [file for file in files if file['path'] not in PROJECT_DEMO_DERIVED_PATHS]
         return {'tool': 'code', 'mode': 'live', 'project_id': task.project_id,
                 'workspace_id': task.grant.workspace_id, 'card_id': task.grant.card_id,
                 'branch': task.grant.branch, 'files': files, 'truncated': truncated,
@@ -139,6 +119,7 @@ class CodeWorkspace:
 
     def stage(self, task, entry):
         data = entry.action.inputs
+        require_source_write_scope(task, data['path'])
         for content in (data['expected_content'], data['content']):
             if content is not None and (len(content.encode('utf-8')) > MAX_FILE_BYTES or '\0' in content):
                 raise HarnessError('CODE_FILE_DENIED', '每个源码文件最多 64 KiB，且必须为 UTF-8 文本。')
@@ -177,6 +158,7 @@ class CodeWorkspace:
         return evidence
 
     def write(self, task, entry):
+        require_source_write_scope(task, entry.action.inputs['path'])
         if not entry.change_set or not entry.approval_id:
             raise HarnessError('ACTION_APPROVAL_REQUIRED', '源码写入需要已授权的 ChangeSet。')
         if not any(row[0] == entry.request_id for row in self.rows(task.id)):
@@ -295,3 +277,38 @@ def source_file_versions(root):
             if stat.S_ISREG(info.st_mode):
                 revisions[relative] = [info.st_size, info.st_mtime_ns, info.st_ctime_ns]
     return revisions
+
+
+def require_source_write_scope(task, path):
+    paths = task.grant.source_write_paths
+    if paths is not None and path not in paths:
+        raise HarnessError('CODE_WRITE_SCOPE_DENIED',
+            '此文件不在本次精修授权范围内。请保留当前文件，说明需要扩大范围的原因。')
+
+
+def source_inventory(root):
+    root = Path(root)
+    files, visited, truncated = [], 0, False
+    for parent, directories, names in os.walk(root, followlinks=False):
+        directories[:] = sorted(name for name in directories if not name.startswith('.')
+            and name not in DENIED_DIRECTORIES and not (Path(parent) / name).is_symlink())
+        visited += 1
+        if visited > 256:
+            truncated = True
+            break
+        for name in sorted(names):
+            relative = (Path(parent) / name).relative_to(root).as_posix()
+            try:
+                source_path(relative)
+                with source_parent(root, PurePosixPath(relative)) as descriptor:
+                    info = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+                if stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= MAX_FILE_BYTES:
+                    files.append({'path': relative, 'size_bytes': info.st_size})
+            except (HarnessError, OSError):
+                continue
+            if len(files) >= 256:
+                truncated = True
+                break
+        if truncated:
+            break
+    return files, truncated

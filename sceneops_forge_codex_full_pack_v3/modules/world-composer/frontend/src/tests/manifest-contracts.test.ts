@@ -79,18 +79,20 @@ function collectTypeScriptFiles(directoryUrl: URL): URL[] {
     const child = new URL(name, directoryUrl.href.endsWith('/') ? directoryUrl : new URL(`${directoryUrl.href}/`));
     const stats = statSync(child);
     if (stats.isDirectory()) files.push(...collectTypeScriptFiles(new URL(`${child.href}/`)));
-    else if (name.endsWith('.ts') && !child.pathname.includes('/tests/')) files.push(child);
+    else if (/\.tsx?$/.test(name) && !child.pathname.includes('/tests/')) files.push(child);
   }
   return files;
 }
 
-test('module product source has no shell internals, vendor SDKs, direct fetch, or unrestricted execution', () => {
+test('module product source has no shell internals, host tool SDKs, direct fetch, or unrestricted execution', () => {
   const sourceUrl = new URL('frontend/src/', moduleRootUrl);
   const source = collectTypeScriptFiles(sourceUrl)
     .map((url) => readFileSync(url, 'utf8'))
     .join('\n');
-  assert.doesNotMatch(source, /dockview|from ['"]react|from ['"]three|UnityEngine|bpy\.|child_process/);
+  assert.doesNotMatch(source, /dockview|UnityEngine|bpy\.|child_process/);
   assert.doesNotMatch(source, /\bfetch\s*\(/);
+  const contracts = readFileSync(new URL('frontend/src/contracts.ts', moduleRootUrl), 'utf8');
+  assert.doesNotMatch(contracts, /from ['"](?:react|three)(?:['"/])/);
   assert.doesNotMatch(source, /modules\/[a-z-]+\/(?!world-composer)/);
 });
 

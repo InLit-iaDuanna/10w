@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export type ModelRotationQuaternion = [number, number, number, number];
@@ -135,7 +136,7 @@ export const CardModelPreview = forwardRef<CardModelPreviewHandle, CardModelPrev
       renderer.render(scene, camera);
     };
     controls.addEventListener('change', draw);
-    const loader = new GLTFLoader();
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     loader.load(url, gltf => {
       model = gltf.scene; scene.add(model);
       const box = new THREE.Box3().setFromObject(model);

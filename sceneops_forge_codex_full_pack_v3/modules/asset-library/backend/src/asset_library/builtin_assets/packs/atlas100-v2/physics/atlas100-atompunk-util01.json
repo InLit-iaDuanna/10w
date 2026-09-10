@@ -1,0 +1,225 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-atompunk-util01",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util01:p0",
+      "center_m": [
+        0.0,
+        0.1,
+        0.0
+      ],
+      "half_extents_m": [
+        0.28,
+        0.1,
+        0.28
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util01:p1",
+      "center_m": [
+        0.0,
+        1.15,
+        0.0
+      ],
+      "half_extents_m": [
+        0.055,
+        1.05,
+        0.055
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util01:p2",
+      "center_m": [
+        0.0,
+        2.24,
+        0.0
+      ],
+      "half_extents_m": [
+        0.34,
+        0.15,
+        0.34
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-atompunk-util01:p3",
+      "center_m": [
+        0.0,
+        2.1,
+        0.0
+      ],
+      "half_extents_m": [
+        0.14,
+        0.175,
+        0.14
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-atompunk-util01.glb",
+      "triangle_count": 416,
+      "part_count": 4,
+      "distance_m": 0.0,
+      "sha256": "3ec66290721f7106e6e1afdd54f77a733ac3354bccf3975776ffb93930f80f86",
+      "byte_size": 87544
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-atompunk-util01.lod1.glb",
+      "triangle_count": 200,
+      "part_count": 4,
+      "distance_m": 11.95,
+      "sha256": "3686009659e485cc9cbdb2ea77d34cc172da79a1623b2a239bb9fe770ae4b4e4",
+      "byte_size": 52692
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-atompunk-util01.lod2.glb",
+      "triangle_count": 84,
+      "part_count": 3,
+      "distance_m": 28.68,
+      "sha256": "412a2292af432c0b1486124f8e67fa2d06c5d81afbb6ed552f39a2a847eee991",
+      "byte_size": 34716
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.34,
+      0.0,
+      -0.34
+    ],
+    "max": [
+      0.34,
+      2.39,
+      0.34
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

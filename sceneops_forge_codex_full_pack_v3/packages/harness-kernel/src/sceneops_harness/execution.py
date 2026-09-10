@@ -11,15 +11,28 @@ from .run_contracts import AttemptRecord, CapabilityInvocation, CapabilityResult
 from .validation import condition_matches
 
 
-async def await_handler(awaitable, cancellation: CancellationToken, timeout: float):
+def duration_exhausted(limit: float | None, elapsed: float) -> bool:
+    return limit is not None and elapsed >= limit
+
+
+def remaining_duration(limit: float | None, elapsed: float) -> float | None:
+    return None if limit is None else max(0, limit - elapsed)
+
+
+def shortest_duration(*limits: float | None) -> float | None:
+    bounded = [limit for limit in limits if limit is not None]
+    return min(bounded) if bounded else None
+
+
+async def await_handler(awaitable, cancellation: CancellationToken, timeout: float | None):
     task = asyncio.create_task(awaitable)
     started = monotonic()
     try:
         while not task.done():
             cancellation.raise_if_cancelled()
-            if monotonic() - started >= timeout:
+            if duration_exhausted(timeout, monotonic() - started):
                 raise TimeoutError("Capability deadline exceeded")
-            await asyncio.wait({task}, timeout=min(0.1, timeout))
+            await asyncio.wait({task}, timeout=0.1 if timeout is None else min(0.1, timeout))
         return await task
     finally:
         if not task.done():
@@ -76,7 +89,7 @@ class ExecutionEngine:
         budget = run.definition.budget
         if len(entry.attempts) >= min(budget.max_attempts_per_step, binding.definition.retry_policy.max_attempts):
             raise HarnessError("ATTEMPTS_EXHAUSTED", "Explicit retry budget exhausted; human review required")
-        if run.duration_seconds >= budget.max_duration_seconds:
+        if duration_exhausted(budget.max_duration_seconds, run.duration_seconds):
             raise HarnessError("TIME_BUDGET_EXCEEDED", "Run execution-time budget exhausted")
         estimated_cost = binding.definition.estimated_cost_usd
         if not run.budget_accounting_complete and binding.definition.metered and budget.usage_policy == "require_reported":
@@ -99,7 +112,10 @@ class ExecutionEngine:
             authority=authority, budget=budget.model_copy(update={
                 "max_tokens": min(step_budget.max_tokens, max(0, budget.max_tokens - run.tokens_used)),
                 "max_cost_usd": min(step_budget.max_cost_usd, max(0, budget.max_cost_usd - run.cost_usd)),
-                "max_duration_seconds": min(step_budget.max_duration_seconds, budget.max_duration_seconds - run.duration_seconds),
+                "max_duration_seconds": shortest_duration(
+                    step_budget.max_duration_seconds,
+                    remaining_duration(budget.max_duration_seconds, run.duration_seconds),
+                ),
                 "max_metered_calls": max(0, min(step_budget.max_metered_calls - step_calls_used,
                                                budget.max_metered_calls - run.metered_calls_used)),
             }), dependency_outputs={item.step_id: item.result.outputs for item in run.step_runs
@@ -120,7 +136,7 @@ class ExecutionEngine:
         try:
             with self.repository.resources(invocation, binding.definition.required_integrations):
                 result = await await_handler(binding.handler(invocation, self.token(run)), self.token(run),
-                    min(binding.definition.timeout_seconds, invocation.budget.max_duration_seconds))
+                    shortest_duration(binding.definition.timeout_seconds, invocation.budget.max_duration_seconds))
             result = CapabilityResult.model_validate(result)
             # Preserve real outputs even when a later schema/evidence/acceptance check fails.
             entry.result = result

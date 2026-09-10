@@ -1,4 +1,6 @@
 {
+  "x-event-type": "logic.graph.validated",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.example/schemas/logic-studio/events/logic.graph.validated.v1.schema.json",
   "title": "logic.graph.validated@1",

@@ -1,7 +1,6 @@
 """S2 product route, authorization and isolated browser regression checks."""
 import asyncio
 from datetime import timedelta
-import importlib
 import os
 from pathlib import Path
 import unittest
@@ -17,7 +16,7 @@ from sceneops_project_workspace import SqliteWorkspaceRepository
 from sceneops_ai_agents.task_models import GameOperationRequest, now
 from sceneops_harness import HarnessError
 
-fixture = importlib.import_module('modules.ai-agent-runtime.backend.tests.test_game_project_runtime_smoke')
+import test_game_project_runtime_smoke as fixture
 
 
 class BrowserObservationTests(fixture.GameProjectRuntimeSmoke):

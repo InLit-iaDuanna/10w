@@ -100,5 +100,7 @@
     "payload"
   ],
   "title": "ConceptVariantRecordedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "concept.variant.recorded",
+  "x-event-version": 1
 }

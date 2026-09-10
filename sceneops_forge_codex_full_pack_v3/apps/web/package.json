@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@sceneops/asset-library": "workspace:*",
     "@sceneops/ai-agent-runtime": "workspace:*",
     "@sceneops/ai-pipeline-compiler": "workspace:*",
     "@sceneops/forge-shell": "workspace:*",
@@ -18,7 +19,8 @@
     "@sceneops/workspace-client": "workspace:*",
     "@sceneops/core-ui": "workspace:*",
     "@sceneops/asset-factory": "workspace:*",
-    "three": "0.183.2"
+    "three": "0.185.1",
+    "@sceneops/vfx-shader-frontend": "workspace:*"
   },
   "exports": {
     ".": "./src/app/ShellWorkbench.tsx"

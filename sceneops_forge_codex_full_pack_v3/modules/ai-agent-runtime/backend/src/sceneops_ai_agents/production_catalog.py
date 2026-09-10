@@ -9,9 +9,12 @@ MODULE_TITLES = {
     'version-review': '版本与交付', 'integration-ops': '集成与运维',
 }
 CAPABILITY_MODULES = {
+    'blender.asset.derive_unity':'concept-assets',
+    **{f'unity.content.{operation}':'unity-build' for operation in ('import','inspect','edit','focus','save','play')},
     'code.browser.observe': 'ai-playtest',
     'code.browser.interact': 'ai-playtest',
     'code.project.build_test': 'ai-playtest',
+    'code.demo_assets.install': 'concept-assets',
     'agent.next_action': 'project-planning', 'agent.finish': 'version-review',
     'code.demo_runtime.preview': 'concept-assets', 'code.demo_runtime.upgrade': 'concept-assets',
     'blender.asset.begin': 'concept-assets', 'blender.asset.edit': 'concept-assets',

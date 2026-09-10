@@ -1,0 +1,46 @@
+.sceneops-chat { color:var(--text-primary,#eceef1); background:var(--canvas); }
+.sceneops-chat .sceneops-chat-composer { container:chat-composer / inline-size; flex:none; box-sizing:border-box; width:min(100%,720px); margin:10px auto 18px; padding:12px 12px 10px; border:1px solid var(--border-subtle); border-radius:20px; background:var(--surface-2); box-shadow:none; transition:border-color 140ms ease; }
+.sceneops-chat .sceneops-chat-composer:focus-within { border-color:var(--text-muted,#777); }
+.sceneops-chat .sceneops-chat-composer textarea { display:block; box-sizing:border-box; field-sizing:content; width:100%; min-height:44px; max-height:144px; overflow-y:auto; resize:none; padding:2px 5px 8px; border:0; border-radius:0; background:transparent; color:inherit; outline:none; box-shadow:none; font:inherit; font-size:14px; line-height:1.6; scrollbar-width:thin; }
+.sceneops-chat .sceneops-chat-composer textarea::placeholder { color:var(--text-muted,#969696); }
+.sceneops-chat-toolbar { display:flex; align-items:flex-end; gap:12px; min-width:0; padding-top:4px; }
+.sceneops-chat-options { display:flex; flex:1; flex-wrap:wrap; align-items:center; gap:2px 6px; min-width:0; }
+.sceneops-chat-options .unified-ai-model-controls { display:flex; flex-wrap:wrap; align-items:center; gap:2px; }
+.sceneops-chat-options .unified-ai-model.is-compact { min-width:0; flex:none; }
+.sceneops-chat .sceneops-chat-options .composer-menu-trigger { border:0; background:transparent; height:28px; padding:0 7px; border-radius:6px; font-size:11px; color:var(--text-secondary,#bbc0c8); }
+.sceneops-chat .sceneops-chat-options .composer-menu-trigger:hover,.sceneops-chat .sceneops-chat-options .composer-menu-trigger[aria-expanded=true] { background:var(--surface-3,#353535); color:var(--text-primary,#eee); }
+.sceneops-chat .sceneops-chat-options .unified-ai-provider-button.is-icon { display:grid; place-items:center; width:28px; min-width:28px; height:28px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--text-secondary,#999); }
+.sceneops-chat-options .unified-ai-provider-button svg,.sceneops-chat-options .composer-menu-trigger svg { width:15px; height:15px; }
+.sceneops-chat-send { display:flex; flex:none; align-items:center; gap:10px; margin-left:auto; }
+.sceneops-chat .sceneops-chat-send > button { display:grid; place-items:center; width:32px; min-width:32px; height:32px; padding:0; border-radius:10px; border:1px solid var(--text-primary,#e0e5ed); background:var(--text-primary,#e0e5ed); color:var(--canvas,#242931); transition:background 120ms ease,transform 120ms ease; }
+.sceneops-chat .sceneops-chat-send > button:hover:not(:disabled) { background:var(--text-primary,#f4f6fa); transform:translateY(-1px); }
+.sceneops-chat .sceneops-chat-send > button:active:not(:disabled) { transform:translateY(0); }
+.sceneops-chat .sceneops-chat-send > button:disabled { opacity:.4; cursor:default; }
+.sceneops-chat-send > button svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.sceneops-chat-send > button > span { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+.sceneops-chat .sceneops-chat-composer button:focus-visible { outline:2px solid var(--focus-ring,#aab9d7); outline-offset:2px; }
+.sceneops-chat :is(.journey-message,.unified-ai-transcript > article) { font-size:14px; line-height:1.8; padding:22px 0 12px; margin:0; }
+.sceneops-chat :is(.journey-message.user,.unified-ai-transcript > article[data-role=user]) { width:fit-content; max-width:85%; margin:16px 0 16px auto; padding:10px 18px; border-radius:20px; background:var(--surface-2); border:1px solid var(--border-subtle); }
+.sceneops-chat .sceneops-markdown p { margin:.8em 0; white-space:normal; }
+.sceneops-chat .sceneops-markdown li { margin:.35em 0; }
+.sceneops-chat-message-actions { display:flex; align-items:center; min-height:30px; margin-top:8px; gap:8px; color:var(--text-muted,#999); font-size:11px; }
+.sceneops-chat .sceneops-chat-message-actions button { display:grid; place-items:center; width:28px; height:28px; padding:6px; border:0; border-radius:6px; background:transparent; color:var(--text-muted,#999); cursor:pointer; }
+.sceneops-chat .sceneops-chat-message-actions button:hover { background:var(--surface-2,#292929); color:var(--text-primary,#eee); }
+.sceneops-chat-message-actions svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+@container chat-composer (max-width:570px) { .sceneops-chat-send .journey-send-hint,.sceneops-chat-send .unified-ai-discussion-mode { display:none; } }
+@container chat-composer (max-width:380px) { .sceneops-chat-toolbar { gap:6px; } .sceneops-chat-send { gap:3px; } }
+@media (prefers-reduced-motion:reduce) { .sceneops-chat .sceneops-chat-composer,.sceneops-chat .sceneops-chat-send > button { transition:none; } }
+
+.sceneops-chat .sceneops-markdown { font-size:13px; line-height:1.85; color:var(--text-secondary); }
+.sceneops-chat .sceneops-markdown strong { color:var(--text-primary); font-weight:600; }
+.sceneops-chat .sceneops-markdown table { border:1px solid var(--border-subtle); border-radius:10px; border-spacing:0; border-collapse:separate; font-size:12px; margin:18px 0; }
+.sceneops-chat .sceneops-markdown th,.sceneops-chat .sceneops-markdown td { padding:11px 14px; border:0; border-bottom:1px solid var(--border-subtle); line-height:1.75; }
+.sceneops-chat .sceneops-markdown th { background:var(--surface-1); font-size:11px; font-weight:550; color:var(--text-muted); }
+.sceneops-chat .sceneops-markdown td:first-child { color:var(--text-primary); min-width:100px; }
+.sceneops-chat .sceneops-markdown tr:last-child td { border-bottom:0; }
+.sceneops-chat .sceneops-markdown code { background:var(--surface-2); color:var(--text-primary); padding:2px 5px; border-radius:4px; }
+
+.sceneops-domain-target { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:6px 0; color:var(--text-secondary); font:inherit; font-size:12px; }
+.sceneops-domain-target > span { color:var(--text-primary); }
+.sceneops-domain-target label { display:flex; align-items:center; gap:4px; }
+.sceneops-domain-target button { border:0; background:transparent; color:inherit; cursor:pointer; font:inherit; }

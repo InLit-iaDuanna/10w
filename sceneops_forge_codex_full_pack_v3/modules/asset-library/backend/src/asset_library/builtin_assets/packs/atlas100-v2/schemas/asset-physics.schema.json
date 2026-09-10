@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Atlas100 v2 asset-physics",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "asset_id",
+    "units",
+    "body",
+    "colliders",
+    "interaction",
+    "rig"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "units": {
+      "const": "meter"
+    },
+    "body": {
+      "type": "object",
+      "required": [
+        "mode",
+        "mass_kg"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "fixed",
+            "dynamic",
+            "kinematic"
+          ]
+        },
+        "mass_kg": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "colliders": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "center_m",
+          "half_extents_m",
+          "axes",
+          "shape"
+        ],
+        "properties": {
+          "shape": {
+            "const": "box"
+          },
+          "center_m": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "half_extents_m": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "axes": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "joint": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "required": [
+        "actions",
+        "reach_m"
+      ],
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "pick_up",
+              "drop",
+              "equip",
+              "unequip",
+              "use",
+              "open",
+              "close",
+              "activate",
+              "deactivate",
+              "toggle_light"
+            ]
+          }
+        },
+        "reach_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "rig": {
+      "type": "object",
+      "required": [
+        "joints",
+        "clips"
+      ],
+      "properties": {
+        "joints": {
+          "type": "array"
+        },
+        "clips": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

@@ -32,7 +32,71 @@ def authorize_fixture(task):
     task.status = 'queued'
 
 
+def native_card_task(project_id, root, conversation_id):
+    branch = 'codex/card-core-gameplay'
+    return AgentTaskRecord(project_id=project_id, goal='继续当前对话',
+        authorization_card=AuthorizationCard(workspace_root=str(root), card_id='core-gameplay',
+            branch=branch, task_profile='card-development', execution_mode='agent-full-access',
+            capability_ids=['agent.task.execute']),
+        observations={'card_context': {'conversation_id': conversation_id}})
+
+
+def authorize_native_fixture(task):
+    task.grant = TaskGrant(task_id=task.id, project_id=task.project_id,
+        workspace_root=task.authorization_card.workspace_root,
+        card_id=task.authorization_card.card_id, branch=task.authorization_card.branch,
+        execution_mode='agent-full-access', capability_ids=['agent.task.execute'],
+        expires_at=now() + timedelta(minutes=5))
+    task.status = 'queued'
+
+
+def stop_native_fixture_uncertain(task):
+    task.status = 'needs_approval'
+    task.grant.revoked = True
+    task.actions.append(ActionRecord(action=AgentAction(action_id='native_execution',
+        capability_id='agent.task.execute', rationale='夹具：原生执行超时', inputs={'goal': task.goal}),
+        state='uncertain', effect_state='UNKNOWN', attempts=1))
+    task.observations['native_workspace_changes'] = {
+        'available': True, 'source': 'git-status',
+        'files': [{'path': 'src/main.ts', 'change': 'modified', 'git_status': ' M'}],
+        'totals': {'added': 0, 'modified': 1, 'deleted': 0},
+    }
+
+
 class ProductionFoundationSmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_stopped_native_claim_continues_only_in_same_conversation_and_scope(self):
+        with tempfile.TemporaryDirectory(prefix='sceneops-native-continuation-') as directory:
+            root = Path(directory).resolve()
+            records = AgentTaskRepository(root / 'fixture.sqlite3')
+            project_id = 'prj_same_conversation'
+            workspace = root / 'core-gameplay'
+            previous = records.create(native_card_task(project_id, workspace, 'conversation-one'))
+            records.update(previous.id, authorize_native_fixture, 'agent.task.authorized')
+            records.update(previous.id, stop_native_fixture_uncertain, 'agent.task.worker_released')
+            self.assertFalse(records.safe_to_release(records.get(previous.id)))
+
+            continuation = records.create(native_card_task(project_id, workspace, 'conversation-one'))
+            continuation = records.update(continuation.id, authorize_native_fixture, 'agent.task.authorized')
+            self.assertTrue(records.owns_claim(continuation))
+            self.assertEqual(continuation.observations['project_claim_continuation']['from_task_id'], previous.id)
+            released = records.get(previous.id)
+            self.assertEqual(released.status, 'review_required')
+            self.assertEqual(released.actions[-1].effect_state, 'UNKNOWN')
+            self.assertEqual(released.observations['project_claim_handoff']['to_task_id'], continuation.id)
+            self.assertTrue(records.safe_to_release(released))
+
+            other_project = 'prj_other_conversation'
+            blocked_workspace = root / 'other-card'
+            blocked = records.create(native_card_task(other_project, blocked_workspace, 'conversation-one'))
+            records.update(blocked.id, authorize_native_fixture, 'agent.task.authorized')
+            records.update(blocked.id, stop_native_fixture_uncertain, 'agent.task.worker_released')
+            different_conversation = records.create(native_card_task(
+                other_project, blocked_workspace, 'conversation-two'))
+            with self.assertRaises(HarnessError) as busy:
+                records.update(different_conversation.id, authorize_native_fixture, 'agent.task.authorized')
+            self.assertEqual(busy.exception.code, 'PROJECT_EXECUTION_BUSY')
+            self.assertIsNone(records.get(different_conversation.id).grant)
+
     async def test_project_migration_claims_versions_and_resumable_events(self):
         with tempfile.TemporaryDirectory(prefix='sceneops-production-fixture-') as directory:
             data_dir = Path(directory).resolve()

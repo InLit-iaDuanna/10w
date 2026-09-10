@@ -89,7 +89,7 @@ namespace SceneOps.Forge.Unity.Editor
             }
         }
 
-        private static void ValidateAuthorization(AgentRequest request, string root, AgentSessionConfig config)
+        internal static void ValidateAuthorization(AgentRequest request, string root, AgentSessionConfig config)
         {
             var auth = request.authorization;
             if (auth == null || auth.capability_id != request.command || auth.session_id != config.session_id ||

@@ -1,0 +1,45 @@
+{
+  "schema_version": "2.0.0",
+  "execution": "live local read/parse/geometry validation",
+  "timestamp_utc": "2026-09-10T03:10:49.708002+00:00",
+  "status": "passed",
+  "assets": 675,
+  "scenes": 100,
+  "glb_files_checked": 2325,
+  "texture_sets_checked": 50,
+  "source_png_files_checked": 400,
+  "triangles_by_asset_lod": [
+    368092,
+    226652,
+    147054
+  ],
+  "lod_triangle_ratios": [
+    1.0,
+    0.61575,
+    0.3995
+  ],
+  "uv0_degenerate_triangles_including_reused_scene_meshes": 0,
+  "errors": [],
+  "not_executed": [
+    "GPU rendering",
+    "Blender import/export",
+    "Unity import/playmode",
+    "full 10w build",
+    "original user asset processing"
+  ],
+  "checks": [
+    "GLB 2 header/chunks",
+    "all accessor bounds and finite values",
+    "UV0/UV1/tangent attributes",
+    "UV1 triangle chart areas",
+    "skin weight normalization and joint bounds",
+    "inverse bind matrices against rest skeleton",
+    "animation keys/quaternions",
+    "unique node identities",
+    "manifest size/SHA256",
+    "strict LOD reduction",
+    "physics collider dimensions/orthogonality",
+    "scene references",
+    "all source map sizes and packed ORM channel matching"
+  ]
+}

@@ -14,7 +14,7 @@ from .context_projection import (project_action_history, project_game_diagnostic
 
 def project_action(service, task, entry, *, run_id=None):
     """Project actual Harness action state, never the model's proposed outcome."""
-    full_access = entry.action.capability_id == "codex.task.execute"
+    full_access = entry.action.capability_id in ("codex.task.execute", "agent.task.execute")
     state = {"running": "running", "succeeded": "review_required" if full_access else "completed",
              "failed": "failed", "uncertain": "blocked", "blocked": "blocked"}.get(entry.state, "planned")
     prior = next((step for step in service.production.snapshot(task.project_id).steps
@@ -22,7 +22,7 @@ def project_action(service, task, entry, *, run_id=None):
     index = next(index for index, item in enumerate(task.actions) if item.action.action_id == entry.action.action_id)
     if entry.verification_result:
         projected_verification = {'PASS': 'passed', 'FAIL': 'failed', 'INCONCLUSIVE': 'inconclusive'}[entry.verification_result.verdict]
-    elif entry.action.capability_id == "codex.task.execute":
+    elif entry.action.capability_id in ("codex.task.execute", "agent.task.execute"):
         projected_verification = "reported"
     elif entry.action.capability_id in ("unity.prototype.inspect", "unity.prototype.verify") and state == "completed":
         projected_verification = "inconclusive"
@@ -43,7 +43,8 @@ def project_action(service, task, entry, *, run_id=None):
 
 
 def definition(task, step):
-    remaining = max(0.01, (task.grant.expires_at - now()).total_seconds())
+    remaining = (None if task.grant.expires_at is None
+                 else max(0.01, (task.grant.expires_at - now()).total_seconds()))
     budget = task.grant.budget.model_copy(update={"max_duration_seconds": remaining,
         "max_metered_calls": max(0, task.grant.budget.max_metered_calls - demo_window_usage(task)['model_calls'])})
     # A model slot has already been reserved in the task aggregate, including this call.
@@ -85,6 +86,14 @@ async def choose(service, task_id):
     image_input = {**service.model_image_input(task), "task_id": task.id,
                    "project_id": task.project_id}
     inputs = next_action_inputs(task, runtime, model_image_input=image_input)
+    memory = service.experience_context(task, call_key=f'typed:{task.model_calls_used}')
+    if memory is not None:
+        preparation = inputs['context_summary'].get('production_preparation')
+        if isinstance(preparation, dict):
+            inputs['context_summary']['production_preparation'] = service.preparation_without_memory(preparation)
+        inputs['context_summary']['memory_context'] = memory
+        inputs['context_summary']['memory_policy'] = ('本次依据中的项目决定是当前读取版本；'
+            'confirmed_direction 和授权卡是任务创建时快照。纠正决定不会扩大本任务授权。')
     step = PipelineStep(id="decide", title="观察并选择下一动作", capability_id="agent.next_action", inputs=inputs)
     run = runtime.submit(definition(task, step), service.authority(task), f"{task.id}_model_{task.model_calls_used}")
     def link(current):
@@ -249,15 +258,15 @@ def record_scene_precondition_rejection(service, task_id, action_id, error):
 
 def changeset(task, entry):
     tool = entry.action.capability_id.split(".")[0]
-    full_access = entry.action.capability_id == "codex.task.execute"
+    full_access = entry.action.capability_id in ("codex.task.execute", "agent.task.execute")
     code_write = entry.action.capability_id == 'code.file.write'
     scene_transform = entry.action.capability_id == 'environment.object.transform'
     content_source = entry.action.capability_id in {
-        'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish',
+        'blender.asset.derive_unity', 'blender.asset.begin', 'blender.asset.edit', 'blender.asset.publish',
         'project.asset.door.create', 'project.asset.door.update',
         'environment.object.place', 'environment.demo_object.transform',
         'environment.key_door.configure', 'environment.object.remove', 'environment.asset.rebind'}
-    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_content.', 'code.demo_runtime.'))
+    project_operation = entry.action.capability_id.startswith(('code.dependencies.', 'code.project.', 'code.preview.', 'code.browser.', 'code.demo_assets.', 'code.demo_content.', 'code.demo_runtime.', 'unity.content.'))
     base_version = (f"environment-scene:{task.project_id}:{entry.action.inputs['expected_version']}"
                     if scene_transform or (content_source and 'expected_version' in entry.action.inputs)
                     else f"agent-task:{task.id}")
@@ -348,11 +357,21 @@ async def execute_action(service, task_id, action_id):
                         raise HarnessError("REPAIR_LIMIT", "已达到任务自动修复轮次上限。")
                     current.repair_rounds_used += 1
             action.attempts += 1
-        if action.action.capability_id == "codex.task.execute" and new_business_attempt:
+        if action.action.capability_id in ("codex.task.execute", "agent.task.execute") and new_business_attempt:
             if current.cli_invocations_used:
                 raise HarnessError("ACTION_UNCERTAIN", "完全权限 CLI 已启动过，不自动重放。")
-            root = contained(current.grant.workspace_root, service.workspace_base)
-            if root.exists() and any(root.iterdir()) and not service.records.owns_workspace(current.project_id, root):
+            from pathlib import Path
+            card_work = current.authorization_card.task_profile == 'card-development'
+            if card_work:
+                service.card_workspace(current.project_id, current.grant.card_id,
+                    expected_root=current.grant.workspace_root, expected_branch=current.grant.branch)
+            export_work = current.authorization_card.task_profile == 'project-export-agent'
+            project_work = current.authorization_card.task_profile == 'project-demo-agent'
+            if project_work:
+                service.project_demo_workspace(current.project_id, current.grant.workspace_id,
+                    expected_root=current.grant.workspace_root)
+            root = Path(current.grant.workspace_root) if card_work or project_work or export_work else contained(current.grant.workspace_root, service.workspace_base)
+            if not card_work and not project_work and not export_work and root.exists() and any(root.iterdir()) and not service.records.owns_workspace(current.project_id, root):
                 raise HarnessError("TASK_SCOPE_DENIED", "完全权限执行前目录已非空，不能接管。")
             current.observations["codex_prechange"] = {"workspace_root": str(root),
                 "existed": root.exists(), "entries": sorted(path.name for path in root.iterdir()) if root.exists() else [], "observed_at": now().isoformat(),
@@ -367,7 +386,7 @@ async def execute_action(service, task_id, action_id):
     entry = next(item for item in task.actions if item.action.action_id == action_id)
     step = PipelineStep(id=action_id, title=entry.action.rationale[:160], capability_id=entry.action.capability_id,
         inputs=entry.action.inputs, change_set=entry.change_set,
-        snapshot_ref=f"agent-task:{task.id}:codex_prechange" if entry.action.capability_id == "codex.task.execute" else None)
+        snapshot_ref=f"agent-task:{task.id}:codex_prechange" if entry.action.capability_id in ("codex.task.execute", "agent.task.execute") else None)
     runtime = service.runtimes[task_id]
     delivery_no = len(entry.run_ids) + 1
     run = runtime.submit(definition(task, step), service.authority(task),
@@ -425,7 +444,7 @@ async def execute_action(service, task_id, action_id):
                         "blocked" if pending else
                         "uncertain" if entry.action.capability_id in MUTATIONS else "failed")
         action.reason, action.result = run.reason, result.outputs if result else None
-        if entry.action.capability_id == 'code.file.write' and evidence is not None:
+        if evidence is not None and (result is None or entry.action.capability_id == 'code.file.write'):
             action.result = {'evidence': evidence}
         if reported_effect is not None:
             action.effect_state = reported_effect
@@ -470,8 +489,14 @@ async def execute_action(service, task_id, action_id):
             if scene_updated:
                 current.reason = '项目场景对象变换已写入并回读；未验证运行中的游戏。'
             current.finished_at = now()
-        elif entry.action.capability_id == "codex.task.execute" and run.state == "completed":
-            current.status, current.reason, current.finished_at = "review_required", "Codex 已结束，请检查实际产物；未独立验收。", now()
+        elif entry.action.capability_id in ("codex.task.execute", "agent.task.execute") and run.state == "completed":
+            current.status, current.reason, current.finished_at = "review_required", "Agent 已结束，请检查实际产物。", now()
+            if current.authorization_card.task_profile == 'project-demo-agent':
+                delivery = current.observations.get('game_project', {}).get('run', {})
+                if delivery.get('operation') == 'preview_start' and delivery.get('passed'):
+                    current.reason = '工程检查和构建已通过，本地预览已打开；玩法仍待试玩审阅。'
+                elif delivery:
+                    current.reason = 'Agent 已结束；工程运行未通过：' + (delivery.get('failure_code') or delivery.get('operation', 'unknown'))
             current.grant.revoked = True
     task = service.records.update(task_id, observed, "agent.action.observed", {"action_id": action_id, "state": run.state, "reason": run.reason})
     final_entry = next(item for item in task.actions if item.action.action_id == action_id)
@@ -489,13 +514,13 @@ async def execute_action(service, task_id, action_id):
         raise HarnessError("ACTION_UNCERTAIN", run.reason or "外部写入结果不确定，需要检查。")
     if final_entry.state == "uncertain":
         raise HarnessError("ACTION_UNCERTAIN", final_entry.reason or "外部写入尚未确认提交，需要检查。")
-    return entry.action.capability_id in ("agent.finish", "codex.task.execute", 'agent.report_blocked') and run.state == "completed"
+    return entry.action.capability_id in ("agent.finish", "codex.task.execute", "agent.task.execute", 'agent.report_blocked') and run.state == "completed"
 
 
 async def execute_task(service, task_id):
     task = service.check_grant(task_id)
-    if task.grant.execution_mode == "codex-full-access":
-        action = AgentAction(action_id="codex_execution", capability_id="codex.task.execute",
+    if task.grant.execution_mode in ("codex-full-access", "agent-full-access"):
+        action = AgentAction(action_id="native_execution", capability_id="agent.task.execute" if task.grant.execution_mode == "agent-full-access" else "codex.task.execute",
             rationale="按用户确认的完整权限授权执行原任务；CLI 内部模型次数未知，不重试。", inputs={"goal": task.goal})
         action_id = record_action(service, task_id, action)
         await execute_action(service, task_id, action_id)

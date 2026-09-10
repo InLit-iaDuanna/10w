@@ -22,24 +22,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/agent/tasks/{task_id}/project-demo/update": {
+    "/api/agent/tasks/{task_id}/creation-brief": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Update Project Demo */
-        post: operations["updateProjectDemo"];
+        /** Creation Brief */
+        get: operations["creation_brief_api_agent_tasks__task_id__creation_brief_get"];
+        /** Edit Creation Brief */
+        put: operations["edit_creation_brief_api_agent_tasks__task_id__creation_brief_put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/agent/tasks/{task_id}/project-demo/continue": {
+    "/api/agent/tasks/{task_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Archive Task */
+        put: operations["archive_task_api_agent_tasks__task_id__archive_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/production-entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Entities */
+        get: operations["entities_api_agent_tasks__task_id__production_entities_get"];
+        put?: never;
+        /** Organize Entity */
+        post: operations["organize_entity_api_agent_tasks__task_id__production_entities_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/production-entities/proposal": {
         parameters: {
             query?: never;
             header?: never;
@@ -48,8 +84,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Continue Project Demo */
-        post: operations["continueProjectDemo"];
+        /** Entity Proposal */
+        post: operations["entity_proposal_api_agent_tasks__task_id__production_entities_proposal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/production-entities/{entity_id}/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adopt Entity */
+        post: operations["adopt_entity_api_agent_tasks__task_id__production_entities__entity_id__adopt_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -90,6 +143,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/unity-target": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Unity */
+        post: operations["prepare_unity_api_agent_tasks__task_id__unity_target_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/unity-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Unity */
+        get: operations["read_unity_api_agent_tasks__task_id__unity_content_get"];
+        put?: never;
+        /** Edit Unity */
+        post: operations["edit_unity_api_agent_tasks__task_id__unity_content_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/cancel": {
         parameters: {
             query?: never;
@@ -124,6 +212,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/tasks/{task_id}/project-demo/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Project Demo */
+        post: operations["updateProjectDemo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/project-demo/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Continue Project Demo */
+        post: operations["continueProjectDemo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/tasks/{task_id}/project-demo/content": {
         parameters: {
             query?: never;
@@ -136,6 +258,40 @@ export interface paths {
         put?: never;
         /** Save Demo Content */
         post: operations["save_demo_content_api_agent_tasks__task_id__project_demo_content_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/project-demo/source-registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Registered Sources */
+        get: operations["registered_sources_api_agent_tasks__task_id__project_demo_source_registrations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tasks/{task_id}/project-demo/source-rename": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Rename */
+        post: operations["confirm_rename_api_agent_tasks__task_id__project_demo_source_rename_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -296,6 +452,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/local-servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Servers */
+        get: operations["listLocalServers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/local-servers/{server_id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop Server */
+        post: operations["stopLocalServer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/projects/{project_id}/inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Native Input */
+        post: operations["upload_native_input_api_agent_projects__project_id__inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/projects/{project_id}/inputs/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Native Input File */
+        get: operations["native_input_file_api_agent_projects__project_id__inputs_file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/projects/{project_id}/cards/{card_id}/source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Card Source Index */
+        get: operations["card_source_index_api_agent_projects__project_id__cards__card_id__source_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/projects/{project_id}/cards/{card_id}/source/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Card Source File */
+        get: operations["card_source_file_api_agent_projects__project_id__cards__card_id__source_file_get"];
+        put?: never;
+        /** Save Card Source */
+        post: operations["save_card_source_api_agent_projects__project_id__cards__card_id__source_file_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/projects/{project_id}/production": {
         parameters: {
             query?: never;
@@ -421,6 +680,15 @@ export interface components {
          * @enum {string}
          */
         ActorType: "user" | "agent" | "service" | "system";
+        /** AdoptEntity */
+        AdoptEntity: {
+            /** Request Id */
+            request_id: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /** Asset Version */
+            asset_version: number;
+        };
         /** AgentAction */
         AgentAction: {
             /** Action Id */
@@ -468,6 +736,11 @@ export interface components {
         };
         /** AgentTaskRecord */
         AgentTaskRecord: {
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
             browser_interaction_authorization?: components["schemas"]["BrowserObservationAuthorization"] | null;
             browser_authorization?: components["schemas"]["BrowserObservationAuthorization"] | null;
             /** Id */
@@ -571,6 +844,16 @@ export interface components {
         /** AuthorizationCard */
         AuthorizationCard: {
             /**
+             * Permission Mode
+             * @default full
+             * @enum {string}
+             */
+            permission_mode: "scoped" | "full";
+            /** Export Id */
+            export_id?: string | null;
+            /** Source Write Paths */
+            source_write_paths?: string[] | null;
+            /**
              * Allow Model Image Input
              * @default false
              */
@@ -612,7 +895,7 @@ export interface components {
              * @default typed-tools
              * @enum {string}
              */
-            execution_mode: "typed-tools" | "codex-full-access";
+            execution_mode: "typed-tools" | "codex-full-access" | "agent-full-access";
             /**
              * Allow Image Generation
              * @default false
@@ -638,7 +921,7 @@ export interface components {
              * @default asset-exchange
              * @enum {string}
              */
-            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene" | "project-demo" | "project-demo-agent";
+            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene" | "project-demo" | "project-demo-agent" | "unity-asset-edit" | "project-export-agent";
             /** Capability Ids */
             capability_ids?: string[];
             /** Scene Write Object Ids */
@@ -654,7 +937,7 @@ export interface components {
              * Max Duration Seconds
              * @default 1200
              */
-            max_duration_seconds: number;
+            max_duration_seconds: number | null;
             /**
              * Max Attempts Per Action
              * @default 2
@@ -683,6 +966,8 @@ export interface components {
         };
         /** AuthorizeAgentTask */
         AuthorizeAgentTask: {
+            /** Creation Brief Version */
+            creation_brief_version?: number | null;
             /** Authorization Card Id */
             authorization_card_id: string;
             /**
@@ -705,9 +990,34 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "begin" | "publish";
+            operation: "begin" | "edit" | "publish" | "reconcile" | "close_candidate";
+            /** Edits */
+            edits?: components["schemas"]["BlenderNodeEdit"][];
+            /**
+             * Apply To Scene
+             * @default true
+             */
+            apply_to_scene: boolean;
             /** Candidate Id */
             candidate_id?: string | null;
+        };
+        /** BlenderNodeEdit */
+        BlenderNodeEdit: {
+            /** Node Id */
+            node_id: string;
+            /** Dimensions M */
+            dimensions_m?: [
+                number,
+                number,
+                number
+            ] | null;
+            /** Base Color */
+            base_color?: [
+                number,
+                number,
+                number,
+                number
+            ] | null;
         };
         /** BrowserInteractionRequest */
         BrowserInteractionRequest: {
@@ -746,16 +1056,35 @@ export interface components {
             card_id?: string | null;
             /** Branch */
             branch?: string | null;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
+            /** Expires At */
+            expires_at?: string | null;
             /**
              * Revoked
              * @default false
              */
             revoked: boolean;
+        };
+        /** CardSourceFile */
+        CardSourceFile: {
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+        };
+        /** CardSourceIndex */
+        CardSourceIndex: {
+            /** Project Id */
+            project_id: string;
+            /** Card Id */
+            card_id: string;
+            /** Branch */
+            branch: string;
+            /** Architecture */
+            architecture: string;
+            /** Files */
+            files: components["schemas"]["SourceEntry"][];
+            /** Truncated */
+            truncated: boolean;
         };
         /** ChangeSet */
         ChangeSet: {
@@ -820,11 +1149,29 @@ export interface components {
         };
         /** ContinueProjectDemoRequest */
         ContinueProjectDemoRequest: {
+            /** Planning Card Id */
+            planning_card_id?: string | null;
             target?: components["schemas"]["DemoEditTarget"] | null;
             /** Request Id */
             request_id: string;
             /** Goal */
             goal: string;
+            /** Input Paths */
+            input_paths?: string[];
+        };
+        /** CreationBrief */
+        CreationBrief: {
+            /**
+             * Version
+             * @default 1
+             */
+            version: number;
+            /** Content */
+            content: string;
+            /** Selected Skills */
+            selected_skills?: ("sceneops-threejs-gameplay" | "sceneops-threejs-graphics" | "sceneops-threejs-ui" | "sceneops-threejs-debug" | "sceneops-threejs-qa")[];
+            /** Confirmed At */
+            confirmed_at?: string | null;
         };
         /** DemoContentIndex */
         DemoContentIndex: {
@@ -844,11 +1191,18 @@ export interface components {
             unbuilt_changes: boolean;
             /** Source Notice */
             source_notice: string;
+            /**
+             * Sources Truncated
+             * @default false
+             */
+            sources_truncated: boolean;
         };
         /** DemoContentSave */
         DemoContentSave: {
             target: components["schemas"]["DemoEditTarget"];
             recipe?: components["schemas"]["DoorRecipe"] | null;
+            /** Asset Version */
+            asset_version?: number | null;
             transform?: components["schemas"]["EnvironmentTransform"] | null;
             /** Interaction Distance M */
             interaction_distance_m?: number | null;
@@ -916,7 +1270,15 @@ export interface components {
             /** Id */
             id: string;
             /** Latest Write Request Id */
-            latest_write_request_id: string;
+            latest_write_request_id?: string | null;
+            /**
+             * Origin
+             * @default typed-action
+             * @enum {string}
+             */
+            origin: "workspace" | "typed-action" | "native-workspace";
+            /** Source Task Id */
+            source_task_id?: string | null;
             /** Path */
             path: string;
             /** Content */
@@ -929,6 +1291,49 @@ export interface components {
              * @constant
              */
             edit_mode: "source-agent";
+        };
+        /** DemoSourceRegistration */
+        DemoSourceRegistration: {
+            /** Id */
+            id: string;
+            /** Latest Write Request Id */
+            latest_write_request_id?: string | null;
+            /**
+             * Origin
+             * @default typed-action
+             * @enum {string}
+             */
+            origin: "workspace" | "typed-action" | "native-workspace";
+            /** Source Task Id */
+            source_task_id?: string | null;
+            /** Path */
+            path: string;
+            /** Content */
+            content: string;
+            /** Source Version */
+            source_version: number;
+            /**
+             * Edit Mode
+             * @default source-agent
+             * @constant
+             */
+            edit_mode: "source-agent";
+            /**
+             * Deleted
+             * @default false
+             */
+            deleted: boolean;
+        };
+        /** DemoSourceRename */
+        DemoSourceRename: {
+            /** Source Id */
+            source_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** New Path */
+            new_path: string;
+            /** Expected Target Version */
+            expected_target_version?: number | null;
         };
         /** DoorMaterial */
         DoorMaterial: {
@@ -981,6 +1386,23 @@ export interface components {
              */
             thickness_m: number;
             material?: components["schemas"]["DoorMaterial"];
+        };
+        /** EntityProposal */
+        EntityProposal: {
+            request: components["schemas"]["OrganizeEntity"];
+            /** Node Ids */
+            node_ids: string[];
+            /**
+             * Missing Identity Count
+             * @default 0
+             */
+            missing_identity_count: number;
+            existing?: components["schemas"]["ProductionEntity"] | null;
+            /**
+             * Mode
+             * @default live
+             */
+            mode: string;
         };
         /** EnvironmentObject */
         EnvironmentObject: {
@@ -1240,8 +1662,125 @@ export interface components {
              */
             open_angle_deg: number;
         };
+        /** LocalEndpoint */
+        LocalEndpoint: {
+            /** Host */
+            host: string;
+            /** Port */
+            port: number;
+        };
+        /** LocalServerInfo */
+        LocalServerInfo: {
+            /** Id */
+            id: string;
+            /** Pid */
+            pid: number;
+            /** Name */
+            name: string;
+            /** Started At */
+            started_at: string;
+            /** Endpoints */
+            endpoints: components["schemas"]["LocalEndpoint"][];
+            /** Project Id */
+            project_id?: string | null;
+            /**
+             * Managed
+             * @default false
+             */
+            managed: boolean;
+            /**
+             * Can Stop
+             * @default false
+             */
+            can_stop: boolean;
+            /** Stop Reason */
+            stop_reason?: string | null;
+        };
+        /** LocalServerList */
+        LocalServerList: {
+            /** Servers */
+            servers: components["schemas"]["LocalServerInfo"][];
+            /** Observed At */
+            observed_at: string;
+        };
+        /** LocalServerStopResult */
+        LocalServerStopResult: {
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "stopped" | "still_running";
+            /** Remaining Endpoints */
+            remaining_endpoints: components["schemas"]["LocalEndpoint"][];
+            /** Message */
+            message: string;
+        };
+        /** NativeInputReference */
+        NativeInputReference: {
+            /** Id */
+            id: string;
+            /** Path */
+            path: string;
+            /** Name */
+            name: string;
+            /** Media Type */
+            media_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Kind */
+            kind: string;
+        };
+        /** NativeInputUpload */
+        NativeInputUpload: {
+            /** Name */
+            name: string;
+            /**
+             * Media Type
+             * @default application/octet-stream
+             */
+            media_type: string;
+            /** Content Base64 */
+            content_base64: string;
+        };
+        /** OrganizeEntity */
+        OrganizeEntity: {
+            /** Request Id */
+            request_id: string;
+            /** Title */
+            title: string;
+            /** Feature Id */
+            feature_id: string;
+            /** Path */
+            path: string;
+            /**
+             * Assign Missing Identities
+             * @default false
+             */
+            assign_missing_identities: boolean;
+            /** Source Versions */
+            source_versions: {
+                [key: string]: number;
+            };
+        };
         /** PrepareAgentTask */
         PrepareAgentTask: {
+            /**
+             * Native Production
+             * @default false
+             */
+            native_production: boolean;
+            /**
+             * Permission Mode
+             * @default scoped
+             * @enum {string}
+             */
+            permission_mode: "scoped" | "full";
+            /** Export Id */
+            export_id?: string | null;
+            /** Source Write Paths */
+            source_write_paths?: string[] | null;
             /**
              * Allow Model Image Input
              * @default false
@@ -1280,7 +1819,7 @@ export interface components {
              * @default typed-tools
              * @enum {string}
              */
-            execution_mode: "typed-tools" | "codex-full-access";
+            execution_mode: "typed-tools" | "codex-full-access" | "agent-full-access";
             /**
              * Allow Image Generation
              * @default false
@@ -1306,9 +1845,18 @@ export interface components {
              * @default asset-exchange
              * @enum {string}
              */
-            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene" | "project-demo" | "project-demo-agent";
+            task_profile: "asset-exchange" | "survival-prototype" | "auto" | "card-development" | "environment-scene" | "project-demo" | "project-demo-agent" | "unity-asset-edit" | "project-export-agent";
             /** Selected Scene Object Ids */
             selected_scene_object_ids?: string[];
+            /** Input Paths */
+            input_paths?: string[];
+        };
+        /** PrepareUnityAssetTask */
+        PrepareUnityAssetTask: {
+            /** Asset Id */
+            asset_id: string;
+            /** Source Version */
+            source_version: number;
         };
         /** ProductionArtifact */
         ProductionArtifact: {
@@ -1355,6 +1903,42 @@ export interface components {
             /** Created At */
             created_at: string;
         };
+        /** ProductionEntity */
+        ProductionEntity: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /** Title */
+            title: string;
+            /** Source Ids */
+            source_ids: string[];
+            /** Feature Id */
+            feature_id: string;
+            /** Asset Id */
+            asset_id: string;
+            /** Adopted Asset Version */
+            adopted_asset_version: number;
+            /** Revision */
+            revision: number;
+            /** Required Node Ids */
+            required_node_ids: string[];
+            /** Material Interfaces */
+            material_interfaces?: {
+                [key: string]: string[];
+            };
+            /** Adoptions */
+            adoptions?: {
+                [key: string]: unknown;
+            }[];
+            /** Builds */
+            builds?: {
+                [key: string]: unknown;
+            }[];
+            readonly asset_reference: components["schemas"]["ProductionObjectReference"];
+        };
         /** ProductionEvents */
         ProductionEvents: {
             /** Events */
@@ -1388,6 +1972,24 @@ export interface components {
              * @default
              */
             readiness_notice: string;
+        };
+        /** ProductionObjectReference */
+        ProductionObjectReference: {
+            /** Project Id */
+            project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "asset" | "entity";
+            /** Id */
+            id: string;
+            /** Version */
+            version: number;
+            /** Part Id */
+            part_id?: string | null;
         };
         /** ProductionSnapshot */
         ProductionSnapshot: {
@@ -1507,7 +2109,7 @@ export interface components {
              * @default file
              * @enum {string}
              */
-            source_kind: "file" | "procedural" | "blender";
+            source_kind: "file" | "procedural" | "blender" | "glb";
             /** Dimensions M */
             dimensions_m: [
                 number,
@@ -1527,6 +2129,12 @@ export interface components {
             recipe?: components["schemas"]["DoorRecipe"] | null;
             /** Parent Source Version */
             parent_source_version?: number | null;
+            /** Geometry Source Version */
+            geometry_source_version?: number | null;
+            /** Lookdev Document Id */
+            lookdev_document_id?: string | null;
+            /** Lookdev Document Version */
+            lookdev_document_version?: number | null;
             /** Node Ids */
             node_ids?: {
                 [key: string]: string;
@@ -1591,7 +2199,7 @@ export interface components {
              * Max Duration Seconds
              * @default 300
              */
-            max_duration_seconds: number;
+            max_duration_seconds: number | null;
             /**
              * Max Tokens
              * @default 32000
@@ -1614,8 +2222,57 @@ export interface components {
              */
             max_metered_calls: number;
         };
+        /** SaveCardSource */
+        SaveCardSource: {
+            /**
+             * Allow Game Execution
+             * @default false
+             */
+            allow_game_execution: boolean;
+            /** Path */
+            path: string;
+            /** Expected Content */
+            expected_content: string;
+            /** Content */
+            content: string;
+        };
+        /** SaveCreationBrief */
+        SaveCreationBrief: {
+            /** Expected Version */
+            expected_version: number;
+            /** Content */
+            content: string;
+            /** Selected Skills */
+            selected_skills?: ("sceneops-threejs-gameplay" | "sceneops-threejs-graphics" | "sceneops-threejs-ui" | "sceneops-threejs-debug" | "sceneops-threejs-qa")[];
+        };
+        /** SourceEntry */
+        SourceEntry: {
+            /** Path */
+            path: string;
+            /** Section */
+            section: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Editable */
+            editable: boolean;
+        };
+        /** TaskArchiveRequest */
+        TaskArchiveRequest: {
+            /** Archived */
+            archived: boolean;
+        };
         /** TaskGrant */
         TaskGrant: {
+            /**
+             * Permission Mode
+             * @default full
+             * @enum {string}
+             */
+            permission_mode: "scoped" | "full";
+            /** Export Id */
+            export_id?: string | null;
+            /** Source Write Paths */
+            source_write_paths?: string[] | null;
             /**
              * Allow Model Image Input
              * @default false
@@ -1662,7 +2319,7 @@ export interface components {
              * @default typed-tools
              * @enum {string}
              */
-            execution_mode: "typed-tools" | "codex-full-access";
+            execution_mode: "typed-tools" | "codex-full-access" | "agent-full-access";
             /**
              * Allow Image Generation
              * @default false
@@ -1698,16 +2355,149 @@ export interface components {
              * Format: date-time
              */
             authorized_at?: string;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
+            /** Expires At */
+            expires_at?: string | null;
             /**
              * Revoked
              * @default false
              */
             revoked: boolean;
+        };
+        /** UnityContentInstance */
+        UnityContentInstance: {
+            /** Position */
+            position: [
+                number,
+                number,
+                number
+            ];
+            /** Interaction Distance */
+            interaction_distance: number;
+            /** Requires Key */
+            requires_key: boolean;
+            /** Instance Id */
+            instance_id: string;
+        };
+        /** UnityContentSnapshot */
+        UnityContentSnapshot: {
+            /** Task Id */
+            task_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Workspace Id */
+            workspace_id: string;
+            /** Source Asset Id */
+            source_asset_id: string;
+            /** Available Source Version */
+            available_source_version: number;
+            /**
+             * Imported Source Version
+             * @default 0
+             */
+            imported_source_version: number;
+            /**
+             * Editor Version
+             * @default 2022.3.62f3c1
+             */
+            editor_version: string;
+            /** Project Root */
+            project_root: string;
+            /** Scene Path */
+            scene_path?: string | null;
+            /**
+             * Mode
+             * @default planned
+             * @enum {string}
+             */
+            mode: "planned" | "live" | "cached";
+            /**
+             * Status
+             * @default not_started
+             */
+            status: string;
+            /**
+             * Dirty
+             * @default false
+             */
+            dirty: boolean;
+            /**
+             * Playing
+             * @default false
+             */
+            playing: boolean;
+            /**
+             * Compiling
+             * @default false
+             */
+            compiling: boolean;
+            /** Instances */
+            instances?: components["schemas"]["UnityContentInstance"][];
+            /** Readback */
+            readback?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Notice */
+            notice?: string | null;
+        };
+        /** UnityInstanceValues */
+        UnityInstanceValues: {
+            /** Position */
+            position: [
+                number,
+                number,
+                number
+            ];
+            /** Interaction Distance */
+            interaction_distance: number;
+            /** Requires Key */
+            requires_key: boolean;
+        };
+        /** UnityManualRequest */
+        UnityManualRequest: {
+            /** Request Id */
+            request_id: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "import" | "inspect" | "edit" | "focus" | "save" | "reopen" | "play" | "stop" | "act" | "agent" | "reconcile" | "renew";
+            /** Source Version */
+            source_version?: number | null;
+            /** Instance Id */
+            instance_id?: string | null;
+            expected?: components["schemas"]["UnityInstanceValues"] | null;
+            /** Position */
+            position?: [
+                number,
+                number,
+                number
+            ] | null;
+            /** Interaction Distance */
+            interaction_distance?: number | null;
+            /** Requires Key */
+            requires_key?: boolean | null;
+            /**
+             * Move X
+             * @default 0
+             */
+            move_x: number;
+            /**
+             * Move Z
+             * @default 0
+             */
+            move_z: number;
+            /**
+             * Interact
+             * @default false
+             */
+            interact: boolean;
+            /**
+             * Duration Frames
+             * @default 1
+             */
+            duration_frames: number;
+            /** Goal */
+            goal?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -1769,6 +2559,7 @@ export interface operations {
         parameters: {
             query?: {
                 project_id?: string | null;
+                archived?: boolean | null;
             };
             header?: never;
             path?: never;
@@ -1808,6 +2599,473 @@ export interface operations {
                 "application/json": components["schemas"]["PrepareAgentTask"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    creation_brief_api_agent_tasks__task_id__creation_brief_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationBrief"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_creation_brief_api_agent_tasks__task_id__creation_brief_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCreationBrief"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationBrief"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_task_api_agent_tasks__task_id__archive_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskArchiveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    entities_api_agent_tasks__task_id__production_entities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionEntity"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    organize_entity_api_agent_tasks__task_id__production_entities_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizeEntity"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionEntity"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    entity_proposal_api_agent_tasks__task_id__production_entities_proposal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizeEntity"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityProposal"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adopt_entity_api_agent_tasks__task_id__production_entities__entity_id__adopt_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdoptEntity"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductionEntity"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_api_agent_tasks__task_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    authorize_api_agent_tasks__task_id__authorize_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorizeAgentTask"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_unity_api_agent_tasks__task_id__unity_target_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrepareUnityAssetTask"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_unity_api_agent_tasks__task_id__unity_content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnityContentSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_unity_api_agent_tasks__task_id__unity_content_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnityManualRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_agent_tasks__task_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_api_agent_tasks__task_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -1895,134 +3153,6 @@ export interface operations {
             };
         };
     };
-    task_api_agent_tasks__task_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                task_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentTaskRecord"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    authorize_api_agent_tasks__task_id__authorize_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                task_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AuthorizeAgentTask"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentTaskRecord"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    cancel_api_agent_tasks__task_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                task_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentTaskRecord"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    resume_api_agent_tasks__task_id__resume_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                task_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AgentTaskRecord"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     demo_content_api_agent_tasks__task_id__project_demo_content_get: {
         parameters: {
             query?: never;
@@ -2076,6 +3206,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DemoContentSaved"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    registered_sources_api_agent_tasks__task_id__project_demo_source_registrations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoSourceRegistration"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_rename_api_agent_tasks__task_id__project_demo_source_rename_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoSourceRename"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoContentIndex"];
                 };
             };
             /** @description Validation Error */
@@ -2408,6 +3604,227 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentTaskEvents"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listLocalServers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalServerList"];
+                };
+            };
+        };
+    };
+    stopLocalServer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                server_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalServerStopResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_native_input_api_agent_projects__project_id__inputs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NativeInputUpload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeInputReference"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    native_input_file_api_agent_projects__project_id__inputs_file_get: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    card_source_index_api_agent_projects__project_id__cards__card_id__source_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardSourceIndex"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    card_source_file_api_agent_projects__project_id__cards__card_id__source_file_get: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardSourceFile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_card_source_api_agent_projects__project_id__cards__card_id__source_file_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCardSource"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentTaskRecord"];
                 };
             };
             /** @description Validation Error */

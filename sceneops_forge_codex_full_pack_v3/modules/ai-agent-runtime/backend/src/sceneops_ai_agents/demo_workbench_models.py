@@ -19,7 +19,9 @@ class DemoEditTarget(BaseModel):
 
 class DemoSourceEntry(BaseModel):
     id: str
-    latest_write_request_id: str
+    latest_write_request_id: str | None = None
+    origin: Literal['workspace', 'typed-action', 'native-workspace'] = 'typed-action'
+    source_task_id: str | None = None
     path: str
     content: str
     source_version: int
@@ -35,12 +37,26 @@ class DemoContentIndex(BaseModel):
     sources: list[DemoSourceEntry]
     unbuilt_changes: bool
     source_notice: str
+    sources_truncated: bool = False
+
+
+class DemoSourceRegistration(DemoSourceEntry):
+    deleted: bool = False
+
+
+class DemoSourceRename(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    source_id: str
+    expected_version: int = Field(ge=1)
+    new_path: str
+    expected_target_version: int | None = Field(default=None, ge=1)
 
 
 class DemoContentSave(BaseModel):
     model_config = ConfigDict(extra='forbid')
     target: DemoEditTarget
     recipe: DoorRecipe | None = None
+    asset_version: int | None = Field(default=None, ge=1)
     transform: EnvironmentTransform | None = None
     interaction_distance_m: float | None = Field(default=None, gt=0, le=20)
     open_angle_deg: float | None = Field(default=None, ge=-180, le=180)
@@ -48,8 +64,10 @@ class DemoContentSave(BaseModel):
 
     @model_validator(mode='after')
     def appropriate_fields(self):
-        permitted = {'asset': {'recipe'}, 'instance': {'transform'},
+        permitted = {'asset': {'recipe', 'asset_version'}, 'instance': {'transform'},
             'behavior': {'interaction_distance_m', 'open_angle_deg', 'required_key_asset_id'}, 'source': set()}
+        if self.recipe is not None and self.asset_version is not None:
+            raise ValueError('配方编辑与引用更新需分别提交。')
         submitted = self.model_fields_set - {'target'}
         if submitted - permitted[self.target.kind]:
             raise ValueError('编辑参数与选中内容类型不一致。')

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-event-type": "release.rollback.executed",
+  "x-event-version": 1,
+  "type": "object",
+  "$ref": "release.rollback.executed-v1.schema.json"
+}

@@ -22,7 +22,7 @@ class HarnessContract(BaseModel):
 class RuntimeBudget(HarnessContract):
     max_steps: int = Field(default=32, ge=1, le=256)
     max_attempts_per_step: int = Field(default=2, ge=1, le=10)
-    max_duration_seconds: float = Field(default=300, gt=0, le=86400)
+    max_duration_seconds: float | None = Field(default=300, gt=0, le=31_536_000)
     max_tokens: int = Field(default=32000, ge=0)
     max_cost_usd: float = Field(default=1, ge=0, allow_inf_nan=False)
     usage_policy: Literal["require_reported", "bounded_calls"] = "require_reported"
@@ -108,7 +108,7 @@ class CapabilityDefinition(HarnessContract):
     supports_dry_run: bool = False
     supports_rollback: bool = False
     cross_system: bool = False
-    timeout_seconds: float = Field(default=60, gt=0, le=3600)
+    timeout_seconds: float | None = Field(default=60, gt=0, le=31_536_000)
     retry_policy: RetryPolicy = Field(default_factory=RetryPolicy)
     estimated_duration_seconds: float | None = Field(default=None, ge=0)
     estimated_cost_usd: float | None = Field(default=None, ge=0)

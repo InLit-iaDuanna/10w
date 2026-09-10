@@ -1,0 +1,546 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-desertdeco-eq08",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 17.357,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 1,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq08:p0",
+      "center_m": [
+        -0.17782,
+        0.07845,
+        0.007845
+      ],
+      "half_extents_m": [
+        0.13075,
+        0.07845,
+        0.24581
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 1,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq08:p1",
+      "center_m": [
+        -0.17782,
+        0.33472,
+        -0.117675
+      ],
+      "half_extents_m": [
+        0.12552,
+        0.21966,
+        0.13598
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 1,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq08:p2",
+      "center_m": [
+        -0.17782,
+        0.50208,
+        0.028765
+      ],
+      "half_extents_m": [
+        0.1046,
+        0.03138,
+        0.02615
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": 2,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq08:p3",
+      "center_m": [
+        0.17782,
+        0.07845,
+        0.007845
+      ],
+      "half_extents_m": [
+        0.13075,
+        0.07845,
+        0.24581
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 2,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq08:p4",
+      "center_m": [
+        0.17782,
+        0.33472,
+        -0.117675
+      ],
+      "half_extents_m": [
+        0.12552,
+        0.21966,
+        0.13598
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": 2,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq08:p5",
+      "center_m": [
+        0.17782,
+        0.50208,
+        0.028765
+      ],
+      "half_extents_m": [
+        0.1046,
+        0.03138,
+        0.02615
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "feet_pair",
+      "grip_position_m": [
+        0.0,
+        0.110876,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "left_ankle",
+        "parent": 0,
+        "pivot": [
+          -0.154285,
+          0.249471,
+          0.0
+        ]
+      },
+      {
+        "name": "right_ankle",
+        "parent": 0,
+        "pivot": [
+          0.154285,
+          0.249471,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": true,
+        "tracks": [
+          {
+            "joint": 1,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0,
+              0.25,
+              0.5,
+              0.75,
+              1.0
+            ]
+          },
+          {
+            "joint": 2,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.12467473338522769,
+                0.0,
+                0.0,
+                0.992197667229329
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0,
+              0.25,
+              0.5,
+              0.75,
+              1.0
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "feet_pair",
+      "grip_position_m": [
+        0.0,
+        0.110876,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "rigid weights, articulated parts",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-desertdeco-eq08.glb",
+      "triangle_count": 72,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "f747a389e4d416fc7e27dda20b465928c46e18d4ef7dfee9fd8a35686c43c8c6",
+      "byte_size": 49032
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-desertdeco-eq08.lod1.glb",
+      "triangle_count": 60,
+      "part_count": 5,
+      "distance_m": 3.09,
+      "sha256": "4f54fa3029efc94c28c997936497ce99de284d3f5637e307330b68391f4ce683",
+      "byte_size": 47540
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-desertdeco-eq08.lod2.glb",
+      "triangle_count": 48,
+      "part_count": 4,
+      "distance_m": 7.41,
+      "sha256": "3f838b463c42828a42e8cd0255dd433f3696b08fef4266bfce7d35095ca6f7fa",
+      "byte_size": 46056
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.30857,
+      0.0,
+      -0.253655
+    ],
+    "max": [
+      0.30857,
+      0.55438,
+      0.253655
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

@@ -1,5 +1,15 @@
 # Asset Library
 
+## 内置资产浏览界面
+
+内置资产默认展示自适应缩略图网格，按完整场景、建筑与物件、角色分类。搜索、美术形式、场景主题及游戏方向筛选集中在列表上方；点击卡片进入详情，返回列表保留筛选。详情保留 3D 预览、项目导入、下载及生成参考，全部使用工作台主题色。
+
+## 固定内置资产
+
+公开 `BuiltinAssetCatalog`／`create_builtin_asset_router` 提供随包安装的 877 项原创资产：原有 SceneOps Haven Kit 102 项，以及 Atlas100 v2 的 675 个模型和 100 个场景。`GET /api/builtin-assets` 返回聚合目录并保留每个条目的素材包 ID、版本和许可；各 ID 下 `/glb`、`/preview`、`/lod/{level}`、`/physics` 与场景条目的 `/scene` 返回已登记文件。`POST /{id}/adopt` 通过组合根注入的 Asset Factory 导入服务生成项目版本。前端 `loadBuiltinAssetLibrary()` 懒加载固定资产浏览界面，编辑器 ID 为 `asset.builtin-library`。目录与素材保留在安装包内，各项目采用时复制，不修改原件。
+
+Atlas100 v2 条目保留 UV0／UV1、PBR 通道、三级 LOD、物理绑定以及适用模型的骨骼与动作元数据。素材包摘要同时公开受限的原始清单与资源基址，供同源加载 512px PBR 图和运行时模块。其 555 个场景专属单体没有独立静态缩略图，列表明确使用所属场景图作为参考；进入详情后的实时 3D 仍加载单体 GLB。原有资产继续按 CC0-1.0 提供，Atlas100 v2 按包内 MIT 许可提供。
+
 Asset Library is the canonical catalog and publication boundary for SceneOps 3D
 assets. It keeps source assets, source objects, immutable published versions,
 scene usage, Unity import state, including builds, licenses, and provenance in one
@@ -100,3 +110,17 @@ remain separate.
 ### 原生 Blender 源
 
 项目版本增加 `source_kind='blender'`、`parent_source_version`、`node_ids` 和 `operation='blender-edit'`。这一源类型保留实际 `.blend` 与 GLB 路径，FBX 可空，不携带可编辑 DoorRecipe。旧 `file` 类型要求不变。`register_version(expected_version=...)` 在登记时核对旧版本，并通过 SQLite 事务检查防止另一服务覆盖较新目录版本；同一版本的相同内容仍幂等。
+
+## 实时预览调校
+
+选择资产后直接进入 3D 工作区；含动画的角色默认播放 Walk。右侧可切换待机、走路、跑步、挥手，调整播放速度（0.25–2 倍）、动作强度（与静止姿态混合）、循环、朝向、曝光、主光和背景；支持网格及骨架显示。底部时间轴可暂停并拖到指定姿势。
+
+“保存调校”按资产 URL 保存在当前浏览器，包含显示参数和相机位置；通过“读取已保存”恢复。调校只影响预览，不写回 GLB 或动画源文件。页面隐藏、暂停和离开预览会停止动画帧循环；窗口缩放与控制器调整不会重新加载模型。
+
+## 原生 GLB 版本
+
+`ProjectAssetVersion.source_kind` 新增 `glb`：真实 GLB 源路径、稳定版本 ID 和 render 运行产物必填，不要求伪造 `.blend` 或 `.fbx`。原生制作通过运行模块的任务工具桥校验、保存并登记版本；目录继续使用 `expected_version` 检查冲突，场景引用保持独立且显式更新。旧 file、procedural、blender 版本兼容。
+
+## 本地项目目录与外部制品存储
+
+本地项目资产目录通过 SQLite 和项目内文件服务运行，读取、版本保存及原生材质编辑不依赖外部 artifact-store。该集成列为可选；远程发布仍使用原有发布策略与服务检查，本次没有改变质量或发布权限。

@@ -7,6 +7,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "start": "node scripts/one-click.mjs",
     "dev": "node scripts/dev.mjs",
     "generate:workbenches": "node scripts/generate-workbenches.mjs",
     "generate:workspace": "node scripts/python.mjs scripts/export-workspace-contracts.py && openapi-typescript packages/workspace-client/contracts/workspace.openapi.json -o packages/workspace-client/frontend/src/generated/workspace-api.ts",
@@ -15,13 +16,18 @@
     "generate:agent": "node scripts/python.mjs scripts/export-agent-contracts.py && openapi-typescript modules/ai-agent-runtime/contracts/agent.openapi.json -o modules/ai-agent-runtime/frontend/src/generated/agent-api.ts",
     "generate:card-assets": "node scripts/python.mjs scripts/export-card-asset-contracts.py && openapi-typescript modules/asset-factory/contracts/card-assets.openapi.json -o modules/asset-factory/frontend/src/generated/card-assets-api.ts",
     "generate:environment": "node scripts/python.mjs scripts/export-environment-contracts.py && openapi-typescript modules/world-composer/contracts/environment.openapi.json -o modules/world-composer/frontend/src/generated/environment-api.ts",
-    "lab": "node scripts/lab.mjs"
+    "lab": "node scripts/lab.mjs",
+    "test:frontend": "node scripts/frontend-test.mjs",
+    "test:module": "node scripts/python.mjs scripts/module-test",
+    "generate:experience": "node scripts/python.mjs scripts/export-experience-contracts.py && openapi-typescript modules/ai-run-distiller/contracts/experience.openapi.json -o modules/ai-agent-runtime/frontend/src/generated/experience-api.ts",
+    "generate:exports": "node scripts/python.mjs modules/build-release/backend/scripts/export_playable_contracts.py && openapi-typescript modules/build-release/contracts/openapi/playable-export.openapi.json -o modules/build-release/frontend/src/export/api.generated.ts"
   },
   "devDependencies": {
-    "typescript": "6.0.3",
-    "vite": "8.0.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
-    "openapi-typescript": "7.13.0"
+    "openapi-typescript": "7.13.0",
+    "playwright": "1.62.1",
+    "typescript": "6.0.3",
+    "vite": "8.0.0"
   }
 }

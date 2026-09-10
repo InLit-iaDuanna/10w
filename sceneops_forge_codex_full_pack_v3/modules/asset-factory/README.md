@@ -69,6 +69,14 @@ in server-owned operation storage outside project content.
 - Blender: only the public `sceneops_blender` typed adapter is accepted.
 - Asset catalog: only public `asset_library` models/service are used.
 
+### 按推荐安装内置资产
+
+`BuiltinProjectAssets.install_selected(project_id, card_id, selections)` 接受内置目录中的真实 `asset_id`，或 `BuiltinAssetSelection`（可附用途和推荐理由）。它只把所选 GLB 及这些条目实际引用的 LOD、物理绑定、场景定义、像素图集和共享动作复制到当前卡片工作树；多个角色引用同一动作文件时只复制一次。未知 ID、格式无效的选择和符号链接目标会被拒绝，已有普通文件原样保留。
+
+返回值保留 `installed_files`、`preserved_files`、`catalog_path`，并新增只含所选条目的 `catalog` 与逐项 `materialization`。条目使用自身的 `source_asset_id`、素材包 ID／版本和空的 `project_asset_id`，避免把聚合目录版本或推荐目录身份误当成项目资产身份；`recommendation_state`、`provision_state` 与 `copy_state` 分别表示已推荐、已提供给运行时以及本次实际复制或保留。选择不同且已有目录索引时会创建递增的新索引文件，不覆盖原索引。
+
+原有 `install_pack(project_id, card_id)` 继续提供整包安装合同，字段和重复调用行为保持兼容。
+
 ## Execution modes
 
 - `live`: bundled bridge actually invoked Blender now.
@@ -114,6 +122,22 @@ unless an executable is explicitly configured.
 
 统一应用现公开 `loadIntegratedWorkbench()`；空态、自有草稿、样例边界与验证限制见 [统一编辑器说明](docs/unified-workbench.md)。
 
+同一卡片的生成与归一化在项目／卡片锁内重读方案或资产记录。重复生成会复用既有状态判断并拒绝再次执行；并发归一化基于最新版本追加，已经成功写出的版本不会被旧元数据覆盖。
+
 ### Web 原生源回流
 
 公开 `preserve_native_source` 检查原生源与自包含 GLB，将成功候选复制到登记工作区的 `assets/blender` 与 `public/sceneops-assets`。不可变产物不指向正在编辑的文件；相同候选可重读，不覆盖不同已有内容。源路径由任务与资产目录解析，模型不能直接调用文件保存函数。流程不强制生成 FBX。
+
+## Tripo 创建渠道
+
+在“创建模型”的“创建渠道”中选择 **Tripo · AI 3D 生成**，保存 API Key 和模型版本，再选择文字或图片输入。提交按钮明确说明内容会发给 Tripo 并按账户计费；对话消息本身不会自动提交 Tripo。切换渠道会暂停本地自动建模，左侧确认按钮提示使用 Tripo 面板。
+
+支持文字（最多 1024 字符）和单张 PNG/JPEG/WebP（最多 10 MiB）。默认 v3.1-20260211，可选 v2.5-20250123 与 P1-20260311。接入 v2 OpenAPI，图片通过 `/upload/sts` 换取 image_token。预览支持 Meshopt 解码。
+
+任务按项目、卡片、会话及请求 ID 持久化，同一请求不重复提交。完成后重新读取下载地址并保存本地 GLB（最大 100 MiB），可预览、下载或显式导入当前卡片，随后沿用检查、归一化和入库流程。下载连接到已验证的公网 IP，保持原始 TLS 主机验证，拒绝重定向且不带 API Key。
+
+密钥保存在应用数据库旁的 tripo-secrets.json（0600），不回显、不进入项目 Git。更换密钥后，历史任务继续使用提交时的密钥；旧密钥保留供任务查询。配置成功仅表示已保存，不代表已验证额度。
+
+网络中断导致提交结果不明时显示 submission_unknown，不自动重发，以免重复扣费；需要到 Tripo 控制台核实。关闭页面不取消远端任务，重新打开会恢复记录。
+
+接口与组件测试采用替身服务，不消耗真实账户额度。官方参考：[Generation](https://platform.tripo3d.ai/docs/generation)、[Upload](https://platform.tripo3d.ai/docs/upload)、[Task](https://platform.tripo3d.ai/docs/task)。

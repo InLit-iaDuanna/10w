@@ -7,9 +7,36 @@
 |---:|---|---|---|---|---|---|---|
 | 1 | core-kernel | 0.1.0 | active | core_kernel | — | — | — |
 | 2 | module-runtime | 0.1.0 | active | module_runtime | core-kernel | — | — |
-| 3 | conversation-home | 0.1.0 | active | conversation_home | core-kernel, module-runtime | — | llm-provider |
-| 4 | forge-shell | 0.1.0 | active | forge_shell | core-kernel, module-runtime, conversation-home | — | — |
-| 5 | runtime-fixture | 0.1.0 | experimental | runtime_fixture | core-kernel, module-runtime | — | fixture-renderer |
+| 3 | ai-intent-compiler | 0.5.0 | active | ai_intent_compiler | core-kernel, module-runtime | — | — |
+| 4 | ai-model-router | 0.5.0 | active | ai_model_router | core-kernel, module-runtime | — | — |
+| 5 | ai-playtest | 0.1.0 | active | ai_playtest | core-kernel, module-runtime | — | unity-playtest-runner, artifact-store, llm-provider |
+| 6 | ai-recovery-planner | 0.5.0 | active | ai_recovery_planner | core-kernel, module-runtime | — | — |
+| 7 | ai-run-distiller | 0.5.0 | active | ai_run_distiller | core-kernel, module-runtime | — | — |
+| 8 | ai-run-observer | 0.5.0 | active | ai_run_observer | core-kernel, module-runtime | — | — |
+| 9 | asset-library | 0.1.0 | active | asset_library | core-kernel, module-runtime | — | artifact-store, unity |
+| 10 | audio-studio | 0.1.0 | active | audio_studio | core-kernel, module-runtime | — | unity, artifact-store, media-generation |
+| 11 | engine-unity | 0.1.0 | active | engine_unity | core-kernel, module-runtime | unity, artifact-store | — |
+| 12 | logic-studio | 0.1.0 | active | logic_studio | core-kernel, module-runtime | — | unity |
+| 13 | observability | 0.1.0 | active | observability | core-kernel, module-runtime | — | artifact-store |
+| 14 | integration-center | 0.1.0 | active | integration_center | core-kernel, module-runtime, observability | — | blender, unity, comfyui, git, artifact-store |
+| 15 | project-intake | 0.1.0 | active | project_intake | core-kernel, module-runtime | — | unity, blender |
+| 16 | ai-context-engine | 0.5.0 | active | ai_context_engine | core-kernel, module-runtime, project-intake | — | — |
+| 17 | design-room | 0.1.0 | active | design_room | core-kernel, module-runtime, project-intake, ai-run-distiller | — | codebuddycli |
+| 18 | concept-lab | 0.1.0 | active | concept_lab | core-kernel, module-runtime, design-room | — | artifact-store, image-generation, codebuddy-cli |
+| 19 | asset-factory | 0.1.0 | active | asset_factory | core-kernel, module-runtime, asset-library, concept-lab | blender, artifact-store | — |
+| 20 | production-planner | 0.1.0 | active | production_planner | core-kernel, module-runtime, design-room | — | — |
+| 21 | character-animation | 0.1.0 | active | character_animation | core-kernel, module-runtime, asset-library, design-room, production-planner | — | artifact-store, blender, unity, automatic-rigging, retargeting |
+| 22 | render-ops | 0.1.0 | active | render_ops | core-kernel, module-runtime | artifact-store | comfyui, blender, unity |
+| 23 | runtime-fixture | 0.1.0 | experimental | runtime_fixture | core-kernel, module-runtime | — | fixture-renderer |
+| 24 | version-collaboration | 0.1.0 | active | version_collaboration | core-kernel, module-runtime | git | git-lfs, render-ops, ai-playtest, build-release |
+| 25 | build-release | 0.1.0 | active | build_release | core-kernel, module-runtime, engine-unity, version-collaboration | — | artifact-store, git, unity, build-runner |
+| 26 | world-composer | 0.1.0 | active | world_composer | core-kernel, module-runtime, asset-library, logic-studio | — | artifact-store, blender, unity |
+| 27 | vfx-shader | 0.1.0 | active | vfx_shader | core-kernel, module-runtime, world-composer, asset-library | — | unity, render |
+| 28 | ai-agent-runtime | 0.5.0 | active | ai_agent_runtime | core-kernel, module-runtime, ai-model-router, project-intake, engine-unity, asset-factory, asset-library, world-composer, vfx-shader | — | blender, unity |
+| 29 | ai-pipeline-compiler | 0.5.0 | active | ai_pipeline_compiler | core-kernel, module-runtime, ai-intent-compiler, ai-context-engine, ai-agent-runtime, ai-model-router, ai-run-observer, ai-recovery-planner, ai-run-distiller | — | — |
+| 30 | conversation-home | 0.1.0 | active | conversation_home | core-kernel, module-runtime, ai-agent-runtime, ai-run-distiller | — | llm-provider |
+| 31 | forge-shell | 0.1.0 | active | forge_shell | core-kernel, module-runtime, conversation-home | — | — |
+| 32 | ui-studio | 0.1.0 | active | ui_studio | core-kernel, module-runtime, audio-studio, vfx-shader | — | unity |
 
 ## 贡献
 
@@ -17,6 +44,33 @@
 |---|---|---|---|---|
 | core-kernel | — | core.run.transition | core.run.state_changed@1 | core.run.transition |
 | module-runtime | — | module.catalog.inspect | module.catalog.generated@1 | module.catalog.build |
+| ai-intent-compiler | — | — | — | — |
+| ai-model-router | — | — | — | — |
+| ai-playtest | playtest.game-view, playtest.agent-monitor, playtest.trajectory, playtest.step-log, playtest.issue-browser, playtest.regression | playtest.run, playtest.cancel, playtest.issue.open-backpin, playtest.issue.review-backpin, playtest.changeset.propose, playtest.regression.compare | playtest.run.started@1, playtest.step.recorded@1, playtest.issue.created@1, playtest.issue.backpin.resolved@1, playtest.regression.compared@1 | playtest.execute, playtest.regression.compare |
+| ai-recovery-planner | — | — | — | — |
+| ai-run-distiller | — | — | — | — |
+| ai-run-observer | — | — | — | — |
+| asset-library | asset.builtin-library, asset.browser, asset.inspector | asset.search, asset.version.publish | asset.version.published@1 | — |
+| audio-studio | audio.studio | audio.spec.create, audio.asset.inspect, audio.event.bind, audio.mapping.propose, audio.mapping.publish | audio.spec.created@1, audio.asset.inspected@1, audio.event.bound@1, audio.mapping.published@1 | audio.analysis |
+| engine-unity | unity.inspector, unity.prefab.inspector, unity.build.matrix, unity.build.console, unity.profiler | unity.content.import, unity.content.inspect, unity.content.edit, unity.content.focus, unity.content.save, unity.content.play, unity.prototype.compose, unity.prototype.inspect, unity.prototype.play, unity.prototype.capture, unity.health, unity.project.scan, unity.asset.import, unity.identity.map, unity.prefab.upsert, unity.game_object.inspect, unity.component_property.set, unity.collider.upsert, unity.navmesh.run, unity.play.enter, unity.play.exit, unity.capture, unity.console.read, unity.tests.run, unity.profiler.snapshot, unity.build.run | unity.project.scanned@1, unity.asset.imported@1, unity.identity.mapped@1, unity.prefab.updated@1, unity.test_run.completed@1, unity.profile.captured@1, unity.build.completed@1, unity.build.failed@1 | unity.tests, unity.build |
+| logic-studio | logic.feature, logic.state_graph, logic.interaction_graph, logic.quest_dialogue, logic.code_diff, logic.test_cases | logic.editor.open, logic.graph.validate, logic.interaction.compile, logic.test_plan.generate, logic.code_change.propose, logic.code_change.approve, logic.code_change.apply, logic.code_change.rollback | logic.graph.validated@1, logic.test_plan.generated@1, logic.code_change.proposed@1, logic.code_change.rolled_back@1 | logic.graph.validate, logic.test_plan.generate, logic.unity.code.validate |
+| observability | observability.logs | observability.logs.search, observability.diagnostic.export | job.progress.reported@1, observability.log.recorded@1 | — |
+| integration-center | integration.health, worker.monitor | integration.health.refresh, integration.open_logs, integration.open_setup, job.cancel, job.retry, job.resume, worker.restart.guidance | integration.health.changed@1, job.recovery.requested@1 | — |
+| project-intake | project.intake | project.intake.create_new_draft, project.intake.draft_from_conversation, project.intake.scan_existing, project.intake.confirm_field | project.intake.drafted@1, project.intake.field_confirmed@1 | — |
+| ai-context-engine | — | — | — | — |
+| design-room | project.bible, design.gdd, design.feature_spec | design.project_bible.save_version, design.gdd.save, design.feature_spec.draft_from_conversation, design.feature_spec.save_version, design.change.propose, design.change.approve, design.feature_spec.mark_ready, design.decision.create, design.decision.reject_alternative, design.decision.accept_alternative | design.project_bible.versioned@1, design.feature_spec.versioned@1, design.feature_spec.marked_ready@1, design.decision.recorded@1 | — |
+| concept-lab | concept.moodboard, concept.style_bible | concept.open, concept.style_bible.open, concept.create, concept.change.propose, concept.change.approve, concept.change.apply, concept.reference.import, concept.variant.import, concept.variant.generate, concept.variant.compare, concept.variant.comment, concept.variant.review, concept.style.check, concept.asset_spec_draft.compile | concept.version.created@1, concept.variant.recorded@1, concept.variant.reviewed@1, concept.asset_spec_draft.compiled@1 | concept.variant.generate |
+| asset-factory | asset.factory, asset.validation | asset.pipeline.preview, asset.pipeline.run, asset.pipeline.cancel, asset.pipeline.retry, asset.pipeline.rollback, asset.pipeline.publish | asset.pipeline.started@1, asset.pipeline.progressed@1, asset.pipeline.failed@1, asset.pipeline.completed@1 | asset.preflight, asset.blender.process, asset.validate, asset.publish |
+| production-planner | — | — | — | — |
+| character-animation | character.editor, character.rig-inspector, character.skin-qa, animation.timeline, animation.retarget-preview, animation.animator-graph | character.inspect, character.version.compare, character.version.review, animation.preview.capture, animation.retarget.preview, character.unity-mapping.propose, character.unity-mapping.execute | character.inspected@1, rig.version.approved@1, animation.clip.approved@1, animation.preview.captured@1, unity.character.mapping.applied@1 | character.inspect, animation.preview.capture, character.unity.map |
+| render-ops | render.viewer, render.aov-viewer, render.recipe, render.queue, render.comparison, render.provenance | render.brief.create, render.aov.capture, render.recipe.run, render.job.cancel, render.job.retry, render.variant.approve, render.writeback.propose, render.writeback.apply, render.validation.run | render.job.started@1, render.job.progressed@1, render.job.failed@1, render.job.cancelled@1, render.variant.created@1, render.writeback.proposed@1, render.validation.completed@1 | render.aov.capture, render.variant.generate, render.writeback.apply, render.validation.capture |
+| runtime-fixture | runtime.fixture | runtime.fixture.run | runtime.fixture.completed@1 | runtime.fixture.execute |
+| version-collaboration | review.version-diff, review.session, review.activity | review.session.create, review.comment.add, review.assignment.record, review.decision.record, review.approval.record, review.lock.acquire, review.lock.release, review.rollback.propose, review.rollback.execute, review.release.link | review.session.created@1, review.revision.published@1, review.comment.added@1, review.assignment.recorded@1, review.decision.recorded@1, review.approval.recorded@1, review.lock.recorded@1, review.rollback.proposed@1, review.rollback.executed@1, review.release.linked@1 | — |
+| build-release | build.export, build.matrix, build.console, release.gates, release.center, release.patch-notes | build.matrix.create, build.manifest.record, release.candidate.create, release.candidate.approve, release.patch-note.generate, release.patch-note.edit, release.deploy, release.deploy.retry, release.rollback.plan, release.rollback.execute | build.manifest.recorded@1, release.candidate.created@1, release.candidate.readied@1, release.deployment.succeeded@1, release.deployment.failed@1, release.rollback.executed@1 | build.manifest.verify, release.candidate.assemble, release.deployment.publish, release.rollback.execute |
+| world-composer | scene.viewport.3d, scene.outliner, scene.object.inspector, scene.annotations, scene.world.graph, scene.path-region, scene.navmesh, scene.lighting | scene.annotation.create, scene.object.place.propose, scene.issue.restore, scene.capture.fixed.request, scene.level.validate, scene.world.update.propose, scene.recipe.apply.propose | scene.annotation.created@1, scene.object.placement_proposed@1, scene.level.validated@1 | world.level.validate |
+| vfx-shader | vfx.recipe, shader.parameters, vfx.preview, lookdev.material | lookdev.open, vfx.recipe.validate, vfx.preview.plan, vfx.recipe.publish, vfx.binding.set_enabled | vfx.recipe.validated@1, vfx.preview.planned@1, vfx.recipe.published@1, vfx.binding.changed@1 | vfx.preview.plan, vfx.recipe.publish |
+| ai-agent-runtime | — | — | — | — |
+| ai-pipeline-compiler | harness.pipeline | — | — | — |
 | conversation-home | assistant.conversation | — | — | — |
 | forge-shell | shell.tool-library, shell.command-search | workbench.open_editor, workbench.close_editor, workbench.reopen_editor, workbench.move_editor, workbench.switch_editor, workspace.undo_layout, workspace.reset | workbench.editor.opened@1, workbench.editor.closed@1, workbench.editor.load_failed@1, workbench.layout.changed@1, workbench.visibility.changed@1, workbench.context.binding_changed@1, workbench.drawer.changed@1 | — |
-| runtime-fixture | runtime.fixture | runtime.fixture.run | runtime.fixture.completed@1 | runtime.fixture.execute |
+| ui-studio | ui.flow, ui.preview | ui.flow.validate, ui.mapping.propose, ui.changeset.approve, ui.changeset.publish | ui.flow.validated@1, ui.mapping.proposed@1, ui.changeset.published@1 | ui.validation.run |

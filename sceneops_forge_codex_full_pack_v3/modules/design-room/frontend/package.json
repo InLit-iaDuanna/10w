@@ -7,13 +7,16 @@
     "node": ">=22.6.0"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test src/tests/*.test.ts"
+    "test": "node ../../../scripts/frontend-test.mjs src/tests"
   },
   "exports": {
     ".": "./src/index.ts"
   },
   "peerDependencies": {
-    "react": "19.2.8",
-    "@tanstack/react-query": "5.90.21"
+    "@tanstack/react-query": "5.90.21",
+    "react": "19.2.8"
+  },
+  "dependencies": {
+    "@sceneops/core-ui": "workspace:*"
   }
 }

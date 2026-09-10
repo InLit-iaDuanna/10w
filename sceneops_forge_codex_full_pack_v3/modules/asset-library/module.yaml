@@ -10,13 +10,14 @@ requires:
   modules:
     - core-kernel
     - module-runtime
-  integrations:
-    - artifact-store
+  integrations: []
   optional_integrations:
+    - artifact-store
     - unity
 
 contributes:
   editors:
+    - asset.builtin-library
     - asset.browser
     - asset.inspector
   commands:

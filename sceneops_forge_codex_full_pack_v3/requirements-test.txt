@@ -1,0 +1,4 @@
+# Install runtime first: uv pip install --python .venv/bin/python -r services/api/requirements.txt
+# Then: uv pip install --python .venv/bin/python -r requirements-test.txt
+pytest==8.4.2
+hatchling==1.27.0

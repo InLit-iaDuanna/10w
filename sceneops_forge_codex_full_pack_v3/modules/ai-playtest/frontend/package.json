@@ -21,7 +21,7 @@
     "typescript": "5.9.2"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test src/tests/*.test.ts",
+    "test": "node ../../../scripts/frontend-test.mjs src/tests",
     "typecheck": "tsc -p tsconfig.json"
   }
 }

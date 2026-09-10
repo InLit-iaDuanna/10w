@@ -37,9 +37,12 @@ class BlenderPublishInput(NativeModel):
     candidate_id: str = Field(pattern=r'^blend_[a-f0-9]{32}$')
     expected_scene_version: int = Field(ge=0)
     object_ids: list[str] | None = None
+    apply_to_scene: bool = True
 
 class BlenderManualRequest(NativeModel):
     request_id: str = Field(pattern=r'^[A-Za-z0-9_-]{1,120}$')
     target: DemoEditTarget
-    operation: Literal['begin', 'publish']
+    operation: Literal['begin', 'edit', 'publish', 'reconcile', 'close_candidate']
+    edits: list[BlenderNodeEdit] = Field(default_factory=list)
+    apply_to_scene: bool = True
     candidate_id: str | None = None

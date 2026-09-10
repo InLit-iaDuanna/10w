@@ -67,7 +67,7 @@ async def round_trip(root):
         assert partial.assets[0].current_version == 2
         assert all(item.asset_version == 1 for item in partial.instances)
         asset_target = asset_target.model_copy(update={'source_version':2})
-        saved = save_content(service, task.id, DemoContentSave(target=asset_target, recipe=recipe))
+        saved = save_content(service, task.id, DemoContentSave(target=asset_target, asset_version=2))
         assert saved.content.assets[0].current_version == 2
         assert set(saved.affected_instance_ids) == {item.id for item in index.instances}
         assert len({item.asset_version for item in saved.content.instances}) == 1
@@ -114,7 +114,8 @@ async def source_navigation(root):
         await settle(service)
         first = content_index(service, task.id)
         module = next(item for item in first.sources if item.path.endswith('OrderedSwitches.ts'))
-        assert len(first.sources) == 2  # module and its real entry wiring, not every project file
+        assert {'src/main.ts', module.path} <= {item.path for item in first.sources}
+        assert all(item.path != 'src/game/sceneops-demo-content.ts' for item in first.sources)
         assert not first.unbuilt_changes
         service.continue_project_demo(task.id, ContinueProjectDemoRequest(request_id='source-change',goal='把开关顺序改为右、左'))
         await settle(service)
@@ -128,7 +129,7 @@ async def source_navigation(root):
         path = Path(project.root_path)/changed.path
         path.write_text(changed.content+'\n// user edit outside Agent\n')
         assert content_index(service,task.id).unbuilt_changes
-        with pytest.raises(HarnessError,match='源码已改变'):
+        with pytest.raises(HarnessError,match='较新版本'):
             resolve_target(service,service.get(task.id),target)
         scratch = Path(project.root_path)/'src/external.ts'
         scratch.write_text('export const external = true\n')

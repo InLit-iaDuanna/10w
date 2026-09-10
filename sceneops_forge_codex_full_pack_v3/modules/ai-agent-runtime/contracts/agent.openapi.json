@@ -67,6 +67,22 @@
               ],
               "title": "Project Id"
             }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Archived"
+            }
           }
         ],
         "responses": {
@@ -93,13 +109,13 @@
         }
       }
     },
-    "/api/agent/tasks/{task_id}/project-demo/update": {
-      "post": {
+    "/api/agent/tasks/{task_id}/creation-brief": {
+      "get": {
         "tags": [
           "agent-tasks"
         ],
-        "summary": "Update Project Demo",
-        "operationId": "updateProjectDemo",
+        "summary": "Creation Brief",
+        "operationId": "creation_brief_api_agent_tasks__task_id__creation_brief_get",
         "parameters": [
           {
             "name": "task_id",
@@ -111,6 +127,108 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationBrief"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Edit Creation Brief",
+        "operationId": "edit_creation_brief_api_agent_tasks__task_id__creation_brief_put",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCreationBrief"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationBrief"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/archive": {
+      "put": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Archive Task",
+        "operationId": "archive_task_api_agent_tasks__task_id__archive_put",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskArchiveRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -135,13 +253,57 @@
         }
       }
     },
-    "/api/agent/tasks/{task_id}/project-demo/continue": {
+    "/api/agent/tasks/{task_id}/production-entities": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Entities",
+        "operationId": "entities_api_agent_tasks__task_id__production_entities_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductionEntity"
+                  },
+                  "title": "Response Entities Api Agent Tasks  Task Id  Production Entities Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "agent-tasks"
         ],
-        "summary": "Continue Project Demo",
-        "operationId": "continueProjectDemo",
+        "summary": "Organize Entity",
+        "operationId": "organize_entity_api_agent_tasks__task_id__production_entities_post",
         "parameters": [
           {
             "name": "task_id",
@@ -158,7 +320,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ContinueProjectDemoRequest"
+                "$ref": "#/components/schemas/OrganizeEntity"
               }
             }
           }
@@ -169,7 +331,120 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AgentTaskRecord"
+                  "$ref": "#/components/schemas/ProductionEntity"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/production-entities/proposal": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Entity Proposal",
+        "operationId": "entity_proposal_api_agent_tasks__task_id__production_entities_proposal_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizeEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityProposal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/production-entities/{entity_id}/adopt": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Adopt Entity",
+        "operationId": "adopt_entity_api_agent_tasks__task_id__production_entities__entity_id__adopt_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdoptEntity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionEntity"
                 }
               }
             }
@@ -253,6 +528,150 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AuthorizeAgentTask"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/unity-target": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Prepare Unity",
+        "operationId": "prepare_unity_api_agent_tasks__task_id__unity_target_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareUnityAssetTask"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/unity-content": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Read Unity",
+        "operationId": "read_unity_api_agent_tasks__task_id__unity_content_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnityContentSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Edit Unity",
+        "operationId": "edit_unity_api_agent_tasks__task_id__unity_content_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnityManualRequest"
               }
             }
           }
@@ -365,6 +784,100 @@
         }
       }
     },
+    "/api/agent/tasks/{task_id}/project-demo/update": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Update Project Demo",
+        "operationId": "updateProjectDemo",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/continue": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Continue Project Demo",
+        "operationId": "continueProjectDemo",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContinueProjectDemoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/tasks/{task_id}/project-demo/content": {
       "get": {
         "tags": [
@@ -440,6 +953,104 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DemoContentSaved"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/source-registrations": {
+      "get": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Registered Sources",
+        "operationId": "registered_sources_api_agent_tasks__task_id__project_demo_source_registrations_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DemoSourceRegistration"
+                  },
+                  "title": "Response Registered Sources Api Agent Tasks  Task Id  Project Demo Source Registrations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tasks/{task_id}/project-demo/source-rename": {
+      "post": {
+        "tags": [
+          "agent-tasks"
+        ],
+        "summary": "Confirm Rename",
+        "operationId": "confirm_rename_api_agent_tasks__task_id__project_demo_source_rename_post",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoSourceRename"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoContentIndex"
                 }
               }
             }
@@ -934,6 +1545,344 @@
         }
       }
     },
+    "/api/agent/local-servers": {
+      "get": {
+        "tags": [
+          "local-servers"
+        ],
+        "summary": "List Servers",
+        "operationId": "listLocalServers",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalServerList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/local-servers/{server_id}/stop": {
+      "post": {
+        "tags": [
+          "local-servers"
+        ],
+        "summary": "Stop Server",
+        "operationId": "stopLocalServer",
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Server Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalServerStopResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/inputs": {
+      "post": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Upload Native Input",
+        "operationId": "upload_native_input_api_agent_projects__project_id__inputs_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NativeInputUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeInputReference"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/inputs/file": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Native Input File",
+        "operationId": "native_input_file_api_agent_projects__project_id__inputs_file_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240,
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/cards/{card_id}/source": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Card Source Index",
+        "operationId": "card_source_index_api_agent_projects__project_id__cards__card_id__source_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardSourceIndex"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/projects/{project_id}/cards/{card_id}/source/file": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Card Source File",
+        "operationId": "card_source_file_api_agent_projects__project_id__cards__card_id__source_file_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240,
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardSourceFile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "production"
+        ],
+        "summary": "Save Card Source",
+        "operationId": "save_card_source_api_agent_projects__project_id__cards__card_id__source_file_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCardSource"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTaskRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/projects/{project_id}/production": {
       "get": {
         "tags": [
@@ -1306,6 +2255,32 @@
         ],
         "title": "ActorType"
       },
+      "AdoptEntity": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,120}$",
+            "title": "Request Id"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Revision"
+          },
+          "asset_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Asset Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "expected_revision",
+          "asset_version"
+        ],
+        "title": "AdoptEntity"
+      },
       "AgentAction": {
         "properties": {
           "action_id": {
@@ -1424,6 +2399,11 @@
       },
       "AgentTaskRecord": {
         "properties": {
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "default": false
+          },
           "browser_interaction_authorization": {
             "anyOf": [
               {
@@ -1699,6 +2679,42 @@
       },
       "AuthorizationCard": {
         "properties": {
+          "permission_mode": {
+            "type": "string",
+            "enum": [
+              "scoped",
+              "full"
+            ],
+            "title": "Permission Mode",
+            "default": "full"
+          },
+          "export_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Id"
+          },
+          "source_write_paths": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 32,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Write Paths"
+          },
           "allow_model_image_input": {
             "type": "boolean",
             "title": "Allow Model Image Input",
@@ -1781,7 +2797,8 @@
             "type": "string",
             "enum": [
               "typed-tools",
-              "codex-full-access"
+              "codex-full-access",
+              "agent-full-access"
             ],
             "title": "Execution Mode",
             "default": "typed-tools"
@@ -1815,7 +2832,9 @@
               "card-development",
               "environment-scene",
               "project-demo",
-              "project-demo-agent"
+              "project-demo-agent",
+              "unity-asset-edit",
+              "project-export-agent"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -1859,7 +2878,14 @@
             "title": "Max Cli Invocations"
           },
           "max_duration_seconds": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Max Duration Seconds",
             "default": 1200
           },
@@ -1900,6 +2926,18 @@
       },
       "AuthorizeAgentTask": {
         "properties": {
+          "creation_brief_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creation Brief Version"
+          },
           "authorization_card_id": {
             "type": "string",
             "title": "Authorization Card Id"
@@ -1937,9 +2975,24 @@
             "type": "string",
             "enum": [
               "begin",
-              "publish"
+              "edit",
+              "publish",
+              "reconcile",
+              "close_candidate"
             ],
             "title": "Operation"
+          },
+          "edits": {
+            "items": {
+              "$ref": "#/components/schemas/BlenderNodeEdit"
+            },
+            "type": "array",
+            "title": "Edits"
+          },
+          "apply_to_scene": {
+            "type": "boolean",
+            "title": "Apply To Scene",
+            "default": true
           },
           "candidate_id": {
             "anyOf": [
@@ -1961,6 +3014,71 @@
           "operation"
         ],
         "title": "BlenderManualRequest"
+      },
+      "BlenderNodeEdit": {
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "title": "Node Id"
+          },
+          "dimensions_m": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dimensions M"
+          },
+          "base_color": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Color"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "node_id"
+        ],
+        "title": "BlenderNodeEdit"
       },
       "BrowserInteractionRequest": {
         "properties": {
@@ -2075,8 +3193,15 @@
             "title": "Branch"
           },
           "expires_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expires At"
           },
           "revoked": {
@@ -2091,10 +3216,70 @@
           "task_id",
           "project_id",
           "workspace_id",
-          "workspace_root",
-          "expires_at"
+          "workspace_root"
         ],
         "title": "BrowserObservationAuthorization"
+      },
+      "CardSourceFile": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "content"
+        ],
+        "title": "CardSourceFile"
+      },
+      "CardSourceIndex": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "architecture": {
+            "type": "string",
+            "title": "Architecture"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/SourceEntry"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "card_id",
+          "branch",
+          "architecture",
+          "files",
+          "truncated"
+        ],
+        "title": "CardSourceIndex"
       },
       "ChangeSet": {
         "properties": {
@@ -2261,6 +3446,18 @@
       },
       "ContinueProjectDemoRequest": {
         "properties": {
+          "planning_card_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planning Card Id"
+          },
           "target": {
             "anyOf": [
               {
@@ -2281,6 +3478,14 @@
             "maxLength": 8000,
             "minLength": 1,
             "title": "Goal"
+          },
+          "input_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Input Paths"
           }
         },
         "additionalProperties": false,
@@ -2290,6 +3495,51 @@
           "goal"
         ],
         "title": "ContinueProjectDemoRequest"
+      },
+      "CreationBrief": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version",
+            "default": 1
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "selected_skills": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "sceneops-threejs-gameplay",
+                "sceneops-threejs-graphics",
+                "sceneops-threejs-ui",
+                "sceneops-threejs-debug",
+                "sceneops-threejs-qa"
+              ]
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Selected Skills"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "CreationBrief"
       },
       "DemoContentIndex": {
         "properties": {
@@ -2333,6 +3583,11 @@
           "source_notice": {
             "type": "string",
             "title": "Source Notice"
+          },
+          "sources_truncated": {
+            "type": "boolean",
+            "title": "Sources Truncated",
+            "default": false
           }
         },
         "type": "object",
@@ -2362,6 +3617,18 @@
                 "type": "null"
               }
             ]
+          },
+          "asset_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Version"
           },
           "transform": {
             "anyOf": [
@@ -2583,8 +3850,36 @@
             "title": "Id"
           },
           "latest_write_request_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Latest Write Request Id"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "workspace",
+              "typed-action",
+              "native-workspace"
+            ],
+            "title": "Origin",
+            "default": "typed-action"
+          },
+          "source_task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Task Id"
           },
           "path": {
             "type": "string",
@@ -2608,12 +3903,119 @@
         "type": "object",
         "required": [
           "id",
-          "latest_write_request_id",
           "path",
           "content",
           "source_version"
         ],
         "title": "DemoSourceEntry"
+      },
+      "DemoSourceRegistration": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "latest_write_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Write Request Id"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "workspace",
+              "typed-action",
+              "native-workspace"
+            ],
+            "title": "Origin",
+            "default": "typed-action"
+          },
+          "source_task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Task Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "source_version": {
+            "type": "integer",
+            "title": "Source Version"
+          },
+          "edit_mode": {
+            "type": "string",
+            "const": "source-agent",
+            "title": "Edit Mode",
+            "default": "source-agent"
+          },
+          "deleted": {
+            "type": "boolean",
+            "title": "Deleted",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "content",
+          "source_version"
+        ],
+        "title": "DemoSourceRegistration"
+      },
+      "DemoSourceRename": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "new_path": {
+            "type": "string",
+            "title": "New Path"
+          },
+          "expected_target_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Target Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_id",
+          "expected_version",
+          "new_path"
+        ],
+        "title": "DemoSourceRename"
       },
       "DoorMaterial": {
         "properties": {
@@ -2685,6 +4087,46 @@
         "type": "object",
         "title": "DoorRecipe",
         "description": "Editable source for the first supported procedural asset."
+      },
+      "EntityProposal": {
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/OrganizeEntity"
+          },
+          "node_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Node Ids"
+          },
+          "missing_identity_count": {
+            "type": "integer",
+            "title": "Missing Identity Count",
+            "default": 0
+          },
+          "existing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductionEntity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "live"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request",
+          "node_ids"
+        ],
+        "title": "EntityProposal"
       },
       "EnvironmentObject": {
         "properties": {
@@ -3415,8 +4857,307 @@
         ],
         "title": "KeyDoorBehavior"
       },
+      "LocalEndpoint": {
+        "properties": {
+          "host": {
+            "type": "string",
+            "title": "Host"
+          },
+          "port": {
+            "type": "integer",
+            "title": "Port"
+          }
+        },
+        "type": "object",
+        "required": [
+          "host",
+          "port"
+        ],
+        "title": "LocalEndpoint"
+      },
+      "LocalServerInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "pid": {
+            "type": "integer",
+            "title": "Pid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "started_at": {
+            "type": "string",
+            "title": "Started At"
+          },
+          "endpoints": {
+            "items": {
+              "$ref": "#/components/schemas/LocalEndpoint"
+            },
+            "type": "array",
+            "title": "Endpoints"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "managed": {
+            "type": "boolean",
+            "title": "Managed",
+            "default": false
+          },
+          "can_stop": {
+            "type": "boolean",
+            "title": "Can Stop",
+            "default": false
+          },
+          "stop_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "pid",
+          "name",
+          "started_at",
+          "endpoints"
+        ],
+        "title": "LocalServerInfo"
+      },
+      "LocalServerList": {
+        "properties": {
+          "servers": {
+            "items": {
+              "$ref": "#/components/schemas/LocalServerInfo"
+            },
+            "type": "array",
+            "title": "Servers"
+          },
+          "observed_at": {
+            "type": "string",
+            "title": "Observed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "servers",
+          "observed_at"
+        ],
+        "title": "LocalServerList"
+      },
+      "LocalServerStopResult": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "stopped",
+              "still_running"
+            ],
+            "title": "State"
+          },
+          "remaining_endpoints": {
+            "items": {
+              "$ref": "#/components/schemas/LocalEndpoint"
+            },
+            "type": "array",
+            "title": "Remaining Endpoints"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "state",
+          "remaining_endpoints",
+          "message"
+        ],
+        "title": "LocalServerStopResult"
+      },
+      "NativeInputReference": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "path",
+          "name",
+          "media_type",
+          "size_bytes",
+          "kind"
+        ],
+        "title": "NativeInputReference"
+      },
+      "NativeInputUpload": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "media_type": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Media Type",
+            "default": "application/octet-stream"
+          },
+          "content_base64": {
+            "type": "string",
+            "maxLength": 14000000,
+            "minLength": 1,
+            "title": "Content Base64"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "content_base64"
+        ],
+        "title": "NativeInputUpload"
+      },
+      "OrganizeEntity": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,120}$",
+            "title": "Request Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "feature_id": {
+            "type": "string",
+            "title": "Feature Id"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "assign_missing_identities": {
+            "type": "boolean",
+            "title": "Assign Missing Identities",
+            "default": false
+          },
+          "source_versions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "minProperties": 1,
+            "title": "Source Versions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "title",
+          "feature_id",
+          "path",
+          "source_versions"
+        ],
+        "title": "OrganizeEntity"
+      },
       "PrepareAgentTask": {
         "properties": {
+          "native_production": {
+            "type": "boolean",
+            "title": "Native Production",
+            "default": false
+          },
+          "permission_mode": {
+            "type": "string",
+            "enum": [
+              "scoped",
+              "full"
+            ],
+            "title": "Permission Mode",
+            "default": "scoped"
+          },
+          "export_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,160}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Id"
+          },
+          "source_write_paths": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 32,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Write Paths"
+          },
           "allow_model_image_input": {
             "type": "boolean",
             "title": "Allow Model Image Input",
@@ -3487,7 +5228,8 @@
             "type": "string",
             "enum": [
               "typed-tools",
-              "codex-full-access"
+              "codex-full-access",
+              "agent-full-access"
             ],
             "title": "Execution Mode",
             "default": "typed-tools"
@@ -3521,7 +5263,9 @@
               "card-development",
               "environment-scene",
               "project-demo",
-              "project-demo-agent"
+              "project-demo-agent",
+              "unity-asset-edit",
+              "project-export-agent"
             ],
             "title": "Task Profile",
             "default": "asset-exchange"
@@ -3533,6 +5277,14 @@
             "type": "array",
             "maxItems": 16,
             "title": "Selected Scene Object Ids"
+          },
+          "input_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Input Paths"
           }
         },
         "additionalProperties": false,
@@ -3541,6 +5293,28 @@
           "goal"
         ],
         "title": "PrepareAgentTask"
+      },
+      "PrepareUnityAssetTask": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Asset Id"
+          },
+          "source_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Source Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "asset_id",
+          "source_version"
+        ],
+        "title": "PrepareUnityAssetTask"
       },
       "ProductionArtifact": {
         "properties": {
@@ -3651,6 +5425,104 @@
         ],
         "title": "ProductionArtifact"
       },
+      "ProductionEntity": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Ids"
+          },
+          "feature_id": {
+            "type": "string",
+            "title": "Feature Id"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
+          },
+          "adopted_asset_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Adopted Asset Version"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          },
+          "required_node_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Node Ids"
+          },
+          "material_interfaces": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Material Interfaces"
+          },
+          "adoptions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Adoptions"
+          },
+          "builds": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Builds"
+          },
+          "asset_reference": {
+            "$ref": "#/components/schemas/ProductionObjectReference",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "workspace_id",
+          "title",
+          "source_ids",
+          "feature_id",
+          "asset_id",
+          "adopted_asset_version",
+          "revision",
+          "required_node_ids",
+          "asset_reference"
+        ],
+        "title": "ProductionEntity"
+      },
       "ProductionEvents": {
         "properties": {
           "events": {
@@ -3729,6 +5601,56 @@
           "handler_status"
         ],
         "title": "ProductionModule"
+      },
+      "ProductionObjectReference": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "asset",
+              "entity"
+            ],
+            "title": "Type"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "part_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "workspace_id",
+          "type",
+          "id",
+          "version"
+        ],
+        "title": "ProductionObjectReference"
       },
       "ProductionSnapshot": {
         "properties": {
@@ -4079,7 +6001,8 @@
             "enum": [
               "file",
               "procedural",
-              "blender"
+              "blender",
+              "glb"
             ],
             "title": "Source Kind",
             "default": "file"
@@ -4168,6 +6091,41 @@
               }
             ],
             "title": "Parent Source Version"
+          },
+          "geometry_source_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geometry Source Version"
+          },
+          "lookdev_document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookdev Document Id"
+          },
+          "lookdev_document_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookdev Document Version"
           },
           "node_ids": {
             "additionalProperties": {
@@ -4308,9 +6266,16 @@
             "default": 2
           },
           "max_duration_seconds": {
-            "type": "number",
-            "maximum": 86400.0,
-            "exclusiveMinimum": 0.0,
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 31536000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Max Duration Seconds",
             "default": 300
           },
@@ -4347,8 +6312,157 @@
         "type": "object",
         "title": "RuntimeBudget"
       },
+      "SaveCardSource": {
+        "properties": {
+          "allow_game_execution": {
+            "type": "boolean",
+            "title": "Allow Game Execution",
+            "default": false
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Path"
+          },
+          "expected_content": {
+            "type": "string",
+            "maxLength": 65536,
+            "title": "Expected Content"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 65536,
+            "title": "Content"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "expected_content",
+          "content"
+        ],
+        "title": "SaveCardSource"
+      },
+      "SaveCreationBrief": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 128000,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "selected_skills": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "sceneops-threejs-gameplay",
+                "sceneops-threejs-graphics",
+                "sceneops-threejs-ui",
+                "sceneops-threejs-debug",
+                "sceneops-threejs-qa"
+              ]
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Selected Skills"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "content"
+        ],
+        "title": "SaveCreationBrief"
+      },
+      "SourceEntry": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "path",
+          "section",
+          "size_bytes",
+          "editable"
+        ],
+        "title": "SourceEntry"
+      },
+      "TaskArchiveRequest": {
+        "properties": {
+          "archived": {
+            "type": "boolean",
+            "title": "Archived"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "archived"
+        ],
+        "title": "TaskArchiveRequest"
+      },
       "TaskGrant": {
         "properties": {
+          "permission_mode": {
+            "type": "string",
+            "enum": [
+              "scoped",
+              "full"
+            ],
+            "title": "Permission Mode",
+            "default": "full"
+          },
+          "export_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Export Id"
+          },
+          "source_write_paths": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 32,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Write Paths"
+          },
           "allow_model_image_input": {
             "type": "boolean",
             "title": "Allow Model Image Input",
@@ -4439,7 +6553,8 @@
             "type": "string",
             "enum": [
               "typed-tools",
-              "codex-full-access"
+              "codex-full-access",
+              "agent-full-access"
             ],
             "title": "Execution Mode",
             "default": "typed-tools"
@@ -4495,8 +6610,15 @@
             "title": "Authorized At"
           },
           "expires_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expires At"
           },
           "revoked": {
@@ -4511,10 +6633,361 @@
           "task_id",
           "project_id",
           "workspace_root",
-          "capability_ids",
-          "expires_at"
+          "capability_ids"
         ],
         "title": "TaskGrant"
+      },
+      "UnityContentInstance": {
+        "properties": {
+          "position": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Position"
+          },
+          "interaction_distance": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.2,
+            "title": "Interaction Distance"
+          },
+          "requires_key": {
+            "type": "boolean",
+            "title": "Requires Key"
+          },
+          "instance_id": {
+            "type": "string",
+            "title": "Instance Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "position",
+          "interaction_distance",
+          "requires_key",
+          "instance_id"
+        ],
+        "title": "UnityContentInstance"
+      },
+      "UnityContentSnapshot": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "source_asset_id": {
+            "type": "string",
+            "title": "Source Asset Id"
+          },
+          "available_source_version": {
+            "type": "integer",
+            "title": "Available Source Version"
+          },
+          "imported_source_version": {
+            "type": "integer",
+            "title": "Imported Source Version",
+            "default": 0
+          },
+          "editor_version": {
+            "type": "string",
+            "title": "Editor Version",
+            "default": "2022.3.62f3c1"
+          },
+          "project_root": {
+            "type": "string",
+            "title": "Project Root"
+          },
+          "scene_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Path"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "live",
+              "cached"
+            ],
+            "title": "Mode",
+            "default": "planned"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "not_started"
+          },
+          "dirty": {
+            "type": "boolean",
+            "title": "Dirty",
+            "default": false
+          },
+          "playing": {
+            "type": "boolean",
+            "title": "Playing",
+            "default": false
+          },
+          "compiling": {
+            "type": "boolean",
+            "title": "Compiling",
+            "default": false
+          },
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/UnityContentInstance"
+            },
+            "type": "array",
+            "title": "Instances"
+          },
+          "readback": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Readback"
+          },
+          "notice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notice"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "project_id",
+          "workspace_id",
+          "source_asset_id",
+          "available_source_version",
+          "project_root"
+        ],
+        "title": "UnityContentSnapshot"
+      },
+      "UnityInstanceValues": {
+        "properties": {
+          "position": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Position"
+          },
+          "interaction_distance": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.2,
+            "title": "Interaction Distance"
+          },
+          "requires_key": {
+            "type": "boolean",
+            "title": "Requires Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "position",
+          "interaction_distance",
+          "requires_key"
+        ],
+        "title": "UnityInstanceValues"
+      },
+      "UnityManualRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,96}$",
+            "title": "Request Id"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "import",
+              "inspect",
+              "edit",
+              "focus",
+              "save",
+              "reopen",
+              "play",
+              "stop",
+              "act",
+              "agent",
+              "reconcile",
+              "renew"
+            ],
+            "title": "Operation"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Version"
+          },
+          "instance_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance Id"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UnityInstanceValues"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "position": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "interaction_distance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10.0,
+                "minimum": 0.2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interaction Distance"
+          },
+          "requires_key": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requires Key"
+          },
+          "move_x": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Move X",
+            "default": 0
+          },
+          "move_z": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Move Z",
+            "default": 0
+          },
+          "interact": {
+            "type": "boolean",
+            "title": "Interact",
+            "default": false
+          },
+          "duration_frames": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Duration Frames",
+            "default": 1
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "operation"
+        ],
+        "title": "UnityManualRequest"
       },
       "ValidationError": {
         "properties": {

@@ -1,0 +1,479 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-s086-a04",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p0",
+      "center_m": [
+        0.0,
+        0.09621,
+        0.0
+      ],
+      "half_extents_m": [
+        0.5345,
+        0.09621,
+        0.5345
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p1",
+      "center_m": [
+        0.0,
+        0.41691,
+        0.0
+      ],
+      "half_extents_m": [
+        0.13897,
+        0.25656,
+        0.13897
+      ],
+      "axes": [
+        [
+          0.9713379748520297,
+          -0.23770262642713458,
+          0.0
+        ],
+        [
+          0.23770262642713458,
+          0.9713379748520297,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p2",
+      "center_m": [
+        0.0,
+        0.67347,
+        0.0
+      ],
+      "half_extents_m": [
+        0.08552,
+        0.1069,
+        0.08552
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p3",
+      "center_m": [
+        -0.236482,
+        0.52381,
+        0.216621
+      ],
+      "half_extents_m": [
+        0.13897,
+        0.36346,
+        0.13897
+      ],
+      "axes": [
+        [
+          0.9928086358538663,
+          -0.11971220728891936,
+          0.0
+        ],
+        [
+          0.11971220728891936,
+          0.9928086358538663,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p4",
+      "center_m": [
+        -0.236482,
+        0.88727,
+        0.216621
+      ],
+      "half_extents_m": [
+        0.08552,
+        0.1069,
+        0.08552
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p5",
+      "center_m": [
+        0.028061,
+        0.63071,
+        -0.31947
+      ],
+      "half_extents_m": [
+        0.13897,
+        0.47036,
+        0.13897
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 6,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p6",
+      "center_m": [
+        0.028061,
+        1.10107,
+        -0.31947
+      ],
+      "half_extents_m": [
+        0.08552,
+        0.1069,
+        0.08552
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 7,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p7",
+      "center_m": [
+        0.195098,
+        0.41691,
+        0.254529
+      ],
+      "half_extents_m": [
+        0.13897,
+        0.25656,
+        0.13897
+      ],
+      "axes": [
+        [
+          0.9928086358538663,
+          0.11971220728891936,
+          0.0
+        ],
+        [
+          -0.11971220728891936,
+          0.9928086358538663,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 8,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p8",
+      "center_m": [
+        0.195098,
+        0.67347,
+        0.254529
+      ],
+      "half_extents_m": [
+        0.08552,
+        0.1069,
+        0.08552
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 9,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p9",
+      "center_m": [
+        -0.315789,
+        0.52381,
+        -0.055907
+      ],
+      "half_extents_m": [
+        0.13897,
+        0.36346,
+        0.13897
+      ],
+      "axes": [
+        [
+          0.9713379748520297,
+          0.23770262642713458,
+          0.0
+        ],
+        [
+          -0.23770262642713458,
+          0.9713379748520297,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 10,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-s086-a04:p10",
+      "center_m": [
+        -0.315789,
+        0.88727,
+        -0.055907
+      ],
+      "half_extents_m": [
+        0.08552,
+        0.1069,
+        0.08552
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-s086-a04.glb",
+      "triangle_count": 136,
+      "part_count": 11,
+      "distance_m": 0.0,
+      "sha256": "23a86faa4e0bcdd44164c3976dd1bba8db931f49e8aa65d4bbdff6fab9938b8f",
+      "byte_size": 67560
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-s086-a04.lod1.glb",
+      "triangle_count": 96,
+      "part_count": 10,
+      "distance_m": 6.04,
+      "sha256": "d0c4c258f0072df62ad7397414b9fa5f1d5f9cd6f4dd8f3c9d78791bc1e83b39",
+      "byte_size": 61748
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-s086-a04.lod2.glb",
+      "triangle_count": 84,
+      "part_count": 8,
+      "distance_m": 14.5,
+      "sha256": "dcdf2a3887f2faf7291193d18ef8661f8b817bbd78f8f31027fc986451228e63",
+      "byte_size": 58784
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.5345,
+      0.0,
+      -0.5345
+    ],
+    "max": [
+      0.5345,
+      1.20797,
+      0.5345
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

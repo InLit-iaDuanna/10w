@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: Matrix composition preserves glTF column-major translation and rotation
+ok 1 - Matrix composition preserves glTF column-major translation and rotation
+  ---
+  duration_ms: 1.699536
+  type: 'test'
+  ...
+# Subtest: Actual GLBs parse at all three LODs for every model and scene
+ok 2 - Actual GLBs parse at all three LODs for every model and scene
+  ---
+  duration_ms: 1299.041353
+  type: 'test'
+  ...
+# Subtest: JavaScript skeletal evaluation matches independent Python reference poses
+ok 3 - JavaScript skeletal evaluation matches independent Python reference poses
+  ---
+  duration_ms: 43.473395
+  type: 'test'
+  ...
+# Subtest: Corrupt and truncated input is rejected
+ok 4 - Corrupt and truncated input is rejected
+  ---
+  duration_ms: 0.373671
+  type: 'test'
+  ...
+# Subtest: Reject unknown objects and actions instead of pretending success
+ok 5 - Reject unknown objects and actions instead of pretending success
+  ---
+  duration_ms: 49.381394
+  type: 'test'
+  ...
+# Subtest: Reach validation uses explicit finite actor coordinates
+ok 6 - Reach validation uses explicit finite actor coordinates
+  ---
+  duration_ms: 50.074597
+  type: 'test'
+  ...
+# Subtest: Equip requires a mount and disables the bound physics body
+ok 7 - Equip requires a mount and disables the bound physics body
+  ---
+  duration_ms: 38.882859
+  type: 'test'
+  ...
+# Subtest: Drop detaches, re-enables gravity and preserves explicit velocity
+ok 8 - Drop detaches, re-enables gravity and preserves explicit velocity
+  ---
+  duration_ms: 50.633771
+  type: 'test'
+  ...
+# Subtest: Cannot use or drop an item that is not held
+ok 9 - Cannot use or drop an item that is not held
+  ---
+  duration_ms: 55.961797
+  type: 'test'
+  ...
+# Subtest: Interaction events retain asset identity separately from instance identity
+ok 10 - Interaction events retain asset identity separately from instance identity
+  ---
+  duration_ms: 48.042366
+  type: 'test'
+  ...
+# Subtest: Runtime pack paths cannot escape the selected root
+ok 11 - Runtime pack paths cannot escape the selected root
+  ---
+  duration_ms: 33.997836
+  type: 'test'
+  ...
+# Subtest: Pause and disposed states do not step the physics world
+ok 12 - Pause and disposed states do not step the physics world
+  ---
+  duration_ms: 33.303041
+  type: 'test'
+  ...
+# Subtest: OBB separating axis: separated and touching boxes do not penetrate
+ok 13 - OBB separating axis: separated and touching boxes do not penetrate
+  ---
+  duration_ms: 1.461747
+  type: 'test'
+  ...
+# Subtest: OBB separating axis returns minimum penetration and correct direction
+ok 14 - OBB separating axis returns minimum penetration and correct direction
+  ---
+  duration_ms: 1.166794
+  type: 'test'
+  ...
+# Subtest: Rotated OBB broad phase includes full diagonal width
+ok 15 - Rotated OBB broad phase includes full diagonal width
+  ---
+  duration_ms: 0.305189
+  type: 'test'
+  ...
+# Subtest: Gravity produces a falling prop
+ok 16 - Gravity produces a falling prop
+  ---
+  duration_ms: 1.03124
+  type: 'test'
+  ...
+# Subtest: Prop lands on a floor without penetrating it
+ok 17 - Prop lands on a floor without penetrating it
+  ---
+  duration_ms: 6.061223
+  type: 'test'
+  ...
+# Subtest: Fixed bodies ignore gravity
+ok 18 - Fixed bodies ignore gravity
+  ---
+  duration_ms: 0.441824
+  type: 'test'
+  ...
+# Subtest: Initially sleeping props remain at their authored position
+ok 19 - Initially sleeping props remain at their authored position
+  ---
+  duration_ms: 0.417478
+  type: 'test'
+  ...
+# Subtest: Impulse wakes a sleeping prop and scales by mass
+ok 20 - Impulse wakes a sleeping prop and scales by mass
+  ---
+  duration_ms: 0.343016
+  type: 'test'
+  ...
+# Subtest: Sensors report passage without stopping the prop
+ok 21 - Sensors report passage without stopping the prop
+  ---
+  duration_ms: 5.195351
+  type: 'test'
+  ...
+# Subtest: Disabled held props are excluded from gravity and collision
+ok 22 - Disabled held props are excluded from gravity and collision
+  ---
+  duration_ms: 0.427973
+  type: 'test'
+  ...
+# Subtest: Equal-mass dynamic collision separates both bodies
+ok 23 - Equal-mass dynamic collision separates both bodies
+  ---
+  duration_ms: 0.592961
+  type: 'test'
+  ...
+# Subtest: Fixed stepping is consistent between 60 Hz and 120 Hz callers
+ok 24 - Fixed stepping is consistent between 60 Hz and 120 Hz callers
+  ---
+  duration_ms: 0.733543
+  type: 'test'
+  ...
+# Subtest: Excessively large frame dt is clamped to avoid runaway catch-up
+ok 25 - Excessively large frame dt is clamped to avoid runaway catch-up
+  ---
+  duration_ms: 0.083336
+  type: 'test'
+  ...
+# Subtest: Removing a body is idempotent
+ok 26 - Removing a body is idempotent
+  ---
+  duration_ms: 0.090476
+  type: 'test'
+  ...
+# Subtest: Reject duplicate identity, invalid mass, unsupported mode and bad bounds
+ok 27 - Reject duplicate identity, invalid mass, unsupported mode and bad bounds
+  ---
+  duration_ms: 0.286842
+  type: 'test'
+  ...
+# Subtest: Reject nonfinite values and invalid update/impulse inputs
+ok 28 - Reject nonfinite values and invalid update/impulse inputs
+  ---
+  duration_ms: 0.171148
+  type: 'test'
+  ...
+# Subtest: A moving kinematic mechanism wakes and pushes an overlapping sleeping prop
+ok 29 - A moving kinematic mechanism wakes and pushes an overlapping sleeping prop
+  ---
+  duration_ms: 0.271007
+  type: 'test'
+  ...
+# Subtest: Damping and per-body gravity scale are honored
+ok 30 - Damping and per-body gravity scale are honored
+  ---
+  duration_ms: 0.16634
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1411.08839

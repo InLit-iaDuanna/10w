@@ -1,0 +1,31 @@
+{
+  "pack_id": "atlas100",
+  "version": "2.0.0",
+  "execution_mode": "live",
+  "producing_module": "asset-library supplement",
+  "authoring": "AI-authored deterministic source, executed locally",
+  "timestamp_utc": "2026-09-10T03:06:21.067335+00:00",
+  "source_pack_sha256": "001c93bda6b7ba14da9591e1d58e42901c25b1122de884bfd3c794f44f327a62",
+  "source_repository_commit": "190f43bfccfed132ade2e62888cbef6beba4d847",
+  "original_asset_ids_preserved": true,
+  "original_source_pack_overwritten": false,
+  "tool_versions": {
+    "python": "3.13.5",
+    "numpy": "2.3.5",
+    "pillow": "12.3.0",
+    "numba": "0.65.1",
+    "jsonschema": "4.26.0"
+  },
+  "generation_recipe": "source_v2/build.py + source_v2/rigs.py + source_v2/surfaces.py + source_v1/geometry.py",
+  "image_service_calls": 0,
+  "external_asset_downloads": 0,
+  "original_user_assets_processed": 0,
+  "approval_state": "requested by user; no publication/merge performed",
+  "sha256_location": "catalog.json per GLB; CHECKSUMS.sha256 per delivered file",
+  "not_executed": [
+    "Blender",
+    "Unity",
+    "actual 10w host integration",
+    "GPU render acceptance"
+  ]
+}

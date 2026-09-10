@@ -55,7 +55,7 @@ test("public contribution registers lazy browser and inspector", () => {
   assert.equal(moduleContribution.manifest.id, "asset-library");
   assert.deepEqual(
     moduleContribution.editors.map((editor) => editor.id),
-    ["asset.browser", "asset.inspector"],
+    ["asset.browser", "asset.inspector", "asset.builtin-library"],
   );
   assert.equal(moduleContribution.editors[0].requiredPermissions[0], "asset:read");
 });

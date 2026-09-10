@@ -8,7 +8,7 @@ import { agentTasks, type AgentTask } from '../client';
 import type { components } from '../generated/agent-api';
 
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
-const content:components['schemas']['DemoContentIndex']={project_id:'p1',workspace_id:'w1',scene_version:3,assets:[],instances:[],sources:[{id:'write-1',latest_write_request_id:'write-1',path:'src/puzzle.ts',content:'export const answer=1;',source_version:2,edit_mode:'source-agent'}],unbuilt_changes:true,source_notice:'源与试玩独立'};
+const content:components['schemas']['DemoContentIndex']={project_id:'p1',workspace_id:'w1',scene_version:3,assets:[],instances:[],sources_truncated:false,sources:[{origin:'typed-action',id:'write-1',latest_write_request_id:'write-1',path:'src/puzzle.ts',content:'export const answer=1;',source_version:2,edit_mode:'source-agent'}],unbuilt_changes:true,source_notice:'源与试玩独立'};
 const task={id:'task-1',observations:{},authorization_card:{allow_blender_edit:false}} as AgentTask;
 
 test('source target uses recorded identity and source text rather than client path',()=>{
@@ -66,5 +66,23 @@ test('shared recipe exposes current material and dimensions with real reference 
  assert.deepEqual(entry.values,{width_m:'1.5',height_m:'2.3',thickness_m:'0.2',color_hex:'#123456',roughness:'0.4',metalness:'0.6'});
  assert.equal(entry.target.source_version,2);
  assert.equal(entry.target.expected_scene_version,content.scene_version);
- assert.deepEqual(entry.impact,['入口 (door-a)']);
+ assert.equal(entry.target.id, 'door-asset');
+ assert.deepEqual(entry.impact,['入口']);
+});
+
+test('native shared asset updates exact version through content service',async()=>{
+ localStorage.clear();
+ const asset={id:'rock',title:'岩石',current_version:2,versions:[{source_version:2,source_kind:'glb',recipe:null}]} as components['schemas']['ProjectAssetEntry'];
+ const instance={id:'rock-a',title:'岩石 A',asset_id:'rock',asset_version:1,transform:{position_m:[0,0,0],rotation_y_deg:0,scale:1}} as components['schemas']['EnvironmentObject'];
+ const value={...content,assets:[asset],instances:[instance]};
+ const host=document.createElement('div'),root=createRoot(host),cache=new QueryClient({defaultOptions:{queries:{gcTime:0},mutations:{gcTime:0}}});
+ const save=mock.method(agentTasks,'saveContent',async()=>({content:value,affected_instance_ids:['rock-a'],notice:'saved'}));
+ try {
+  await act(async()=>root.render(<QueryClientProvider client={cache}><DemoContentEditor task={{...task,observations:{native_production:true}}} content={value} viewedCandidateId={null} unavailable={false} agentUnavailable={false}/></QueryClientProvider>));
+  await act(async()=>{const select=host.querySelector('select')!;select.value='asset:rock';select.dispatchEvent(new Event('change',{bubbles:true}));});
+  assert.ok(!host.textContent?.includes('准备 Blender 编辑授权'));
+  await act(async()=>Array.from(host.querySelectorAll('button')).find(b=>b.textContent==='将共享引用更新到当前资产版本')!.click());
+  assert.equal(save.mock.calls[0]!.arguments[1]!.asset_version,2);
+  assert.equal(save.mock.calls[0]!.arguments[1]!.target.expected_scene_version,3);
+ } finally {save.mock.restore();await act(async()=>root.unmount());cache.clear();localStorage.clear();}
 });

@@ -1,0 +1,1355 @@
+{
+  "version": "2.0.0",
+  "material_sets": [
+    {
+      "style": "solarpunk",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/solarpunk/body/basecolor.png",
+        "normal": "textures/solarpunk/body/normal.png",
+        "roughness": "textures/solarpunk/body/roughness.png",
+        "metallic": "textures/solarpunk/body/metallic.png",
+        "ao": "textures/solarpunk/body/ao.png",
+        "height": "textures/solarpunk/body/height.png",
+        "emissive": "textures/solarpunk/body/emissive.png",
+        "orm": "textures/solarpunk/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "solarpunk",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/solarpunk/ivory/basecolor.png",
+        "normal": "textures/solarpunk/ivory/normal.png",
+        "roughness": "textures/solarpunk/ivory/roughness.png",
+        "metallic": "textures/solarpunk/ivory/metallic.png",
+        "ao": "textures/solarpunk/ivory/ao.png",
+        "height": "textures/solarpunk/ivory/height.png",
+        "emissive": "textures/solarpunk/ivory/emissive.png",
+        "orm": "textures/solarpunk/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "solarpunk",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/solarpunk/accent/basecolor.png",
+        "normal": "textures/solarpunk/accent/normal.png",
+        "roughness": "textures/solarpunk/accent/roughness.png",
+        "metallic": "textures/solarpunk/accent/metallic.png",
+        "ao": "textures/solarpunk/accent/ao.png",
+        "height": "textures/solarpunk/accent/height.png",
+        "emissive": "textures/solarpunk/accent/emissive.png",
+        "orm": "textures/solarpunk/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "solarpunk",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/solarpunk/glow/basecolor.png",
+        "normal": "textures/solarpunk/glow/normal.png",
+        "roughness": "textures/solarpunk/glow/roughness.png",
+        "metallic": "textures/solarpunk/glow/metallic.png",
+        "ao": "textures/solarpunk/glow/ao.png",
+        "height": "textures/solarpunk/glow/height.png",
+        "emissive": "textures/solarpunk/glow/emissive.png",
+        "orm": "textures/solarpunk/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "solarpunk",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/solarpunk/shadow/basecolor.png",
+        "normal": "textures/solarpunk/shadow/normal.png",
+        "roughness": "textures/solarpunk/shadow/roughness.png",
+        "metallic": "textures/solarpunk/shadow/metallic.png",
+        "ao": "textures/solarpunk/shadow/ao.png",
+        "height": "textures/solarpunk/shadow/height.png",
+        "emissive": "textures/solarpunk/shadow/emissive.png",
+        "orm": "textures/solarpunk/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "clockwork",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/clockwork/body/basecolor.png",
+        "normal": "textures/clockwork/body/normal.png",
+        "roughness": "textures/clockwork/body/roughness.png",
+        "metallic": "textures/clockwork/body/metallic.png",
+        "ao": "textures/clockwork/body/ao.png",
+        "height": "textures/clockwork/body/height.png",
+        "emissive": "textures/clockwork/body/emissive.png",
+        "orm": "textures/clockwork/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "clockwork",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/clockwork/ivory/basecolor.png",
+        "normal": "textures/clockwork/ivory/normal.png",
+        "roughness": "textures/clockwork/ivory/roughness.png",
+        "metallic": "textures/clockwork/ivory/metallic.png",
+        "ao": "textures/clockwork/ivory/ao.png",
+        "height": "textures/clockwork/ivory/height.png",
+        "emissive": "textures/clockwork/ivory/emissive.png",
+        "orm": "textures/clockwork/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "clockwork",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/clockwork/accent/basecolor.png",
+        "normal": "textures/clockwork/accent/normal.png",
+        "roughness": "textures/clockwork/accent/roughness.png",
+        "metallic": "textures/clockwork/accent/metallic.png",
+        "ao": "textures/clockwork/accent/ao.png",
+        "height": "textures/clockwork/accent/height.png",
+        "emissive": "textures/clockwork/accent/emissive.png",
+        "orm": "textures/clockwork/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "clockwork",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/clockwork/glow/basecolor.png",
+        "normal": "textures/clockwork/glow/normal.png",
+        "roughness": "textures/clockwork/glow/roughness.png",
+        "metallic": "textures/clockwork/glow/metallic.png",
+        "ao": "textures/clockwork/glow/ao.png",
+        "height": "textures/clockwork/glow/height.png",
+        "emissive": "textures/clockwork/glow/emissive.png",
+        "orm": "textures/clockwork/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "clockwork",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/clockwork/shadow/basecolor.png",
+        "normal": "textures/clockwork/shadow/normal.png",
+        "roughness": "textures/clockwork/shadow/roughness.png",
+        "metallic": "textures/clockwork/shadow/metallic.png",
+        "ao": "textures/clockwork/shadow/ao.png",
+        "height": "textures/clockwork/shadow/height.png",
+        "emissive": "textures/clockwork/shadow/emissive.png",
+        "orm": "textures/clockwork/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "basalt",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/basalt/body/basecolor.png",
+        "normal": "textures/basalt/body/normal.png",
+        "roughness": "textures/basalt/body/roughness.png",
+        "metallic": "textures/basalt/body/metallic.png",
+        "ao": "textures/basalt/body/ao.png",
+        "height": "textures/basalt/body/height.png",
+        "emissive": "textures/basalt/body/emissive.png",
+        "orm": "textures/basalt/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "basalt",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/basalt/ivory/basecolor.png",
+        "normal": "textures/basalt/ivory/normal.png",
+        "roughness": "textures/basalt/ivory/roughness.png",
+        "metallic": "textures/basalt/ivory/metallic.png",
+        "ao": "textures/basalt/ivory/ao.png",
+        "height": "textures/basalt/ivory/height.png",
+        "emissive": "textures/basalt/ivory/emissive.png",
+        "orm": "textures/basalt/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "basalt",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/basalt/accent/basecolor.png",
+        "normal": "textures/basalt/accent/normal.png",
+        "roughness": "textures/basalt/accent/roughness.png",
+        "metallic": "textures/basalt/accent/metallic.png",
+        "ao": "textures/basalt/accent/ao.png",
+        "height": "textures/basalt/accent/height.png",
+        "emissive": "textures/basalt/accent/emissive.png",
+        "orm": "textures/basalt/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "basalt",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/basalt/glow/basecolor.png",
+        "normal": "textures/basalt/glow/normal.png",
+        "roughness": "textures/basalt/glow/roughness.png",
+        "metallic": "textures/basalt/glow/metallic.png",
+        "ao": "textures/basalt/glow/ao.png",
+        "height": "textures/basalt/glow/height.png",
+        "emissive": "textures/basalt/glow/emissive.png",
+        "orm": "textures/basalt/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "basalt",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/basalt/shadow/basecolor.png",
+        "normal": "textures/basalt/shadow/normal.png",
+        "roughness": "textures/basalt/shadow/roughness.png",
+        "metallic": "textures/basalt/shadow/metallic.png",
+        "ao": "textures/basalt/shadow/ao.png",
+        "height": "textures/basalt/shadow/height.png",
+        "emissive": "textures/basalt/shadow/emissive.png",
+        "orm": "textures/basalt/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "porcelain",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/porcelain/body/basecolor.png",
+        "normal": "textures/porcelain/body/normal.png",
+        "roughness": "textures/porcelain/body/roughness.png",
+        "metallic": "textures/porcelain/body/metallic.png",
+        "ao": "textures/porcelain/body/ao.png",
+        "height": "textures/porcelain/body/height.png",
+        "emissive": "textures/porcelain/body/emissive.png",
+        "orm": "textures/porcelain/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "porcelain",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/porcelain/ivory/basecolor.png",
+        "normal": "textures/porcelain/ivory/normal.png",
+        "roughness": "textures/porcelain/ivory/roughness.png",
+        "metallic": "textures/porcelain/ivory/metallic.png",
+        "ao": "textures/porcelain/ivory/ao.png",
+        "height": "textures/porcelain/ivory/height.png",
+        "emissive": "textures/porcelain/ivory/emissive.png",
+        "orm": "textures/porcelain/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "porcelain",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/porcelain/accent/basecolor.png",
+        "normal": "textures/porcelain/accent/normal.png",
+        "roughness": "textures/porcelain/accent/roughness.png",
+        "metallic": "textures/porcelain/accent/metallic.png",
+        "ao": "textures/porcelain/accent/ao.png",
+        "height": "textures/porcelain/accent/height.png",
+        "emissive": "textures/porcelain/accent/emissive.png",
+        "orm": "textures/porcelain/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "porcelain",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/porcelain/glow/basecolor.png",
+        "normal": "textures/porcelain/glow/normal.png",
+        "roughness": "textures/porcelain/glow/roughness.png",
+        "metallic": "textures/porcelain/glow/metallic.png",
+        "ao": "textures/porcelain/glow/ao.png",
+        "height": "textures/porcelain/glow/height.png",
+        "emissive": "textures/porcelain/glow/emissive.png",
+        "orm": "textures/porcelain/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "porcelain",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/porcelain/shadow/basecolor.png",
+        "normal": "textures/porcelain/shadow/normal.png",
+        "roughness": "textures/porcelain/shadow/roughness.png",
+        "metallic": "textures/porcelain/shadow/metallic.png",
+        "ao": "textures/porcelain/shadow/ao.png",
+        "height": "textures/porcelain/shadow/height.png",
+        "emissive": "textures/porcelain/shadow/emissive.png",
+        "orm": "textures/porcelain/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "sailpunk",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/sailpunk/body/basecolor.png",
+        "normal": "textures/sailpunk/body/normal.png",
+        "roughness": "textures/sailpunk/body/roughness.png",
+        "metallic": "textures/sailpunk/body/metallic.png",
+        "ao": "textures/sailpunk/body/ao.png",
+        "height": "textures/sailpunk/body/height.png",
+        "emissive": "textures/sailpunk/body/emissive.png",
+        "orm": "textures/sailpunk/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "sailpunk",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/sailpunk/ivory/basecolor.png",
+        "normal": "textures/sailpunk/ivory/normal.png",
+        "roughness": "textures/sailpunk/ivory/roughness.png",
+        "metallic": "textures/sailpunk/ivory/metallic.png",
+        "ao": "textures/sailpunk/ivory/ao.png",
+        "height": "textures/sailpunk/ivory/height.png",
+        "emissive": "textures/sailpunk/ivory/emissive.png",
+        "orm": "textures/sailpunk/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "sailpunk",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/sailpunk/accent/basecolor.png",
+        "normal": "textures/sailpunk/accent/normal.png",
+        "roughness": "textures/sailpunk/accent/roughness.png",
+        "metallic": "textures/sailpunk/accent/metallic.png",
+        "ao": "textures/sailpunk/accent/ao.png",
+        "height": "textures/sailpunk/accent/height.png",
+        "emissive": "textures/sailpunk/accent/emissive.png",
+        "orm": "textures/sailpunk/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "sailpunk",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/sailpunk/glow/basecolor.png",
+        "normal": "textures/sailpunk/glow/normal.png",
+        "roughness": "textures/sailpunk/glow/roughness.png",
+        "metallic": "textures/sailpunk/glow/metallic.png",
+        "ao": "textures/sailpunk/glow/ao.png",
+        "height": "textures/sailpunk/glow/height.png",
+        "emissive": "textures/sailpunk/glow/emissive.png",
+        "orm": "textures/sailpunk/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "sailpunk",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/sailpunk/shadow/basecolor.png",
+        "normal": "textures/sailpunk/shadow/normal.png",
+        "roughness": "textures/sailpunk/shadow/roughness.png",
+        "metallic": "textures/sailpunk/shadow/metallic.png",
+        "ao": "textures/sailpunk/shadow/ao.png",
+        "height": "textures/sailpunk/shadow/height.png",
+        "emissive": "textures/sailpunk/shadow/emissive.png",
+        "orm": "textures/sailpunk/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "polar",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/polar/body/basecolor.png",
+        "normal": "textures/polar/body/normal.png",
+        "roughness": "textures/polar/body/roughness.png",
+        "metallic": "textures/polar/body/metallic.png",
+        "ao": "textures/polar/body/ao.png",
+        "height": "textures/polar/body/height.png",
+        "emissive": "textures/polar/body/emissive.png",
+        "orm": "textures/polar/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "polar",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/polar/ivory/basecolor.png",
+        "normal": "textures/polar/ivory/normal.png",
+        "roughness": "textures/polar/ivory/roughness.png",
+        "metallic": "textures/polar/ivory/metallic.png",
+        "ao": "textures/polar/ivory/ao.png",
+        "height": "textures/polar/ivory/height.png",
+        "emissive": "textures/polar/ivory/emissive.png",
+        "orm": "textures/polar/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "polar",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/polar/accent/basecolor.png",
+        "normal": "textures/polar/accent/normal.png",
+        "roughness": "textures/polar/accent/roughness.png",
+        "metallic": "textures/polar/accent/metallic.png",
+        "ao": "textures/polar/accent/ao.png",
+        "height": "textures/polar/accent/height.png",
+        "emissive": "textures/polar/accent/emissive.png",
+        "orm": "textures/polar/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "polar",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/polar/glow/basecolor.png",
+        "normal": "textures/polar/glow/normal.png",
+        "roughness": "textures/polar/glow/roughness.png",
+        "metallic": "textures/polar/glow/metallic.png",
+        "ao": "textures/polar/glow/ao.png",
+        "height": "textures/polar/glow/height.png",
+        "emissive": "textures/polar/glow/emissive.png",
+        "orm": "textures/polar/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "polar",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/polar/shadow/basecolor.png",
+        "normal": "textures/polar/shadow/normal.png",
+        "roughness": "textures/polar/shadow/roughness.png",
+        "metallic": "textures/polar/shadow/metallic.png",
+        "ao": "textures/polar/shadow/ao.png",
+        "height": "textures/polar/shadow/height.png",
+        "emissive": "textures/polar/shadow/emissive.png",
+        "orm": "textures/polar/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "abyss",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/abyss/body/basecolor.png",
+        "normal": "textures/abyss/body/normal.png",
+        "roughness": "textures/abyss/body/roughness.png",
+        "metallic": "textures/abyss/body/metallic.png",
+        "ao": "textures/abyss/body/ao.png",
+        "height": "textures/abyss/body/height.png",
+        "emissive": "textures/abyss/body/emissive.png",
+        "orm": "textures/abyss/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "abyss",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/abyss/ivory/basecolor.png",
+        "normal": "textures/abyss/ivory/normal.png",
+        "roughness": "textures/abyss/ivory/roughness.png",
+        "metallic": "textures/abyss/ivory/metallic.png",
+        "ao": "textures/abyss/ivory/ao.png",
+        "height": "textures/abyss/ivory/height.png",
+        "emissive": "textures/abyss/ivory/emissive.png",
+        "orm": "textures/abyss/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "abyss",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/abyss/accent/basecolor.png",
+        "normal": "textures/abyss/accent/normal.png",
+        "roughness": "textures/abyss/accent/roughness.png",
+        "metallic": "textures/abyss/accent/metallic.png",
+        "ao": "textures/abyss/accent/ao.png",
+        "height": "textures/abyss/accent/height.png",
+        "emissive": "textures/abyss/accent/emissive.png",
+        "orm": "textures/abyss/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "abyss",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/abyss/glow/basecolor.png",
+        "normal": "textures/abyss/glow/normal.png",
+        "roughness": "textures/abyss/glow/roughness.png",
+        "metallic": "textures/abyss/glow/metallic.png",
+        "ao": "textures/abyss/glow/ao.png",
+        "height": "textures/abyss/glow/height.png",
+        "emissive": "textures/abyss/glow/emissive.png",
+        "orm": "textures/abyss/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "abyss",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/abyss/shadow/basecolor.png",
+        "normal": "textures/abyss/shadow/normal.png",
+        "roughness": "textures/abyss/shadow/roughness.png",
+        "metallic": "textures/abyss/shadow/metallic.png",
+        "ao": "textures/abyss/shadow/ao.png",
+        "height": "textures/abyss/shadow/height.png",
+        "emissive": "textures/abyss/shadow/emissive.png",
+        "orm": "textures/abyss/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "atompunk",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/atompunk/body/basecolor.png",
+        "normal": "textures/atompunk/body/normal.png",
+        "roughness": "textures/atompunk/body/roughness.png",
+        "metallic": "textures/atompunk/body/metallic.png",
+        "ao": "textures/atompunk/body/ao.png",
+        "height": "textures/atompunk/body/height.png",
+        "emissive": "textures/atompunk/body/emissive.png",
+        "orm": "textures/atompunk/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "atompunk",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/atompunk/ivory/basecolor.png",
+        "normal": "textures/atompunk/ivory/normal.png",
+        "roughness": "textures/atompunk/ivory/roughness.png",
+        "metallic": "textures/atompunk/ivory/metallic.png",
+        "ao": "textures/atompunk/ivory/ao.png",
+        "height": "textures/atompunk/ivory/height.png",
+        "emissive": "textures/atompunk/ivory/emissive.png",
+        "orm": "textures/atompunk/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "atompunk",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/atompunk/accent/basecolor.png",
+        "normal": "textures/atompunk/accent/normal.png",
+        "roughness": "textures/atompunk/accent/roughness.png",
+        "metallic": "textures/atompunk/accent/metallic.png",
+        "ao": "textures/atompunk/accent/ao.png",
+        "height": "textures/atompunk/accent/height.png",
+        "emissive": "textures/atompunk/accent/emissive.png",
+        "orm": "textures/atompunk/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "atompunk",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/atompunk/glow/basecolor.png",
+        "normal": "textures/atompunk/glow/normal.png",
+        "roughness": "textures/atompunk/glow/roughness.png",
+        "metallic": "textures/atompunk/glow/metallic.png",
+        "ao": "textures/atompunk/glow/ao.png",
+        "height": "textures/atompunk/glow/height.png",
+        "emissive": "textures/atompunk/glow/emissive.png",
+        "orm": "textures/atompunk/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "atompunk",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/atompunk/shadow/basecolor.png",
+        "normal": "textures/atompunk/shadow/normal.png",
+        "roughness": "textures/atompunk/shadow/roughness.png",
+        "metallic": "textures/atompunk/shadow/metallic.png",
+        "ao": "textures/atompunk/shadow/ao.png",
+        "height": "textures/atompunk/shadow/height.png",
+        "emissive": "textures/atompunk/shadow/emissive.png",
+        "orm": "textures/atompunk/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "papercraft",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/papercraft/body/basecolor.png",
+        "normal": "textures/papercraft/body/normal.png",
+        "roughness": "textures/papercraft/body/roughness.png",
+        "metallic": "textures/papercraft/body/metallic.png",
+        "ao": "textures/papercraft/body/ao.png",
+        "height": "textures/papercraft/body/height.png",
+        "emissive": "textures/papercraft/body/emissive.png",
+        "orm": "textures/papercraft/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "papercraft",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/papercraft/ivory/basecolor.png",
+        "normal": "textures/papercraft/ivory/normal.png",
+        "roughness": "textures/papercraft/ivory/roughness.png",
+        "metallic": "textures/papercraft/ivory/metallic.png",
+        "ao": "textures/papercraft/ivory/ao.png",
+        "height": "textures/papercraft/ivory/height.png",
+        "emissive": "textures/papercraft/ivory/emissive.png",
+        "orm": "textures/papercraft/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "papercraft",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/papercraft/accent/basecolor.png",
+        "normal": "textures/papercraft/accent/normal.png",
+        "roughness": "textures/papercraft/accent/roughness.png",
+        "metallic": "textures/papercraft/accent/metallic.png",
+        "ao": "textures/papercraft/accent/ao.png",
+        "height": "textures/papercraft/accent/height.png",
+        "emissive": "textures/papercraft/accent/emissive.png",
+        "orm": "textures/papercraft/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "papercraft",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/papercraft/glow/basecolor.png",
+        "normal": "textures/papercraft/glow/normal.png",
+        "roughness": "textures/papercraft/glow/roughness.png",
+        "metallic": "textures/papercraft/glow/metallic.png",
+        "ao": "textures/papercraft/glow/ao.png",
+        "height": "textures/papercraft/glow/height.png",
+        "emissive": "textures/papercraft/glow/emissive.png",
+        "orm": "textures/papercraft/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "papercraft",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/papercraft/shadow/basecolor.png",
+        "normal": "textures/papercraft/shadow/normal.png",
+        "roughness": "textures/papercraft/shadow/roughness.png",
+        "metallic": "textures/papercraft/shadow/metallic.png",
+        "ao": "textures/papercraft/shadow/ao.png",
+        "height": "textures/papercraft/shadow/height.png",
+        "emissive": "textures/papercraft/shadow/emissive.png",
+        "orm": "textures/papercraft/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "desertdeco",
+      "role": "body",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/desertdeco/body/basecolor.png",
+        "normal": "textures/desertdeco/body/normal.png",
+        "roughness": "textures/desertdeco/body/roughness.png",
+        "metallic": "textures/desertdeco/body/metallic.png",
+        "ao": "textures/desertdeco/body/ao.png",
+        "height": "textures/desertdeco/body/height.png",
+        "emissive": "textures/desertdeco/body/emissive.png",
+        "orm": "textures/desertdeco/body/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "desertdeco",
+      "role": "ivory",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/desertdeco/ivory/basecolor.png",
+        "normal": "textures/desertdeco/ivory/normal.png",
+        "roughness": "textures/desertdeco/ivory/roughness.png",
+        "metallic": "textures/desertdeco/ivory/metallic.png",
+        "ao": "textures/desertdeco/ivory/ao.png",
+        "height": "textures/desertdeco/ivory/height.png",
+        "emissive": "textures/desertdeco/ivory/emissive.png",
+        "orm": "textures/desertdeco/ivory/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "desertdeco",
+      "role": "accent",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/desertdeco/accent/basecolor.png",
+        "normal": "textures/desertdeco/accent/normal.png",
+        "roughness": "textures/desertdeco/accent/roughness.png",
+        "metallic": "textures/desertdeco/accent/metallic.png",
+        "ao": "textures/desertdeco/accent/ao.png",
+        "height": "textures/desertdeco/accent/height.png",
+        "emissive": "textures/desertdeco/accent/emissive.png",
+        "orm": "textures/desertdeco/accent/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "desertdeco",
+      "role": "glow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/desertdeco/glow/basecolor.png",
+        "normal": "textures/desertdeco/glow/normal.png",
+        "roughness": "textures/desertdeco/glow/roughness.png",
+        "metallic": "textures/desertdeco/glow/metallic.png",
+        "ao": "textures/desertdeco/glow/ao.png",
+        "height": "textures/desertdeco/glow/height.png",
+        "emissive": "textures/desertdeco/glow/emissive.png",
+        "orm": "textures/desertdeco/glow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    },
+    {
+      "style": "desertdeco",
+      "role": "shadow",
+      "resolution": [
+        512,
+        512
+      ],
+      "maps": {
+        "basecolor": "textures/desertdeco/shadow/basecolor.png",
+        "normal": "textures/desertdeco/shadow/normal.png",
+        "roughness": "textures/desertdeco/shadow/roughness.png",
+        "metallic": "textures/desertdeco/shadow/metallic.png",
+        "ao": "textures/desertdeco/shadow/ao.png",
+        "height": "textures/desertdeco/shadow/height.png",
+        "emissive": "textures/desertdeco/shadow/emissive.png",
+        "orm": "textures/desertdeco/shadow/orm.png"
+      },
+      "normal_convention": "OpenGL +Y tangent space",
+      "ao_scope": "material-microrelief, not object/high-poly baked AO",
+      "color_space": {
+        "basecolor": "sRGB",
+        "emissive": "sRGB",
+        "normal": "linear",
+        "orm": "linear",
+        "height": "linear"
+      }
+    }
+  ]
+}

@@ -45,6 +45,7 @@ contributes:
     - review.rollback.proposed@1
     - review.rollback.executed@1
     - review.release.linked@1
+  jobs: []
   workflows:
     - review-to-release
   policy_gates:

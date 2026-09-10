@@ -1,0 +1,864 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-desertdeco-eq05",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "dynamic",
+    "initially_sleeping": true,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p0",
+      "center_m": [
+        0.0,
+        1.0242,
+        0.0
+      ],
+      "half_extents_m": [
+        0.03983,
+        1.0242,
+        0.03983
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p1",
+      "center_m": [
+        0.0,
+        0.3414,
+        0.0
+      ],
+      "half_extents_m": [
+        0.060314,
+        0.036985,
+        0.060314
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p2",
+      "center_m": [
+        0.0,
+        0.5121,
+        0.0
+      ],
+      "half_extents_m": [
+        0.060314,
+        0.036985,
+        0.060314
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p3",
+      "center_m": [
+        0.0,
+        0.6828,
+        0.0
+      ],
+      "half_extents_m": [
+        0.060314,
+        0.036985,
+        0.060314
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c0",
+      "center_m": [
+        0.20775325856990537,
+        2.2871378329384604,
+        0.0
+      ],
+      "half_extents_m": [
+        0.08584821344146523,
+        0.0468451132432985,
+        0.036416
+      ],
+      "axes": [
+        [
+          -0.2630200744588108,
+          0.9647903608720818,
+          0.0
+        ],
+        [
+          -0.9647903608720818,
+          -0.26302007445881054,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c1",
+      "center_m": [
+        0.15208594071116502,
+        2.404982816424757,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07931620664544696,
+        0.05146541305576008,
+        0.036416
+      ],
+      "axes": [
+        [
+          -0.7071067811865476,
+          0.7071067811865476,
+          0.0
+        ],
+        [
+          -0.7071067811865475,
+          -0.7071067811865475,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c2",
+      "center_m": [
+        0.055667317858740364,
+        2.473020649363218,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07219560597539935,
+        0.055703795626712356,
+        0.036416
+      ],
+      "axes": [
+        [
+          -0.9647903608720816,
+          0.2630200744588107,
+          0.0
+        ],
+        [
+          -0.26302007445881076,
+          -0.9647903608720816,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c3",
+      "center_m": [
+        -0.05566731785874034,
+        2.473020649363218,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07219560597539935,
+        0.055703795626712356,
+        0.036416
+      ],
+      "axes": [
+        [
+          -0.9647903608720817,
+          -0.2630200744588104,
+          0.0
+        ],
+        [
+          0.2630200744588104,
+          -0.9647903608720817,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c4",
+      "center_m": [
+        -0.152085940711165,
+        2.4049828164247575,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07931620664544696,
+        0.05146541305576008,
+        0.036416
+      ],
+      "axes": [
+        [
+          -0.7071067811865474,
+          -0.7071067811865471,
+          0.0
+        ],
+        [
+          0.7071067811865472,
+          -0.7071067811865476,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c5",
+      "center_m": [
+        -0.20775325856990534,
+        2.2871378329384604,
+        0.0
+      ],
+      "half_extents_m": [
+        0.08584821344146523,
+        0.0468451132432985,
+        0.036416
+      ],
+      "axes": [
+        [
+          -0.2630200744588108,
+          -0.9647903608720818,
+          0.0
+        ],
+        [
+          0.9647903608720818,
+          -0.26302007445881054,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c6",
+      "center_m": [
+        -0.20775325856990537,
+        2.1510621670615397,
+        0.0
+      ],
+      "half_extents_m": [
+        0.08584821344146522,
+        0.0468451132432985,
+        0.036416
+      ],
+      "axes": [
+        [
+          0.26302007445881015,
+          -0.9647903608720818,
+          0.0
+        ],
+        [
+          0.9647903608720818,
+          0.26302007445881054,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c7",
+      "center_m": [
+        -0.1520859407111651,
+        2.033217183575243,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07931620664544697,
+        0.05146541305576007,
+        0.036416
+      ],
+      "axes": [
+        [
+          0.7071067811865468,
+          -0.7071067811865482,
+          0.0
+        ],
+        [
+          0.7071067811865481,
+          0.7071067811865467,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c8",
+      "center_m": [
+        -0.05566731785874034,
+        1.9651793506367823,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07219560597539935,
+        0.05570379562671236,
+        0.036416
+      ],
+      "axes": [
+        [
+          0.9647903608720815,
+          -0.26302007445881065,
+          0.0
+        ],
+        [
+          0.26302007445881076,
+          0.9647903608720816,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c9",
+      "center_m": [
+        0.05566731785874027,
+        1.9651793506367823,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07219560597539935,
+        0.055703795626712356,
+        0.036416
+      ],
+      "axes": [
+        [
+          0.9647903608720815,
+          0.2630200744588101,
+          0.0
+        ],
+        [
+          -0.26302007445881015,
+          0.9647903608720816,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c10",
+      "center_m": [
+        0.15208594071116496,
+        2.0332171835752426,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07931620664544695,
+        0.05146541305576008,
+        0.036416
+      ],
+      "axes": [
+        [
+          0.7071067811865477,
+          0.7071067811865472,
+          0.0
+        ],
+        [
+          -0.7071067811865472,
+          0.7071067811865475,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p4:c11",
+      "center_m": [
+        0.2077532585699053,
+        2.1510621670615393,
+        0.0
+      ],
+      "half_extents_m": [
+        0.08584821344146522,
+        0.0468451132432985,
+        0.036416
+      ],
+      "axes": [
+        [
+          0.2630200744588117,
+          0.9647903608720816,
+          0.0
+        ],
+        [
+          -0.9647903608720816,
+          0.2630200744588116,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": 0,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-desertdeco-eq05:p5",
+      "center_m": [
+        0.0,
+        2.23048,
+        0.0
+      ],
+      "half_extents_m": [
+        0.13087,
+        0.15932,
+        0.13087
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "pick_up",
+      "drop",
+      "equip",
+      "unequip",
+      "use",
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": {
+      "socket": "hand_right",
+      "grip_position_m": [
+        0.0,
+        0.50641,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    }
+  },
+  "rig": {
+    "type": "equipment_rigid",
+    "applicability": "implemented",
+    "joints": [
+      {
+        "name": "root",
+        "parent": null,
+        "pivot": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [
+      {
+        "name": "equip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                -0.28,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "unequip",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "translation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                -0.28,
+                0.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.3
+            ]
+          }
+        ]
+      },
+      {
+        "name": "inspect",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                0.0,
+                0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                -0.22310636213174545,
+                0.0,
+                0.9747941070689433
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.6,
+              1.2,
+              1.8
+            ]
+          }
+        ]
+      },
+      {
+        "name": "use",
+        "loop": false,
+        "tracks": [
+          {
+            "joint": 0,
+            "path": "rotation",
+            "values": [
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ],
+              [
+                -0.27154693695611287,
+                0.0,
+                0.0,
+                0.962425197628238
+              ],
+              [
+                0.5226872289306592,
+                0.0,
+                0.0,
+                0.8525245220595057
+              ],
+              [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "times": [
+              0.0,
+              0.15,
+              0.32,
+              0.7
+            ]
+          }
+        ]
+      }
+    ],
+    "attachment": {
+      "socket": "hand_right",
+      "grip_position_m": [
+        0.0,
+        0.50641,
+        0.0
+      ],
+      "grip_rotation_xyzw": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "requires_character_socket_mapping": true,
+      "character_skin_binding": "not_provided; equipment is not a humanoid mesh"
+    },
+    "deformation": "rigid weights, articulated parts",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-desertdeco-eq05.glb",
+      "triangle_count": 368,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "fe70b4add042aaac42f19ce68997628f768da914938c5a243bb356c49a01d771",
+      "byte_size": 115368
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-desertdeco-eq05.lod1.glb",
+      "triangle_count": 210,
+      "part_count": 5,
+      "distance_m": 12.66,
+      "sha256": "12aa71034a83b70db26c47ad0b6260d4c0ab8d69ad6361f894d4818debb153c1",
+      "byte_size": 86168
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-desertdeco-eq05.lod2.glb",
+      "triangle_count": 114,
+      "part_count": 4,
+      "distance_m": 30.38,
+      "sha256": "1731252f1c7e794811158d7274a43b0b76e82bd1f913834a8d75e41463fb2c5a",
+      "byte_size": 67012
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.25605,
+      0.0,
+      -0.13087
+    ],
+    "max": [
+      0.25605,
+      2.53205,
+      0.13087
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

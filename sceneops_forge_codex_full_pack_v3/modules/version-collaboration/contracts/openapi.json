@@ -1947,6 +1947,86 @@
         "title": "ObserveApprovalRequest",
         "type": "object"
       },
+      "ProgressCard": {
+        "additionalProperties": false,
+        "properties": {
+          "acceptance": {
+            "title": "Acceptance",
+            "type": "string"
+          },
+          "branches": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Branches",
+            "type": "array"
+          },
+          "card_id": {
+            "title": "Card Id",
+            "type": "string"
+          },
+          "dependencies": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Dependencies",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "card_id",
+          "title",
+          "description",
+          "acceptance"
+        ],
+        "title": "ProgressCard",
+        "type": "object"
+      },
+      "ProgressVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "confirmed_at": {
+            "title": "Confirmed At",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "title",
+          "confirmed_at"
+        ],
+        "title": "ProgressVersion",
+        "type": "object"
+      },
       "ProposeRollbackRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2829,6 +2909,14 @@
             "title": "Card Branches",
             "type": "integer"
           },
+          "cards": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ProgressCard"
+            },
+            "title": "Cards",
+            "type": "array"
+          },
           "confirmed_versions": {
             "title": "Confirmed Versions",
             "type": "integer"
@@ -2847,6 +2935,25 @@
           "stage": {
             "title": "Stage",
             "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "versions": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ProgressVersion"
+            },
+            "title": "Versions",
+            "type": "array"
           }
         },
         "required": [

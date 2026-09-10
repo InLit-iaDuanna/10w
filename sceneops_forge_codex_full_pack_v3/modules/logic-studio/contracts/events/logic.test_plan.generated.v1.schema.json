@@ -1,4 +1,6 @@
 {
+  "x-event-type": "logic.test_plan.generated",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.example/schemas/logic-studio/events/logic.test_plan.generated.v1.schema.json",
   "title": "logic.test_plan.generated@1",

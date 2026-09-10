@@ -11,7 +11,7 @@ export function PlanView({proposal, onRun}: {proposal: Proposal; onRun(id: strin
     <div className="harness-section-title"><div><small>PIPELINE PROPOSAL · 尚未执行</small><h2>{proposal.definition.title}</h2></div>
       <span className={`harness-state ${proposal.validation.valid ? 'ready' : 'blocked'}`}>{proposal.validation.valid ? '可审阅并开始' : '执行受阻'}</span></div>
     <p>{proposal.intent.desired_outcome}</p>
-    <div className="harness-facts"><span>{proposal.definition.stages.length} 个阶段</span><span>{proposal.definition.stages.reduce((n,s)=>n+s.steps.length,0)} 个步骤</span><span>{proposal.routing.length} 个专家任务</span><span>最多 {proposal.definition.budget.max_duration_seconds}s</span><span>{proposal.definition.budget.usage_policy==='bounded_calls'?`按调用次数限额：${proposal.definition.budget.max_metered_calls}`:'用量未知时停止'}</span></div>
+    <div className="harness-facts"><span>{proposal.definition.stages.length} 个阶段</span><span>{proposal.definition.stages.reduce((n,s)=>n+s.steps.length,0)} 个步骤</span><span>{proposal.routing.length} 个专家任务</span><span>{proposal.definition.budget.max_duration_seconds == null ? '不限时' : `最多 ${proposal.definition.budget.max_duration_seconds}s`}</span><span>{proposal.definition.budget.usage_policy==='bounded_calls'?`按调用次数限额：${proposal.definition.budget.max_metered_calls}`:'用量未知时停止'}</span></div>
     {proposal.definition.stages.map((stage,index) => <section className="harness-stage" key={stage.id}>
       <h3><span>{String(index+1).padStart(2,'0')}</span>{stage.title}</h3>
       <ol>{stage.steps.map(step => <li key={step.id}><div><strong>{step.title}</strong><code>{step.capability_id}</code></div>

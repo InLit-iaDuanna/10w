@@ -1,0 +1,50 @@
+.environment-setup-trigger { font:inherit; color:var(--text-secondary); background:transparent; border:1px solid var(--border-subtle); border-radius:7px; padding:6px 10px; cursor:pointer; }
+.environment-setup-dialog { box-sizing:border-box; width:min(640px,calc(100vw - 24px)); max-height:calc(100dvh - 32px); padding:0; color:var(--text-primary); background:var(--surface-1); border:1px solid var(--border-default); border-radius:16px; font:13px/1.6 var(--font-family,system-ui,sans-serif); text-align:left; box-shadow:0 24px 100px #0008; }
+.environment-setup-dialog[open] { display:flex; flex-direction:column; }
+.environment-setup-dialog * { box-sizing:border-box; }
+.environment-setup-dialog::backdrop { background:var(--overlay); backdrop-filter:blur(5px); }
+.environment-setup-dialog > header { padding:28px 28px 0; display:block; }
+.environment-setup-eyebrow { color:var(--text-muted); font-size:10px; letter-spacing:.12em; }
+.environment-setup-dialog h2 { margin:8px 0 5px; font-size:24px; font-weight:600; letter-spacing:-.025em; }
+.environment-setup-dialog p { margin:8px 0 14px; }
+.environment-setup-dialog header p,.environment-setup-hint,.environment-setup-location { color:var(--text-muted); font-size:12px; }
+.environment-setup-steps { display:flex; gap:20px; list-style:none; margin:22px 28px 0; padding:0 0 20px; border-bottom:1px solid var(--border-subtle); }
+.environment-setup-steps li { display:flex; align-items:center; gap:7px; color:var(--text-muted); font-size:11px; }
+.environment-setup-steps li span { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; border:1px solid var(--border-default); }
+.environment-setup-steps li[aria-current=step] { color:var(--text-primary); }
+.environment-setup-steps li[aria-current=step] span { background:var(--focus-ring); color:var(--canvas); }
+.environment-setup-steps li[data-done=true] span { color:var(--text-primary); }
+.environment-setup-body { overflow:auto; min-height:0; padding:24px 28px; scrollbar-width:thin; }
+.environment-setup-dialog button { font:inherit; font-size:12px; border:1px solid var(--border-default); border-radius:8px; color:var(--text-secondary); background:var(--surface-2); padding:8px 12px; cursor:pointer; }
+.environment-setup-dialog button:disabled { opacity:.45; cursor:default; }
+.environment-setup-dialog button:hover:not(:disabled) { background:var(--surface-hover); }
+.environment-setup-dialog .environment-setup-primary { background:var(--focus-ring); border-color:var(--focus-ring); color:var(--canvas); font-weight:600; }
+.environment-setup-dialog .environment-setup-primary:hover:not(:disabled) { background:var(--text-primary); }
+.environment-setup-dialog :focus-visible { outline:2px solid var(--focus-ring); outline-offset:3px; }
+.environment-setup-choices { display:grid; gap:12px; }
+.environment-setup-choices label { display:flex; align-items:center; gap:13px; padding:18px; border:1px solid var(--border-default); border-radius:10px; cursor:pointer; }
+.environment-setup-choices label[data-selected=true] { border-color:var(--focus-ring); background:var(--surface-2); }
+.environment-setup-choices input { accent-color:var(--focus-ring); width:16px; height:16px; margin:0; flex:none; }
+.environment-setup-choices strong,.environment-setup-tools strong { display:block; font-size:14px; font-weight:550; }
+.environment-setup-choices small,.environment-setup-tools small { display:block; color:var(--text-muted); font-size:11px; margin-top:3px; }
+.environment-setup-choices em { margin-left:auto; white-space:nowrap; color:var(--text-muted); font-size:10px; font-style:normal; }
+.environment-setup-choices + p { margin-top:18px; }
+.environment-setup-tools > div { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 0; border-bottom:1px solid var(--border-subtle); }
+.environment-setup-tools > div > span:last-child,.environment-setup-tool-title > span { color:var(--text-muted); font-size:11px; white-space:nowrap; }
+.environment-setup-dialog details { margin:16px 0; font-size:12px; }
+.environment-setup-dialog summary { color:var(--text-secondary); cursor:pointer; }
+.environment-setup-dialog code { display:block; padding:10px 12px; margin:10px 0; background:var(--canvas); border:1px solid var(--border-subtle); border-radius:6px; font:11px/1.6 ui-monospace,monospace; white-space:pre-wrap; overflow-wrap:anywhere; user-select:all; }
+.environment-setup-dialog a { color:var(--text-primary); text-underline-offset:3px; }
+.environment-setup-manual { margin-top:16px; }
+.environment-setup-login section + section { border-top:1px solid var(--border-subtle); margin-top:20px; padding-top:20px; }
+.environment-setup-tool-title { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.environment-setup-login p { color:var(--text-muted); font-size:12px; }
+.environment-setup-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.environment-setup-default { display:flex; align-items:center; gap:12px; margin-top:18px; font-size:12px; }
+.environment-setup-default select { font:inherit; background:var(--surface-2); color:var(--text-primary); border:1px solid var(--border-default); border-radius:6px; padding:7px 10px; }
+.environment-setup-dialog [role=alert] { color:var(--critical); font-size:12px; }
+.environment-setup-dialog [role=status] { color:var(--text-secondary); font-size:12px; }
+.environment-setup-dialog > footer { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:18px 28px; border-top:1px solid var(--border-subtle); background:var(--canvas); }
+.environment-setup-dialog footer > div { display:flex; gap:8px; }
+.environment-setup-dialog footer > button { background:transparent; border-color:transparent; }
+@media(max-width:520px) { .environment-setup-dialog > header { padding:22px 18px 0; } .environment-setup-dialog h2 { font-size:21px; } .environment-setup-steps { margin-inline:18px; gap:12px; } .environment-setup-body { padding:20px 18px; } .environment-setup-dialog > footer { padding:14px 18px; flex-wrap:wrap; } .environment-setup-choices label { padding:14px 12px; gap:9px; } .environment-setup-choices em { display:none; } }

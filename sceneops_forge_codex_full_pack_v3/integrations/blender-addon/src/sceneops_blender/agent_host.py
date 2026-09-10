@@ -67,15 +67,17 @@ class AgentHost:
 
     def inspect(self):
         bpy.context.view_layer.update()
+        from agent_source import content_objects
+        scene_objects = content_objects()
         objects = [{"asset_id": obj.get("asset_id"), "sceneops_id": obj.get("sceneops_id"),
                     "name": obj.name, "type": obj.type, "sceneops_role": obj.get("sceneops_role"),
                     "parent_id": obj.parent.get("sceneops_id") if obj.parent else None,
                     "base_color": list(obj.active_material.diffuse_color) if obj.type == "MESH" and obj.active_material else None, "dimensions_m": list(obj.dimensions),
                     "coordinate_space": "blender_z_up", "location_m": list(obj.location)}
-                   for obj in bpy.context.scene.objects]
+                   for obj in scene_objects]
         vertex_count = triangle_count = 0
         depsgraph = bpy.context.evaluated_depsgraph_get()
-        for obj in bpy.context.scene.objects:
+        for obj in scene_objects:
             if obj.type == "MESH":
                 evaluated = obj.evaluated_get(depsgraph)
                 mesh = evaluated.to_mesh()
@@ -86,7 +88,7 @@ class AgentHost:
                 finally:
                     evaluated.to_mesh_clear()
         from mathutils import Vector
-        points = [obj.matrix_world @ Vector(corner) for obj in bpy.context.scene.objects if obj.type == "MESH" for corner in obj.bound_box]
+        points = [obj.matrix_world @ Vector(corner) for obj in scene_objects if obj.type == "MESH" for corner in obj.bound_box]
         dimensions_y_up = ([max(p[i] for p in points) - min(p[i] for p in points) for i in (0, 2, 1)] if points else [0, 0, 0])
         artifacts = [str(path) for path in sorted(self.root.glob("*")) if path.suffix in (".blend", ".fbx", ".glb", ".json") and path.is_file()]
         from agent_source import source_state
@@ -95,8 +97,8 @@ class AgentHost:
                 "pid": os.getpid(), "objects": objects, "artifacts": artifacts,
                 "dimensions_m": dimensions_y_up, "coordinate_space": "gltf_y_up",
                 "vertex_count": vertex_count, "triangle_count": triangle_count,
-                "node_count": len(objects), "mesh_count": sum(obj.type == "MESH" for obj in bpy.context.scene.objects),
-                "capabilities": sorted(set(self.config["binding"]["allowed_capabilities"]) & {"blender.scene.inspect", "blender.asset.create", "blender.asset.export", "blender.asset.begin", "blender.asset.edit", "blender.asset.publish"}),
+                "node_count": len(objects), "mesh_count": sum(obj.type == "MESH" for obj in scene_objects),
+                "capabilities": sorted(set(self.config["binding"]["allowed_capabilities"]) & {"blender.scene.inspect", "blender.asset.create", "blender.asset.export", "blender.asset.begin", "blender.asset.edit", "blender.asset.publish", "blender.asset.derive_unity"}),
                 "isolation": self.probe, "scene_path": bpy.data.filepath,
                 "current_candidate_id": bpy.context.scene.get("sceneops_candidate_id")}
 
@@ -106,6 +108,16 @@ class AgentHost:
         if operation == "inspect":
             return self.inspect()
         if operation == "request_status":
+            original = self.journal.execute("SELECT command,result FROM requests WHERE request_id=?", (command["request_id"],)).fetchone()
+            if original and not original[1] and self.request_states.get(command['request_id']) not in ('running','queued'):
+                request = json.loads(original[0])
+                if request['operation'] == 'import_source':
+                    from agent_source import source_path
+                    target = source_path(self,request['candidate_id'])
+                    if not target.exists() and target.with_suffix('.glb').is_file():
+                        return {'mode':'live','session_id':self.config['session_id'],'request_id':command['request_id'],
+                                'status':'import_not_saved','result':{'candidate_id':request['candidate_id'],
+                                'workspace_root':self.config['workspace_root'],'candidate_saved':False}}
             row = self.journal.execute("SELECT result FROM requests WHERE request_id=?", (command["request_id"],)).fetchone()
             return {"mode": "live", "session_id": self.config["session_id"], "request_id": command["request_id"], "status": ("completed" if row[0] else "result_unknown") if row else self.request_states.get(command["request_id"], "not_found"), "result": json.loads(row[0]) if row and row[0] else None}
         if operation == "stop":
@@ -202,6 +214,9 @@ class AgentHost:
                 with self.request_lock:
                     self.request_states[request_id] = "completed"
         except Exception as error:
+            if command.get("request_id") and command["operation"] != "request_status":
+                with self.request_lock:
+                    self.request_states[command["request_id"]] = "failed"
             response.put({"ok": False, "error": str(error)})
         if self.stopping:
             bpy.app.timers.register(lambda: bpy.ops.wm.quit_blender() and None, first_interval=0.5)

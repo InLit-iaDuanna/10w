@@ -1,4 +1,6 @@
 {
+  "x-event-type": "job.recovery.requested",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.dev/contracts/integration-center/events/job.recovery.requested.v1.schema.json",
   "title": "Job Recovery Requested v1",

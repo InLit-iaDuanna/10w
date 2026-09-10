@@ -61,3 +61,5 @@ scripts/module-test module-runtime
 ## 限制
 
 当前 import 边界覆盖 Python AST 与 TypeScript/JavaScript 静态 import 语法，不解析编译器 path alias 配置；跨模块推荐使用 `@sceneops/<module-id>` 或指向公开 index 的相对路径。
+
+2026-09-07：事件 schema 注册、作用域权限和静态导入审计修复见 [模块运行时说明](../../docs/module-runtime.md)。

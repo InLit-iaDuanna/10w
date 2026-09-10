@@ -1,0 +1,10 @@
+{
+  "execution": "live headless Chromium attempt",
+  "status": "blocked",
+  "scope": "standalone v2 gallery, not the 10w application",
+  "reason": "Navigation to the loopback preview was blocked by browser policy: net::ERR_BLOCKED_BY_ADMINISTRATOR",
+  "completed_browser_checks": [],
+  "gpu_rendering_verified": false,
+  "browser_controls_verified": false,
+  "note": "No policy bypass was attempted. CPU mesh/skin evaluation and Node physics tests are reported separately."
+}

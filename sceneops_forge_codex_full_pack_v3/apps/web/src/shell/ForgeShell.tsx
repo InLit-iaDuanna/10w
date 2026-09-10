@@ -1,3 +1,4 @@
+import { WorkspaceEdgeIntro } from './WorkspaceEdgeIntro';
 import 'dockview-enterprise';
 import React, {
   Component,
@@ -45,7 +46,8 @@ import { EdgeDrawerController } from './EdgeDrawerController';
 import { usePanelVisibility } from './hooks/usePanelVisibility';
 import './forge-shell.css';
 import { recordUiError, recordUiEvent } from '../debug';
-import { RegionPullHandles, type RegionCollapseRequest, type RegionSplitRequest } from './RegionPullHandles';
+import { animateRegionPlacement } from './animateRegionPlacement';
+import { type RegionSplitRequest } from './RegionPullHandles';
 
 export interface ForgeShellRuntime {
   editors: EditorRegistry;
@@ -73,6 +75,7 @@ export interface ForgeShellProps {
   runtime: ForgeShellRuntime;
   edgeDrawers: EdgeDrawerCoordinator;
   judgeMode: boolean;
+  introSuspended?: boolean;
   onDockviewReady(port: DockviewPort, api: DockviewApi): void;
   onDockviewLayoutChanged(layout: JsonValue): void;
   onEdgeChanged(edge: Edge, requested: DrawerState): void;
@@ -84,62 +87,39 @@ const RuntimeContext = createContext<ForgeShellRuntime | null>(null);
 const MINIMAL_CHROME_EDITORS = new Set(['assistant.conversation', 'journey.modeling', 'journey.environment']);
 const WORKFLOW_SIDEBAR_EDITORS = new Set(['journey.modeling', 'journey.environment']);
 const groupClassReferences = new WeakMap<HTMLElement, Map<string, number>>();
-const RegionPullContext = createContext<{
-  split: RegionSplitRequest;
-  collapse: RegionCollapseRequest;
-} | null>(null);
-
 export function ForgeShell(props: ForgeShellProps): React.ReactElement {
   const components = useMemo(() => ({ 'forge-editor-host': ForgeEditorPanel }), []);
   const [port, setPort] = useState<DockviewPort | null>(null);
-  const sashDrag = useRef<{ layout: JsonValue; collapsed: Set<string> } | null>(null);
+  const sashDrag = useRef<{ layout: JsonValue; collapsed: Set<string>; pointerId: number } | null>(null);
   const [regionError, setRegionError] = useState('');
   const hasWorkflowSidebar = Object.values(props.document.instances)
     .some(instance => WORKFLOW_SIDEBAR_EDITORS.has(instance.editorId));
   const splitBusy = useRef(false);
-  const splitRegion = useCallback<RegionSplitRequest>(async (instanceId, edge, size) => {
-    if (!port || !props.onRegionSplit || splitBusy.current) return;
+  const shellElement = useRef<HTMLElement | null>(null);
+  const anchorId = Object.values(props.document.instances).find(instance => instance.editorId === 'assistant.conversation')?.instanceId
+    ?? Object.keys(props.document.instances)[0];
+  const splitRegion = useCallback<RegionSplitRequest>(async (instanceId, edge, size, origin) => {
+    if (!port || !props.onRegionSplit || splitBusy.current) throw new Error('工作区正在准备，请稍后重试。');
     splitBusy.current = true;
     try {
       setRegionError('');
-      const openedId = await props.onRegionSplit(instanceId, edge);
-      if (openedId) {
+      const update = async () => {
+        const openedId = await props.onRegionSplit!(instanceId, edge);
+        if (!openedId) throw new Error('尚未打开工具区，可以重新尝试。');
         port.enableRegionSplits();
+        port.moveRegionToWorkspaceEdge(openedId, edge);
         if (size !== undefined) port.resizeRegion(openedId, edge, size);
         recordUiEvent('edge-state.changed', { instanceId: openedId, edge, mode: 'split', phase: 'complete' });
-      }
+        return port.regionElement(openedId);
+      };
+      if (origin) await animateRegionPlacement(shellElement.current!, edge, origin, update);
+      else await update();
     } catch (error) {
       recordUiError(error, { instanceId, edge, reason: 'layout-operation', phase: 'error' });
       setRegionError(error instanceof Error ? error.message : '区域拆分失败');
+      throw error;
     } finally { splitBusy.current = false; }
   }, [port, props.onRegionSplit]);
-  const collapseAdjacentRegion = useCallback<RegionCollapseRequest>(async (instanceId, edge, crossRatio) => {
-    try {
-      if (!port) return;
-      const closingIds = port.adjacentRegionIds(instanceId, edge, crossRatio);
-      if (closingIds.length === 0) return;
-      const instances = closingIds.map(id => props.runtime.getInstance(id)).filter(instance => instance !== undefined);
-      if (instances.some(instance => instance.locked)) {
-        setRegionError('锁定的区域不能通过拖动收起。');
-        return;
-      }
-      if (instances.some(instance => instance.dirty) &&
-          !window.confirm('收起这个区域会关闭其中未保存的内容，仍要继续吗？')) return;
-      setRegionError('');
-      for (const id of closingIds) {
-        if (!props.runtime.getInstance(id)) continue;
-        const result = await props.runtime.close(id, true);
-        if (result.status !== 'closed') throw new Error('相邻区域未能关闭');
-      }
-      recordUiEvent('edge-state.changed', { instanceId, edge, phase: 'complete' });
-    } catch (error) {
-      recordUiError(error, { instanceId, edge, reason: 'layout-operation', phase: 'error' });
-      setRegionError(error instanceof Error ? error.message : '相邻区域收起失败');
-    }
-  }, [port, props.runtime]);
-  const regionPull = useMemo(() => props.onRegionSplit
-    ? { split: splitRegion, collapse: collapseAdjacentRegion }
-    : null, [collapseAdjacentRegion, props.onRegionSplit, splitRegion]);
   const [restoreNotice, setRestoreNotice] = useState<{
     state: 'empty' | 'failed';
     message: string;
@@ -238,31 +218,53 @@ export function ForgeShell(props: ForgeShellProps): React.ReactElement {
     return () => window.removeEventListener('keydown', dismissPeek);
   }, [handleEdgeChanged, props.edgeDrawers]);
 
+  useEffect(() => {
+    if (!port) return;
+    const win = shellElement.current!.ownerDocument.defaultView!;
+    let frame = 0;
+    const finish = (event: PointerEvent) => {
+      const started = sashDrag.current;
+      if (!started || event.pointerId !== started.pointerId) return;
+      sashDrag.current = null;
+      // Dockview tracks the owner document; release may be outside the React shell.
+      frame = win.requestAnimationFrame(() => { void (async () => {
+        const closing = port.collapsedRegionIds().filter(id => !started.collapsed.has(id));
+        const instances = closing.map(id => props.runtime.getInstance(id)).filter(instance => instance !== undefined);
+        if (instances.some(instance => instance.locked) ||
+            (instances.some(instance => instance.dirty) && !win.confirm('收起这些区域会关闭其中未保存的内容，仍要继续吗？'))) {
+          port.restore(started.layout);
+          return;
+        }
+        for (const id of closing) {
+          if (props.runtime.getInstance(id)) await props.runtime.close(id, true);
+        }
+      })().catch(error => { recordUiError(error, { reason: 'layout-operation' }); setRegionError(String(error)); }); });
+    };
+    const cancel = () => {
+      const started = sashDrag.current;
+      sashDrag.current = null;
+      if (started) port.restore(started.layout);
+    };
+    win.addEventListener('pointerup', finish, true);
+    win.addEventListener('pointercancel', cancel, true);
+    win.addEventListener('blur', cancel);
+    return () => {
+      win.removeEventListener('pointerup', finish, true);
+      win.removeEventListener('pointercancel', cancel, true);
+      win.removeEventListener('blur', cancel);
+      win.cancelAnimationFrame(frame);
+      sashDrag.current = null;
+    };
+  }, [port, props.runtime]);
+
   return (
-    <RuntimeContext.Provider value={props.runtime}><RegionPullContext.Provider value={regionPull}>
-      <main className={`forge-shell${hasWorkflowSidebar ? ' has-workflow-sidebar' : ''}`} data-workspace={props.document.workspaceId}
+    <RuntimeContext.Provider value={props.runtime}>
+      <main ref={shellElement} className={`forge-shell${hasWorkflowSidebar ? ' has-workflow-sidebar' : ''}`} data-workspace={props.document.workspaceId}
         onPointerDownCapture={event => {
           sashDrag.current = props.onRegionSplit && port && event.target instanceof Element && event.target.closest('.dv-sash:not(.dv-disabled)')
-            ? { layout: port.capture(), collapsed: new Set(port.collapsedRegionIds()) } : null;
+            ? { layout: port.capture(), collapsed: new Set(port.collapsedRegionIds()), pointerId: event.pointerId } : null;
         }}
-        onPointerUpCapture={() => {
-          const started = sashDrag.current;
-          if (!started || !port) return;
-          sashDrag.current = null;
-          // Complete native resizing first, then use ordinary close/dirty confirmation.
-          requestAnimationFrame(() => { void (async () => {
-            const closing = port.collapsedRegionIds().filter(id => !started.collapsed.has(id));
-            const instances = closing.map(id => props.runtime.getInstance(id)).filter(instance => instance !== undefined);
-            if (instances.some(instance => instance.locked) ||
-                (instances.some(instance => instance.dirty) && !window.confirm('收起这些区域会关闭其中未保存的内容，仍要继续吗？'))) {
-              port.restore(started.layout);
-              return;
-            }
-            for (const id of closing) {
-              if (props.runtime.getInstance(id)) await props.runtime.close(id, true);
-            }
-          })().catch(error => { recordUiError(error, { reason: 'layout-operation' }); setRegionError(String(error)); }); });
-        }} onPointerCancelCapture={() => { sashDrag.current = null; }}>
+        >
         <div className="forge-dock-canvas">
           <DockviewReact
             className="dockview-theme-abyss"
@@ -276,6 +278,8 @@ export function ForgeShell(props: ForgeShellProps): React.ReactElement {
             getTabContextMenuItems={() => []}
           />
         </div>
+        {!props.introSuspended && props.onRegionSplit && port && anchorId && <WorkspaceEdgeIntro instanceId={anchorId} split={splitRegion}
+          getBounds={() => shellElement.current!.getBoundingClientRect()} />}
         {restoreNotice ? (
           <div className="forge-restore-notice">
             <EditorStateNotice state={restoreNotice.state} message={restoreNotice.message} />
@@ -290,7 +294,7 @@ export function ForgeShell(props: ForgeShellProps): React.ReactElement {
         />
         <WindowMenu coordinator={props.edgeDrawers} onChanged={handleEdgeChanged} /></>}
       </main>
-    </RegionPullContext.Provider></RuntimeContext.Provider>
+    </RuntimeContext.Provider>
   );
 }
 
@@ -320,7 +324,7 @@ function ForgeEditorPanel(props: IDockviewPanelProps<PanelParameters>): React.Re
     <EditorErrorBoundary editorId={props.params.editorId}>
       <ForgeEditorHost instanceId={props.params.instanceId} visible={visible} compact={compact}
         minimalChrome={minimalChrome} workflowSidebar={workflowSidebar}
-        getRegionBounds={() => props.api.group.element.getBoundingClientRect()} />
+        />
     </EditorErrorBoundary>
   );
 }
@@ -331,18 +335,15 @@ function ForgeEditorHost({
   compact,
   minimalChrome,
   workflowSidebar,
-  getRegionBounds,
 }: {
   instanceId: string;
   visible: boolean;
   compact: boolean;
   minimalChrome: boolean;
   workflowSidebar: boolean;
-  getRegionBounds(): DOMRect;
 }): React.ReactElement {
   const runtime = requireRuntime();
   const [, refresh] = useState(0);
-  const regionPull = useContext(RegionPullContext);
   useEffect(() => runtime.events.on('workbench.layout.changed@1', () => refresh(value => value + 1)), [runtime]);
   const instance = runtime.getInstance(instanceId);
   const definition = instance ? runtime.editors.get(instance.editorId) : undefined;
@@ -378,10 +379,9 @@ function ForgeEditorHost({
     return drawer.mode === 'hidden' && drawer.tabs.includes(instance.instanceId);
   });
   return (
-    <div className={`forge-editor-layout${minimalChrome ? ' is-minimal-chrome' : ''}${workflowSidebar ? ' is-workflow-sidebar' : ''}`}
+    <div className={`forge-editor-layout${minimalChrome ? ' is-minimal-chrome' : ''}${workflowSidebar ? ' is-workflow-sidebar' : ''}${instance.editorId === 'shell.tool-library' ? ' is-tool-picker' : ''}`}
       data-instance-id={instanceId} inert={!contentVisible} aria-hidden={!contentVisible}>
-      {regionPull && contentVisible && !workflowSidebar && <RegionPullHandles instanceId={instanceId} split={regionPull.split} collapse={regionPull.collapse} getBounds={getRegionBounds} />}
-      {!minimalChrome && <AreaHeader
+      {!minimalChrome && instance.editorId !== 'shell.tool-library' && <AreaHeader
         contract={header}
         onAction={(action) => {
           if (action === 'close') {

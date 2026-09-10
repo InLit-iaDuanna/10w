@@ -1,0 +1,1132 @@
+{
+  "pack_id": "sceneops-haven-kit",
+  "blender_version": "5.1.2",
+  "checked_entries": 102,
+  "role_silhouettes": "original four travelers share geometry; new profession characters have separate silhouettes",
+  "spawn_clearance": "all scene spawns and 0.35m cardinal offsets clear",
+  "external_dependencies": "none",
+  "checks": [
+    {
+      "asset_id": "sceneops-haven-kit-cottage",
+      "glb_bytes": 122288,
+      "triangles": 1284,
+      "reimport": "passed",
+      "dimensions_m": [
+        3.865,
+        3.635,
+        3.395
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-watchtower",
+      "glb_bytes": 169148,
+      "triangles": 1856,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.711,
+        4.99,
+        2.959
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-ruin-arch",
+      "glb_bytes": 81736,
+      "triangles": 876,
+      "reimport": "passed",
+      "dimensions_m": [
+        4.547,
+        4.045,
+        1.314
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-pine",
+      "glb_bytes": 8748,
+      "triangles": 60,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.106,
+        3.375,
+        2.053
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-broadleaf",
+      "glb_bytes": 37896,
+      "triangles": 352,
+      "reimport": "passed",
+      "dimensions_m": [
+        3.022,
+        3.98,
+        2.05
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-rock-cluster",
+      "glb_bytes": 9396,
+      "triangles": 60,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.23,
+        1.34,
+        1.247
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-crate",
+      "glb_bytes": 40288,
+      "triangles": 440,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.96,
+        0.88,
+        1.033
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-barrel",
+      "glb_bytes": 22000,
+      "triangles": 256,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.84,
+        1.052,
+        0.84
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-lamp",
+      "glb_bytes": 44592,
+      "triangles": 484,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.895,
+        2.425,
+        0.45
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-fence",
+      "glb_bytes": 20476,
+      "triangles": 220,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.3,
+        1.2,
+        0.18
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-well",
+      "glb_bytes": 118004,
+      "triangles": 1300,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.315,
+        2.92,
+        1.83
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-campfire",
+      "glb_bytes": 37696,
+      "triangles": 288,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.454,
+        1.02,
+        1.366
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-tent",
+      "glb_bytes": 42528,
+      "triangles": 437,
+      "reimport": "passed",
+      "dimensions_m": [
+        3.678,
+        2.05,
+        2.99
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-signpost",
+      "glb_bytes": 24884,
+      "triangles": 264,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.419,
+        1.8,
+        0.249
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-grass-clump",
+      "glb_bytes": 5536,
+      "triangles": 16,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.55,
+        0.44,
+        0.383
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-path-tile",
+      "glb_bytes": 16580,
+      "triangles": 176,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.535,
+        0.11,
+        1.305
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-ground-tile",
+      "glb_bytes": 4660,
+      "triangles": 44,
+      "reimport": "passed",
+      "dimensions_m": [
+        4.0,
+        0.3,
+        4.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-player",
+      "glb_bytes": 153128,
+      "triangles": 864,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        1.711,
+        0.562
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-enemy",
+      "glb_bytes": 153144,
+      "triangles": 864,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        1.711,
+        0.562
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-npc",
+      "glb_bytes": 153132,
+      "triangles": 864,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        1.711,
+        0.562
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-character-ally",
+      "glb_bytes": 153140,
+      "triangles": 864,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        1.711,
+        0.562
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-village-courtyard",
+      "glb_bytes": 942960,
+      "triangles": 17724,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.268,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-forest-camp",
+      "glb_bytes": 645316,
+      "triangles": 8905,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.277,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-abandoned-outpost",
+      "glb_bytes": 844340,
+      "triangles": 15296,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        6.379,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-neon-portal",
+      "glb_bytes": 24684,
+      "triangles": 264,
+      "reimport": "passed",
+      "dimensions_m": [
+        3.4,
+        3.8,
+        0.64
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-holo-terminal",
+      "glb_bytes": 20868,
+      "triangles": 220,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.85,
+        1.325,
+        0.725
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-ice-crystal",
+      "glb_bytes": 10896,
+      "triangles": 72,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.471,
+        2.2,
+        0.743
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-torii",
+      "glb_bytes": 18532,
+      "triangles": 204,
+      "reimport": "passed",
+      "dimensions_m": [
+        4.4,
+        3.62,
+        0.4
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-market-stall",
+      "glb_bytes": 53236,
+      "triangles": 544,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.4,
+        2.275,
+        1.7
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-giant-mushroom",
+      "glb_bytes": 21424,
+      "triangles": 176,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.902,
+        1.9,
+        2.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-wind-turbine",
+      "glb_bytes": 16044,
+      "triangles": 168,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.94,
+        4.52,
+        0.425
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-road-barrier",
+      "glb_bytes": 24612,
+      "triangles": 264,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.4,
+        1.1,
+        0.52
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-cyber",
+      "glb_bytes": 1152476,
+      "triangles": 15064,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        7.89,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-space",
+      "glb_bytes": 704644,
+      "triangles": 10336,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.41,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-zen",
+      "glb_bytes": 575340,
+      "triangles": 10420,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.89,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-snow",
+      "glb_bytes": 726228,
+      "triangles": 10444,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.41,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-dungeon",
+      "glb_bytes": 596784,
+      "triangles": 12740,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.815,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-farm",
+      "glb_bytes": 889480,
+      "triangles": 11052,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.525,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-harbor",
+      "glb_bytes": 832904,
+      "triangles": 14672,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.88,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-desert",
+      "glb_bytes": 583576,
+      "triangles": 7988,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.6,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-dream",
+      "glb_bytes": 492992,
+      "triangles": 8100,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.69,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-race",
+      "glb_bytes": 550800,
+      "triangles": 10728,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        6.59,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-arena",
+      "glb_bytes": 830080,
+      "triangles": 17528,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.882,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-market",
+      "glb_bytes": 770844,
+      "triangles": 18928,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.89,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-park-bench",
+      "glb_bytes": 16508,
+      "triangles": 176,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.8,
+        1.125,
+        0.555
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-study-desk",
+      "glb_bytes": 24668,
+      "triangles": 264,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.5,
+        0.965,
+        1.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-bookcase",
+      "glb_bytes": 107136,
+      "triangles": 1188,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.72,
+        2.25,
+        0.55
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-conveyor",
+      "glb_bytes": 43960,
+      "triangles": 484,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.6,
+        0.845,
+        3.4
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-copper-boiler",
+      "glb_bytes": 25244,
+      "triangles": 304,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.66,
+        3.7,
+        1.712
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-cactus",
+      "glb_bytes": 16108,
+      "triangles": 172,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.5,
+        2.4,
+        0.48
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-pink-coral",
+      "glb_bytes": 36780,
+      "triangles": 396,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.746,
+        1.524,
+        0.56
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-lollipop",
+      "glb_bytes": 21724,
+      "triangles": 252,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.3,
+        2.65,
+        0.252
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-gallery-statue",
+      "glb_bytes": 10640,
+      "triangles": 84,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.2,
+        2.5,
+        1.2
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-basketball-hoop",
+      "glb_bytes": 26980,
+      "triangles": 304,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.8,
+        3.75,
+        1.175
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-arcade-cabinet",
+      "glb_bytes": 19960,
+      "triangles": 204,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.9,
+        1.8,
+        1.125
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-small-airplane",
+      "glb_bytes": 36692,
+      "triangles": 364,
+      "reimport": "passed",
+      "dimensions_m": [
+        6.2,
+        1.621,
+        5.6
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-hospital",
+      "glb_bytes": 605240,
+      "triangles": 9136,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.29,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-school",
+      "glb_bytes": 688240,
+      "triangles": 12324,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.29,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-museum",
+      "glb_bytes": 465636,
+      "triangles": 8432,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.29,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-kitchen",
+      "glb_bytes": 632792,
+      "triangles": 10028,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.29,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-arcade",
+      "glb_bytes": 451804,
+      "triangles": 7584,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.29,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-underwater",
+      "glb_bytes": 564744,
+      "triangles": 10792,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.815,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-volcano",
+      "glb_bytes": 435420,
+      "triangles": 6132,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.35,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-bamboo",
+      "glb_bytes": 787868,
+      "triangles": 12104,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.51,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-gothic",
+      "glb_bytes": 464008,
+      "triangles": 6504,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        7.39,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-steampunk",
+      "glb_bytes": 646400,
+      "triangles": 10856,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.88,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-western",
+      "glb_bytes": 540124,
+      "triangles": 8100,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.89,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-candy",
+      "glb_bytes": 521288,
+      "triangles": 8452,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.49,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-boardgame",
+      "glb_bytes": 481988,
+      "triangles": 5728,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        3.39,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-basketball",
+      "glb_bytes": 453652,
+      "triangles": 7640,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.64,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-factory",
+      "glb_bytes": 658932,
+      "triangles": 13796,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.29,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-airport",
+      "glb_bytes": 690784,
+      "triangles": 10560,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.383,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-temple",
+      "glb_bytes": 427044,
+      "triangles": 5784,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.94,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-rooftop",
+      "glb_bytes": 541932,
+      "triangles": 10580,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.077,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-detailed-storefront",
+      "glb_bytes": 95948,
+      "triangles": 1056,
+      "reimport": "passed",
+      "dimensions_m": [
+        3.9,
+        3.35,
+        3.65
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-flower-planter",
+      "glb_bytes": 81680,
+      "triangles": 788,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.866,
+        1.33,
+        0.84
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-utility-pole",
+      "glb_bytes": 20392,
+      "triangles": 216,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.5,
+        4.0,
+        0.25
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-medical-cart",
+      "glb_bytes": 63652,
+      "triangles": 652,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.912,
+        1.045,
+        0.66
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-dining-set",
+      "glb_bytes": 73548,
+      "triangles": 908,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.5,
+        1.2,
+        2.8
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-exhibit-case",
+      "glb_bytes": 37972,
+      "triangles": 388,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.4,
+        1.825,
+        0.925
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-metal-railing",
+      "glb_bytes": 24268,
+      "triangles": 264,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.15,
+        1.13,
+        0.07
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-valve-pipe",
+      "glb_bytes": 29956,
+      "triangles": 400,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.0,
+        0.66,
+        0.47
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-vending-machine",
+      "glb_bytes": 42184,
+      "triangles": 528,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        2.0,
+        0.92
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-rolling-luggage",
+      "glb_bytes": 24156,
+      "triangles": 264,
+      "reimport": "passed",
+      "dimensions_m": [
+        0.62,
+        1.16,
+        0.35
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-voxel-tree",
+      "glb_bytes": 7132,
+      "triangles": 48,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.6,
+        3.1,
+        1.6
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-pbr-pump",
+      "glb_bytes": 41628,
+      "triangles": 768,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.4,
+        1.84,
+        1.4
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-tool-bench",
+      "glb_bytes": 64576,
+      "triangles": 704,
+      "reimport": "passed",
+      "dimensions_m": [
+        2.3,
+        2.1,
+        0.9
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-medic",
+      "glb_bytes": 181936,
+      "triangles": 1084,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.27,
+        1.801,
+        0.562
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-engineer",
+      "glb_bytes": 190588,
+      "triangles": 1136,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.355,
+        1.92,
+        0.72
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-chef",
+      "glb_bytes": 214808,
+      "triangles": 1296,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.41,
+        2.14,
+        0.608
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-guard",
+      "glb_bytes": 177144,
+      "triangles": 1040,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.21,
+        1.801,
+        0.698
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-explorer",
+      "glb_bytes": 172260,
+      "triangles": 1032,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        1.946,
+        0.902
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-astronaut",
+      "glb_bytes": 281608,
+      "triangles": 1680,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        1.9,
+        0.972
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-robot",
+      "glb_bytes": 155280,
+      "triangles": 900,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.247,
+        2.12,
+        0.567
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-voxel",
+      "glb_bytes": 69636,
+      "triangles": 196,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.12,
+        1.821,
+        0.491
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-voxel-village",
+      "glb_bytes": 126960,
+      "triangles": 1760,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        5.09,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-pbr-workshop",
+      "glb_bytes": 764176,
+      "triangles": 10728,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        3.85,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-world-paper-garden",
+      "glb_bytes": 273052,
+      "triangles": 5124,
+      "reimport": "passed",
+      "dimensions_m": [
+        21.0,
+        4.115,
+        18.0
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-clay",
+      "glb_bytes": 409476,
+      "triangles": 9504,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.14,
+        1.86,
+        0.655
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-person-enamel",
+      "glb_bytes": 257388,
+      "triangles": 3568,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.28,
+        2.12,
+        0.69
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-clay-mushroom",
+      "glb_bytes": 63180,
+      "triangles": 2640,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.7,
+        1.7,
+        1.6
+      ]
+    },
+    {
+      "asset_id": "sceneops-haven-kit-enamel-lamp",
+      "glb_bytes": 36424,
+      "triangles": 868,
+      "reimport": "passed",
+      "dimensions_m": [
+        1.1,
+        2.225,
+        1.1
+      ]
+    }
+  ]
+}

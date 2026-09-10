@@ -1,0 +1,295 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-papercraft-util03",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-papercraft-util03:p0",
+      "center_m": [
+        -1.0242,
+        0.31864,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07397,
+        0.31864,
+        0.36985
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-papercraft-util03:p1",
+      "center_m": [
+        1.0242,
+        0.31864,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07397,
+        0.31864,
+        0.36985
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-papercraft-util03:p2",
+      "center_m": [
+        0.0,
+        0.6828,
+        -0.3414
+      ],
+      "half_extents_m": [
+        1.2518,
+        0.0569,
+        0.09673
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-papercraft-util03:p3",
+      "center_m": [
+        0.0,
+        0.6828,
+        -0.1138
+      ],
+      "half_extents_m": [
+        1.2518,
+        0.0569,
+        0.09673
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-papercraft-util03:p4",
+      "center_m": [
+        0.0,
+        0.6828,
+        0.1138
+      ],
+      "half_extents_m": [
+        1.2518,
+        0.0569,
+        0.09673
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-papercraft-util03:p5",
+      "center_m": [
+        0.0,
+        0.6828,
+        0.3414
+      ],
+      "half_extents_m": [
+        1.2518,
+        0.0569,
+        0.09673
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-papercraft-util03.glb",
+      "triangle_count": 72,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "0f006ee1f230dbf43c8d538bc054f8e23e4e9701339659b65ac3b5b2cf701699",
+      "byte_size": 48712
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-papercraft-util03.lod1.glb",
+      "triangle_count": 48,
+      "part_count": 4,
+      "distance_m": 12.52,
+      "sha256": "24340986983e621461789e80d8790df571fa843287734db9c88ab811a4d81c7b",
+      "byte_size": 45800
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-papercraft-util03.lod2.glb",
+      "triangle_count": 36,
+      "part_count": 3,
+      "distance_m": 30.04,
+      "sha256": "c43289dddd5d515a9e29495abcdf89278ca2c10024ac45ef13dff6ec1cd5d774",
+      "byte_size": 44340
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -1.2518,
+      0.0,
+      -0.43813
+    ],
+    "max": [
+      1.2518,
+      0.7397,
+      0.43813
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

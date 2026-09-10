@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "x-event-type": "release.candidate.readied",
+  "x-event-version": 1,
+  "type": "object",
+  "$ref": "release.candidate.readied-v1.schema.json"
+}

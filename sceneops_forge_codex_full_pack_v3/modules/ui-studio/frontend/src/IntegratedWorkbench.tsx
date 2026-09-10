@@ -6,6 +6,7 @@ import { IntegratedDraftForm, useWorkbenchDraft } from '@sceneops/workbench-ui';
 import { AudioLabPanel, type AudioLabComponents } from '@sceneops/audio-studio-frontend';
 import { VfxLabPanel, type VfxLabComponents } from '@sceneops/vfx-shader-frontend';
 import { UiLabPanel } from './editors/UiLabPanel';
+import { labSessionForProject } from './lab-session';
 import type { components } from './lab-api';
 type U = components['schemas'];
 type A = AudioLabComponents['schemas'];
@@ -17,13 +18,15 @@ export default function IntegratedWorkbench(props: IntegratedWorkbenchProps) {
   const [notice, setNotice] = useState('');
   const template = props.document.sample_id === 'warehouse-escape' ? 'warehouse' : 'home';
   const event = String(draft.payload.event ?? '');
+  const audioSource=draft.payload.audio_source as {path:string;name:string}|undefined;
   const api = useMemo(() => {
-    const read = <T,>(path: string) => requestJson<T>(path, { projectId: props.project.project_id, headers: { 'X-Lab-Session': props.project.project_id } });
-    const post = <T,>(path: string, body?: unknown) => requestJson<T>(path, { method: 'POST', body, projectId: props.project.project_id, headers: { 'X-Lab-Session': props.project.project_id } });
+    const session = labSessionForProject(props.project.project_id);
+    const read = <T,>(path: string) => requestJson<T>(path, { projectId: props.project.project_id, headers: { 'X-Lab-Session': session } });
+    const post = <T,>(path: string, body?: unknown) => requestJson<T>(path, { method: 'POST', body, projectId: props.project.project_id, headers: { 'X-Lab-Session': session } });
     return {
       read,
       ui: { check: (body: U['Draft']) => post<U['Check']>('/api/ui/check', body), propose: (body: U['Draft']) => post<U['Proposal']>('/api/ui/proposals', body) },
-      audio: { fixture: () => read<A['DemoAudio']>('/api/audio/fixture'), inspectFixture: () => post<A['Inspection']>('/api/audio/inspect-fixture'),
+      audio: { fixture: () => read<A['DemoAudio']>('/api/audio/fixture'), inspectFixture: () => post<A['Inspection']>('/api/audio/inspect-fixture', {}),
         inspect: (body: A['Upload']) => post<A['Inspection']>('/api/audio/inspect', body), propose: (body: A['BindingDraft']) => post<A['Proposal']>('/api/audio/proposals', body) },
       vfx: { evaluate: (body: V['Draft']) => post<V['Evaluation']>('/api/vfx/evaluate', body), propose: (body: V['Draft']) => post<V['Proposal']>('/api/vfx/proposals', body) },
     };
@@ -44,7 +47,10 @@ export default function IntegratedWorkbench(props: IntegratedWorkbenchProps) {
     {notice && <p role="status">{notice}</p>}
     {tab === 'ui' && <UiLabPanel key={uiSample.data ? props.document.sample_id : 'custom'} fixture={uiSample.data ?? ownFixture} template={template} event={event} api={api.ui} onProposal={proposed}
       mode={props.document.sample_id ? 'mock' : 'planned'} initialDraft={draft.payload.ui as unknown as U['Draft'] | undefined} onDraftChange={value => draft.update({ ui: value as unknown as JsonValue })}/>}
-    {tab === 'audio' && <AudioLabPanel template={template} event={event} mixer={String(draft.payload.mixer ?? '')} allowSample={!!props.document.sample_id} api={api.audio} onProposal={proposed} onMixerChange={value => draft.update({ mixer: value })}/>}
+    {tab === 'audio' && <AudioLabPanel template={template} event={event} mixer={String(draft.payload.mixer ?? '')} allowSample={!!props.document.sample_id} api={api.audio} onProposal={proposed} onMixerChange={value => draft.update({ mixer: value })}
+      savedInspection={draft.payload.audio_analysis as unknown as A['Inspection']|undefined}
+      savedSource={audioSource?{name:audioSource.name,url:`/api/agent/projects/${encodeURIComponent(props.project.project_id)}/inputs/file?path=${encodeURIComponent(audioSource.path)}`}:undefined}
+      onSource={props.onRegisterInput?async(file,inspection)=>{const reference=await props.onRegisterInput!(file);draft.update({audio_source:reference,audio_analysis:inspection as unknown as JsonValue});}:undefined}/>}
     {tab === 'vfx' && (vfxSample.data ? <VfxLabPanel fixture={vfxSample.data} template={template} event={event} api={api.vfx} onProposal={proposed}
       initialDraft={draft.payload.vfx as unknown as V['Draft'] | undefined} onDraftChange={value => draft.update({ vfx: value as unknown as JsonValue })}/> : <p>暂无特效配方。可先保存自己的意图与预算；手动导入 Mock 后可编辑原配方参数。</p>)}
     {(uiSample.error || vfxSample.error) && <p role="alert">样例读取失败：{uiSample.error?.message || vfxSample.error?.message}<button onClick={() => { void uiSample.refetch(); void vfxSample.refetch(); }}>重试样例读取</button></p>}

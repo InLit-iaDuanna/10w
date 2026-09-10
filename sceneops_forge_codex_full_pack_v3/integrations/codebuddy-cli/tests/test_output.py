@@ -49,6 +49,14 @@ class OutputTests(unittest.TestCase):
         self.assertEqual(args[args.index('--tools') + 1], '')
         self.assertNotIn('--model', args)
         self.assertNotIn('--json-schema', args)
+        self.assertEqual(args[args.index('--effort') + 1], 'low')
+
+    def test_reasoning_effort_is_forwarded_and_validated(self):
+        args = _arguments('glm-5.3-flash', None, effort='xhigh')
+        self.assertEqual(args[args.index('--effort') + 1], 'xhigh')
+        with self.assertRaises(CodeBuddyFailure) as caught:
+            _arguments('glm-5.3-flash', None, effort='unsupported')
+        self.assertEqual(caught.exception.code, 'CLI_EFFORT_INVALID')
 
     def test_structured_request_keeps_tools_disabled(self):
         schema = {'type': 'object', 'properties': {'status': {'type': 'string'}}}

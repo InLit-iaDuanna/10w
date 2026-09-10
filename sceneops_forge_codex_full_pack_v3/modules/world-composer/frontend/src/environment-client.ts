@@ -2,6 +2,8 @@ import { requestJson } from '@sceneops/api-client';
 import type { components } from './generated/environment-api.ts';
 
 export type EnvironmentScene = components['schemas']['EnvironmentScene'];
+export type SceneLighting = components['schemas']['SceneLighting'];
+export type SceneLight = components['schemas']['SceneLight'];
 export type EnvironmentObject = components['schemas']['EnvironmentObject'];
 export type EnvironmentTransform = components['schemas']['EnvironmentTransform'];
 export type ProjectAssetEntry = components['schemas']['ProjectAssetEntry'];
@@ -13,12 +15,13 @@ export type SharedProjectMemory = components['schemas']['SharedProjectMemory'];
 
 export const environmentSceneKey = (projectId: string) => ['environment-scene', projectId] as const;
 export const environmentAssetsKey = (projectId: string) => ['project-assets', projectId] as const;
-export const environmentAssetUrl = (sourceAssetId: string, version: number) =>
-  `/api/card-assets/${encodeURIComponent(sourceAssetId)}/files/preview?version=${version}`;
-export const environmentAssetFileUrl = (sourceAssetId: string, kind: 'preview'|'blend'|'fbx', version: number) =>
-  `/api/card-assets/${encodeURIComponent(sourceAssetId)}/files/${kind}?version=${version}`;
+export const environmentAssetUrl = (projectId: string, assetId: string, version: number) =>
+  `/api/project-assets/${encodeURIComponent(assetId)}/versions/${version}/files/preview?project_id=${encodeURIComponent(projectId)}`;
+export const environmentAssetFileUrl = (projectId:string, assetId: string, kind: 'preview'|'blend'|'fbx', version: number) =>
+  `/api/project-assets/${encodeURIComponent(assetId)}/versions/${version}/files/${kind}?project_id=${encodeURIComponent(projectId)}`;
 
 export const environmentSceneClient = {
+  saveLighting:(projectId:string,body:components['schemas']['SaveSceneLighting'])=>requestJson<EnvironmentScene>(`/api/environment-scenes/${encodeURIComponent(projectId)}/lighting`,{method:'PUT',body}),
   get: (projectId: string, signal?: AbortSignal) => requestJson<EnvironmentScene>(
     `/api/environment-scenes/${encodeURIComponent(projectId)}`, signal ? { signal } : {}),
   assets: (projectId: string, signal?: AbortSignal) => requestJson<ProjectAssetEntry[]>(

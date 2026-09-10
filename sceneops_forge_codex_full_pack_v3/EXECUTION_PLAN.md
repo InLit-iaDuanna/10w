@@ -1,5 +1,11 @@
 # 执行记录
 
+当前新制作主线（2026-09-09）：**SceneOps 对齐目标 → 确认可编辑制作简报与权限 → Codex／CodeBuddy 原生制作 → 工作台接回实际文件、资产和试玩候选 → 准确会话续改**。新工程使用轻量 Three.js / TypeScript / Vite / pnpm 起点。历史任务与编辑服务继续保留；本轮不接 App Server、SDK 或多 Agent 编排。接口、配置与故障处理见 [原生 CLI 制作](modules/ai-agent-runtime/docs/native-cli-production.md)，实际验收见 [验收报告](NATIVE_CLI_PRODUCTION_ACCEPTANCE.md)。
+
+## 2026-09-08：首次环境配置
+
+完成 Conversation Home 三步引导、AI Provider 固定工具安装适配器、共享 CLI 解析、生成 API 类型与 Shell 首次入口。安装/登录只响应用户点击；真实连接验证后保存所验证的默认工具与模型。独立审查发现的 Codex 版本修复和中文终端路径问题已修复。最小验证与平台范围见 [环境配置说明](modules/conversation-home/docs/environment-setup.md)。
+
 ## 用户修订：层级拆分、配色、流程树与真实工具接入
 
 主代理实现每区域拉手、嵌套拆分与灰色主题并用浏览器验证；Sol 负责旧 edge→grid 公开 API 迁移/测试，另一 Sol 负责流程树/搜索/样式。保留业务内容、安全确认与许可证。真实工具接入只读核实发现生产组合未连接，等待目标工程确认，不用 Mock 替代真实接入。详见 `NESTED_REGION_VERIFICATION.md`。
@@ -58,3 +64,22 @@ Sol 负责对话与提供方弹窗，Terra 负责工具库与命令搜索；主�
 阶段一已实现文件夹、单主对话策划、显式 grill-me、大纲 v1、Three.js 确认和制作卡片；定向烟测记录见 `PLANNING_JOURNEY_STAGE1.md`。下一阶段依次实现 GLB 导入与归一化、空间标记与截图反馈、Three.js 渐进组装、完整项目版本交付。多人和 Unity 新流程暂缓，不启动 AI 游测。
 
 2026-09-06：已实现版本管理纵向 Git 树与公开策划进度投影，保留原评审草稿；最小 API/布局冒烟已完成，完整回归及浏览器交互仍未执行。
+
+## 多平台导出增量
+
+页面、任务/API、隔离构建与 Agent 交接已实施。剩余环境验收为 Android SDK 配置、安卓触控真机、Windows 键鼠及 Intel Mac 运行；不将缺失设备验证标成通过。见 [导出交付](PLAYABLE_EXPORTS_MILESTONE.md)。
+
+## 原生导出接入完成
+
+已完成专用执行 profile、服务端授权和事件回传，真实 CodeBuddy 命令闭环通过。参见 [验证记录](NATIVE_EXPORT_AGENT.md)。系统工具安装与各目标设备验收仍按实际导出目标执行。
+
+
+## 2026-09-09：原生 CLI 制作主线
+
+新游戏制作采用「方向对齐 → 确认可编辑制作简报 → Codex/CodeBuddy 原生会话 → 工作台回流 → 准确会话续改」。权限独立选择 scoped/full；完整权限也需要确认简报。旧任务和领域编辑服务保留，新制作入口不再使用逐动作 JSON 规划器。
+
+工作区级源码登记与任务级 MCP 桥连接真实源码、GLB 资产版本、场景实例和试玩候选；新工程采用所选架构的轻量起点。手动修改后的「更新作品」只执行物化和构建，不调用模型。详见 [原生制作说明](modules/ai-agent-runtime/docs/native-cli-production.md)。
+
+## 对话记忆增量（2026-09-09）
+
+已完成消息内依据/纠正/沉淀、项目状态聚合、统一提供快照与来源关联；交付范围及实际验证见 [对话中的学习与记忆](docs/conversation-memory.md)。不包含部署、发布或 Skill 生成。

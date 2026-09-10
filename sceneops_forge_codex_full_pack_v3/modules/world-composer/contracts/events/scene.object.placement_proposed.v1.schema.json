@@ -1,4 +1,6 @@
 {
+  "x-event-type": "scene.object.placement_proposed",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.local/events/scene.object.placement_proposed.v1.schema.json",
   "title": "scene.object.placement_proposed@1 payload",

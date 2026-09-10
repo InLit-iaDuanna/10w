@@ -11,3 +11,6 @@ backend_module_contribution = {
     'policy_gates': (),
 }
 __all__ = ['router', 'create_ai_router', 'ChatRequest', 'ChatResponse', 'ModelCatalog', 'backend_module_contribution']
+
+from .ai_repository import AIRepository
+__all__ += ['AIRepository']

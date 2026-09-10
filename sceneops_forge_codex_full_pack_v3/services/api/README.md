@@ -1,6 +1,6 @@
 # 统一本地 API
 
-应用根 `pnpm dev` 启动一个 FastAPI；入口 `services.api.app:create_app`。安装依赖为独立步骤：`python -m pip install -r services/api/requirements.txt`。默认端口 8300，Web 4300。只允许 localhost/127.0.0.1；私有 API 需要启动器注入的 `X-SceneOps-Token`，不在浏览器脚本中公开凭据。写入需要匹配 Origin 和 JSON。
+应用根 `pnpm dev` 启动一个 FastAPI；入口 `services.api.app:create_app`。面向用户的 `pnpm start` / `启动 SceneOps.command` 会创建 `.venv`，并从 `requirements-runtime.txt` 安装外部运行依赖；项目内 Python 包继续由 `scripts/python-workspace.mjs` 从已声明的源码目录加载，不构建本地 wheel。开发者需要完整安装时仍可使用 `python -m pip install -r services/api/requirements.txt`。默认端口 8300，Web 4300。只允许 localhost/127.0.0.1；私有 API 需要启动器注入的 `X-SceneOps-Token`，不在浏览器脚本中公开凭据。写入需要匹配 Origin 和 JSON。
 
 ## 公共接口
 
@@ -24,8 +24,14 @@ AI 的 `/api/ai/*` 由 conversation-home 唯一实现，旧 `/v1/design-ai/*` �
 
 导入后的读取还会恢复缺失的设计版本、工程基线和卡片 worktree 本机登记，但前提是草稿记录与仓库中的快照、标签、提交祖先关系、分支、worktree 和卡片说明逐项一致。
 
+制作卡片中的普通讨论保存在 `PlanningJourney.card_messages` 的对应卡片下；流式完成后 API 返回的正式状态会替换前端临时正文与思考内容，因此切换或刷新卡片仍能看到已保存回答。
+
+卡片开发上下文包含该卡片的独立讨论记录，供用户完成对齐后准备代码任务；任务仍需用户审阅授权卡并明确确认才会执行。
+
 没有自动迁移旧 demo 数据。已保存的草稿不是审批、构建或测试证据。概念/渲染/UI/audio/VFX 的交互会话仍是模块原内存服务；用户显式保存的编辑器草稿可重启恢复，但运行时缓存/临时提案不作为持久生产记录。渲染集成初始 `jobs:[]`，仅显示静态 brief/配方，不自动 `plan` 或 `load_fixture`。评审/构建的手动样例来自明确标记 Mock 的记录，不是当前执行的证明。
 
 ## 验证
+
+2026-09-07 审计修复：项目不存在映射为 404／`PROJECT_NOT_FOUND`，没有文件夹绑定的项目调用策划能力映射为 409／`FOLDER_PROJECT_REQUIRED`；均不可重试。未知 Agent 任务返回 404。普通程序 `KeyError` 仍交给 500 处理，不将内部缺字段误报成资源不存在。对应隔离 HTTP 回归见 `tests/test_project_scope.py`，运行 `node scripts/python.mjs -m unittest discover -s services/api/tests -p test_project_scope.py -v`。本轮 4 个测试通过，覆盖原 6 个错误 500 场景、未知任务及内部异常对照。
 
 本后端代理没有启动服务、执行测试或业务动作。维护了项目持久化、项目隔离、版本冲突和未知项目测试，均未运行。由主代理仅进行一轮启动、健康、注册、空态和模型目录烟测；其余路径由用户手动测试。

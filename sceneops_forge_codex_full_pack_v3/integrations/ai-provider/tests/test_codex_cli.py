@@ -19,11 +19,28 @@ def transcript(text='你好', usage=None):
 
 
 class CodexTests(unittest.IsolatedAsyncioTestCase):
+    async def test_model_list_uses_app_server_catalog(self):
+        catalog = {'data': [
+            {'id': 'gpt-a', 'model': 'gpt-a', 'displayName': 'GPT A', 'hidden': False},
+            {'id': 'hidden', 'model': 'hidden', 'displayName': 'Hidden', 'hidden': True},
+        ]}
+        with patch.object(codex_cli, 'resolve_cli_executable', return_value='/fixture/codex'), \
+                patch.object(codex_cli, '_request_model_catalog',
+                             new=AsyncMock(return_value=catalog)) as request:
+            models = await codex_cli.list_models()
+        self.assertEqual(models, [('gpt-a', 'GPT A')])
+        request.assert_awaited_once_with('/fixture/codex', 10)
+
+    def test_invalid_model_catalog_is_rejected(self):
+        with self.assertRaises(codex_cli.CodexFailure) as failure:
+            codex_cli._parse_model_catalog({'data': [{'model': '../invalid'}]})
+        self.assertEqual(failure.exception.code, 'CODEX_MODELS_EMPTY')
+
     async def test_invoke_primary_path(self):
         runner = AsyncMock(side_effect=[(codex_cli.SUPPORTED_VERSION + b'\n', b'', 0),
             (transcript('{"ok":true}', {'input_tokens': 12, 'output_tokens': 3}), b'', 0)])
         schema = {'type': 'object', 'properties': {'ok': {'type': 'boolean'}}, 'required': ['ok']}
-        with patch.object(codex_cli.shutil, 'which', return_value='/fixture/codex'), \
+        with patch.object(codex_cli, 'resolve_cli_executable', return_value='/fixture/codex'), \
                 patch.object(codex_cli, '_run', runner):
             result = await codex_cli.invoke_json('只回答状态', schema=schema)
         self.assertEqual(result['structured_output'], {'ok': True})
@@ -39,7 +56,7 @@ class CodexTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_incompatible_version_never_starts_inference(self):
         runner = AsyncMock(return_value=(b'codex-cli 0.99.0\n', b'', 0))
-        with patch.object(codex_cli.shutil, 'which', return_value='/fixture/codex'), \
+        with patch.object(codex_cli, 'resolve_cli_executable', return_value='/fixture/codex'), \
                 patch.object(codex_cli, '_run', runner):
             with self.assertRaises(codex_cli.CodexFailure) as failure:
                 await codex_cli.invoke_json('hello')
@@ -102,7 +119,7 @@ class CodexTests(unittest.IsolatedAsyncioTestCase):
             return json.dumps(event).encode() + b'\n' + transcript('完成'), b'', 0
         runner = AsyncMock(side_effect=run)
         with tempfile.TemporaryDirectory() as directory, \
-                patch.object(codex_cli.shutil, 'which', return_value='/fixture/codex'), \
+                patch.object(codex_cli, 'resolve_cli_executable', return_value='/fixture/codex'), \
                 patch.object(codex_cli, '_run', runner):
             root = Path(directory).resolve()
             result = await codex_cli.invoke_agent('完成任务', workspace_root=root, authorized_scope='仅本次独立项目。')

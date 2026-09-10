@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 import sqlite3
+import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
@@ -12,6 +13,8 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sceneops_ai_context import ProductionPreparationRequest
+from .scene_lighting import SceneLighting,SaveSceneLighting
 
 
 def _now() -> str:
@@ -119,6 +122,7 @@ class EnvironmentScene(EnvironmentModel):
     objects: list[EnvironmentObject] = Field(default_factory=list, max_length=200)
     history: list[EnvironmentMessage] = Field(default_factory=list, max_length=200)
     scale_profile: WorldScaleProfile = Field(default_factory=WorldScaleProfile)
+    lighting: SceneLighting | None = None
     mode: Literal["live"] = "live"
     updated_at: str = Field(default_factory=_now)
 
@@ -201,6 +205,7 @@ class AiBuildResult(EnvironmentModel):
     provider: str
     model: str
     reused: bool = False
+    production_preparation: dict | None = None
 
 
 class EnvironmentSceneError(Exception):
@@ -211,11 +216,14 @@ class EnvironmentSceneError(Exception):
 
 
 class EnvironmentSceneService:
-    def __init__(self, database_path: str | Path, workspace, catalog, provider):
+    def __init__(self, database_path: str | Path, workspace, catalog, provider, *,
+                 production_preparation=None, builtin_asset_adopt=None):
         self.database_path = Path(database_path)
         self.workspace = workspace
         self.catalog = catalog
         self.provider = provider
+        self.production_preparation = production_preparation
+        self.builtin_asset_adopt = builtin_asset_adopt
         self._lock = Lock()
         with self._connect() as connection:
             connection.executescript("""
@@ -234,6 +242,7 @@ class EnvironmentSceneService:
                     summary TEXT,
                     provider TEXT,
                     model TEXT,
+                    preparation_json TEXT,
                     error TEXT,
                     updated_at TEXT NOT NULL,
                     PRIMARY KEY(project_id, request_id));
@@ -243,6 +252,14 @@ class EnvironmentSceneService:
             )}
             if "request_json" not in columns:
                 connection.execute("ALTER TABLE environment_ai_requests ADD COLUMN request_json TEXT")
+            if "preparation_json" not in columns:
+                connection.execute("ALTER TABLE environment_ai_requests ADD COLUMN preparation_json TEXT")
+            connection.execute(
+                """UPDATE environment_ai_requests
+                   SET status='failed', error='API 进程在场景搭建完成前退出，请明确重试。', updated_at=?
+                   WHERE status='running'""",
+                (_now(),),
+            )
 
     def _connect(self):
         connection = sqlite3.connect(self.database_path, timeout=10)
@@ -300,6 +317,10 @@ class EnvironmentSceneService:
         }
 
     def _save(self, scene: EnvironmentScene, expected_version: int) -> EnvironmentScene:
+        if len(scene.objects) > 200:
+            raise EnvironmentSceneError(
+                "SCENE_OBJECT_LIMIT", "场景对象最多 200 个，请先移除对象或缩小本轮范围。", status_code=422
+            )
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             row = connection.execute(
@@ -315,6 +336,10 @@ class EnvironmentSceneService:
                 (saved.project_id, saved.version, saved.model_dump_json(), saved.updated_at),
             )
         return saved
+
+    def save_lighting(self, project_id: str, request: SaveSceneLighting):
+        scene=self.get(project_id)
+        return self._save(scene.model_copy(update={'lighting':request.lighting}),request.expected_version)
 
     @staticmethod
     def _next_position(count: int) -> tuple[float, float, float]:
@@ -339,6 +364,10 @@ class EnvironmentSceneService:
             scene = self.get(project_id)
             if scene.version != request.expected_version:
                 raise EnvironmentSceneError("SCENE_VERSION_CONFLICT", "场景已更新，请重新读取后再摆放。")
+            if len(scene.objects) >= 200:
+                raise EnvironmentSceneError(
+                    "SCENE_OBJECT_LIMIT", "场景对象最多 200 个，请先移除对象再摆放。", status_code=422
+                )
             entry, version = self._asset_version(project_id, request.asset_id, request.asset_version)
             placed = EnvironmentObject(
                 id="sobj_" + uuid4().hex,
@@ -454,6 +483,8 @@ class EnvironmentSceneService:
                 return AiBuildResult(
                     scene=self.get(project_id, row["result_version"]),
                     summary=row["summary"], provider=row["provider"], model=row["model"], reused=True,
+                    production_preparation=(json.loads(row["preparation_json"])
+                                            if row["preparation_json"] else None),
                 )
             if row and row["status"] == "running":
                 raise EnvironmentSceneError("AI_BUILD_RUNNING", "这次 AI 场景搭建仍在执行。")
@@ -463,7 +494,7 @@ class EnvironmentSceneService:
             if row:
                 connection.execute(
                     """UPDATE environment_ai_requests SET status='running',result_version=NULL,summary=NULL,
-                       provider=NULL,model=NULL,error=NULL,request_json=?,updated_at=?
+                       provider=NULL,model=NULL,preparation_json=NULL,error=NULL,request_json=?,updated_at=?
                        WHERE project_id=? AND request_id=?""",
                     (request_json, now, project_id, request.request_id),
                 )
@@ -481,10 +512,12 @@ class EnvironmentSceneService:
         with self._connect() as connection:
             connection.execute(
                 """UPDATE environment_ai_requests SET status=?,result_version=?,summary=?,provider=?,model=?,
-                   error=?,updated_at=? WHERE project_id=? AND request_id=?""",
+                   preparation_json=?,error=?,updated_at=? WHERE project_id=? AND request_id=?""",
                 ("failed" if error else "completed", result.scene.version if result else None,
                  result.summary if result else None, result.provider if result else None,
-                 result.model if result else None, error, _now(), project_id, request_id),
+                 result.model if result else None,
+                 json.dumps(result.production_preparation, ensure_ascii=False) if result and result.production_preparation else None,
+                 error, _now(), project_id, request_id),
             )
 
     async def ai_build(self, project_id: str, request: AiBuildRequest) -> AiBuildResult:
@@ -496,6 +529,62 @@ class EnvironmentSceneService:
             scene = self.get(project_id)
             if scene.version != request.expected_version:
                 raise EnvironmentSceneError("SCENE_VERSION_CONFLICT", "场景已更新，请重新读取后再让 AI 搭建。")
+            preparation_record = None
+            preparation_context = None
+            if self.production_preparation is not None:
+                preparation_request = ProductionPreparationRequest(
+                    project_id=project_id,
+                    request_key=f"environment:{project_id}:{request.request_id}",
+                    production_kind="scene", requirement=request.prompt,
+                    confirmed_direction=(request.shared_memory.model_dump_json()
+                                         if request.shared_memory else None),
+                    target_platform="web",
+                    current_state={"scene_id": scene.scene_id, "scene_version": scene.version,
+                                   "object_count": len(scene.objects)},
+                    available_capability_ids=([
+                        "builtin.asset.adopt"] if self.builtin_asset_adopt is not None else [])
+                        + ["environment.object.place"],
+                    model_call_allowed=True, remaining_model_calls=1,
+                    remaining_time_seconds=30,
+                )
+                try:
+                    preparation = await self.production_preparation.prepare(preparation_request)
+                    preparation_record = preparation.model_dump(mode="json")
+                    preparation_context = await self.production_preparation.selected_context(
+                        preparation_request, preparation)
+                    selected_builtin = [selection for selection in
+                        (preparation.recommendation.assets if preparation.recommendation else [])
+                        if selection.candidate_id.startswith("builtin:")]
+                    materialization = []
+                    if selected_builtin and self.builtin_asset_adopt is not None:
+                        for selection in selected_builtin:
+                            try:
+                                adopted = await asyncio.to_thread(
+                                    self.builtin_asset_adopt, project_id,
+                                    selection.candidate_id.removeprefix("builtin:"))
+                            except asyncio.CancelledError:
+                                raise
+                            except Exception as error:
+                                materialization.append({"candidate_id": selection.candidate_id,
+                                    "state": "not_adopted", "reason": str(error)})
+                            else:
+                                materialization.append({"candidate_id": selection.candidate_id,
+                                    "project_asset_id": adopted.entry.id,
+                                    "state": "adopted" if adopted.version_created else "already_adopted"})
+                    elif selected_builtin:
+                        materialization = [{"candidate_id": item.candidate_id,
+                            "state": "not_adopted", "reason": "当前入口没有采用权限。"}
+                            for item in selected_builtin]
+                    if materialization:
+                        preparation_record["materialization"] = materialization
+                        preparation_context["materialization"] = materialization
+                except asyncio.CancelledError:
+                    raise
+                except Exception as error:
+                    preparation_record = {"status": "failed", "recommendation": None,
+                        "failure_code": getattr(error, "code", type(error).__name__),
+                        "failure_message": f"制作推荐或资产采用失败：{error}；继续使用当前项目资产。"}
+                    preparation_context = preparation_record
             assets = self.catalog.list(project_id)
             if not assets:
                 raise EnvironmentSceneError("ASSET_LIBRARY_EMPTY", "资产库为空，请先保存至少一个模型。")
@@ -514,6 +603,8 @@ class EnvironmentSceneService:
                 f"项目公共记忆：{request.shared_memory.model_dump_json() if request.shared_memory else '{}'}\n"
                 f"项目尺度：{scene.scale_profile.model_dump_json()}\n"
                 f"现有场景：{scene.model_dump_json()}\n资产库：{json.dumps(catalog, ensure_ascii=False)}\n"
+                f"本次制作准备（参考数据；只能使用上方真实项目资产 ID）："
+                f"{json.dumps(preparation_context, ensure_ascii=False)}\n"
                 f"用户目标：{request.prompt}"
             )
             settings = self.provider.settings()
@@ -546,7 +637,8 @@ class EnvironmentSceneService:
                                    provider=settings.provider, model=settings.model)]
             saved = self._save(scene.model_copy(update={"objects": objects, "history": history[-200:]}), scene.version)
             result = AiBuildResult(scene=saved, summary=plan.summary,
-                                   provider=settings.provider, model=settings.model)
+                                   provider=settings.provider, model=settings.model,
+                                   production_preparation=preparation_record)
             self._finish_ai(project_id, request.request_id, result=result)
             return result
         except Exception as error:
@@ -565,6 +657,10 @@ def create_environment_scene_router(service: EnvironmentSceneService) -> APIRout
     @router.get("/{project_id}", response_model=EnvironmentScene, operation_id="getEnvironmentScene")
     def get_scene(project_id: str, version: int | None = Query(default=None, ge=0)):
         return service.get(project_id, version)
+
+    @router.put('/{project_id}/lighting',response_model=EnvironmentScene,operation_id='saveEnvironmentLighting')
+    def save_lighting(project_id:str,request:SaveSceneLighting):
+        return service.save_lighting(project_id,request)
 
     @router.post("/{project_id}/objects", response_model=EnvironmentScene,
                  operation_id="placeEnvironmentObject")

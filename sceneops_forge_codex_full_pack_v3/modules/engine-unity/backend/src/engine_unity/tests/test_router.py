@@ -21,7 +21,7 @@ class RouterTests(unittest.TestCase):
     def test_capability_route_exposes_fixed_allowlist(self) -> None:
         response = self.client.get("/api/modules/engine-unity/capabilities")
         self.assertEqual(200, response.status_code)
-        self.assertEqual(16, len(response.json()["command_allowlist"]))
+        self.assertEqual(20, len(response.json()["command_allowlist"]))
         self.assertFalse(response.json()["arbitrary_csharp_execution"])
 
     def test_execute_route_returns_truthful_mock_result(self) -> None:

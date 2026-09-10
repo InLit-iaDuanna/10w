@@ -5,9 +5,15 @@ export default defineConfig({
   resolve: {dedupe: ['react', 'react-dom', '@tanstack/react-query', 'three']},
   server: {
     host: '127.0.0.1', port: Number(process.env.SCENEOPS_WEB_PORT ?? 4300), strictPort: true,
-    proxy: Object.fromEntries(['/api', '/v1'].map(path => [path, {
-      target: `http://127.0.0.1:${process.env.SCENEOPS_API_PORT ?? 8300}`,
-      headers: {'X-SceneOps-Token': process.env.SCENEOPS_LOCAL_TOKEN ?? ''},
-    }])),
+    proxy: {
+      ...Object.fromEntries(['/api', '/v1'].map(path => [path, {
+        target: `http://127.0.0.1:${process.env.SCENEOPS_API_PORT ?? 8300}`,
+        headers: {'X-SceneOps-Token': process.env.SCENEOPS_LOCAL_TOKEN ?? ''},
+      }])),
+      '/__sceneops/runtime': {
+        target: `http://127.0.0.1:${process.env.SCENEOPS_SUPERVISOR_PORT ?? 8301}`,
+        headers: {'X-SceneOps-Token': process.env.SCENEOPS_LOCAL_TOKEN ?? ''},
+      },
+    },
   },
 });

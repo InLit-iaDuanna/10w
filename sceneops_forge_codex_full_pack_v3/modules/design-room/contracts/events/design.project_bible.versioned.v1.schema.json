@@ -1,4 +1,6 @@
 {
+  "x-event-type": "design.project_bible.versioned",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://design-room/events/design.project_bible.versioned/v1",
   "title": "design.project_bible.versioned@1 payload",

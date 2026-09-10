@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+export { GltfPreview } from './GltfPreview.tsx';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { SceneObjectIndex } from './scene-object-index.ts';

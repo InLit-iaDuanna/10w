@@ -1,4 +1,6 @@
 {
+  "x-event-type": "scene.level.validated",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sceneops.local/events/scene.level.validated.v1.schema.json",
   "title": "scene.level.validated@1 payload",

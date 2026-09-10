@@ -29,3 +29,39 @@
 @media(max-width:520px){.environment-workflow{grid-template-rows:minmax(180px,var(--environment-scene-share,58%)) 14px minmax(140px,1fr)}.environment-transform-grid,.asset-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.environment-new-asset{align-items:stretch;flex-direction:column}.environment-new-asset>div:last-child{justify-content:flex-start}.environment-library{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}}
 .asset-name-editor select{box-sizing:border-box;width:100%;padding:8px;color:var(--text-primary,#eee);background:var(--surface-1,#222);border:1px solid var(--border-default,#414141);border-radius:7px;font:inherit}
 .environment-asset-editor .environment-transform-grid{grid-template-columns:repeat(3,minmax(0,1fr));padding:9px;border:1px solid var(--border-default,#414141);border-radius:9px}
+
+/* Flat scene viewport and compact project library. */
+.environment-workflow { padding:0; gap:0; background:#1c1e21; grid-template-rows:minmax(190px,var(--environment-scene-share,62%)) 10px minmax(150px,1fr); }
+.environment-workflow .environment-scene-card { border:0; border-radius:0; padding:0; gap:0; background:transparent; overflow:hidden; }
+.environment-workflow .environment-status { height:42px; padding:0 15px; border-bottom:1px solid #34373c; gap:9px; color:#cbd2de; }
+.environment-workflow .environment-status strong { font-size:12px; font-weight:550; }
+.environment-workflow .environment-status>span { padding:1px 5px; font-size:10px; color:#939eaf; background:#ffffff04; }
+.environment-workflow .environment-status small { font-size:9px; color:#778395; }
+.environment-workflow .environment-scene-dropzone,.environment-workflow .environment-scene-preview { border:0; border-radius:0; }
+.environment-workflow .environment-scene-preview>span { display:none; }
+.environment-workflow .environment-splitter { border-block:1px solid #34373c; background:#202328; }
+.environment-workflow .environment-splitter span { width:30px; height:2px; background:#4d5560; }
+.environment-workflow .environment-assets-card { padding:16px; border:0; border-radius:0; background:#202226; gap:16px; }
+.environment-workflow .environment-library-heading { gap:12px; flex-wrap:wrap; }
+.environment-library-heading strong { font-size:13px; font-weight:550; }
+.environment-library-heading small { font-size:10px; color:#858f9f; }
+.environment-library-actions { display:flex!important; flex-direction:row; gap:6px!important; margin-left:auto; }
+.environment-asset-count { display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px; background:#ffffff06; color:#8e9aaa; font-size:10px; }
+.environment-workflow button { display:inline-flex; align-items:center; justify-content:center; gap:6px; font-size:11px; border-radius:6px; border-color:#3d434d; padding:6px 9px; background:#292e35; color:#c6d0dd; }
+.environment-workflow button.primary { background:#c5d3ea; border-color:#c5d3ea; color:#263245; }
+.environment-tool-icon { flex:none; vertical-align:middle; }
+.environment-library-actions .environment-tool-icon { width:14px; height:14px; }
+.environment-canvas-empty { position:absolute; z-index:2; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; gap:9px; padding:20px 18px; width:min(320px,calc(100% - 32px)); text-align:center; background:#1c2028d9; border:1px solid #66758b25; border-radius:12px; backdrop-filter:blur(6px); }
+.environment-empty-icon { display:grid; place-items:center; width:36px; height:36px; border-radius:10px; color:#a1b3ce; background:#acc4e610; }
+.environment-canvas-empty strong { font-size:14px; font-weight:550; color:#dce4ee; }
+.environment-canvas-empty p { margin:0 0 4px; font-size:11px; color:#929fb3; }
+.environment-canvas-empty>div { display:flex; flex-wrap:wrap; justify-content:center; gap:7px; }
+.environment-workflow .environment-drop-hint { background:#171b22b8; color:#8c99ac; border:1px solid #6b789126; padding:4px 9px; font-size:10px; bottom:12px; }
+.environment-library-empty { grid-column:1 / -1; padding:20px 5px; display:flex; gap:14px; align-items:center; }
+.environment-library-empty>.environment-tool-icon { width:30px; height:30px; color:#59677d; }
+.environment-library-empty strong { color:#a6b2c3; font-size:12px; font-weight:500; }
+.environment-library-empty p { font-size:11px; color:#7d899b; line-height:1.7; margin:4px 0 0; }
+.environment-workflow .environment-asset-card { display:flex; flex-direction:column; align-items:stretch; border:1px solid #363e49; background:#252a31; border-radius:8px; padding:8px; }
+.environment-workflow .environment-asset-card:hover { border-color:#7586a0; background:#2b323c; }
+.environment-workflow button:focus-visible { outline:2px solid #a8bbd9; outline-offset:2px; }
+@media(max-width:400px) { .environment-workflow .environment-status { padding-inline:10px; gap:5px; } .environment-workflow .environment-status small { max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .environment-workflow .environment-assets-card { padding:12px; } }

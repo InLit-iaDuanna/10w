@@ -1,0 +1,225 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-clockwork-util01",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-util01:p0",
+      "center_m": [
+        0.0,
+        0.1092,
+        0.0
+      ],
+      "half_extents_m": [
+        0.30576,
+        0.1092,
+        0.30576
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-util01:p1",
+      "center_m": [
+        0.0,
+        1.2558,
+        0.0
+      ],
+      "half_extents_m": [
+        0.06006,
+        1.1466,
+        0.06006
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-util01:p2",
+      "center_m": [
+        0.0,
+        2.44608,
+        0.0
+      ],
+      "half_extents_m": [
+        0.37128,
+        0.1638,
+        0.37128
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-clockwork-util01:p3",
+      "center_m": [
+        0.0,
+        2.2932,
+        0.0
+      ],
+      "half_extents_m": [
+        0.15288,
+        0.1911,
+        0.15288
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [
+      "toggle_light"
+    ],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-clockwork-util01.glb",
+      "triangle_count": 264,
+      "part_count": 4,
+      "distance_m": 0.0,
+      "sha256": "d39891e30e9ce8ff105a75dd742eede13a28fa4b8420e266002f1dc429af5b6f",
+      "byte_size": 64276
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-clockwork-util01.lod1.glb",
+      "triangle_count": 126,
+      "part_count": 4,
+      "distance_m": 13.05,
+      "sha256": "e506987ace092401d9a32e3fa20eac6fe1ab6eca8873aa236a7e5d1a729630c9",
+      "byte_size": 42280
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-clockwork-util01.lod2.glb",
+      "triangle_count": 56,
+      "part_count": 3,
+      "distance_m": 31.32,
+      "sha256": "3663f3f805c97cbecfe04abf8890151991aeae1c4d450dff32ebf84e7aa8cec0",
+      "byte_size": 30416
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.37128,
+      0.0,
+      -0.37128
+    ],
+    "max": [
+      0.37128,
+      2.60988,
+      0.37128
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}

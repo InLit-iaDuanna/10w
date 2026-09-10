@@ -10,3 +10,6 @@ export const moduleContribution = {
 
 export { UnityBuildWorkbench } from './workbench/UnityBuildWorkbench';
 export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');
+export { ExportWorkbench } from './export/ExportWorkbench';
+export type { ExportWorkbenchProps } from './export/ExportWorkbench';
+export const loadExportWorkbench = () => import('./export/ExportWorkbench');

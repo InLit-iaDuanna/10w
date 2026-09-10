@@ -12,6 +12,10 @@ from pathlib import Path
 from .agent_protocol import validate_binding, validate_command
 
 
+class BlenderCommandRejected(ValueError):
+    """Local validation rejected this command before opening a connection."""
+
+
 def sandbox_profile(workspace: Path, state: Path, executable: Path, source: Path) -> str:
     quote = lambda value: json.dumps(str(value))
     reads = ["/System", "/usr", "/bin", "/sbin", "/Library", "/private/etc", "/private/var/db", "/dev", str(executable.parents[2]), str(source)]
@@ -172,15 +176,32 @@ class BlenderAgentSession:
         import shutil
         identifier(candidate_id)
         source = Path(source_path).resolve(strict=True)
-        if source.suffix != ".blend" or not source.is_relative_to(self.workspace_root):
-            raise ValueError("registered source must be a workspace .blend")
-        target = self.content_root / (candidate_id + ".blend")
+        if source.suffix not in (".blend", ".glb") or not source.is_relative_to(self.workspace_root):
+            raise ValueError("registered source must be a workspace .blend or .glb")
+        target = self.content_root / (candidate_id + source.suffix)
         if target.resolve() != target or target.exists():
             raise ValueError("source candidate already exists or escapes content root")
         self.content_root.mkdir(parents=True, exist_ok=True)
         with target.open("xb") as output, source.open("rb") as source_file:
             shutil.copyfileobj(source_file, output)
         return str(target)
+
+    def register_glb(self, candidate_id, data: bytes):
+        """Service-only transfer of the exact catalog GLB into the granted workspace."""
+        from .agent_protocol import identifier
+        identifier(candidate_id)
+        if not isinstance(data, bytes) or data[:4] != b'glTF':
+            raise BlenderCommandRejected('registered source must contain GLB bytes')
+        target = self.content_root / (candidate_id + '.glb')
+        if target.resolve() != target or target.exists():
+            raise BlenderCommandRejected('source candidate already exists or escapes content root')
+        self.content_root.mkdir(parents=True, exist_ok=True)
+        with target.open('xb') as output:
+            output.write(data)
+        return str(target)
+
+    def import_source(self, *, request_id, asset_id, candidate_id, authorization, dry_run=False):
+        return self._mutation(dict(operation="import_source", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, authorization=authorization), dry_run)
 
     def bootstrap_door(self, *, request_id, asset_id, candidate_id, node_ids, recipe, authorization, dry_run=False):
         return self._mutation(dict(operation="bootstrap_door", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, node_ids=node_ids, recipe=recipe, authorization=authorization), dry_run)
@@ -197,14 +218,23 @@ class BlenderAgentSession:
     def export_source(self, *, request_id, asset_id, candidate_id, authorization, formats=None, dry_run=False):
         return self._mutation(dict(operation="export_source", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, formats=["glb"] if formats is None else formats, authorization=authorization), dry_run)
 
+    def derive_unity(self, *, request_id, asset_id, candidate_id, authorization, dry_run=False):
+        """Derive FBX from a service-registered source without saving or publishing it."""
+        return self._mutation(dict(operation="derive_unity", request_id=request_id, asset_id=asset_id, candidate_id=candidate_id, authorization=authorization), dry_run)
+
     def _mutation(self, command, dry_run):
-        validate_command(command, self._binding or {})
+        try:
+            validate_command(command, self._binding or {})
+        except ValueError as error:
+            raise BlenderCommandRejected(str(error)) from error
         if type(dry_run) is not bool:
             raise ValueError("dry_run must be boolean")
         if dry_run:
             outputs = ["scene.blend"] if command["operation"] == "create_asset" else [command["asset_id"] + suffix for suffix in (".fbx", ".identity.json")]
             if "candidate_id" in command:
                 outputs = [command["candidate_id"] + "." + fmt for fmt in command.get("formats", ["blend"])]
+            if command["operation"] == "derive_unity":
+                outputs = [command["candidate_id"] + ".fbx"]
             return {"mode": "planned", "operation": command["operation"], "request_id": command["request_id"],
                     "would_write": [str(self.content_root / name) for name in outputs]}
         return self._request(command)

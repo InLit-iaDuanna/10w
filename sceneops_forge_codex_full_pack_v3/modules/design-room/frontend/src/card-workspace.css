@@ -1,0 +1,54 @@
+/* Card conversations: a compact navigation rail and a calm reading surface. */
+.planning-journey.has-card-workspace {
+  --card-accent:var(--focus-ring);
+  --card-line:var(--border-subtle);
+  padding:0 24px 0 252px;
+}
+.planning-journey.has-card-workspace.conversation-sidebar-collapsed { padding-left:24px; }
+.has-card-workspace > header { min-height:64px; padding:12px 0; border-bottom:1px solid var(--card-line); }
+.has-card-workspace .journey-header-title { flex-wrap:wrap; gap:5px 10px; }
+.has-card-workspace .journey-header-title strong { font-size:14px; letter-spacing:.1px; }
+.has-card-workspace .journey-header-title small { margin:0; padding:3px 7px; border:1px solid var(--border-subtle); border-radius:5px; font-size:10px; color:var(--text-muted); }
+.has-card-workspace .journey-header-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.has-card-workspace .journey-conversations { width:228px; padding:22px 12px 16px; gap:24px; background:var(--canvas); border-right:1px solid var(--card-line); }
+.has-card-workspace .journey-conversation-toolbar { gap:6px; }
+.has-card-workspace .journey-new-conversation { gap:9px; min-height:38px; padding:9px 12px; border:1px solid var(--border-subtle); border-radius:9px; background:var(--surface-2); color:var(--text-primary); font-size:12px; font-weight:550; }
+.has-card-workspace .journey-new-conversation:hover:not(:disabled) { background:var(--surface-hover); }
+.has-card-workspace .journey-sidebar-toggle { width:28px; height:30px; color:var(--text-muted); }
+.journey-conversation-label { display:flex; justify-content:space-between; align-items:center; padding:2px 10px 0; color:var(--text-muted); font-size:10px; letter-spacing:1px; }
+.journey-conversation-label small { display:grid; place-items:center; min-width:18px; height:18px; background:var(--surface-1); border-radius:5px; color:var(--text-muted); font-size:10px; letter-spacing:0; }
+.has-card-workspace .journey-conversations nav { gap:6px; margin-top:-12px; }
+.has-card-workspace .journey-conversation-item { --conversation-row-height:42px; grid-template-columns:minmax(0,1fr) 26px; border:1px solid transparent; border-radius:9px; }
+.has-card-workspace .journey-conversation-item:hover { background:var(--surface-hover); }
+.has-card-workspace .journey-conversation-item:has([aria-current=page]) { background:var(--surface-2); border-color:var(--border-subtle); }
+.has-card-workspace .journey-conversations nav .journey-conversation-select { gap:9px; padding:0 10px; font-size:12px; color:var(--text-secondary); }
+.has-card-workspace .journey-conversations nav .journey-conversation-select[aria-current=page] { background:transparent; color:var(--text-primary); }
+.journey-conversation-select > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.journey-thread-icon { width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linejoin:round; stroke-linecap:round; opacity:.6; }
+[aria-current=page] .journey-thread-icon { color:var(--card-accent); opacity:1; }
+.has-card-workspace .journey-conversations nav .journey-conversation-delete { width:24px; padding:5px; }
+.journey-conversation-item:focus-within .journey-conversation-delete { opacity:1; pointer-events:auto; }
+.journey-conversation-context { display:flex; align-items:center; gap:10px; padding:14px 8px 0; border-top:1px solid var(--card-line); }
+.journey-conversation-context > svg { width:18px; height:18px; flex:none; fill:none; stroke:var(--text-muted); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+.journey-conversation-context > div { display:grid; gap:4px; }
+.journey-conversation-context strong { color:var(--text-secondary); font-size:11px; font-weight:450; }
+.journey-conversation-context span { color:var(--text-muted); font-size:10px; }
+.planning-journey.has-card-workspace .journey-scroll { padding:28px max(8px,calc((100% - 720px)/2)) 32px; }
+.planning-journey.has-card-workspace .agent-conversation-run { font-size:13px; line-height:1.85; }
+.has-card-workspace .agent-workspace-changes { border-color:var(--border-subtle); border-radius:10px; background:var(--surface-1); }
+.has-card-workspace .agent-workspace-changes > summary > strong { font-size:12px; font-weight:500; }
+.has-card-workspace :focus-visible { outline-color:var(--card-accent); }
+@media(min-width:761px) {
+  .planning-journey.has-card-workspace.has-model-preview .journey-scroll { padding-right:calc(var(--model-preview-width) + 24px); }
+}
+@media(max-width:680px) {
+  .planning-journey.has-card-workspace,.planning-journey.has-card-workspace.conversation-sidebar-collapsed { padding:0 14px; }
+  .has-card-workspace .journey-conversations { position:static; width:100%; padding:12px 0; gap:12px; flex-direction:column; border-right:0; border-bottom:1px solid var(--card-line); background:transparent; }
+  .has-card-workspace .journey-conversation-toolbar { flex:none; }
+  .has-card-workspace .journey-new-conversation { flex:0 0 auto; }
+  .has-card-workspace .journey-sidebar-toggle { margin-left:auto; }
+  .journey-conversation-label,.journey-conversation-context { display:none; }
+  .has-card-workspace .journey-conversations nav { flex:none; flex-direction:row; margin:0; }
+  .has-card-workspace .journey-conversation-item { flex:0 0 180px; }
+  .planning-journey.has-card-workspace .journey-scroll { padding:20px 0; }
+}

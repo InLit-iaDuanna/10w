@@ -58,3 +58,15 @@ def preserve_native_source(workspace_root, candidate_id, blend_path, glb_path):
             shutil.copyfileobj(original, stream)
     return {'blend_path': str(outputs[0]), 'preview_path': str(outputs[1]),
             'project_relative_path': outputs[1].relative_to(root).as_posix()}
+
+
+def register_glb_identity_bytes(path):
+    """Metadata-only import: preserve every original binary chunk and animation channel."""
+    from asset_library import assign_glb_identities
+    document = assign_glb_identities(inspect_native_glb(path))
+    original = path.read_bytes()
+    json_size = struct.unpack_from('<I', original, 12)[0]
+    payload = json.dumps(document, ensure_ascii=False, separators=(',', ':')).encode()
+    payload += b' ' * (-len(payload) % 4)
+    body = struct.pack('<II', len(payload), 0x4E4F534A) + payload + original[20 + json_size:]
+    return b'glTF' + struct.pack('<II', 2, 12 + len(body)) + body

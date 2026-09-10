@@ -1,0 +1,22 @@
+{
+  "scenes": 100,
+  "asset_files": 675,
+  "scene_specific_asset_files": 555,
+  "shared_equipment_files": 80,
+  "shared_utility_files": 40,
+  "authored_asset_slots": 1320,
+  "deduplicated_asset_slots": 645,
+  "scene_asset_references": 2400,
+  "placed_instances": 3800,
+  "recipe_families": 109,
+  "assets": 675,
+  "rigged_assets": 223,
+  "animated_assets": 223,
+  "animation_clips": 521,
+  "static_assets": 452,
+  "lod_files": 2325,
+  "texture_sets": 50,
+  "texture_images": 400,
+  "physics_asset_bindings": 675,
+  "physics_scene_bindings": 100
+}

@@ -5,10 +5,18 @@ import os
 import subprocess
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from threading import Barrier, Lock
 from types import SimpleNamespace
 
-from asset_factory import CardAssetService, LiveModelUpdateRequest, ModelPlanRequest
+from asset_factory import (
+    CardAssetError,
+    CardAssetRecord,
+    CardAssetService,
+    LiveModelUpdateRequest,
+    ModelPlanRequest,
+)
 from asset_library import ProjectAssetCatalogService, SqliteProjectAssetRepository
 from sceneops_ai_provider import ProviderService
 from sceneops_project_workspace import SqliteWorkspaceRepository
@@ -23,6 +31,7 @@ class FixtureProvider:
 
     async def structured(self, prompt, schema, **kwargs):
         self.calls += 1
+        self.last_prompt = prompt
         assert "固定 Blender 原语执行器" in prompt
         assert schema["type"] == "object"
         return {
@@ -36,6 +45,25 @@ class FixtureProvider:
                  "location_m": [0.0, 0.0, 4.5], "rotation_deg": [0.0, 0.0, 0.0], "color": "#3F7F45"},
             ],
         }
+
+
+class FixturePreparation:
+    def __init__(self):
+        self.calls = []
+
+    async def prepare(self, request):
+        self.calls.append(request)
+        return SimpleNamespace(model_dump=lambda **_kwargs: {
+            'status':'succeeded', 'recommendation':{'assets':[], 'experiences':[],
+                'skills':[{'candidate_id':'sceneops-blender-technical-artist',
+                    'version':'1', 'purpose':'建模', 'adoption':'use', 'reason':'能力匹配'}],
+                'production_advice':[], 'conflicts':[], 'gaps':[]}})
+
+    async def selected_context(self, request, result):
+        return {'status':'succeeded', 'recommendation':result.model_dump()['recommendation'],
+                'selected_details':[{'identity':{
+                    'candidate_id':'sceneops-blender-technical-artist'},
+                    'content':'只使用固定原语执行器。'}]}
 
 
 class FixtureBlender:
@@ -64,19 +92,118 @@ class FixtureCardWorkspace:
         return {"worktree_path": str(self.root), "branch": f"card/{card_id}"}
 
 
+class CoordinatedLoadService(CardAssetService):
+    """Make both callers read the same pre-lock snapshot deterministically."""
+    def arm(self, table: str, record_id: str):
+        self._load_target = (table, record_id)
+        self._load_barrier = Barrier(2)
+        self._load_guard = Lock()
+        self._coordinated_loads = 0
+
+    def _load(self, table, record_id, model):
+        record = super()._load(table, record_id, model)
+        guard = getattr(self, "_load_guard", None)
+        should_wait = False
+        if guard is not None:
+            with guard:
+                should_wait = (self._load_target == (table, record_id)
+                               and self._coordinated_loads < 2)
+                if should_wait:
+                    self._coordinated_loads += 1
+        if should_wait:
+            self._load_barrier.wait(timeout=5)
+        return record
+
+
 def git(root: Path, *arguments: str) -> str:
     return subprocess.check_output(["git", "-C", str(root), *arguments], text=True).strip()
 
 
+def prepare_card(repository, project_id: str):
+    repository.commit_design_version(project_id, 1, {"version": 1})
+    repository.initialize_game_project(project_id, {
+        "target_platform": "web", "engine": "threejs",
+        "code_architecture": "object-component", "architecture_label": "对象／组件式",
+        "selection_method": "manual", "rationale": "资产测试夹具", "tradeoffs": ["测试"],
+        "ecs_library": None,
+    }, 1)
+    return repository.open_card_worktree(project_id, "map", "地图")
+
+
 class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
+    async def test_model_plan_receives_one_bounded_production_preparation(self):
+        with tempfile.TemporaryDirectory(prefix="sceneops-card-preparation-") as directory:
+            root = Path(directory).resolve()
+            database = root / "sceneops.sqlite3"
+            provider = FixtureProvider()
+            preparation = FixturePreparation()
+            service = CardAssetService(database, root, FixtureCardWorkspace(root), provider,
+                                       blender=FixtureBlender(root),
+                                       production_preparation=preparation)
+
+            proposal = await service.plan("project", "map", ModelPlanRequest(
+                session_id="prepared", transcript=[{"role":"user", "text":"一棵树"}]))
+
+            self.assertEqual(len(preparation.calls), 1)
+            self.assertEqual(preparation.calls[0].production_kind, 'modeling')
+            self.assertEqual(preparation.calls[0].available_capability_ids,
+                             ['model.primitive.create'])
+            self.assertEqual(proposal.production_preparation['status'], 'succeeded')
+            self.assertIn('sceneops-blender-technical-artist', provider.last_prompt)
+            self.assertNotIn('无法执行的修改方案', provider.last_prompt)
+    async def prepared_service(self, root: Path):
+        database = root / "data" / "sceneops.sqlite3"
+        database.parent.mkdir()
+        blender = FixtureBlender(root / "data")
+        service = CoordinatedLoadService(
+            database, root / "data", FixtureCardWorkspace(root), FixtureProvider(), blender=blender
+        )
+        proposal = await service.plan("project", "map", ModelPlanRequest(
+            session_id="concurrent", transcript=[{"role": "user", "text": "一棵树"}]
+        ))
+        return service, blender, proposal
+
+    async def test_concurrent_normalize_keeps_every_successful_version(self):
+        with tempfile.TemporaryDirectory(prefix="sceneops-card-asset-normalize-race-") as directory:
+            root = Path(directory).resolve()
+            service, _blender, proposal = await self.prepared_service(root)
+            generated = service.generate(proposal.id)
+            service.arm("card_asset_records", generated.id)
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                results = list(pool.map(lambda extent: service.normalize(generated.id, extent), (4.0, 2.0)))
+
+            saved = service._load("card_asset_records", generated.id, type(generated))
+            self.assertEqual([item.number for item in saved.versions], [1, 2, 3])
+            self.assertEqual({result.current_version for result in results}, {2, 3})
+
+    async def test_concurrent_generate_executes_a_planned_proposal_once(self):
+        with tempfile.TemporaryDirectory(prefix="sceneops-card-asset-generate-race-") as directory:
+            root = Path(directory).resolve()
+            service, blender, proposal = await self.prepared_service(root)
+            service.arm("card_asset_proposals", proposal.id)
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                futures = [pool.submit(service.generate, proposal.id) for _ in range(2)]
+                outcomes = []
+                for future in futures:
+                    try:
+                        outcomes.append(future.result())
+                    except CardAssetError as error:
+                        outcomes.append(error)
+
+            self.assertEqual(len(blender.payloads), 1)
+            self.assertEqual(sum(isinstance(item, CardAssetError) for item in outcomes), 1)
+            saved = service._load("card_asset_records", proposal.asset_id, CardAssetRecord)
+            self.assertEqual([item.number for item in saved.versions], [1])
+            self.assertEqual(saved.status, "ready")
     async def test_live_dialogue_updates_append_versions_and_dedupe_message(self):
         with tempfile.TemporaryDirectory(prefix="sceneops-card-asset-turns-") as directory:
             root = Path(directory).resolve()
             database = root / "data" / "sceneops.sqlite3"
             repository = SqliteWorkspaceRepository(database)
             project = repository.create_folder_project(root, "game")
-            repository.commit_design_version(project.project_id, 1, {"version": 1})
-            binding = repository.open_card_worktree(project.project_id, "map", "地图")
+            binding = prepare_card(repository, project.project_id)
             provider = FixtureProvider()
             catalog = ProjectAssetCatalogService(SqliteProjectAssetRepository(database))
             service = CardAssetService(database, root / "data", repository, provider,
@@ -142,8 +269,7 @@ class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
             root = Path(directory).resolve()
             repository = SqliteWorkspaceRepository(root / "data" / "sceneops.sqlite3")
             project = repository.create_folder_project(root, "game")
-            repository.commit_design_version(project.project_id, 1, {"version": 1})
-            repository.open_card_worktree(project.project_id, "map", "地图")
+            prepare_card(repository, project.project_id)
             service = CardAssetService(root / "data" / "sceneops.sqlite3", root / "data", repository, FixtureProvider())
             proposal = await service.plan(project.project_id, "map", ModelPlanRequest(
                 session_id="modeling_1", transcript=[{"role": "user", "text": "做一棵六米高的低多边形大树"}]))
@@ -157,8 +283,7 @@ class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
             database = root / "data" / "sceneops.sqlite3"
             repository = SqliteWorkspaceRepository(database)
             project = repository.create_folder_project(root, "game")
-            repository.commit_design_version(project.project_id, 1, {"version": 1})
-            repository.open_card_worktree(project.project_id, "map", "地图")
+            prepare_card(repository, project.project_id)
             provider = ProviderService(database)
             provider.update_settings(provider="codebuddycli", model="glm-5.3-flash")
             service = CardAssetService(database, root / "data", repository, provider)
@@ -178,8 +303,7 @@ class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
             database = root / "data" / "sceneops.sqlite3"
             repository = SqliteWorkspaceRepository(database)
             project = repository.create_folder_project(root, "game")
-            repository.commit_design_version(project.project_id, 1, {"version": 1})
-            binding = repository.open_card_worktree(project.project_id, "map", "地图")
+            binding = prepare_card(repository, project.project_id)
             service = CardAssetService(database, root / "data", repository, FixtureProvider())
             first = await service.live_update(project.project_id, "map", LiveModelUpdateRequest(
                 session_id="modeling_real_live", trigger_message_id="message_1", modeling_block="shape",
@@ -202,8 +326,7 @@ class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
             database = root / "data" / "sceneops.sqlite3"
             repository = SqliteWorkspaceRepository(database)
             project = repository.create_folder_project(root, "game")
-            repository.commit_design_version(project.project_id, 1, {"version": 1})
-            binding = repository.open_card_worktree(project.project_id, "map", "地图")
+            binding = prepare_card(repository, project.project_id)
             provider = ProviderService(database)
             provider.update_settings(provider="codebuddycli", model="glm-5.3-flash")
             service = CardAssetService(database, root / "data", repository, provider)
@@ -223,8 +346,7 @@ class CardAssetWorkflowSmoke(unittest.IsolatedAsyncioTestCase):
             database = root / "data" / "sceneops.sqlite3"
             repository = SqliteWorkspaceRepository(database)
             project = repository.create_folder_project(root, "game")
-            repository.commit_design_version(project.project_id, 1, {"version": 1})
-            binding = repository.open_card_worktree(project.project_id, "map", "地图")
+            binding = prepare_card(repository, project.project_id)
             service = CardAssetService(database, root / "data", repository, FixtureProvider())
             proposal = await service.plan(project.project_id, "map", ModelPlanRequest(
                 session_id="modeling_live", transcript=[{"role": "user", "text": "做一棵六米高的低多边形大树"}]))

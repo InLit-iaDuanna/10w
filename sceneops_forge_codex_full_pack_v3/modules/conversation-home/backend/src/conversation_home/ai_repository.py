@@ -43,12 +43,27 @@ class AIRepository:
     def scope(project_id):
         return 'pre_project' if project_id is None else 'project:' + project_id
 
+    def memory_source(self, project_id: str | None, source_id: str):
+        """Public saved-message lookup; never accept a client supplied excerpt."""
+        if not source_id.startswith('message:'):
+            return None
+        message_id = source_id.removeprefix('message:')
+        with self.connect() as connection:
+            row = connection.execute(
+                'SELECT id,role,text,created_at FROM conversation_ai_messages WHERE scope=? AND id=?',
+                (self.scope(project_id), message_id)).fetchone()
+        if row is None:
+            return None
+        return dict(id=source_id, kind='message', role=row['role'], text=row['text'],
+                    created_at=row['created_at'],
+                    evidence_status='user_statement' if row['role'] == 'user' else 'reported')
+
     def append_exchange(self, project_id: str | None, prompt: str, reply: str, model: str,
-                        provider: ProviderId = 'codebuddycli'):
+                        provider: ProviderId = 'codebuddycli', *, message_ids=None):
         # Atomic successful exchanges prevent failed/retried requests duplicating historical prompts.
         now = datetime.now(timezone.utc).isoformat()
         with self.connect() as connection:
-            for role, text, mode in [('user', prompt, 'planned'), ('assistant', reply, 'live')]:
+            for index, (role, text, mode) in enumerate([('user', prompt, 'planned'), ('assistant', reply, 'live')]):
                 connection.execute('INSERT INTO conversation_ai_messages '
                     '(id,scope,role,text,model,provider,mode,created_at) VALUES(?,?,?,?,?,?,?,?)',
-                    (str(uuid4()), self.scope(project_id), role, text, model, provider, mode, now))
+                    (message_ids[index] if message_ids else str(uuid4()), self.scope(project_id), role, text, model, provider, mode, now))

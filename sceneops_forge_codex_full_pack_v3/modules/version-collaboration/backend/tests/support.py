@@ -117,6 +117,7 @@ class FakeGitAdapter:
         self.rollback_calls = 0
         self.completed_rollbacks: dict[str, GitRollbackResult] = {}
         self.locked: dict[str, LfsLockResult] = {}
+        self.lock_sequence = 0
 
     def health_check(self, project_root: Path) -> IntegrationHealth:
         return IntegrationHealth(
@@ -168,8 +169,9 @@ class FakeGitAdapter:
         )
 
     def acquire_lfs_lock(self, project_root: Path, path: str, operation_id: str) -> LfsLockResult:
+        self.lock_sequence += 1
         result = LfsLockResult(
-            external_lock_id=f"external-{len(self.locked) + 1}",
+            external_lock_id=f"external-{self.lock_sequence}",
             path=path,
             owner_name="Fixture Reviewer",
             locked_at=NOW,

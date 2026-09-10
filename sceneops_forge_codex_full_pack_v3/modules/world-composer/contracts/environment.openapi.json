@@ -85,6 +85,58 @@
         }
       }
     },
+    "/api/environment-scenes/{project_id}/lighting": {
+      "put": {
+        "tags": [
+          "environment-scenes"
+        ],
+        "summary": "Save Lighting",
+        "operationId": "saveEnvironmentLighting",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSceneLighting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvironmentScene"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/environment-scenes/{project_id}/objects": {
       "post": {
         "tags": [
@@ -561,6 +613,79 @@
         }
       }
     },
+    "/api/project-assets/{entry_id}/versions/{version}/files/{kind}": {
+      "get": {
+        "tags": [
+          "project-asset-library"
+        ],
+        "summary": "Read File",
+        "operationId": "readProjectAssetFile",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "preview",
+                "blend",
+                "fbx"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/project-assets/{entry_id}": {
       "get": {
         "tags": [
@@ -740,6 +865,18 @@
             "type": "boolean",
             "title": "Reused",
             "default": false
+          },
+          "production_preparation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Production Preparation"
           }
         },
         "additionalProperties": false,
@@ -1089,6 +1226,16 @@
           "scale_profile": {
             "$ref": "#/components/schemas/WorldScaleProfile"
           },
+          "lighting": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SceneLighting"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "mode": {
             "type": "string",
             "const": "live",
@@ -1419,7 +1566,8 @@
             "enum": [
               "file",
               "procedural",
-              "blender"
+              "blender",
+              "glb"
             ],
             "title": "Source Kind",
             "default": "file"
@@ -1508,6 +1656,41 @@
               }
             ],
             "title": "Parent Source Version"
+          },
+          "geometry_source_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Geometry Source Version"
+          },
+          "lookdev_document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookdev Document Id"
+          },
+          "lookdev_document_version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lookdev Document Version"
           },
           "node_ids": {
             "additionalProperties": {
@@ -1787,6 +1970,257 @@
           "version_created"
         ],
         "title": "SaveProjectAssetResult"
+      },
+      "SaveSceneLighting": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "lighting": {
+            "$ref": "#/components/schemas/SceneLighting"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "lighting"
+        ],
+        "title": "SaveSceneLighting"
+      },
+      "SceneLight": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ambient",
+              "hemisphere",
+              "directional",
+              "point",
+              "spot"
+            ],
+            "title": "Type"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Color"
+          },
+          "ground_color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Ground Color",
+            "default": "#242424"
+          },
+          "sky_direction": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Sky Direction",
+            "default": [
+              0,
+              1,
+              0
+            ]
+          },
+          "intensity": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Intensity",
+            "default": 1
+          },
+          "position": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Position",
+            "default": [
+              0,
+              0,
+              0
+            ]
+          },
+          "target": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Target",
+            "default": [
+              0,
+              0,
+              0
+            ]
+          },
+          "distance": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Distance",
+            "default": 0
+          },
+          "angle": {
+            "type": "number",
+            "maximum": 1.5707963267948966,
+            "exclusiveMinimum": 0.0,
+            "title": "Angle",
+            "default": 0.7
+          },
+          "penumbra": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Penumbra",
+            "default": 0.4
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "shadow": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SceneShadow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "color"
+        ],
+        "title": "SceneLight"
+      },
+      "SceneLighting": {
+        "properties": {
+          "background": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "title": "Background",
+            "default": "#1b1b1b"
+          },
+          "exposure": {
+            "type": "number",
+            "maximum": 10.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Exposure",
+            "default": 1
+          },
+          "lights": {
+            "items": {
+              "$ref": "#/components/schemas/SceneLight"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "title": "Lights"
+          },
+          "source_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Source Refs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SceneLighting"
+      },
+      "SceneShadow": {
+        "properties": {
+          "map_size": {
+            "type": "integer",
+            "maximum": 4096.0,
+            "minimum": 128.0,
+            "title": "Map Size",
+            "default": 1024
+          },
+          "extent": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Extent",
+            "default": 14
+          },
+          "near": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Near",
+            "default": 1
+          },
+          "far": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Far",
+            "default": 60
+          },
+          "bias": {
+            "type": "number",
+            "title": "Bias",
+            "default": 0
+          },
+          "normal_bias": {
+            "type": "number",
+            "title": "Normal Bias",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SceneShadow"
       },
       "SharedProjectMemory": {
         "properties": {

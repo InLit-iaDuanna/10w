@@ -5,3 +5,4 @@ export type { CharacterAnimationApiPort, EditorRuntimeState } from './types';
 export const loadIntegratedWorkbench = () => import('./IntegratedWorkbench');
 export { CharacterAnimationWorkbench } from './workbench/CharacterAnimationWorkbench';
 export type { paths as CharacterAnimationPaths } from './generated/api';
+export {AssetAnimationPreview} from './AssetAnimationPreview';

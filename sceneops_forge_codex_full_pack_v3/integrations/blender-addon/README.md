@@ -152,3 +152,23 @@ PYTHONPATH=integrations/blender-addon/src python3 integrations/blender-addon/scr
 `smoke_source_roundtrip.py --headless --grant-content` 包含独立沙箱 Blender 保存后的自动
 重读，以及 `fixture_source_conflict.py` 的真实 Blender 双方修改冲突检查。两者明确为开发
 夹具模拟，不作为用户在 GUI 中手工操作的证据。
+
+### Unity U1 immutable source derivation
+
+`derive_unity(*, request_id, asset_id, candidate_id, authorization, dry_run=False)`
+requires the exact `blender.asset.derive_unity` capability in the authenticated task
+grant and action authorization. The service first stages its registered source
+with `register_source`; the command accepts no source paths, output paths, scripts,
+or export options. It opens that candidate `.blend` and exports `<candidate_id>.fbx`
+inside the owned content directory, preserving `sceneops_id`, `sceneops_role`, and
+other custom properties. Names are not identities. Every scene object must belong
+to the requested asset, have a distinct stable ID, and be a mesh or empty node.
+The operation never saves the `.blend`, exports a GLB, or creates an asset version.
+The ordinary live host readback supplies objects, parents, node/mesh counts,
+geometry counts and Y-up bounds; `fbx_path` and `fbx_relative_path` identify the
+actual derived file. Unity import is responsible for FBX importer readback.
+
+
+## 七领域项目联通（2026-09-10）
+
+受控 GLB 原生源导入保留动画到 Action 的实际身份映射；骨骼控制形状不登记为匿名游戏对象。切换导入候选清理隔离场景的旧对象与旧 Action。未保存导入的持久回执可结束失败候选，不重放未知操作。

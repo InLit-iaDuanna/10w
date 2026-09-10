@@ -142,5 +142,7 @@
     "payload"
   ],
   "title": "AnimationClipApprovedEvent",
-  "type": "object"
+  "type": "object",
+  "x-event-type": "animation.clip.approved",
+  "x-event-version": 1
 }

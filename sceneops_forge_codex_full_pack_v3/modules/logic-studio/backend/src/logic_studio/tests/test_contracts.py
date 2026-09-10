@@ -1,4 +1,4 @@
-import importlib
+import logic_studio
 import unittest
 from pathlib import Path
 
@@ -53,7 +53,7 @@ class ContractTests(unittest.TestCase):
             self.assertFalse(schema["additionalProperties"])
 
     def test_backend_public_entrypoint_imports(self):
-        public = importlib.import_module("logic_studio")
+        public = logic_studio
         self.assertTrue(callable(public.validate_gameplay_graph))
         self.assertTrue(callable(public.serialize_gameplay_graph))
         self.assertEqual(public.router.prefix, "/logic-studio")

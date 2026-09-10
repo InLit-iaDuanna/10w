@@ -80,6 +80,8 @@ def card_code_capabilities(value):
     capabilities = list(CODE_CAPABILITIES)
     if value.allow_game_execution:
         capabilities[4:4] = GAME_EXECUTION_CAPABILITIES
+        if value.include_demo_assets:
+            capabilities.insert(4, 'code.demo_assets.install')
         if value.allow_browser_observation:
             capabilities.insert(4, 'code.browser.observe')
         if value.allow_browser_interaction:
@@ -88,8 +90,8 @@ def card_code_capabilities(value):
             capabilities.insert(4, DEPENDENCY_CAPABILITY)
     return capabilities
 TaskProfile = Literal['asset-exchange', 'survival-prototype', 'auto', 'card-development',
-                      'environment-scene', 'project-demo', 'project-demo-agent']
-ExecutionMode = Literal["typed-tools", "codex-full-access"]
+                      'environment-scene', 'project-demo', 'project-demo-agent', 'unity-asset-edit', 'project-export-agent']
+ExecutionMode = Literal["typed-tools", "codex-full-access", "agent-full-access"]
 EffectState = Literal["NONE", "STAGED", "APPLIED", "COMMITTED", "UNKNOWN"]
 VerificationExecutionStatus = Literal["COMPLETED", "FAILED", "CANCELLED", "INTERRUPTED"]
 VerificationVerdict = Literal["PASS", "FAIL", "INCONCLUSIVE"]
@@ -121,6 +123,10 @@ class VerificationRecord(TaskModel):
 
 
 class PrepareAgentTask(TaskModel):
+    native_production: bool = False
+    permission_mode: Literal["scoped", "full"] = "scoped"
+    export_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{1,160}$")
+    source_write_paths: list[str] | None = Field(default=None, min_length=1, max_length=32)
     allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
     include_demo_assets: bool = False
@@ -137,9 +143,23 @@ class PrepareAgentTask(TaskModel):
     allow_dependency_install: bool = False
     task_profile: TaskProfile = 'asset-exchange'
     selected_scene_object_ids: list[str] = Field(default_factory=list, max_length=16)
+    input_paths: list[str] = Field(default_factory=list, max_length=12)
 
     @model_validator(mode='after')
     def card_scope(self):
+        if self.input_paths and not self.native_production:
+            raise ValueError('制作附件只能交给原生制作会话。')
+        if self.source_write_paths is not None:
+            if self.task_profile != 'card-development' or self.execution_mode != 'typed-tools':
+                raise ValueError('文件精修仅支持卡片受控工具模式。')
+            if (self.allow_dependency_install or self.include_demo_assets or self.allow_browser_interaction):
+                raise ValueError('文件精修不包含依赖安装、素材写入或测试源码生成。')
+            from .code_workspace import source_path, PROJECT_DEMO_DERIVED_PATHS
+            for path in self.source_write_paths:
+                source_path(path)
+                if path in PROJECT_DEMO_DERIVED_PATHS:
+                    raise ValueError('派生运行文件不能作为精修来源。')
+            self.source_write_paths = sorted(set(self.source_write_paths))
         code_profile = self.task_profile in ('card-development', 'project-demo', 'project-demo-agent')
         if self.allow_model_image_input and (not code_profile
                 or not self.allow_game_execution
@@ -147,15 +167,22 @@ class PrepareAgentTask(TaskModel):
             raise ValueError('模型图片输入需要卡片工程运行及本次浏览器截图授权。')
         if self.allow_browser_interaction and (not code_profile or not self.allow_game_execution):
             raise ValueError('浏览器输入检查需要卡片工程运行授权。')
-        if self.include_demo_assets and (self.task_profile not in ('project-demo', 'project-demo-agent') or not self.allow_game_execution):
-            raise ValueError('Demo 内容仅用于获授权运行的项目初版任务。')
-        if self.alignment_id is not None and not self.include_demo_assets:
+        if self.include_demo_assets and (not code_profile or not self.allow_game_execution):
+            raise ValueError('Demo 素材仅用于获授权运行的卡片开发。')
+        if self.alignment_id is not None and not self.include_demo_assets and not self.native_production:
             raise ValueError('对齐记录仅用于 Demo 任务准备。')
         if self.allow_browser_observation and (not code_profile or not self.allow_game_execution):
             raise ValueError('浏览器观察需要卡片工程运行授权。')
-        if self.task_profile == 'card-development':
-            if not self.project_id or not self.card_id or self.execution_mode != 'typed-tools':
-                raise ValueError('卡片开发需要项目、已登记卡片和 typed-tools 权限。')
+        if self.export_id is not None and self.task_profile != 'project-export-agent':
+            raise ValueError('export_id 仅用于导出任务。')
+        if self.task_profile == 'project-export-agent':
+            if (not self.project_id or not self.export_id or self.execution_mode != 'agent-full-access'
+                    or self.card_id or self.allow_playtest or self.allow_image_generation or self.allow_blender_edit
+                    or not self.allow_game_execution or not self.allow_dependency_install):
+                raise ValueError('导出任务需要已登记导出记录、原生执行及环境补齐权限。')
+        elif self.task_profile == 'card-development':
+            if not self.project_id or not self.card_id or self.execution_mode not in ('typed-tools', 'agent-full-access'):
+                raise ValueError('卡片开发需要项目、已登记卡片和受控工具或原生 Agent 权限。')
             if self.allow_playtest or self.allow_image_generation:
                 raise ValueError('卡片代码开发不包含图片生成或游测执行。')
             if self.allow_dependency_install and not self.allow_game_execution:
@@ -167,12 +194,12 @@ class PrepareAgentTask(TaskModel):
             if self.allow_playtest or self.allow_image_generation or self.allow_model_image_input:
                 raise ValueError('D1+D2 项目初版任务不包含图片生成、模型截图输入或自动游测。')
         elif self.task_profile == 'project-demo-agent':
-            if (not self.project_id or self.card_id is not None or self.execution_mode != 'typed-tools'
-                    or not self.allow_game_execution or not self.include_demo_assets
+            if (not self.project_id or self.card_id is not None or self.execution_mode not in ('typed-tools', 'agent-full-access')
+                    or not self.allow_game_execution or (not self.include_demo_assets and not self.native_production)
                     or self.alignment_id is None):
-                raise ValueError('自主项目初版任务需要项目、已确认方向、受控工具、Demo 内容和工程执行权限。')
-            if self.allow_playtest or self.allow_image_generation or self.allow_model_image_input:
-                raise ValueError('D3 项目初版任务不包含图片生成、模型截图输入或通用自动游测。')
+                raise ValueError('自主项目初版任务需要项目、已确认方向、受控工具或原生 Agent、Demo 内容和工程执行权限。')
+            if self.allow_playtest or self.allow_image_generation or (self.allow_model_image_input and not self.native_production):
+                raise ValueError('项目初版截图输入仅支持原生制作；不包含图片生成或通用自动游测。')
         elif self.task_profile == 'environment-scene':
             if not self.project_id or self.execution_mode != 'typed-tools':
                 raise ValueError('环境场景编辑需要当前项目和 typed-tools 权限。')
@@ -191,12 +218,16 @@ class PrepareAgentTask(TaskModel):
 
 
 class AuthorizeAgentTask(TaskModel):
+    creation_brief_version: int | None = Field(default=None, ge=1)
     authorization_card_id: str
     accept_unknown_cost: Literal[True]
     accept_full_access: bool = False
 
 
 class AuthorizationCard(TaskModel):
+    permission_mode: Literal["scoped", "full"] = "full"
+    export_id: str | None = None
+    source_write_paths: list[str] | None = Field(default=None, min_length=1, max_length=32)
     allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
     include_demo_assets: bool = False
@@ -218,7 +249,7 @@ class AuthorizationCard(TaskModel):
     scene_write_object_ids: list[str] = Field(default_factory=list, max_length=16)
     max_model_calls: int | None = 8
     max_cli_invocations: int | None = None
-    max_duration_seconds: int = 1200
+    max_duration_seconds: int | None = 1200
     max_attempts_per_action: int = 2
     max_repair_rounds: int = Field(default=2, ge=0, le=2)
     max_assets: int = 1
@@ -246,6 +277,9 @@ class AuthorizationCard(TaskModel):
 
 
 class TaskGrant(TaskModel):
+    permission_mode: Literal["scoped", "full"] = "full"
+    export_id: str | None = None
+    source_write_paths: list[str] | None = Field(default=None, min_length=1, max_length=32)
     allow_model_image_input: bool = False
     allow_browser_interaction: bool = False
     include_demo_assets: bool = False
@@ -270,7 +304,7 @@ class TaskGrant(TaskModel):
     budget: RuntimeBudget = Field(default_factory=lambda: RuntimeBudget(max_steps=32,
         max_attempts_per_step=2, max_duration_seconds=1200, max_metered_calls=8, usage_policy="bounded_calls"))
     authorized_at: datetime = Field(default_factory=now)
-    expires_at: datetime
+    expires_at: datetime | None = None
     revoked: bool = False
 
     @model_validator(mode='before')
@@ -495,9 +529,11 @@ class RebindDemoAssetInput(TaskModel):
 
 
 class ContinueProjectDemoRequest(TaskModel):
+    planning_card_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$")
     target: DemoEditTarget | None = None
     request_id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,120}$")
     goal: str = Field(min_length=1, max_length=8000)
+    input_paths: list[str] = Field(default_factory=list, max_length=12)
 
 
 class CapabilityGapInput(TaskModel):
@@ -554,7 +590,7 @@ class ActionRecord(TaskModel):
         mutating = capability_id in {
             "blender.asset.create", "blender.asset.export", "unity.asset.import",
             "unity.prototype.compose", "unity.prototype.play", "unity.prototype.capture",
-            "unity.prototype.verify", "codex.task.execute",
+            "unity.prototype.verify", "codex.task.execute", "agent.task.execute",
             "code.demo_content.materialize", "code.dependencies.prepare", "code.project.check", "code.project.build",
             "code.preview.start", "code.preview.stop",
             "environment.object.transform",
@@ -573,7 +609,7 @@ class BrowserObservationAuthorization(TaskModel):
     workspace_root: str
     card_id: str | None = None
     branch: str | None = None
-    expires_at: datetime
+    expires_at: datetime | None = None
     revoked: bool = False
 
     @model_validator(mode='before')
@@ -584,7 +620,12 @@ class BrowserObservationAuthorization(TaskModel):
         return value
 
 
+class TaskArchiveRequest(TaskModel):
+    archived: bool
+
+
 class AgentTaskRecord(TaskModel):
+    archived: bool = False
     browser_interaction_authorization: BrowserObservationAuthorization | None = None
     browser_authorization: BrowserObservationAuthorization | None = None
     id: str = Field(default_factory=lambda: identifier("task"))

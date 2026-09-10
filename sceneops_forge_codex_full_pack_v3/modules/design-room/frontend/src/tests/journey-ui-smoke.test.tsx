@@ -133,3 +133,18 @@ test('one selectable question requires explicit confirmation; custom answer uses
     expect(answers).toEqual([1]);
   } finally { await act(async () => root.unmount()); host.remove(); }
 });
+
+test('a question from a completed step is read-only', async () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  try {
+    await act(async () => root.render(<PlanningQuestionCard question={{prompt:'角色属性项怎么设计？', recommended_index:0,
+      options:[{label:'少量可感属性',description:'四到五项'},{label:'细分多属性',description:'七项以上'}]}}
+      disabled={false} answered={false} locked onAnswer={() => { throw new Error('locked question answered'); }}
+      onCustom={() => { throw new Error('locked question edited'); }} />));
+    expect(host.textContent).toContain('此步骤已结束');
+    expect(host.querySelectorAll('input[type=radio]')).toHaveLength(0);
+    expect(host.querySelectorAll('button')).toHaveLength(0);
+  } finally { await act(async () => root.unmount()); host.remove(); }
+});

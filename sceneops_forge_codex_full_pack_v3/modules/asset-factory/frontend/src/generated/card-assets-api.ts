@@ -4,6 +4,126 @@
  */
 
 export interface paths {
+    "/api/card-assets/tripo/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tripo Settings */
+        get: operations["getTripoSettings"];
+        put?: never;
+        /** Configure Tripo */
+        post: operations["configureTripo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/card-assets/tripo/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tripo Jobs */
+        get: operations["listTripoJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/card-assets/{project_id}/{card_id}/tripo/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Tripo */
+        post: operations["submitTripoJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/card-assets/tripo/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Poll Tripo */
+        get: operations["pollTripoJob"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/card-assets/tripo/jobs/{job_id}/collect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Collect Tripo */
+        post: operations["collectTripoModel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/card-assets/tripo/jobs/{job_id}/model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tripo Model */
+        get: operations["downloadTripoModel"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/card-assets/tripo/jobs/{job_id}/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Tripo */
+        post: operations["importTripoModel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/card-assets": {
         parameters: {
             query?: never;
@@ -231,6 +351,10 @@ export interface components {
             created_at?: string;
             /** Error */
             error?: string | null;
+            /** Production Preparation */
+            production_preparation?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** CardAssetRecord */
         CardAssetRecord: {
@@ -351,6 +475,58 @@ export interface components {
                 number
             ];
         };
+        /** DoorMaterial */
+        DoorMaterial: {
+            /**
+             * Color Hex
+             * @default #6B4F3A
+             */
+            color_hex: string;
+            /**
+             * Roughness
+             * @default 0.75
+             */
+            roughness: number;
+            /**
+             * Metalness
+             * @default 0.05
+             */
+            metalness: number;
+        };
+        /**
+         * DoorRecipe
+         * @description Editable source for the first supported procedural asset.
+         */
+        DoorRecipe: {
+            /**
+             * Kind
+             * @default door-v1
+             * @constant
+             */
+            kind: "door-v1";
+            /**
+             * Seed
+             * @default 0
+             * @constant
+             */
+            seed: 0;
+            /**
+             * Width M
+             * @default 1.2
+             */
+            width_m: number;
+            /**
+             * Height M
+             * @default 2.2
+             */
+            height_m: number;
+            /**
+             * Thickness M
+             * @default 0.15
+             */
+            thickness_m: number;
+            material?: components["schemas"]["DoorMaterial"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -459,7 +635,9 @@ export interface components {
             /** Project Id */
             project_id: string;
             /** Card Id */
-            card_id: string;
+            card_id?: string | null;
+            /** Workspace Id */
+            workspace_id?: string | null;
             /** Source Asset Id */
             source_asset_id: string;
             /** Title */
@@ -492,6 +670,14 @@ export interface components {
         ProjectAssetVersion: {
             /** Source Version */
             source_version: number;
+            /** Asset Version Id */
+            asset_version_id?: string | null;
+            /**
+             * Source Kind
+             * @default file
+             * @enum {string}
+             */
+            source_kind: "file" | "procedural" | "blender" | "glb";
             /** Dimensions M */
             dimensions_m: [
                 number,
@@ -503,16 +689,31 @@ export interface components {
             /** Triangle Count */
             triangle_count: number;
             /** Blend Path */
-            blend_path: string;
+            blend_path?: string | null;
             /** Preview Path */
-            preview_path: string;
+            preview_path?: string | null;
             /** Fbx Path */
-            fbx_path: string;
+            fbx_path?: string | null;
+            recipe?: components["schemas"]["DoorRecipe"] | null;
+            /** Parent Source Version */
+            parent_source_version?: number | null;
+            /** Geometry Source Version */
+            geometry_source_version?: number | null;
+            /** Lookdev Document Id */
+            lookdev_document_id?: string | null;
+            /** Lookdev Document Version */
+            lookdev_document_version?: number | null;
+            /** Node Ids */
+            node_ids?: {
+                [key: string]: string;
+            };
+            /** Runtime Artifacts */
+            runtime_artifacts?: components["schemas"]["RuntimeArtifactReference"][];
             /**
              * Operation
              * @enum {string}
              */
-            operation: "import" | "generate" | "normalize" | "calibrate";
+            operation: "import" | "generate" | "normalize" | "calibrate" | "recipe-create" | "recipe-edit" | "blender-edit";
             /**
              * Model Rotation Quaternion Xyzw
              * @default [
@@ -531,6 +732,20 @@ export interface components {
             /** Saved At */
             saved_at?: string;
         };
+        /** RuntimeArtifactReference */
+        RuntimeArtifactReference: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * Artifact Type
+             * @enum {string}
+             */
+            artifact_type: "render" | "collision" | "module";
+            /** Project Relative Path */
+            project_relative_path: string;
+            /** Export Name */
+            export_name?: string | null;
+        };
         /** SaveProjectAssetResult */
         SaveProjectAssetResult: {
             entry: components["schemas"]["ProjectAssetEntry"];
@@ -548,6 +763,82 @@ export interface components {
                 number,
                 number
             ] | null;
+        };
+        /** TripoJob */
+        TripoJob: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Card Id */
+            card_id: string;
+            /** Session Id */
+            session_id: string;
+            /** Task Id */
+            task_id?: string | null;
+            /** Credential Id */
+            credential_id?: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Progress
+             * @default 0
+             */
+            progress: number;
+            /** Model Version */
+            model_version: string;
+            /** Error */
+            error?: string | null;
+            /** Local Url */
+            local_url?: string | null;
+            /** Asset Id */
+            asset_id?: string | null;
+            /**
+             * Mode
+             * @default live
+             */
+            mode: string;
+        };
+        /** TripoRequest */
+        TripoRequest: {
+            /** Request Id */
+            request_id: string;
+            /** Session Id */
+            session_id: string;
+            /**
+             * Prompt
+             * @default
+             */
+            prompt: string;
+            /** Reference Id */
+            reference_id?: string | null;
+        };
+        /** TripoSettings */
+        TripoSettings: {
+            /** Configured */
+            configured: boolean;
+            /**
+             * Model Version
+             * @default v3.1-20260211
+             */
+            model_version: string;
+            /** Available Models */
+            available_models?: string[];
+        };
+        /** TripoSettingsInput */
+        TripoSettingsInput: {
+            /** Api Key */
+            api_key?: string | null;
+            /**
+             * Clear Key
+             * @default false
+             */
+            clear_key: boolean;
+            /**
+             * Model Version
+             * @default v3.1-20260211
+             */
+            model_version: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -571,6 +862,252 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getTripoSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripoSettings"];
+                };
+            };
+        };
+    };
+    configureTripo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TripoSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripoSettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listTripoJobs: {
+        parameters: {
+            query: {
+                project_id: string;
+                card_id: string;
+                session_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripoJob"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submitTripoJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TripoRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripoJob"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pollTripoJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripoJob"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    collectTripoModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripoJob"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    downloadTripoModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    importTripoModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardAssetRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listCardAssets: {
         parameters: {
             query: {

@@ -5,6 +5,7 @@ packages:
   - packages/*/frontend
   - packages/scene-viewer
 overrides:
+  'zod@>=4 <5': 4.5.4
   react: 19.2.8
   react-dom: 19.2.8
   '@types/react': 19.2.18

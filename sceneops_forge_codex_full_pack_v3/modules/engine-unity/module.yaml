@@ -23,6 +23,12 @@ contributes:
     - unity.build.console
     - unity.profiler
   commands:
+    - unity.content.import
+    - unity.content.inspect
+    - unity.content.edit
+    - unity.content.focus
+    - unity.content.save
+    - unity.content.play
     - unity.prototype.compose
     - unity.prototype.inspect
     - unity.prototype.play

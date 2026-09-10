@@ -293,12 +293,15 @@ class GitCliAdapterTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, ErrorCode.GIT_CONFLICT)
 
     def test_rollback_rejects_dirty_or_stale_head(self) -> None:
+        self._write("gameplay.txt", "committed advance\n")
+        self._git("add", "gameplay.txt")
+        self._git("commit", "-m", "advance beyond approved base")
         self._write("gameplay.txt", "dirty\n")
         command = GitRollbackCommand(
             operation_id="operation_rollback_2",
             proposal_id="rollback_2",
             approval_id="approval_2",
-            expected_head="f" * 40,
+            expected_head=self.base,
             target_commit=self.base,
             commit_message="Blocked rollback",
         )

@@ -1,12 +1,16 @@
 # Conversation Home
 
+## 首次配置引导（2026-09-08）
+
+公开 `EnvironmentSetup`，提供工具选择、固定版本用户目录安装、官方账号登录指引和真实连接验证。主应用首次打开显示，右上角及 AI 设置保留再次打开入口；安装、登录和连接检查均需用户主动点击。API、权限边界、平台差异和最小验证记录见 [环境配置](docs/environment-setup.md)。
+
 ## 统一应用接口（本轮）
 
 即时发送：临时用户消息由 `outgoingConversation` 管理，发送立即清空输入且允许继续写下一条；失败/取消保留原消息供手动重试，不覆盖新草稿。成功更新服务端历史缓存并移除临时消息，取消只表示停止等待，不能保证服务端未保存。临时消息不写数据库。受控请求测试见 `e2e/README.md`，最新记录见根 `INTERACTION_POLISH_VERIFICATION.md`。
 
 聊天视觉进一步简化：无欢迎卡片，中性灰消息区与单层圆角输入框；「＋」选择明确保存的上下文，模型和设置为紧凑工具栏，计划入口移至右上对话选项。`UnifiedModelPicker` / `ModelProviderSettings` 新增可选 `compact` 外观参数，默认仍保留独立使用样式；网络和密钥保存语义不变。键盘提交与按钮统一要求历史已读取。
 
-最新 UI 使用紧凑底部输入：Enter 提交、Shift+Enter 换行，IME composing 不提交；输入自适应高度，失败保留草稿，取消/重试仍由原 API 实现。浏览器失败与取消仅用 Mock 网络响应测试，不实际请求模型。旧 Node 测试 40/42，通过与运行器限制见根 `UI_FUNCTIONAL_VERIFICATION.md`。
+最新 UI 使用紧凑底部输入：Enter 提交、Shift+Enter 换行，IME composing 不提交；输入自适应高度，失败保留草稿，取消/重试仍由原 API 实现。浏览器失败与取消仅用 Mock 网络响应测试，不实际请求模型。独立测试统一使用仓库 TypeScript/TSX 运行入口，包含先前无法加载的公开入口和本地 transport 测试；使用方式见根 `docs/testing.md`。
 
 `UnifiedConversation({context, onDirtyChange?})` 与 `AIAdvicePanel({context,moduleId,onDirtyChange?})`
 由宿主的同一个 QueryClient 和编辑器注册系统承载。统一应用默认 CodeBuddy `cli-default`，
@@ -63,7 +67,7 @@
 
 `UnifiedConversation` 可选接收 `onOpenPipeline?: () => void`。它只在宿主提供回调时显示“生产计划”入口；
 入口仅打开宿主拥有的计划编辑器，不会从聊天中创建、执行或声称存在生产计划。首页文案明确为“目标 → 计划 → 人工审批”。
-Provider 设置支持 CodeBuddy CLI、Codex CLI 和 OpenAI 兼容服务，并提供精简、标准、深入三档对齐详细程度。每个 CLI provider 的 `cli-default` 与模型选择由服务端独立记忆；切换 provider 时前端不携带上一个 provider 的模型。兼容服务必须明确填写 URL 和模型 ID，可选择 Chat Completions 或 Responses API。只有用户主动点击“获取模型”或“检查连接”时才会用未保存草稿探测；连接检查会明确提示可能计费。成功获取的模型目录按 provider 与服务地址缓存在本地；当前已保存连接会立即刷新主输入区的“当前模型”下拉，新连接则在保存后显示。兼容服务的密钥按 URL 配置：更换 URL 而不输入密钥时会显示为未配置。CLI 不显示 API Key 字段。API key 绝不写入 query cache、localStorage、模型目录或 UI 日志，提交成功或关闭弹窗后立即清空输入框。
+Provider 设置支持 CodeBuddy CLI、Codex CLI 和 OpenAI 兼容服务，并提供精简、标准、深入三档对齐详细程度。每个 CLI provider 的 `cli-default` 与模型选择由服务端独立记忆；切换 provider 时前端不携带上一个 provider 的模型。Codex CLI 可在设置中点击“获取模型”，随后从当前账号返回的可见模型下拉选择。兼容服务必须明确填写 URL 和模型 ID，可选择 Chat Completions 或 Responses API，也可选择思考强度。只有用户主动点击“获取模型”或“检查连接”时才会用未保存草稿探测；连接检查会明确提示可能计费。成功获取的模型目录按 provider 与服务地址缓存在本地；当前已保存连接会立即刷新主输入区的“当前模型”下拉，新连接则在保存后显示。兼容服务的密钥按 URL 配置：更换 URL 而不输入密钥时会显示为未配置。CLI 不显示 API Key 字段。API key 绝不写入 query cache、localStorage、模型目录或 UI 日志，提交成功或关闭弹窗后立即清空输入框。
 
 `ConversationTransport` 是可替换的端口。`LocalConversationTransport` 是明确标注的固定 MOCK；`CodeBuddyConversationTransport` 提供选择模型后的本地 API 请求。`ConversationEditor` 接收可选 modelTransport，模型目录由 TanStack Query 管理；请求/响应类型由 Pydantic/OpenAPI 生成。后端只通过公开 `conversation_home.router` 组合。
 
@@ -90,3 +94,21 @@ Provider 设置支持 CodeBuddy CLI、Codex CLI 和 OpenAI 兼容服务，并提
 不能宣称逐 token。compatible 服务可按标准 Chat Completions 或 Responses SSE 显示真实文字增量，但是否
 支持相应接口与模型取决于目标服务，应用不会自动回退。真实 provider、生产审批、项目/工作流/产物等
 handler 由其他模块提供。当前 lab 仅注册 Shell 工具，外部业务不可冒充成功。
+
+底部模型与思考强度使用 core-ui 的 ComposerMenu，与卡片权限选择共享深色浮层、选中标记与键盘操作；方向键移动、Enter 选择、Escape 关闭，点击外部关闭。打开和浏览菜单不修改配置。
+
+## AI 设置界面更新
+
+提供方设置分为「连接与模型」「对话与执行」，使用原生 dialog 和固定底部保存栏，内容区独立滚动。连接参数、获取模型与检查连接集中于连接页，追问深度、流式输出和时限集中于偏好页。页签支持方向键与 Home/End；切换页签保留草稿，不保存配置或探测服务。保留密钥只写、端点绑定和关闭清空行为。
+
+`provider-settings-ui.test.tsx` 最小验证通过：页签草稿保留、显式保存前零请求、保存参数正确、重新打开时密钥为空。当前浏览器连接异常，最终视觉截图未复核；未调用真实服务或保存用户配置。
+
+## 统一项目聊天外观（2026-09-08）
+
+主策划、制作卡片、建模、环境对话与普通项目对话使用 Core UI 的公开 ChatComposer 与 ChatMessageActions；共享 720px 阅读宽度、消息排版、表格、气泡、复制操作、模型工具栏和发送按钮。卡片侧栏与预览面板仍属于工作流布局，消息区不再另设一套外观。输入内容、发送/取消处理、权限及服务端历史仍由原调用方持有。
+
+验证：共享输入框单条烟测通过，覆盖草稿保留、模型按钮不触发提交、禁用发送与正常提交；本地策划聊天窄分栏已目视检查。未执行完整测试或真实 AI 请求。
+
+## 即时项目记忆（2026-09-09）
+
+普通对话在原前台请求中接收附加记忆提案，以当前已保存用户消息校验来源；正文与提案分离，流式显示不泄露内部标记。保存结果通过 MemoryMessage 展示，下一回合读取新修订，不等待后台学习。详情见 [对话记忆](../../docs/conversation-memory.md)。

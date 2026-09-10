@@ -1,4 +1,6 @@
 {
+  "x-event-type": "vfx.recipe.published",
+  "x-event-version": 1,
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "sceneops://vfx-shader/events/vfx.recipe.published@1",
   "title": "VFX recipe published event intent",

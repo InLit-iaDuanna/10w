@@ -1,0 +1,295 @@
+{
+  "schema_version": "2.0.0",
+  "asset_id": "atlas100-sailpunk-util03",
+  "source_version": "2.0.0",
+  "units": "meter",
+  "body": {
+    "mode": "fixed",
+    "initially_sleeping": false,
+    "gravity_scale": 1.0,
+    "mass_kg": 30.0,
+    "linear_damping": 0.03
+  },
+  "colliders": [
+    {
+      "part_index": 0,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-util03:p0",
+      "center_m": [
+        -0.9828,
+        0.30576,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07098,
+        0.30576,
+        0.3549
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 1,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-util03:p1",
+      "center_m": [
+        0.9828,
+        0.30576,
+        0.0
+      ],
+      "half_extents_m": [
+        0.07098,
+        0.30576,
+        0.3549
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 2,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-util03:p2",
+      "center_m": [
+        0.0,
+        0.6552,
+        -0.3276
+      ],
+      "half_extents_m": [
+        1.2012,
+        0.0546,
+        0.09282
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 3,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-util03:p3",
+      "center_m": [
+        0.0,
+        0.6552,
+        -0.1092
+      ],
+      "half_extents_m": [
+        1.2012,
+        0.0546,
+        0.09282
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 4,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-util03:p4",
+      "center_m": [
+        0.0,
+        0.6552,
+        0.1092
+      ],
+      "half_extents_m": [
+        1.2012,
+        0.0546,
+        0.09282
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "part_index": 5,
+      "joint": null,
+      "shape": "box",
+      "friction": 0.65,
+      "restitution": 0.08,
+      "id": "atlas100-sailpunk-util03:p5",
+      "center_m": [
+        0.0,
+        0.6552,
+        0.3276
+      ],
+      "half_extents_m": [
+        1.2012,
+        0.0546,
+        0.09282
+      ],
+      "axes": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "interaction": {
+    "actions": [],
+    "reach_m": 2.5,
+    "attachment": null
+  },
+  "rig": {
+    "type": "static",
+    "applicability": "not_applicable_static",
+    "joints": [],
+    "part_joints": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "clips": [],
+    "attachment": null,
+    "deformation": "none",
+    "authoring": "authored recipe-family mechanics"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "path": "assets/atlas100-sailpunk-util03.glb",
+      "triangle_count": 72,
+      "part_count": 6,
+      "distance_m": 0.0,
+      "sha256": "51eea06a0714b2f8f72c66e21c704d35505f0c2fba474423336d6677256369a1",
+      "byte_size": 38160
+    },
+    {
+      "level": 1,
+      "path": "lods/atlas100-sailpunk-util03.lod1.glb",
+      "triangle_count": 48,
+      "part_count": 4,
+      "distance_m": 12.01,
+      "sha256": "289521011b2cd8420e541a21c15693fd1ac64b6ee0fe3151c00bdfa1aea68bc9",
+      "byte_size": 35268
+    },
+    {
+      "level": 2,
+      "path": "lods/atlas100-sailpunk-util03.lod2.glb",
+      "triangle_count": 36,
+      "part_count": 3,
+      "distance_m": 28.83,
+      "sha256": "d299ba676f35dbff265c087b35b604eeae0160ed293a6d19c6f4847acdf4d3db",
+      "byte_size": 33824
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -1.2012,
+      0.0,
+      -0.42042
+    ],
+    "max": [
+      1.2012,
+      0.7098,
+      0.42042
+    ]
+  },
+  "runtime": "runtime/atlas-runtime.mjs",
+  "status": "generated_binding; runtime instantiates on explicit load",
+  "limitations": [
+    "Rigid/kinematic props; no cloth or humanoid ragdoll.",
+    "Collision boxes approximate curved surfaces.",
+    "Mass/friction are gameplay defaults, not measured physical properties."
+  ]
+}
