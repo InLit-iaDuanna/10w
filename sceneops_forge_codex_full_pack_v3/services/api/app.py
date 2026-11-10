@@ -35,7 +35,8 @@ from sceneops_ai_distiller import ExperienceError, ExperienceService, create_exp
 from sceneops_ai_provider import ProviderService
 from asset_factory import CardAssetError, CardAssetService, BuiltinProjectAssets, create_card_asset_router
 from asset_library import (ProjectAssetCatalogService, SqliteProjectAssetRepository,
-                           create_project_catalog_router, BuiltinAssetCatalog, create_builtin_asset_router)
+                           create_project_catalog_router, AdoptBuiltinAsset,
+                           BuiltinAssetCatalog, create_builtin_asset_router)
 from world_composer import (EnvironmentSceneError, EnvironmentSceneService,
                             create_environment_scene_router)
 from vfx_shader import LookdevService, LookdevError, NodeLookdevValidator, LookdevAssetApplication, create_lookdev_router
@@ -309,7 +310,6 @@ def create_app() -> FastAPI:
     builtin_projects = BuiltinProjectAssets(builtin_catalog, card_assets, project_assets,
                                            repository, resolve_builtin_card)
     def adopt_builtin_for_scene(project_id, asset_id):
-        from asset_library.builtin_catalog import AdoptBuiltinAsset
         entry = builtin_catalog.entry(asset_id)
         with builtin_catalog.adoption_lock:
             return builtin_projects.adopt(entry, builtin_catalog.file(asset_id, 'glb'),
