@@ -76,7 +76,7 @@ Consequently:
 
 ## Setup and tests
 
-Python 3.9+ and Pydantic 2.13.2 are required. From the repository root:
+Python 3.10+ and Pydantic 2.13.2 are required. From the repository root:
 
 ```bash
 PYTHONPATH=modules/render-ops/backend/src:integrations/comfyui-adapter/src \

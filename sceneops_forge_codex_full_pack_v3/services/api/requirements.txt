@@ -1,5 +1,6 @@
 # Run from the application root: python -m pip install -r services/api/requirements.txt
-fastapi==0.128.8
+fastapi==0.135.2
+starlette==1.3.1
 pydantic==2.13.2
 uvicorn==0.39.0
 PyYAML==6.0.3

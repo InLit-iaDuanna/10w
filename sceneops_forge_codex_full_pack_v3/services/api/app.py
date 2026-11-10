@@ -264,7 +264,7 @@ def create_app() -> FastAPI:
         async def close_exports():
             import asyncio
             await asyncio.to_thread(exports.close)
-        app.add_event_handler('shutdown', close_exports)
+        app.router.add_event_handler('shutdown', close_exports)
     journey = None
     if os.environ.get('SCENEOPS_PLANNING_JOURNEY_ENABLED', 'true').lower() != 'false':
         journey = PlanningJourneyService(database, repository, provider=provider, experience=experience,
@@ -325,7 +325,7 @@ def create_app() -> FastAPI:
         app.state.harness = harness
         for project in repository.list_projects():
             harness.runtime.recover_interrupted(project.project_id)
-        app.add_event_handler("shutdown", harness.close)
+        app.router.add_event_handler("shutdown", harness.close)
         agent_tasks = AgentTaskService(database, repository, data_dir,
             provider=provider, card_context=journey.development_context if journey else None,
             project_demo_context=journey.project_demo_context if journey else None,
@@ -340,7 +340,7 @@ def create_app() -> FastAPI:
             export_context=(app.state.exports.native_context if hasattr(app.state, 'exports') else None))
         if hasattr(app.state, 'exports'):
             app.state.exports.native_agent = NativeExportPort(agent_tasks)
-            app.add_event_handler('startup', app.state.exports.native_agent.start)
+            app.router.add_event_handler('startup', app.state.exports.native_agent.start)
         app.include_router(create_agent_task_router(agent_tasks))
         app.include_router(create_production_router(agent_tasks))
         app.state.agent_tasks = agent_tasks
@@ -353,7 +353,7 @@ def create_app() -> FastAPI:
                 if asset.workspace_id:
                     agent_tasks.game.invalidate_project_workspace(project_id, asset.workspace_id)
             app.state.lookdev.on_applied = material_applied
-        app.add_event_handler("shutdown", agent_tasks.close)
+        app.router.add_event_handler("shutdown", agent_tasks.close)
     conversation_memory = AIRepository(database)
 
     def resolve_memory_source(project_id, source_id):
@@ -387,6 +387,6 @@ def create_app() -> FastAPI:
         (journey and project_id in journey.busy) or
         (getattr(app.state, 'agent_tasks', None) and
          app.state.agent_tasks.is_project_busy(project_id))))
-    app.add_event_handler("startup", experience.start)
-    app.add_event_handler("shutdown", experience.close)
+    app.router.add_event_handler("startup", experience.start)
+    app.router.add_event_handler("shutdown", experience.close)
     return app
