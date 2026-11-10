@@ -2,7 +2,7 @@
 
 统一 UI 功能回归修复：命令与类型显式导入 `zod/v4`，避免与其他模块 Zod 3 的 Vite 预打包名称冲突。11 项前端回归及统一空态动态导入通过；没有运行角色生产、预览或 Unity 操作。
 
-独立工作台入口现位于 [`apps/labs/character-animation`](../../apps/labs/character-animation/README.md)，Web `127.0.0.1:4313`、API `127.0.0.1:8313`。包含六个编辑器、动画元数据草稿、本地检查、版本差异和待审批 Unity 映射提案。当前启动请使用该入口的 pnpm 安装说明；下方 npm 测试命令属于原模块独立开发说明，本轮未执行。
+独立工作台入口现位于 [`apps/labs/character-animation`](../../apps/labs/character-animation/README.md)，Web `127.0.0.1:4313`、API `127.0.0.1:8313`。包含六个编辑器、动画元数据草稿、本地检查、版本差异和待审批 Unity 映射提案。当前启动请使用该入口的 pnpm 安装说明；本模块依赖 workspace 包，依赖锁定统一由仓库根 `pnpm-lock.yaml` 管理，不再使用失效的独立 npm 锁文件；下方 npm 测试命令属于原模块独立开发说明，本轮未执行。
 
 Character and Animation 为 SceneOps Forge 提供可检查的角色、Rig、Skin、动画片段、重定向、Animator 状态、预览证据与 Unity 映射流程。主路径接受导入资产；角色生成和自动绑定始终是可选能力。
 
@@ -62,7 +62,7 @@ Character and Animation 为 SceneOps Forge 提供可检查的角色、Rig、Skin
 
 ## 设置与生成
 
-后端需要 Python 3.9+。从模块目录生成合同：
+后端需要 Python 3.10+。从模块目录生成合同：
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/sceneops-character-pycache \
@@ -73,9 +73,8 @@ python3 backend/scripts/export_contracts.py
 前端需要 Node.js 22+：
 
 ```bash
-cd frontend
-npm install --ignore-scripts
-npm run generate:api
+pnpm install --frozen-lockfile --ignore-scripts
+pnpm --dir modules/character-animation/frontend run generate:api
 ```
 
 ## 测试
